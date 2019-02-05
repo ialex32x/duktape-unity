@@ -6,7 +6,7 @@ using System;
 
 public class Sample : MonoBehaviour
 {
-    [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.DuktapeCSFunction))]
+    [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
     public static int Foo(IntPtr ctx)
     {
         Debug.Log("sample.foo");
