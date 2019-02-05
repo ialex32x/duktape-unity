@@ -401,13 +401,13 @@ namespace Duktape
         public static extern string duk_get_string(IntPtr ctx, duk_idx_t idx);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern byte[] duk_get_lstring(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_len);
+        public static extern byte[] duk_get_lstring(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_len); // need fix
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern byte[] duk_get_buffer(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_size);
+        public static extern byte[] duk_get_buffer(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_size); // need fix
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern byte[] duk_get_buffer_data(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_size);
+        public static extern byte[] duk_get_buffer_data(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_size); // need fix
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr duk_get_pointer(IntPtr ctx, duk_idx_t idx);
