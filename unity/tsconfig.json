@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es5",
+        "sourceRoot": "Assets/Scripts",
+        "outDir": "Assets/Generated",
+        "noImplicitAny": false,
+        "sourceMap": true
+    }
+}
