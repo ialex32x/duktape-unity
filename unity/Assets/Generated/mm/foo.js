@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var Foo = /** @class */ (function () {
     function Foo(age) {
         this.nickname = "type-t";
@@ -10,7 +12,5 @@ var Foo = /** @class */ (function () {
     };
     return Foo;
 }());
-var foo = new Foo(12);
-foo.greet();
-UnityEngine.Debug.Log("greeting");
-//# sourceMappingURL=test.js.map
+exports.Foo = Foo;
+//# sourceMappingURL=foo.js.map

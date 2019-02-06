@@ -7,11 +7,15 @@
         "typeRoots": [
             "Assets/**/Typings"
         ],
+        "moduleResolution": "node",
+        "types": [
+            // "node"
+        ],
         // "listEmittedFiles": true,
         "noImplicitAny": false,
         "allowJs": false,
         "sourceMap": true
-    }, 
+    },
     "exclude": [
         "Assets/Generated/**/*"
     ]

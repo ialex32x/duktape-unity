@@ -1,5 +1,5 @@
-
-class Foo {
+    
+export class Foo {
     nickname = "type-t"
     private name = "test"
     private age = 0 
@@ -13,9 +13,3 @@ class Foo {
     }
 }
 
-
-let foo = new Foo(12)
-
-foo.greet()
-
-UnityEngine.Debug.Log("greeting")
