@@ -12,4 +12,5 @@ var Foo = /** @class */ (function () {
 }());
 var foo = new Foo(12);
 foo.greet();
+UnityEngine.Debug.Log("greeting");
 //# sourceMappingURL=test.js.map
