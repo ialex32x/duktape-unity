@@ -7,6 +7,9 @@ var Foo = /** @class */ (function () {
         this.age = 0;
         this.age = age;
     }
+    Foo.foo = function () {
+        console.log("static foo");
+    };
     Foo.prototype.greet = function () {
         console.log("hello, I am " + this.name + ", " + this.age + ".");
     };

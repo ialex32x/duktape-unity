@@ -16,6 +16,7 @@ public class Sample : MonoBehaviour
 print(123);
 var test = new Test();
 test.foo();
+Test.static_foo();
 print(typeof Duptake);
         ");
         if (err != 0)

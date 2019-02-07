@@ -8,6 +8,10 @@ export class Foo {
         this.age = age
     }
 
+    static foo() {
+        console.log("static foo")
+    }
+
     greet() {
         console.log(`hello, I am ${this.name}, ${this.age}.`)
     }
