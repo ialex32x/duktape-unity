@@ -88,58 +88,108 @@ namespace Duktape
         }
 
         #region Constants
-        public static duk_int_t DUK_VARARGS = -1;
+        public static readonly duk_int_t DUK_VARARGS = -1;
 
-        public static duk_uint_t DUK_COMPILE_EVAL = 1U << 3;
-        public static duk_uint_t DUK_COMPILE_SAFE = 1U << 7;
-        public static duk_uint_t DUK_COMPILE_NORESULT = 1U << 8;
-        public static duk_uint_t DUK_COMPILE_NOSOURCE = 1U << 9;
-        public static duk_uint_t DUK_COMPILE_STRLEN = 1U << 10;
-        public static duk_uint_t DUK_COMPILE_NOFILENAME = 1U << 11;
+        public static readonly duk_uint_t DUK_COMPILE_EVAL = 1U << 3;
+        public static readonly duk_uint_t DUK_COMPILE_SAFE = 1U << 7;
+        public static readonly duk_uint_t DUK_COMPILE_NORESULT = 1U << 8;
+        public static readonly duk_uint_t DUK_COMPILE_NOSOURCE = 1U << 9;
+        public static readonly duk_uint_t DUK_COMPILE_STRLEN = 1U << 10;
+        public static readonly duk_uint_t DUK_COMPILE_NOFILENAME = 1U << 11;
 
         /* Value types, used by e.g. duk_get_type() */
-        public static duk_uint_t DUK_TYPE_MIN = 0U;
-        public static duk_uint_t DUK_TYPE_NONE = 0U;    /* no value, e.g. invalid index */
-        public static duk_uint_t DUK_TYPE_UNDEFINED = 1U;    /* ECMAScript undefined */
-        public static duk_uint_t DUK_TYPE_NULL = 2U;    /* ECMAScript null */
-        public static duk_uint_t DUK_TYPE_BOOLEAN = 3U;    /* ECMAScript boolean: 0 or 1 */
-        public static duk_uint_t DUK_TYPE_NUMBER = 4U;    /* ECMAScript number: double */
-        public static duk_uint_t DUK_TYPE_STRING = 5U;    /* ECMAScript string: CESU-8 / extended UTF-8 encoded */
-        public static duk_uint_t DUK_TYPE_OBJECT = 6U;    /* ECMAScript object: includes objects, arrays, functions, threads */
-        public static duk_uint_t DUK_TYPE_BUFFER = 7U;    /* fixed or dynamic, garbage collected byte buffer */
-        public static duk_uint_t DUK_TYPE_POINTER = 8U;    /* raw void pointer */
-        public static duk_uint_t DUK_TYPE_LIGHTFUNC = 9U;    /* lightweight function pointer */
-        public static duk_uint_t DUK_TYPE_MAX = 9U;
+        public static readonly duk_uint_t DUK_TYPE_MIN = 0U;
+        public static readonly duk_uint_t DUK_TYPE_NONE = 0U;    /* no value, e.g. invalid index */
+        public static readonly duk_uint_t DUK_TYPE_UNDEFINED = 1U;    /* ECMAScript undefined */
+        public static readonly duk_uint_t DUK_TYPE_NULL = 2U;    /* ECMAScript null */
+        public static readonly duk_uint_t DUK_TYPE_BOOLEAN = 3U;    /* ECMAScript boolean: 0 or 1 */
+        public static readonly duk_uint_t DUK_TYPE_NUMBER = 4U;    /* ECMAScript number: double */
+        public static readonly duk_uint_t DUK_TYPE_STRING = 5U;    /* ECMAScript string: CESU-8 / extended UTF-8 encoded */
+        public static readonly duk_uint_t DUK_TYPE_OBJECT = 6U;    /* ECMAScript object: includes objects, arrays, functions, threads */
+        public static readonly duk_uint_t DUK_TYPE_BUFFER = 7U;    /* fixed or dynamic, garbage collected byte buffer */
+        public static readonly duk_uint_t DUK_TYPE_POINTER = 8U;    /* raw void pointer */
+        public static readonly duk_uint_t DUK_TYPE_LIGHTFUNC = 9U;    /* lightweight function pointer */
+        public static readonly duk_uint_t DUK_TYPE_MAX = 9U;
 
         /* Value mask types, used by e.g. duk_get_type_mask() */
-        public static duk_uint_t DUK_TYPE_MASK_NONE = (1U << (int)DUK_TYPE_NONE);
-        public static duk_uint_t DUK_TYPE_MASK_UNDEFINED = (1U << (int)DUK_TYPE_UNDEFINED);
-        public static duk_uint_t DUK_TYPE_MASK_NULL = (1U << (int)DUK_TYPE_NULL);
-        public static duk_uint_t DUK_TYPE_MASK_BOOLEAN = (1U << (int)DUK_TYPE_BOOLEAN);
-        public static duk_uint_t DUK_TYPE_MASK_NUMBER = (1U << (int)DUK_TYPE_NUMBER);
-        public static duk_uint_t DUK_TYPE_MASK_STRING = (1U << (int)DUK_TYPE_STRING);
-        public static duk_uint_t DUK_TYPE_MASK_OBJECT = (1U << (int)DUK_TYPE_OBJECT);
-        public static duk_uint_t DUK_TYPE_MASK_BUFFER = (1U << (int)DUK_TYPE_BUFFER);
-        public static duk_uint_t DUK_TYPE_MASK_POINTER = (1U << (int)DUK_TYPE_POINTER);
-        public static duk_uint_t DUK_TYPE_MASK_LIGHTFUNC = (1U << (int)DUK_TYPE_LIGHTFUNC);
-        public static duk_uint_t DUK_TYPE_MASK_THROW = (1U << 10);  /* internal flag value: throw if mask doesn't match */
-        public static duk_uint_t DUK_TYPE_MASK_PROMOTE = (1U << 11);  /* internal flag value: promote to object if mask matches */
+        public static readonly duk_uint_t DUK_TYPE_MASK_NONE = (1U << (int)DUK_TYPE_NONE);
+        public static readonly duk_uint_t DUK_TYPE_MASK_UNDEFINED = (1U << (int)DUK_TYPE_UNDEFINED);
+        public static readonly duk_uint_t DUK_TYPE_MASK_NULL = (1U << (int)DUK_TYPE_NULL);
+        public static readonly duk_uint_t DUK_TYPE_MASK_BOOLEAN = (1U << (int)DUK_TYPE_BOOLEAN);
+        public static readonly duk_uint_t DUK_TYPE_MASK_NUMBER = (1U << (int)DUK_TYPE_NUMBER);
+        public static readonly duk_uint_t DUK_TYPE_MASK_STRING = (1U << (int)DUK_TYPE_STRING);
+        public static readonly duk_uint_t DUK_TYPE_MASK_OBJECT = (1U << (int)DUK_TYPE_OBJECT);
+        public static readonly duk_uint_t DUK_TYPE_MASK_BUFFER = (1U << (int)DUK_TYPE_BUFFER);
+        public static readonly duk_uint_t DUK_TYPE_MASK_POINTER = (1U << (int)DUK_TYPE_POINTER);
+        public static readonly duk_uint_t DUK_TYPE_MASK_LIGHTFUNC = (1U << (int)DUK_TYPE_LIGHTFUNC);
+        public static readonly duk_uint_t DUK_TYPE_MASK_THROW = (1U << 10);  /* internal flag value: throw if mask doesn't match */
+        public static readonly duk_uint_t DUK_TYPE_MASK_PROMOTE = (1U << 11);  /* internal flag value: promote to object if mask matches */
 
         /* Flags for duk_push_thread_raw() */
-        public static duk_uint_t DUK_THREAD_NEW_GLOBAL_ENV = (1U << 0);    /* create a new global environment */
+        public static readonly duk_uint_t DUK_THREAD_NEW_GLOBAL_ENV = (1U << 0);    /* create a new global environment */
 
         /* Flags for duk_gc() */
-        public static duk_uint_t DUK_GC_COMPACT = (1U << 0);    /* compact heap objects */
+        public static readonly duk_uint_t DUK_GC_COMPACT = (1U << 0);    /* compact heap objects */
 
         /* Error codes (must be 8 bits at most, see duk_error.h) */
-        public static duk_int_t DUK_ERR_NONE = 0;    /* no error (e.g. from duk_get_error_code()) */
-        public static duk_int_t DUK_ERR_ERROR = 1;    /* Error */
-        public static duk_int_t DUK_ERR_EVAL_ERROR = 2;    /* EvalError */
-        public static duk_int_t DUK_ERR_RANGE_ERROR = 3;    /* RangeError */
-        public static duk_int_t DUK_ERR_REFERENCE_ERROR = 4;    /* ReferenceError */
-        public static duk_int_t DUK_ERR_SYNTAX_ERROR = 5;    /* SyntaxError */
-        public static duk_int_t DUK_ERR_TYPE_ERROR = 6;    /* TypeError */
-        public static duk_int_t DUK_ERR_URI_ERROR = 7;    /* URIError */
+        public static readonly duk_int_t DUK_ERR_NONE = 0;    /* no error (e.g. from duk_get_error_code()) */
+        public static readonly duk_int_t DUK_ERR_ERROR = 1;    /* Error */
+        public static readonly duk_int_t DUK_ERR_EVAL_ERROR = 2;    /* EvalError */
+        public static readonly duk_int_t DUK_ERR_RANGE_ERROR = 3;    /* RangeError */
+        public static readonly duk_int_t DUK_ERR_REFERENCE_ERROR = 4;    /* ReferenceError */
+        public static readonly duk_int_t DUK_ERR_SYNTAX_ERROR = 5;    /* SyntaxError */
+        public static readonly duk_int_t DUK_ERR_TYPE_ERROR = 6;    /* TypeError */
+        public static readonly duk_int_t DUK_ERR_URI_ERROR = 7;    /* URIError */
+
+        /* Return codes for C functions (shortcut for throwing an error) */
+        public static readonly duk_int_t DUK_RET_ERROR = (-DUK_ERR_ERROR);
+        public static readonly duk_int_t DUK_RET_EVAL_ERROR = (-DUK_ERR_EVAL_ERROR);
+        public static readonly duk_int_t DUK_RET_RANGE_ERROR = (-DUK_ERR_RANGE_ERROR);
+        public static readonly duk_int_t DUK_RET_REFERENCE_ERROR = (-DUK_ERR_REFERENCE_ERROR);
+        public static readonly duk_int_t DUK_RET_SYNTAX_ERROR = (-DUK_ERR_SYNTAX_ERROR);
+        public static readonly duk_int_t DUK_RET_TYPE_ERROR = (-DUK_ERR_TYPE_ERROR);
+        public static readonly duk_int_t DUK_RET_URI_ERROR = (-DUK_ERR_URI_ERROR);
+
+        /* Return codes for protected calls (duk_safe_call(), duk_pcall()) */
+        public static readonly duk_int_t DUK_EXEC_SUCCESS = 0;
+        public static readonly duk_int_t DUK_EXEC_ERROR = 1;
+
+        /* Debug levels for DUK_USE_DEBUG_WRITE(). */
+        public static readonly duk_int_t DUK_LEVEL_DEBUG = 0;
+        public static readonly duk_int_t DUK_LEVEL_DDEBUG = 1;
+        public static readonly duk_int_t DUK_LEVEL_DDDEBUG = 2;
+
+        /*
+         *  Macros to create Symbols as C statically constructed strings.
+         *
+         *  Call e.g. as DUK_HIDDEN_SYMBOL("myProperty") <=> ("\xFF" "myProperty").
+         *  Local symbols have a unique suffix, caller should take care to avoid
+         *  conflicting with the Duktape internal representation by e.g. prepending
+         *  a '!' character: DUK_LOCAL_SYMBOL("myLocal", "!123").
+         *
+         *  Note that these can only be used for string constants, not dynamically
+         *  created strings.
+         */
+
+        public static string DUK_HIDDEN_SYMBOL(string x)
+        {
+            return "\xFF" + x;
+        }
+
+        public static string DUK_GLOBAL_SYMBOL(string x)
+        {
+            return "\x80" + x;
+        }
+
+        public static string DUK_LOCAL_SYMBOL(string x, string uniq)
+        {
+            return "\x81" + x + "\xff" + uniq;
+        }
+
+        public static string DUK_WELLKNOWN_SYMBOL(string x)
+        {
+            return "\x81" + x + "\xff";
+        }
 
         #endregion
 
