@@ -1,6 +1,10 @@
 
 mkdir build
 pushd build
+
+rd /s /q x64
+rd /s /q x86
+
 mkdir x64
 mkdir x86
 
