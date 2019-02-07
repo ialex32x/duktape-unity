@@ -6,23 +6,28 @@ using System;
 
 public class Sample : MonoBehaviour
 {
-    [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
-    public static int Foo(IntPtr ctx)
-    {
-        Debug.Log("sample.foo");
-        return 0;
-    }
+    DuktapeHeap heap = new DuktapeHeap();
 
     // Start is called before the first frame update
     void Start()
     {
-        var ctx = DuktapeDLL.duk_create_heap_default();
-        DuktapeDLL.duk_push_global_object(ctx);
-        DuktapeDLL.duk_push_c_function(ctx, Sample.Foo, DuktapeDLL.DUK_VARARGS);
-        DuktapeDLL.duk_put_prop_string(ctx, -2, "foo");
-        DuktapeDLL.duk_pop(ctx);
-        DuktapeDLL.duk_peval_string_noresult(ctx, "foo()");
-        DuktapeDLL.duk_destroy_heap(ctx);
+        heap.Test();
+        var err = DuktapeDLL.duk_peval_string_noresult(heap.ctx, @"
+print(123);
+var test = new Test();
+test.foo();
+print(typeof Duptake);
+        ");
+        if (err != 0)
+        {
+            Debug.LogError("error");
+        }
+    }
+
+    void OnDestroy()
+    {
+        heap.Destroy();
+        heap = null;
     }
 
     // Update is called once per frame
