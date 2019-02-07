@@ -1,1 +1,0 @@
-set(CMAKE_GENERATOR "NMake Makefiles" CACHE INTERNAL "" FORCE)
