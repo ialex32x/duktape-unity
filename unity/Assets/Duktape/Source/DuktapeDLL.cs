@@ -9,6 +9,7 @@ namespace Duktape
     using duk_int_t = System.Int32;
     using duk_idx_t = System.Int32;
     using duk_uint_t = System.UInt32;
+    using duk_uarridx_t = System.UInt32;
     using duk_bool_t = System.Boolean;
     using duk_double_t = System.Double;
     using duk_errcode_t = System.Int32;
@@ -606,12 +607,6 @@ namespace Duktape
         public static extern void duk_push_uint(IntPtr ctx, duk_uint_t val);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern duk_bool_t duk_put_prop_string(IntPtr ctx, duk_idx_t obj_idx, string key);
-
-        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern duk_bool_t duk_put_prop_lstring(IntPtr ctx, duk_idx_t obj_idx, byte[] key, duk_size_t key_len);
-
-        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void duk_push_pointer(IntPtr ctx, IntPtr p);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -661,6 +656,123 @@ namespace Duktape
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_idx_t duk_push_proxy(IntPtr ctx, duk_uint_t proxy_flags);
 
+        /*
+        *  Property access
+        *
+        *  The basic function assumes key is on stack.  The _(l)string variant takes
+        *  a C string as a property name; the _literal variant takes a C literal.
+        *  The _index variant takes an array index as a property name (e.g. 123 is
+        *  equivalent to the key "123").  The _heapptr variant takes a raw, borrowed
+        *  heap pointer.
+        */
+
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_get_prop(IntPtr ctx, duk_idx_t obj_idx);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_get_prop_string(IntPtr ctx, duk_idx_t obj_idx, string key);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_get_prop_lstring(IntPtr ctx, duk_idx_t obj_idx, byte[] key, duk_size_t key_len);
+#if DUK_USE_PREFER_SIZE
+        // #define duk_get_prop_literal(ctx,obj_idx,key)  duk_get_prop_string((ctx), (obj_idx), (key))
+#else
+        // [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        // public static extern duk_bool_t duk_get_prop_literal_raw(IntPtr ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
+        // #define duk_get_prop_literal(ctx,obj_idx,key)  duk_get_prop_literal_raw((ctx), (obj_idx), (key), sizeof((key)) - 1U)
+#endif
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_get_prop_index(IntPtr ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_get_prop_heapptr(IntPtr ctx, duk_idx_t obj_idx, IntPtr ptr);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_put_prop(IntPtr ctx, duk_idx_t obj_idx);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_put_prop_string(IntPtr ctx, duk_idx_t obj_idx, string key);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_put_prop_lstring(IntPtr ctx, duk_idx_t obj_idx, byte[] key, duk_size_t key_len);
+#if DUK_USE_PREFER_SIZE
+        public static duk_bool_t duk_put_prop_literal(IntPtr ctx, duk_idx_t obj_idx, string key) 
+        {
+            return  duk_put_prop_string(ctx, obj_idx, key);
+        }
+#else
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_put_prop_literal_raw(IntPtr ctx, duk_idx_t obj_idx, byte[] key, duk_size_t key_len);
+        public static duk_bool_t duk_put_prop_literal(IntPtr ctx, duk_idx_t obj_idx, string key)
+        {
+            var bytes = System.Text.Encoding.UTF8.GetBytes(key);
+            return duk_put_prop_literal_raw(ctx, obj_idx, bytes, bytes.Length);
+        }
+#endif
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_put_prop_index(IntPtr ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_put_prop_heapptr(IntPtr ctx, duk_idx_t obj_idx, IntPtr ptr);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_del_prop(IntPtr ctx, duk_idx_t obj_idx);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_del_prop_string(IntPtr ctx, duk_idx_t obj_idx, string key);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_del_prop_lstring(IntPtr ctx, duk_idx_t obj_idx, byte[] key, duk_size_t key_len);
+#if DUK_USE_PREFER_SIZE
+        // #define duk_del_prop_literal(ctx,obj_idx,key)  duk_del_prop_string((ctx), (obj_idx), (key))
+#else
+        // [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        // public static extern duk_bool_t duk_del_prop_literal_raw(IntPtr ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
+        // #define duk_del_prop_literal(ctx,obj_idx,key)  duk_del_prop_literal_raw((ctx), (obj_idx), (key), sizeof((key)) - 1U)
+#endif
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_del_prop_index(IntPtr ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_del_prop_heapptr(IntPtr ctx, duk_idx_t obj_idx, IntPtr ptr);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_has_prop(IntPtr ctx, duk_idx_t obj_idx);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_has_prop_string(IntPtr ctx, duk_idx_t obj_idx, string key);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_has_prop_lstring(IntPtr ctx, duk_idx_t obj_idx, byte[] key, duk_size_t key_len);
+#if DUK_USE_PREFER_SIZE
+        // #define duk_has_prop_literal(ctx,obj_idx,key)  duk_has_prop_string((ctx), (obj_idx), (key))
+#else
+        // [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        // public static extern duk_bool_t duk_has_prop_literal_raw(IntPtr ctx, duk_idx_t obj_idx, byte[] key, duk_size_t key_len);
+        // #define duk_has_prop_literal(ctx,obj_idx,key)  duk_has_prop_literal_raw((ctx), (obj_idx), (key), sizeof((key)) - 1U)
+#endif
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_has_prop_index(IntPtr ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_has_prop_heapptr(IntPtr ctx, duk_idx_t obj_idx, IntPtr ptr);
+
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void duk_get_prop_desc(IntPtr ctx, duk_idx_t obj_idx, duk_uint_t flags);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void duk_def_prop(IntPtr ctx, duk_idx_t obj_idx, duk_uint_t flags);
+
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_get_global_string(IntPtr ctx, string key);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_get_global_lstring(IntPtr ctx, byte[] key, duk_size_t key_len);
+#if DUK_USE_PREFER_SIZE
+        // #define duk_get_global_literal(ctx,key)  duk_get_global_string((ctx), (key))
+#else
+        // [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        // public static extern duk_bool_t duk_get_global_literal_raw(IntPtr ctx, byte[] key, duk_size_t key_len);
+        // #define duk_get_global_literal(ctx,key)  duk_get_global_literal_raw((ctx), (key), sizeof((key)) - 1U)
+#endif
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_get_global_heapptr(IntPtr ctx, IntPtr ptr);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_put_global_string(IntPtr ctx, string key);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_put_global_lstring(IntPtr ctx, byte[] key, duk_size_t key_len);
+#if DUK_USE_PREFER_SIZE
+        // #define duk_put_global_literal(ctx,key)  duk_put_global_string((ctx), (key))
+#else
+        // [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        // public static extern duk_bool_t duk_put_global_literal_raw(IntPtr ctx, byte[] key, duk_size_t key_len);
+        // #define duk_put_global_literal(ctx,key)  duk_put_global_literal_raw((ctx), (key), sizeof((key)) - 1U)
+#endif
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_put_global_heapptr(IntPtr ctx, IntPtr ptr);
 
         /*
          *  Inspection
