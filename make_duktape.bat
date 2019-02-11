@@ -11,13 +11,13 @@ mkdir x86
 pushd x64
 cmake -G "Visual Studio 15 2017 Win64" ..\..
 msbuild duktape.sln /p:Configuration=Release
-xcopy /Y Release/duktape.dll ..\..\unity\Assets\Plugins\x64
+xcopy /Y .\Release\duktape.dll ..\..\unity\Assets\Plugins\x64
 popd
 
 pushd x86
 cmake -G "Visual Studio 15 2017" ..\..
 msbuild duktape.sln /p:Configuration=Release
-xcopy /Y Release/duktape.dll ..\..\unity\Assets\Plugins\x86
+xcopy /Y .\Release\duktape.dll ..\..\unity\Assets\Plugins\x86
 popd
 
 popd

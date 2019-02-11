@@ -6,7 +6,7 @@
  *  comments.  Other parts of the header are Duktape internal and related to
  *  e.g. platform/compiler/feature detection.
  *
- *  Git commit dacf4cc8fd0c451f29376179e95aa312c8ac2a4e (dacf4cc-dirty).
+ *  Git commit 79cabd4e702be54c73fd9b9128300034767e1b17 (79cabd4-dirty).
  *  Git branch master.
  *
  *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and
@@ -171,8 +171,8 @@
  * which Duktape snapshot was used.  Not available in the ECMAScript
  * environment.
  */
-#define DUK_GIT_COMMIT                    "dacf4cc8fd0c451f29376179e95aa312c8ac2a4e"
-#define DUK_GIT_DESCRIBE                  "dacf4cc-dirty"
+#define DUK_GIT_COMMIT                    "79cabd4e702be54c73fd9b9128300034767e1b17"
+#define DUK_GIT_DESCRIBE                  "79cabd4-dirty"
 #define DUK_GIT_BRANCH                    "master"
 
 /* External duk_config.h provides platform/compiler/OS dependent
@@ -1402,6 +1402,13 @@ DUK_EXTERNAL_DECL duk_double_t duk_components_to_time(duk_context *ctx, duk_time
 #if defined(DUK_USE_ROM_OBJECTS) && defined(DUK_USE_HEAPPTR16)
 DUK_EXTERNAL_DECL const void * const duk_rom_compressed_pointers[];
 #endif
+
+/*
+ * extra: module-node
+ */
+
+DUK_EXTERNAL_DECL duk_ret_t duk_module_node_peval_main(duk_context *ctx, const char *path);
+DUK_EXTERNAL_DECL void duk_module_node_init(duk_context *ctx);
 
 /*
  *  C++ name mangling
