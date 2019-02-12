@@ -1409,6 +1409,7 @@ DUK_EXTERNAL_DECL const void * const duk_rom_compressed_pointers[];
 
 DUK_EXTERNAL_DECL duk_ret_t duk_module_node_peval_main(duk_context *ctx, const char *path);
 DUK_EXTERNAL_DECL void duk_module_node_init(duk_context *ctx);
+DUK_EXTERNAL_DECL void *duk_test_size(duk_size_t *out_size);
 
 /*
  *  C++ name mangling

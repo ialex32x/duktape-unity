@@ -4,15 +4,6 @@ using UnityEngine;
 
 namespace Duktape
 {
-    using duk_size_t = System.Int32;
-    using duk_int_t = System.Int32;
-    using duk_idx_t = System.Int32;
-    using duk_uint_t = System.UInt32;
-    using duk_uarridx_t = System.UInt32;
-    using duk_bool_t = System.Boolean;
-    using duk_double_t = System.Double;
-    using duk_errcode_t = System.Int32;
-    using duk_codepoint_t = System.Int32;
     using duk_ret_t = System.Int32;
 
     public static partial class DuktapeAux

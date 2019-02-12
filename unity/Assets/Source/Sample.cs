@@ -8,6 +8,10 @@ public class Sample : MonoBehaviour
 {
     DuktapeHeap heap = new DuktapeHeap();
 
+    void Awake()
+    {
+    }
+
     // Start is called before the first frame update
     void Start()
     {

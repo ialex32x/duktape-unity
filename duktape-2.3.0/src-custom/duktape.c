@@ -46962,6 +46962,14 @@ DUK_EXTERNAL duk_ret_t duk_module_node_peval_main(duk_context *ctx, const char *
 #endif
 }
 
+DUK_EXTERNAL void *duk_test_size(duk_size_t *out_size) {
+	static unsigned char *buffer = "testing";
+	if (out_size != NULL) {
+		*out_size = 123456;
+	}
+	return (void *)buffer;
+}
+
 DUK_EXTERNAL void duk_module_node_init(duk_context *ctx) {
 	/*
 	 *  Stack: [ ... options ] => [ ... ]

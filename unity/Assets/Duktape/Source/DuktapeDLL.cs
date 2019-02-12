@@ -1,3 +1,10 @@
+/**
+
+void *duk_xxx(duk_context *ctx, duk_size_t *out_size);
+一般被映射为
+IntPtr duk_xxx(duk_context *ctx, ref UIntPtr out_size); // 缺点是不能对应 C 中传 NULL 的情况.
+
+ */
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -5,7 +12,7 @@ using AOT;
 
 namespace Duktape
 {
-    using duk_size_t = System.Int32;
+    using duk_size_t = System.UIntPtr;
     using duk_int_t = System.Int32;
     using duk_idx_t = System.Int32;
     using duk_uint_t = System.UInt32;
@@ -497,13 +504,13 @@ namespace Duktape
         public static extern IntPtr duk_get_string(IntPtr ctx, duk_idx_t idx); 
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern byte[] duk_get_lstring(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_len); // fixme
+        public static extern IntPtr duk_get_lstring(IntPtr ctx, duk_idx_t idx, out duk_size_t out_len); // fixed
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern byte[] duk_get_buffer(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_size); // fixme
+        public static extern IntPtr duk_get_buffer(IntPtr ctx, duk_idx_t idx, out duk_size_t out_size); // fixed
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern byte[] duk_get_buffer_data(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_size); // fixme
+        public static extern IntPtr duk_get_buffer_data(IntPtr ctx, duk_idx_t idx, out duk_size_t out_size); // fixed
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr duk_get_pointer(IntPtr ctx, duk_idx_t idx);
@@ -515,7 +522,7 @@ namespace Duktape
         public static extern IntPtr duk_get_context(IntPtr ctx, duk_idx_t idx);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern byte[] duk_get_heapptr(IntPtr ctx, duk_idx_t idx);
+        public static extern IntPtr duk_get_heapptr(IntPtr ctx, duk_idx_t idx);
 
         /*
         *  Other state related functions
@@ -750,13 +757,13 @@ namespace Duktape
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr duk_require_string(IntPtr ctx, duk_idx_t idx); 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern byte[] duk_require_lstring(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_len); // fixme
+        public static extern IntPtr duk_require_lstring(IntPtr ctx, duk_idx_t idx, out duk_size_t out_len); // fixme
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void duk_require_object(IntPtr ctx, duk_idx_t idx);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern byte[] duk_require_buffer(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_size); // fixme
+        public static extern IntPtr duk_require_buffer(IntPtr ctx, duk_idx_t idx, out duk_size_t out_size); // fixme
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern byte[] duk_require_buffer_data(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_size); // fixme
+        public static extern IntPtr duk_require_buffer_data(IntPtr ctx, duk_idx_t idx, out duk_size_t out_size); // fixme
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr duk_require_pointer(IntPtr ctx, duk_idx_t idx);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -815,9 +822,9 @@ namespace Duktape
         public static extern IntPtr duk_to_string(IntPtr ctx, duk_idx_t idx);
         
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern byte[] duk_to_lstring(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_len); // fixme
+        public static extern IntPtr duk_to_lstring(IntPtr ctx, duk_idx_t idx, out duk_size_t out_len); // fixed
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern byte[] duk_to_buffer_raw(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_size, duk_uint_t flags); // fixme
+        public static extern IntPtr duk_to_buffer_raw(IntPtr ctx, duk_idx_t idx, out duk_size_t out_size, duk_uint_t flags); // fixed
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr duk_to_pointer(IntPtr ctx, duk_idx_t idx);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -829,28 +836,29 @@ namespace Duktape
         public static readonly duk_uint_t DUK_BUF_MODE_DYNAMIC = 1;   /* internal: request dynamic buffer result */
         public static readonly duk_uint_t DUK_BUF_MODE_DONTCARE = 2;   /* internal: don't care about fixed/dynamic nature */
 
-        public static byte[] duk_to_buffer(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_size)
+        public static IntPtr duk_to_buffer(IntPtr ctx, duk_idx_t idx, out duk_size_t out_size)
         {
-            return duk_to_buffer_raw((ctx), (idx), ref (out_size), DUK_BUF_MODE_DONTCARE);
+            return duk_to_buffer_raw((ctx), (idx), out (out_size), DUK_BUF_MODE_DONTCARE);
         }
 
-        public static byte[] duk_to_fixed_buffer(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_size)
+        public static IntPtr duk_to_fixed_buffer(IntPtr ctx, duk_idx_t idx, out duk_size_t out_size)
         {
-            return duk_to_buffer_raw((ctx), (idx), ref (out_size), DUK_BUF_MODE_FIXED);
+            return duk_to_buffer_raw((ctx), (idx), out (out_size), DUK_BUF_MODE_FIXED);
         }
 
-        public static byte[] duk_to_dynamic_buffer(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_size)
+        public static IntPtr duk_to_dynamic_buffer(IntPtr ctx, duk_idx_t idx, out duk_size_t out_size)
         {
-            return duk_to_buffer_raw((ctx), (idx), ref (out_size), DUK_BUF_MODE_DYNAMIC);
+            return duk_to_buffer_raw((ctx), (idx), out (out_size), DUK_BUF_MODE_DYNAMIC);
         }
 
         /* safe variants of a few coercion operations */
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr duk_safe_to_lstring(IntPtr ctx, duk_idx_t idx, /* duk_size_t* */IntPtr out_len); // fixme
+        public static extern IntPtr duk_safe_to_lstring(IntPtr ctx, duk_idx_t idx, out duk_size_t out_len); // fixed
 
         public static string duk_safe_to_string(IntPtr ctx, duk_idx_t idx)
         {
-            var ptr = duk_safe_to_lstring((ctx), (idx), IntPtr.Zero);
+            var len = UIntPtr.Zero;
+            var ptr = duk_safe_to_lstring((ctx), (idx), out len);
             var str = Marshal.PtrToStringAnsi(ptr);
             // return System.Text.Encoding.UTF8.GetString(bytes);
             return str;
@@ -870,20 +878,20 @@ namespace Duktape
         */
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr duk_base64_encode(IntPtr ctx, duk_idx_t idx); // fixme
+        public static extern string duk_base64_encode(IntPtr ctx, duk_idx_t idx); // fixed
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void duk_base64_decode(IntPtr ctx, duk_idx_t idx);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr duk_hex_encode(IntPtr ctx, duk_idx_t idx); // fixme
+        public static extern string duk_hex_encode(IntPtr ctx, duk_idx_t idx); // fixed
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void duk_hex_decode(IntPtr ctx, duk_idx_t idx);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr duk_json_encode(IntPtr ctx, duk_idx_t idx); // fixme
+        public static extern string duk_json_encode(IntPtr ctx, duk_idx_t idx); // fixed
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void duk_json_decode(IntPtr ctx, duk_idx_t idx);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr duk_buffer_to_string(IntPtr ctx, duk_idx_t idx); // fixme
+        public static extern string duk_buffer_to_string(IntPtr ctx, duk_idx_t idx); // fixed
 
         /*
         *  Buffer
@@ -892,7 +900,7 @@ namespace Duktape
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr duk_resize_buffer(IntPtr ctx, duk_idx_t idx, duk_size_t new_size); // fixme
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr duk_steal_buffer(IntPtr ctx, duk_idx_t idx, ref duk_size_t out_size); // fixme
+        public static extern IntPtr duk_steal_buffer(IntPtr ctx, duk_idx_t idx, out duk_size_t out_size); // fixed
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void duk_config_buffer(IntPtr ctx, duk_idx_t idx, IntPtr ptr, duk_size_t len);
 
@@ -937,6 +945,11 @@ namespace Duktape
 #else
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_put_prop_literal_raw(IntPtr ctx, duk_idx_t obj_idx, byte[] key, duk_size_t key_len);
+        public static duk_bool_t duk_put_prop_literal_raw(IntPtr ctx, duk_idx_t obj_idx, byte[] key, int key_len)
+        {  
+            return duk_put_prop_literal_raw(ctx, obj_idx, key, (duk_size_t)(ulong)key_len);
+        }
+
         public static duk_bool_t duk_put_prop_literal(IntPtr ctx, duk_idx_t obj_idx, string key)
         {
             var bytes = System.Text.Encoding.UTF8.GetBytes(key);
@@ -1064,9 +1077,9 @@ namespace Duktape
          */
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_put_function_list(IntPtr ctx, duk_idx_t obj_idx, ref duk_function_list_entry funcs);
+        public static extern void duk_put_function_list(IntPtr ctx, duk_idx_t obj_idx, ref duk_function_list_entry funcs); // fixme
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_put_number_list(IntPtr ctx, duk_idx_t obj_idx, ref duk_number_list_entry numbers);
+        public static extern void duk_put_number_list(IntPtr ctx, duk_idx_t obj_idx, ref duk_number_list_entry numbers); // fixme
 
         /*
          *  Object operations
@@ -1168,9 +1181,19 @@ namespace Duktape
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_int_t duk_eval_raw(IntPtr ctx, byte[] src_buffer, duk_size_t src_length, duk_uint_t flags);
+        
+        public static duk_int_t duk_eval_raw(IntPtr ctx, byte[] src_buffer, int src_length, duk_uint_t flags)
+        {
+            return duk_eval_raw(ctx, src_buffer, (duk_size_t)(ulong)src_length, flags);
+        }
+
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_int_t duk_compile_raw(IntPtr ctx, byte[] src_buffer, duk_size_t src_length, duk_uint_t flags);
+        public static duk_int_t duk_compile_raw(IntPtr ctx, byte[] src_buffer, int src_length, duk_uint_t flags)
+        {
+            return duk_compile_raw(ctx, src_buffer, (duk_size_t)(ulong)src_length, flags);
+        }
 
         /* plain */
         public static duk_int_t duk_eval(IntPtr ctx)
@@ -1363,5 +1386,8 @@ namespace Duktape
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void duk_module_node_init(IntPtr ctx);
+
+        // [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        // public static extern IntPtr duk_test_size(out duk_size_t out_size);
     }
 }
