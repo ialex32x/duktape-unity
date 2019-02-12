@@ -668,9 +668,9 @@ namespace Duktape
         public static extern void duk_push_pointer(IntPtr ctx, IntPtr p);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr duk_push_sprintf(IntPtr ctx, string fmt, params object[] args);
-        // [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        // public static extern IntPtr duk_push_vsprintf(IntPtr ctx, string fmt, va_list ap);
+        public static extern IntPtr duk_push_sprintf(IntPtr ctx, string fmt, params object[] args); // fixme
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr duk_push_vsprintf(IntPtr ctx, string fmt, params object[] ap); // fixme
 
         // /* duk_push_literal() may evaluate its argument (a C string literal) more than
         // * once on purpose.  When speed is preferred, sizeof() avoids an unnecessary
