@@ -3,6 +3,21 @@ using UnityEngine;
 
 namespace Duktape
 {
+    // 临时
+    public class FakeFileManager : IFileManager
+    {
+        public bool Exists(string path)
+        {
+            return System.IO.File.Exists(path);
+        }
+
+        public string LoadText(string path)
+        {
+            return System.IO.File.ReadAllText(path);
+        }
+    }
+
+    // 临时
     public class DuktapeHeap
     {
         public readonly IntPtr ctx;
@@ -10,8 +25,39 @@ namespace Duktape
         public DuktapeHeap()
         {
             this.ctx = DuktapeDLL.duk_create_heap_default();
-            DuktapeAux.duk_open(this.ctx);
+            DuktapeAux.duk_open(this.ctx, new FakeFileManager());
             DuktapeAux.duk_open_module(this.ctx);
+            DuktapeAux.AddSearchPath("Assets/polyfills");
+            DuktapeAux.AddSearchPath("Assets/Generated");
+        }
+
+        public void EvalFile(string filename)
+        {
+            var path = DuktapeAux.ResolvePath(filename);
+            var source = DuktapeAux.fileManager.LoadText(path);
+            // var err = DuktapeDLL.duk_module_node_peval_main(ctx, path);
+            var err = DuktapeDLL.duk_peval_string(ctx, source);
+            // var err = DuktapeDLL.duk_peval_string_noresult(ctx, source);
+            if (err != 0)
+            {
+                Debug.LogErrorFormat("eval error: {0}", DuktapeDLL.duk_safe_to_string(ctx, -1));
+            }
+            DuktapeDLL.duk_pop(ctx);
+        }
+
+        public void EvalMain(string filename)
+        {
+            var path = DuktapeAux.ResolvePath(filename);
+            var source = DuktapeAux.fileManager.LoadText(path);
+            DuktapeDLL.duk_push_string(ctx, source);
+            var err = DuktapeDLL.duk_module_node_peval_main(ctx, path);
+            // var err = DuktapeDLL.duk_peval(ctx);
+            // var err = DuktapeDLL.duk_peval_string_noresult(ctx, source);
+            if (err != 0)
+            {
+                Debug.LogErrorFormat("eval main error: {0}", DuktapeDLL.duk_safe_to_string(ctx, -1));
+            }
+            DuktapeDLL.duk_pop(ctx);
         }
 
         public void Test()

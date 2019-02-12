@@ -8,55 +8,50 @@ public class Sample : MonoBehaviour
 {
     DuktapeHeap heap = new DuktapeHeap();
 
-    public static string GetFullPath(string path, string basePath, char sp)
-    {
-        var items = System.IO.Path.Combine(basePath, path).Split(sp);
-        if (items.Length < 2)
-        {
-            return path;
-        }
-        var array = new List<string>(items.Length);
-        for (var i = 0; i < items.Length; i++)
-        {
-            var item = items[i];
-            switch (item)
-            {
-                case ".": break;
-                case "..": array.RemoveAt(array.Count - 1); break;
-                default: array.Add(item); break;
-            }
-        }
-        return System.IO.Path.Combine(array.ToArray());
-    }
-
     // Start is called before the first frame update
     void Start()
     {
-        var path = System.IO.Path.Combine("D1", "D2", "D3\\D4", ".\\.\\..\\..\\D5", "..\\..\\..\\..\\..\\..\\", "File.txt");
-        Debug.Log("!!! " + path);
-        var fullpath = Sample.GetFullPath(path, "C:\\Documents\\julio\\files\\private\\", '\\');
-        Debug.Log("!!! " + fullpath);
-
         heap.Test();
         DuktapeDLL.duk_push_string(heap.ctx, string.Format("test {0} {1} native varg", "hello", 123));
         var str = DuktapeAux.duk_to_string(heap.ctx, -1);
         Debug.LogFormat("testcase[1]: {0} ## {1}", str, DuktapeDLL.duk_get_top(heap.ctx));
         DuktapeDLL.duk_pop(heap.ctx);
-        var err = DuktapeDLL.duk_peval_string_noresult(heap.ctx, @"
-print(123);
-var test = new Test();
-test.foo();
-// test = undefined;
-Test.static_foo();
-// print(typeof Duptake);
-var pig = require('./game/base/pig');
-print(pig);
-        ");
-        if (err != 0)
-        {
-            Debug.LogError("error");
-        }
-        DuktapeDLL.duk_gc(heap.ctx, DuktapeDLL.DUK_GC_COMPACT);
+
+        heap.EvalFile("console-minimal.js");
+        heap.EvalMain("main.js");
+        // heap.EvalFile("test.js");
+//         var err = DuktapeDLL.duk_peval_string_noresult(heap.ctx, @"
+// // if (typeof console === 'undefined') {
+// //     Object.defineProperty(this, 'console', {
+// //         value: {}, writable: true, enumerable: false, configurable: true
+// //     });
+// // }
+// // if (typeof console.log === 'undefined') {
+// //     (function () {
+// //         var origPrint = print;  // capture in closure in case changed later
+// //         Object.defineProperty(this.console, 'log', {
+// //             value: function () {
+// //                 var strArgs = Array.prototype.map.call(arguments, function (v) { return String(v); });
+// //                 origPrint(Array.prototype.join.call(strArgs, ' '));
+// //             }, writable: true, enumerable: false, configurable: true
+// //         });
+// //     })();
+// // }
+
+// console.log('haha');
+// var test = new Test();
+// test.foo();
+// // test = undefined;
+// Test.static_foo();
+// // print(typeof Duptake);
+// // var pig = require('./game/base/pig');
+// // print(pig);
+//         ");
+//         if (err != 0)
+//         {
+//             Debug.LogError("error");
+//         }
+//         DuktapeDLL.duk_gc(heap.ctx, DuktapeDLL.DUK_GC_COMPACT);
     }
 
     void OnDestroy()

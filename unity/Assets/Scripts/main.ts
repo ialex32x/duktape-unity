@@ -4,4 +4,4 @@ let foo = new Foo(12)
 
 foo.greet()
 
-UnityEngine.Debug.Log("greeting")
+// UnityEngine.Debug.Log("greeting")
