@@ -1,16 +1,55 @@
-# prerequisities
-pip install PyYAML
 
-cd duktape-2.3.0
-python .\tools\configure.py --source-directory src-input --output-directory src-custom --config-metadata config --dll -DDUK_USE_FATAL_HANDLER
-cd ..
-mkdir build
-mkdir x86
-cd x86
-cmake ..
-cd ..
-mkdir x64
-cd x64
-cmake -A 64 ..
-cd ..
+# 简介
+在 unity 中集成和封装 duktape.
+使你能动态执行 javascript/typescript. 
+借助 typescript, 提供完整的类型检查, 以及代码提示.
 
+# 目标特性 (未实现)
+* 静态生成 C# to js 绑定, 自动生成对应 d.ts 声明 
+* 支持 nodejs 风格的模块 (简单实现)
+
+# Example
+base/a.ts
+```ts
+
+export class A {
+    private go: GameObject
+    constructor () {
+        this.go = new GameObject("test go")
+        this.go.transform.localPosition = new Vector3(1, 2, 3)
+    }
+
+    square() {
+        console.log("A.square")
+    }
+}
+
+```
+
+base/b.ts
+```ts
+import { A } from "./a"
+
+export class B extends A {
+
+    static foo() {
+
+    }
+
+    square() {
+        super.square()
+        console.log("A.square")
+    }
+}
+
+```
+
+main.ts
+```ts
+import { B } from "base/b"
+
+B.foo()
+let b = new B()
+b.square()
+
+```
