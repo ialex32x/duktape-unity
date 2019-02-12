@@ -27,8 +27,6 @@ namespace Duktape
             this.ctx = DuktapeDLL.duk_create_heap_default();
             DuktapeAux.duk_open(this.ctx, new FakeFileManager());
             DuktapeAux.duk_open_module(this.ctx);
-            DuktapeAux.AddSearchPath("Assets/polyfills");
-            DuktapeAux.AddSearchPath("Assets/Generated");
         }
 
         public void EvalFile(string filename)

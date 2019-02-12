@@ -2,8 +2,8 @@
     "compilerOptions": {
         "module": "commonjs",
         "target": "es5",
-        "sourceRoot": "Assets/Scripts",
-        "outDir": "Assets/Generated",
+        "sourceRoot": "Assets/Scripts/Source",
+        "outDir": "Assets/Scripts/Generated",
         "typeRoots": [
             "Assets/**/Typings"
         ],
