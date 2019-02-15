@@ -36,6 +36,7 @@ var Foo = /** @class */ (function (_super) {
         console.log("static foo");
     };
     Foo.prototype.greet = function () {
+        _super.prototype.greet.call(this);
         console.log("hello, I am " + this.name + ", " + this.age + ".");
     };
     return Foo;

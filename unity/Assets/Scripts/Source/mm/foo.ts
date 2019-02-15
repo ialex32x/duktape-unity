@@ -19,6 +19,7 @@ export class Foo extends FooBase {
     }
 
     greet() {
+        super.greet()
         console.log(`hello, I am ${this.name}, ${this.age}.`)
     }
 }

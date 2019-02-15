@@ -1,8 +1,9 @@
 using System;
-using UnityEngine;
 
 namespace Duktape
 {
+    using UnityEngine;
+    
     /// 持有脚本对象的引用
     public abstract class DuktapeValue : IDisposable
     {

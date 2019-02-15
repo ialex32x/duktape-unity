@@ -1,3 +1,4 @@
+import { Foo } from "../Source/mm/foo";
 
 declare namespace UnityEngine {
     class Debug {
@@ -7,7 +8,13 @@ declare namespace UnityEngine {
         static Error(msg: string)
     }
 
-    class GameObject {
+    class Object {
+        constructor()
+        Foo()
+        static Destroy(v: Object)
+    }
+
+    class GameObject extends Object {
         constructor()
         SetActive(v: boolean)
     }

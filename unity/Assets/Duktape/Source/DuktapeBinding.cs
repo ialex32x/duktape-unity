@@ -21,6 +21,22 @@ namespace Duktape
             return 0;
         }
 
+        public static bool duk_get_any(IntPtr ctx, int idx, out object o)
+        {
+            if (DuktapeDLL.duk_get_prop_string(ctx, -1, DuktapeVM.OBJ_PROP_NATIVE))
+            {
+                var id = DuktapeDLL.duk_get_int(ctx, -1);
+                DuktapeDLL.duk_pop(ctx);
+                return DuktapeVM.GetObjectCache(ctx).TryGetValue(id, out o);
+            }
+            else 
+            {
+                DuktapeDLL.duk_pop(ctx);
+            }
+            o = null;
+            return false;
+        }
+
         // variant push
         public static void duk_push_any(IntPtr ctx, object o)
         {
@@ -74,12 +90,16 @@ namespace Duktape
             // Debug.LogFormat("end namespace {0}", DuktapeDLL.duk_get_top(ctx));
         }
 
-        protected static void duk_begin_class(IntPtr ctx, Type type, DuktapeDLL.duk_c_function ctor, Type super)
+        protected static void duk_begin_class(IntPtr ctx, Type type, DuktapeDLL.duk_c_function ctor)
         {
             var typename = type.Name;
             // Debug.LogFormat("begin class {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_push_c_function(ctx, ctor, DuktapeDLL.DUK_VARARGS); // [ctor]
             DuktapeDLL.duk_dup(ctx, -1);
+            // Debug.LogFormat("begin check {0}", DuktapeDLL.duk_get_top(ctx));
+            DuktapeDLL.duk_dup(ctx, -1);
+            DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeVM.duk_ref(ctx)));
+            // Debug.LogFormat("end check {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_put_prop_string(ctx, -3, typename);
             DuktapeDLL.duk_push_object(ctx); // [ctor, prototype]
             DuktapeDLL.duk_dup_top(ctx); // [ctor, prototype, prototype]
