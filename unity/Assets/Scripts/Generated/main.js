@@ -6,4 +6,6 @@ foo.greet();
 // UnityEngine.Debug.Log("greeting")
 var go = new UnityEngine.GameObject();
 go.SetActive(false);
+go.Foo();
+// UnityEngine.Object.Destroy(go)
 //# sourceMappingURL=main.js.map

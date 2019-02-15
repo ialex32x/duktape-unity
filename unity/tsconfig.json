@@ -5,7 +5,8 @@
         "sourceRoot": "Assets/Scripts/Source",
         "outDir": "Assets/Scripts/Generated",
         "typeRoots": [
-            "Assets/**/Typings"
+            "Assets/Duktape/Typings",
+            "Assets/Scripts/Typings"
         ],
         "moduleResolution": "node",
         "types": [

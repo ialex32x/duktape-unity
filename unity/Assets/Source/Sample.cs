@@ -12,18 +12,16 @@ public class Sample : MonoBehaviour
     {
         var temp = new List<Action<IntPtr>>
         {
+            Duktape.UnityEngine_Object.reg,
             Duktape.UnityEngine_GameObject.reg,
         };
-        vm.Initialize(new FakeFileSystem(), temp, null, null);
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        vm.AddSearchPath("Assets/Scripts/polyfills");
-        vm.AddSearchPath("Assets/Scripts/Generated");
-        vm.EvalFile("console-minimal.js");
-        vm.EvalMain("main.js");
+        vm.Initialize(new FakeFileSystem(), temp, null, () =>
+        {
+            vm.AddSearchPath("Assets/Scripts/polyfills");
+            vm.AddSearchPath("Assets/Scripts/Generated");
+            vm.EvalFile("console-minimal.js");
+            vm.EvalMain("main.js");
+        });
     }
 
     void OnDestroy()
