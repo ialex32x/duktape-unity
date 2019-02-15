@@ -5,3 +5,5 @@ let foo = new Foo(12)
 foo.greet()
 
 // UnityEngine.Debug.Log("greeting")
+let go = new UnityEngine.GameObject()
+go.SetActive(false)

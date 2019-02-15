@@ -37,7 +37,7 @@ namespace Duktape
 
         public void Push(IntPtr ctx)
         {
-            DuktapeAux.duk_push_ref(ctx, this._refid);
+            DuktapeVM.duk_push_ref(ctx, this._refid);
         }
 
         public override int GetHashCode()

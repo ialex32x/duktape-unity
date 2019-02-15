@@ -12,13 +12,13 @@ public class Sample : MonoBehaviour
     {
         var ctx = vm.context.rawValue;
         DuktapeDLL.duk_push_global_object(ctx);
-        DuktapeDLL.duk_push_c_function(ctx, TestConstructor, 0);
-        DuktapeDLL.duk_push_object(ctx);
+        DuktapeDLL.duk_push_c_function(ctx, TestConstructor, 0); // ctor, 
+        DuktapeDLL.duk_push_object(ctx); // ctor, prototype
         DuktapeDLL.duk_push_c_function(ctx, TestFinalizer, 1);
         DuktapeDLL.duk_set_finalizer(ctx, -2);
         DuktapeDLL.duk_push_c_function(ctx, TestFoo, 0);
-        DuktapeDLL.duk_put_prop_string(ctx, -2, "foo");
-        DuktapeDLL.duk_put_prop_string(ctx, -2, "prototype");
+        DuktapeDLL.duk_put_prop_string(ctx, -2, "foo"); 
+        DuktapeDLL.duk_put_prop_string(ctx, -2, "prototype"); // ctor
         // DuktapeDLL.duk_set_prototype(ctx, -2);
         DuktapeDLL.duk_push_c_function(ctx, TestStaticFoo, 0);
         DuktapeDLL.duk_put_prop_string(ctx, -2, "static_foo");
@@ -64,9 +64,12 @@ public class Sample : MonoBehaviour
 
     void Awake()
     {
-        Debug.Log(typeof(GameObject).FullName);
-        Debug.Log(typeof(GameObject).Namespace);
         vm.Initialize(new FakeFileSystem(), null, null);
+
+        var ctx = vm.context.rawValue;
+        Duktape.DuktapeDLL.duk_push_global_object(ctx);
+        Duktape.UnityEngine_GameObject.reg(ctx);
+        Duktape.DuktapeDLL.duk_pop(ctx);
     }
 
     // Start is called before the first frame update

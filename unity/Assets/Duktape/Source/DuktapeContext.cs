@@ -55,8 +55,7 @@ namespace Duktape
 
         public void GC(int refid)
         {
-            // fixme 
-
+            // fixme 加入回收队列
         }
     }
 }

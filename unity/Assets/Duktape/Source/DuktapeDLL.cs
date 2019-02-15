@@ -171,6 +171,54 @@ namespace Duktape
         public static readonly duk_int_t DUK_LEVEL_DDEBUG = 1;
         public static readonly duk_int_t DUK_LEVEL_DDDEBUG = 2;
 
+        /* Flags for duk_def_prop() and its variants; base flags + a lot of convenience shorthands */
+        public static readonly duk_uint_t DUK_DEFPROP_WRITABLE = (1U << 0);    /* set writable (effective if DUK_DEFPROP_HAVE_WRITABLE set) */
+        public static readonly duk_uint_t DUK_DEFPROP_ENUMERABLE = (1U << 1);    /* set enumerable (effective if DUK_DEFPROP_HAVE_ENUMERABLE set) */
+        public static readonly duk_uint_t DUK_DEFPROP_CONFIGURABLE = (1U << 2);    /* set configurable (effective if DUK_DEFPROP_HAVE_CONFIGURABLE set) */
+        public static readonly duk_uint_t DUK_DEFPROP_HAVE_WRITABLE = (1U << 3);    /* set/clear writable */
+        public static readonly duk_uint_t DUK_DEFPROP_HAVE_ENUMERABLE = (1U << 4);    /* set/clear enumerable */
+        public static readonly duk_uint_t DUK_DEFPROP_HAVE_CONFIGURABLE = (1U << 5);    /* set/clear configurable */
+        public static readonly duk_uint_t DUK_DEFPROP_HAVE_VALUE = (1U << 6);    /* set value (given on value stack) */
+        public static readonly duk_uint_t DUK_DEFPROP_HAVE_GETTER = (1U << 7);    /* set getter (given on value stack) */
+        public static readonly duk_uint_t DUK_DEFPROP_HAVE_SETTER = (1U << 8);    /* set setter (given on value stack) */
+        public static readonly duk_uint_t DUK_DEFPROP_FORCE = (1U << 9);    /* force change if possible, may still fail for e.g. virtual properties */
+        public static readonly duk_uint_t DUK_DEFPROP_SET_WRITABLE = (DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE);
+        public static readonly duk_uint_t DUK_DEFPROP_CLEAR_WRITABLE = DUK_DEFPROP_HAVE_WRITABLE;
+        public static readonly duk_uint_t DUK_DEFPROP_SET_ENUMERABLE = (DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_ENUMERABLE);
+        public static readonly duk_uint_t DUK_DEFPROP_CLEAR_ENUMERABLE = DUK_DEFPROP_HAVE_ENUMERABLE;
+        public static readonly duk_uint_t DUK_DEFPROP_SET_CONFIGURABLE = (DUK_DEFPROP_HAVE_CONFIGURABLE | DUK_DEFPROP_CONFIGURABLE);
+        public static readonly duk_uint_t DUK_DEFPROP_CLEAR_CONFIGURABLE = DUK_DEFPROP_HAVE_CONFIGURABLE;
+        public static readonly duk_uint_t DUK_DEFPROP_W = DUK_DEFPROP_WRITABLE;
+        public static readonly duk_uint_t DUK_DEFPROP_E = DUK_DEFPROP_ENUMERABLE;
+        public static readonly duk_uint_t DUK_DEFPROP_C = DUK_DEFPROP_CONFIGURABLE;
+        public static readonly duk_uint_t DUK_DEFPROP_WE = (DUK_DEFPROP_WRITABLE | DUK_DEFPROP_ENUMERABLE);
+        public static readonly duk_uint_t DUK_DEFPROP_WC = (DUK_DEFPROP_WRITABLE | DUK_DEFPROP_CONFIGURABLE);
+        public static readonly duk_uint_t DUK_DEFPROP_WEC = (DUK_DEFPROP_WRITABLE | DUK_DEFPROP_ENUMERABLE | DUK_DEFPROP_CONFIGURABLE);
+        public static readonly duk_uint_t DUK_DEFPROP_HAVE_W = DUK_DEFPROP_HAVE_WRITABLE;
+        public static readonly duk_uint_t DUK_DEFPROP_HAVE_E = DUK_DEFPROP_HAVE_ENUMERABLE;
+        public static readonly duk_uint_t DUK_DEFPROP_HAVE_C = DUK_DEFPROP_HAVE_CONFIGURABLE;
+        public static readonly duk_uint_t DUK_DEFPROP_HAVE_WE = (DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_HAVE_ENUMERABLE);
+        public static readonly duk_uint_t DUK_DEFPROP_HAVE_WC = (DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_HAVE_CONFIGURABLE);
+        public static readonly duk_uint_t DUK_DEFPROP_HAVE_WEC = (DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_HAVE_CONFIGURABLE);
+        public static readonly duk_uint_t DUK_DEFPROP_SET_W = DUK_DEFPROP_SET_WRITABLE;
+        public static readonly duk_uint_t DUK_DEFPROP_SET_E = DUK_DEFPROP_SET_ENUMERABLE;
+        public static readonly duk_uint_t DUK_DEFPROP_SET_C = DUK_DEFPROP_SET_CONFIGURABLE;
+        public static readonly duk_uint_t DUK_DEFPROP_SET_WE = (DUK_DEFPROP_SET_WRITABLE | DUK_DEFPROP_SET_ENUMERABLE);
+        public static readonly duk_uint_t DUK_DEFPROP_SET_WC = (DUK_DEFPROP_SET_WRITABLE | DUK_DEFPROP_SET_CONFIGURABLE);
+        public static readonly duk_uint_t DUK_DEFPROP_SET_WEC = (DUK_DEFPROP_SET_WRITABLE | DUK_DEFPROP_SET_ENUMERABLE | DUK_DEFPROP_SET_CONFIGURABLE);
+        public static readonly duk_uint_t DUK_DEFPROP_CLEAR_W = DUK_DEFPROP_CLEAR_WRITABLE;
+        public static readonly duk_uint_t DUK_DEFPROP_CLEAR_E = DUK_DEFPROP_CLEAR_ENUMERABLE;
+        public static readonly duk_uint_t DUK_DEFPROP_CLEAR_C = DUK_DEFPROP_CLEAR_CONFIGURABLE;
+        public static readonly duk_uint_t DUK_DEFPROP_CLEAR_WE = (DUK_DEFPROP_CLEAR_WRITABLE | DUK_DEFPROP_CLEAR_ENUMERABLE);
+        public static readonly duk_uint_t DUK_DEFPROP_CLEAR_WC = (DUK_DEFPROP_CLEAR_WRITABLE | DUK_DEFPROP_CLEAR_CONFIGURABLE);
+        public static readonly duk_uint_t DUK_DEFPROP_CLEAR_WEC = (DUK_DEFPROP_CLEAR_WRITABLE | DUK_DEFPROP_CLEAR_ENUMERABLE | DUK_DEFPROP_CLEAR_CONFIGURABLE);
+        public static readonly duk_uint_t DUK_DEFPROP_ATTR_W = (DUK_DEFPROP_HAVE_WEC | DUK_DEFPROP_W);
+        public static readonly duk_uint_t DUK_DEFPROP_ATTR_E = (DUK_DEFPROP_HAVE_WEC | DUK_DEFPROP_E);
+        public static readonly duk_uint_t DUK_DEFPROP_ATTR_C = (DUK_DEFPROP_HAVE_WEC | DUK_DEFPROP_C);
+        public static readonly duk_uint_t DUK_DEFPROP_ATTR_WE = (DUK_DEFPROP_HAVE_WEC | DUK_DEFPROP_WE);
+        public static readonly duk_uint_t DUK_DEFPROP_ATTR_WC = (DUK_DEFPROP_HAVE_WEC | DUK_DEFPROP_WC);
+        public static readonly duk_uint_t DUK_DEFPROP_ATTR_WEC = (DUK_DEFPROP_HAVE_WEC | DUK_DEFPROP_WEC);
+
         /*
          *  Macros to create Symbols as C statically constructed strings.
          *
@@ -501,7 +549,7 @@ namespace Duktape
         public static extern duk_uint_t duk_get_uint(IntPtr ctx, duk_idx_t idx);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr duk_get_string(IntPtr ctx, duk_idx_t idx); 
+        public static extern IntPtr duk_get_string(IntPtr ctx, duk_idx_t idx);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr duk_get_lstring(IntPtr ctx, duk_idx_t idx, out duk_size_t out_len); // fixed
@@ -755,7 +803,7 @@ namespace Duktape
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_uint_t duk_require_uint(IntPtr ctx, duk_idx_t idx);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr duk_require_string(IntPtr ctx, duk_idx_t idx); 
+        public static extern IntPtr duk_require_string(IntPtr ctx, duk_idx_t idx);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr duk_require_lstring(IntPtr ctx, duk_idx_t idx, out duk_size_t out_len); // fixme
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -820,7 +868,7 @@ namespace Duktape
         public static extern duk_uint16_t duk_to_uint16(IntPtr ctx, duk_idx_t idx);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr duk_to_string(IntPtr ctx, duk_idx_t idx);
-        
+
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr duk_to_lstring(IntPtr ctx, duk_idx_t idx, out duk_size_t out_len); // fixed
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -946,7 +994,7 @@ namespace Duktape
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_put_prop_literal_raw(IntPtr ctx, duk_idx_t obj_idx, byte[] key, duk_size_t key_len);
         public static duk_bool_t duk_put_prop_literal_raw(IntPtr ctx, duk_idx_t obj_idx, byte[] key, int key_len)
-        {  
+        {
             return duk_put_prop_literal_raw(ctx, obj_idx, key, (duk_size_t)(ulong)key_len);
         }
 
@@ -1181,7 +1229,7 @@ namespace Duktape
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_int_t duk_eval_raw(IntPtr ctx, byte[] src_buffer, duk_size_t src_length, duk_uint_t flags);
-        
+
         public static duk_int_t duk_eval_raw(IntPtr ctx, byte[] src_buffer, int src_length, duk_uint_t flags)
         {
             return duk_eval_raw(ctx, src_buffer, (duk_size_t)(ulong)src_length, flags);

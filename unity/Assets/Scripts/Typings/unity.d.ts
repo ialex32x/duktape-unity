@@ -8,6 +8,7 @@ declare namespace UnityEngine {
     }
 
     class GameObject {
-
+        constructor()
+        SetActive(v: boolean)
     }
 }
