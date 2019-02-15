@@ -1,5 +1,4 @@
 import { Foo } from "./mm/foo";
-import { UnityEngine } from "../Typings/unity";
 
 let foo = new Foo(12)
 
