@@ -1,4 +1,3 @@
-import { Foo } from "../Source/mm/foo";
 
 declare namespace UnityEngine {
     class Debug {
