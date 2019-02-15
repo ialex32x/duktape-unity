@@ -10,12 +10,11 @@ public class Sample : MonoBehaviour
 
     void Awake()
     {
-        vm.Initialize(new FakeFileSystem(), null, null);
-
-        var ctx = vm.context.rawValue;
-        Duktape.DuktapeDLL.duk_push_global_object(ctx);
-        Duktape.UnityEngine_GameObject.reg(ctx);
-        Duktape.DuktapeDLL.duk_pop(ctx);
+        var temp = new List<Action<IntPtr>>
+        {
+            Duktape.UnityEngine_GameObject.reg,
+        };
+        vm.Initialize(new FakeFileSystem(), temp, null, null);
     }
 
     // Start is called before the first frame update

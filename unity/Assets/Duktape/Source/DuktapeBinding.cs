@@ -74,12 +74,15 @@ namespace Duktape
             // Debug.LogFormat("end namespace {0}", DuktapeDLL.duk_get_top(ctx));
         }
 
-        protected static void duk_begin_class(IntPtr ctx, Type type, DuktapeDLL.duk_c_function ctor, Type super)
+        protected static void duk_begin_class(IntPtr ctx, Type type, DuktapeDLL.duk_c_function ctor)
         {
             var typename = type.Name;
             // Debug.LogFormat("begin class {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_push_c_function(ctx, ctor, DuktapeDLL.DUK_VARARGS); // [ctor]
             DuktapeDLL.duk_dup(ctx, -1);
+            DuktapeDLL.duk_dup(ctx, -1);
+            var fn = new DuktapeFunction(ctx, DuktapeVM.duk_ref(ctx));
+            DuktapeVM.GetVM(ctx).AddExported(type, fn);
             DuktapeDLL.duk_put_prop_string(ctx, -3, typename);
             DuktapeDLL.duk_push_object(ctx); // [ctor, prototype]
             DuktapeDLL.duk_dup_top(ctx); // [ctor, prototype, prototype]

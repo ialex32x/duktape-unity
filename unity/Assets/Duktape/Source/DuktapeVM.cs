@@ -18,6 +18,9 @@ namespace Duktape
 
         private List<string> _searchPaths = new List<string>();
 
+        // 已经导出的本地类
+        private Dictionary<Type, DuktapeFunction> _exported = new Dictionary<Type, DuktapeFunction>();
+
         public DuktapeContext context
         {
             get { return _ctx; }
@@ -43,6 +46,11 @@ namespace Duktape
             {
                 _searchPaths.Add(path);
             }
+        }
+
+        public void AddExported(Type type, DuktapeFunction fn)
+        {
+            _exported.Add(type, fn);
         }
 
         public static void duk_open_ref(IntPtr ctx)
@@ -188,7 +196,7 @@ namespace Duktape
             return 1;
         }
 
-        public void Initialize(IFileSystem fs, Action<float> onprogress, Action onloaded)
+        public void Initialize(IFileSystem fs, List<Action<IntPtr>> custom, Action<float> onprogress, Action onloaded)
         {
             this._fileManager = fs;
             var ctx = DuktapeDLL.duk_create_heap_default();
@@ -196,6 +204,15 @@ namespace Duktape
             DuktapeAux.duk_open(ctx);
             DuktapeVM.duk_open_module(ctx);
             DuktapeVM.duk_open_ref(ctx);
+
+            Duktape.DuktapeDLL.duk_push_global_object(ctx);
+            for (int i = 0, size = custom.Count; i < size; i++)
+            {
+                var reg = custom[i];
+                reg(ctx);
+            }
+            Duktape.DuktapeDLL.duk_pop(ctx);
+
             if (onloaded != null)
             {
                 onloaded();
