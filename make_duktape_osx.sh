@@ -1,10 +1,10 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 rm -rf build/osx
 mkdir -p build/osx
 cd build/osx
 
-cmake -GXcode ..
+cmake -GXcode ../..
 cd ..
 cmake --build osx --config Release
 cd ..
