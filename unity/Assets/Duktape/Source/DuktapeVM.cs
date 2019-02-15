@@ -213,7 +213,7 @@ namespace Duktape
             }
             DuktapeDLL.duk_pop(ctx);
             // Debug.LogFormat("exported {0} classes", _exported.Count);
-            
+
             // 设置导出类的继承链
             foreach (var kv in _exported)
             {
@@ -259,14 +259,23 @@ namespace Duktape
             var ctx = _ctx.rawValue;
             var path = ResolvePath(filename);
             var source = _fileManager.ReadAllText(path);
-            // var err = DuktapeDLL.duk_module_node_peval_main(ctx, path);
-            var err = DuktapeDLL.duk_peval_string(ctx, source);
-            // var err = DuktapeDLL.duk_peval_string_noresult(ctx, source);
-            if (err != 0)
+            DuktapeDLL.duk_push_string(ctx, source);
+            DuktapeDLL.duk_push_string(ctx, filename);
+            if (DuktapeDLL.duk_pcompile(ctx, 0) != 0)
             {
-                Debug.LogErrorFormat("eval error: {0}\n{1}", DuktapeDLL.duk_safe_to_string(ctx, -1), source);
+                Debug.LogErrorFormat("compile error: {0}\n{1}", DuktapeDLL.duk_safe_to_string(ctx, -1), source);
+                DuktapeDLL.duk_pop(ctx);
             }
-            DuktapeDLL.duk_pop(ctx);
+            else
+            {
+                // Debug.LogFormat("check top {0}", DuktapeDLL.duk_get_top(ctx));
+                if (DuktapeDLL.duk_pcall(ctx, 0) != DuktapeDLL.DUK_EXEC_SUCCESS)
+                {
+                    Debug.LogErrorFormat("call error: {0}\n{1}", DuktapeDLL.duk_safe_to_string(ctx, -1), source);
+                }
+                DuktapeDLL.duk_pop(ctx);
+                // Debug.LogFormat("check top {0}", DuktapeDLL.duk_get_top(ctx));
+            }
         }
 
         public void EvalMain(string filename)
