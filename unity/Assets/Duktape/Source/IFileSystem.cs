@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Duktape
 {
-    public interface IFileManager
+    using UnityEngine;
+    
+    public interface IFileSystem
     {
         bool Exists(string path);
-        string LoadText(string path);
+        string ReadAllText(string path);
     }
 }

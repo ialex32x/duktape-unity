@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Duktape
 {
+    /// 持有脚本对象的引用
     public abstract class DuktapeValue : IDisposable
     {
         protected DuktapeContext _ctx;

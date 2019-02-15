@@ -3,20 +3,17 @@ using UnityEngine;
 
 namespace Duktape
 {
+    // 基础环境
     public static partial class DuktapeAux
     {
-        private static IFileManager _fileManager;
         public const string HEAP_STASH_PROPS_REGISTRY = "registry";
 
-        // 临时
-        public static IFileManager fileManager
+        public static void duk_open(IntPtr ctx)
         {
-            get { return _fileManager; }
-        }
-
-        public static void duk_open(IntPtr ctx, IFileManager fileManager)
-        {
-            _fileManager = fileManager;
+            DuktapeDLL.duk_push_global_object(ctx);
+            DuktapeDLL.duk_push_c_function(ctx, duk_print, DuktapeDLL.DUK_VARARGS);
+            DuktapeDLL.duk_put_prop_string(ctx, -2, "print");
+            DuktapeDLL.duk_pop(ctx);
 
             DuktapeDLL.duk_push_heap_stash(ctx); // [stash]
             DuktapeDLL.duk_push_array(ctx); // [stash, array]
@@ -25,6 +22,19 @@ namespace Duktape
             DuktapeDLL.duk_push_int(ctx, 0); // [stash, array, 0]
             DuktapeDLL.duk_put_prop_index(ctx, -2, 0); // [stash, array]
             DuktapeDLL.duk_pop_2(ctx);
+        }
+
+        [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+        public static int duk_print(IntPtr ctx)
+        {
+            var narg = DuktapeDLL.duk_get_top(ctx);
+            var str = string.Empty;
+            for (int i = 0; i < narg; i++)
+            {
+                str += DuktapeDLL.duk_safe_to_string(ctx, i) + " ";
+            }
+            Debug.Log(str);
+            return 0;
         }
 
         /// Creates and returns a reference for the object at the top of the stack (and pops the object).

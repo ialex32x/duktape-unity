@@ -7,6 +7,7 @@ namespace Duktape
 {
     using duk_idx_t = System.Int32;
 
+    // 对原始导入函数的简单封装
     public static partial class DuktapeAux
     {
         public static string duk_require_string(IntPtr ctx, duk_idx_t idx)

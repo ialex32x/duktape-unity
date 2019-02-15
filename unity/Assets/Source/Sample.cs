@@ -6,32 +6,84 @@ using System;
 
 public class Sample : MonoBehaviour
 {
-    DuktapeHeap heap = new DuktapeHeap();
+    DuktapeVM vm = new DuktapeVM();
+
+    public void Test()
+    {
+        var ctx = vm.context.rawValue;
+        DuktapeDLL.duk_push_global_object(ctx);
+        DuktapeDLL.duk_push_c_function(ctx, TestConstructor, 0);
+        DuktapeDLL.duk_push_object(ctx);
+        DuktapeDLL.duk_push_c_function(ctx, TestFinalizer, 1);
+        DuktapeDLL.duk_set_finalizer(ctx, -2);
+        DuktapeDLL.duk_push_c_function(ctx, TestFoo, 0);
+        DuktapeDLL.duk_put_prop_string(ctx, -2, "foo");
+        DuktapeDLL.duk_put_prop_string(ctx, -2, "prototype");
+        // DuktapeDLL.duk_set_prototype(ctx, -2);
+        DuktapeDLL.duk_push_c_function(ctx, TestStaticFoo, 0);
+        DuktapeDLL.duk_put_prop_string(ctx, -2, "static_foo");
+        DuktapeDLL.duk_put_prop_string(ctx, -2, "Test");
+        DuktapeDLL.duk_pop(ctx);
+    }
+
+    [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+    public static int TestFinalizer(IntPtr ctx)
+    {
+        DuktapeDLL.duk_get_prop_string(ctx, 0, DuktapeDLL.DUK_HIDDEN_SYMBOL("native"));
+        var number = DuktapeDLL.duk_get_number(ctx, -1);
+        Debug.LogFormat("TestFinalizer {0}", number);
+        DuktapeDLL.duk_pop(ctx); // pop native 
+        Debug.LogFormat("TestFinalizer {0}", DuktapeDLL.duk_get_top(ctx));
+        return 0;
+    }
+
+    [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+    public static int TestConstructor(IntPtr ctx)
+    {
+        Debug.LogFormat("TestConstructor top {0}", DuktapeDLL.duk_get_top(ctx));
+        DuktapeDLL.duk_push_this(ctx);
+        DuktapeDLL.duk_push_number(ctx, 123);
+        DuktapeDLL.duk_put_prop_string(ctx, -2, DuktapeDLL.DUK_HIDDEN_SYMBOL("native"));
+        DuktapeDLL.duk_pop(ctx);
+        return 0;
+    }
+
+    [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+    public static int TestFoo(IntPtr ctx)
+    {
+        Debug.Log("TestFoo");
+        return 0;
+    }
+
+    [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+    public static int TestStaticFoo(IntPtr ctx)
+    {
+        Debug.Log("TestStaticFoo");
+        return 0;
+    }
 
     void Awake()
     {
+        Debug.Log(typeof(GameObject).FullName);
+        Debug.Log(typeof(GameObject).Namespace);
+        vm.Initialize(new FakeFileSystem(), null, null);
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        DuktapeAux.AddSearchPath("Assets/Scripts/polyfills");
-        DuktapeAux.AddSearchPath("Assets/Scripts/Generated");
+        vm.AddSearchPath("Assets/Scripts/polyfills");
+        vm.AddSearchPath("Assets/Scripts/Generated");
 
-        heap.Test();
-        DuktapeDLL.duk_push_string(heap.ctx, string.Format("test {0} {1} native varg", "hello", 123));
-        var str = DuktapeAux.duk_to_string(heap.ctx, -1);
-        Debug.LogFormat("testcase[1]: {0} ## {1}", str, DuktapeDLL.duk_get_top(heap.ctx));
-        DuktapeDLL.duk_pop(heap.ctx);
-
-        heap.EvalFile("console-minimal.js");
-        heap.EvalMain("main.js");
+        Test();
+        vm.EvalFile("console-minimal.js");
+        vm.EvalMain("main.js");
     }
 
     void OnDestroy()
     {
-        heap.Destroy();
-        heap = null;
+        vm.Destroy();
+        vm = null;
     }
 
     // Update is called once per frame
