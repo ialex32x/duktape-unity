@@ -131,6 +131,7 @@ namespace Duktape
 
         public void Clear()
         {
+            tabLevel = 0;
             sb.Clear();
         }
     }
