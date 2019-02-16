@@ -29,6 +29,9 @@ namespace Duktape
 
         public string tab = "    ";
 
+        // 生成的绑定类所在命名空间
+        public string ns = "DuktapeJS";
+
         public static Prefs GetPrefs()
         {
             if (_prefs == null)

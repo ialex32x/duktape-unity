@@ -38,9 +38,24 @@ namespace Duktape
                 AppendLine("using System.Collections.Generic;");
                 AppendLine();
 
-                using (new NamespaceCodeGen(this, "Duktape"))
+                using (new NamespaceCodeGen(this, Prefs.GetPrefs().ns))
                 {
-                    AppendLine("// test {0}", type.FullName);
+                    AppendLine("using Duktape;");
+                    // AppendLine("using UnityEngine;");
+
+                    if (type.IsEnum)
+                    {
+                        using (new EnumCodeGen(this, type))
+                        {
+                            //
+                        }
+                    }
+                    else
+                    {
+                        using (var ccg = new ClassCodeGen(this, type))
+                        {
+                        }
+                    }
                 }
             }
             Debug.Log(sb.ToString());

@@ -15,6 +15,7 @@ declare namespace UnityEngine {
 
     class GameObject extends Object {
         constructor()
+        readonly activeSelf: boolean
         SetActive(v: boolean)
     }
 }

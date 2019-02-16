@@ -60,6 +60,13 @@ namespace Duktape
             _exported.Add(type, fn);
         }
 
+        // 得到注册在js中的类型对应的构造函数
+        public DuktapeFunction GetExported(Type type)
+        {
+            DuktapeFunction value;
+            return _exported.TryGetValue(type, out value) ? value : null;
+        }
+
         public static void duk_open_ref(IntPtr ctx)
         {
             DuktapeDLL.duk_push_heap_stash(ctx); // [stash]
