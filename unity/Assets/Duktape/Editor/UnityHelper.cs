@@ -9,10 +9,12 @@ namespace Duktape
     public class UnityHelper
     {
         #region All Menu Items
-        // [MenuItem("Duktape/Generate Bindings")]
-        // public static void GenerateBindings()
-        // {
-        // }
+        [MenuItem("Duktape/Generate Bindings")]
+        public static void GenerateBindings()
+        {
+            var cg = new CodeGenerator();
+            cg.Generate(typeof(GameObject));
+        }
         #endregion
     }
 }

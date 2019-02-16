@@ -6,6 +6,14 @@ namespace Duktape
     using UnityEngine;
     using UnityEditor;
 
+    public enum NewLineStyle
+    {
+        AUTO,
+        CR,
+        LF,
+        CRLF,
+    }
+
     // duktape 配置 (editor only)
     public class Prefs
     {
@@ -17,7 +25,9 @@ namespace Duktape
         // 静态绑定代码的生成目录
         public string outDir = "Assets/Duktape/Generated";
 
-        public static Prefs GetSettings()
+        public NewLineStyle newLineStyle;
+
+        public static Prefs GetPrefs()
         {
             if (_prefs == null)
             {
