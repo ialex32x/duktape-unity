@@ -27,6 +27,8 @@ namespace Duktape
 
         public NewLineStyle newLineStyle;
 
+        public string tab = "    ";
+
         public static Prefs GetPrefs()
         {
             if (_prefs == null)
@@ -42,7 +44,11 @@ namespace Duktape
                 {
                     Debug.LogWarning(exception);
                 }
-                _prefs = new Prefs();
+                if (_prefs == null)
+                {
+                    _prefs = new Prefs();
+                    _prefs.MarkAsDirty();
+                }
             }
             return _prefs;
         }
