@@ -7,7 +7,7 @@ namespace Duktape
 {
     using UnityEngine;
     using UnityEditor;
-    
+
     public class NamespaceCodeGen : IDisposable
     {
         protected CodeGenerator cg;
@@ -16,6 +16,25 @@ namespace Duktape
         {
             this.cg = cg;
             cg.AppendLine("namespace {0} {{", ns);
+            this.cg.AddTabLevel();
+        }
+
+        public void Dispose()
+        {
+            this.cg.DecTabLevel();
+            cg.AppendLine("}");
+        }
+    }
+
+    public class ClassCodeGen : IDisposable
+    {
+        protected CodeGenerator cg;
+
+        public ClassCodeGen(CodeGenerator cg, Type type)
+        {
+            this.cg = cg;
+            cg.AppendLine("[UnityEngine.Scripting.Preserve]");
+            cg.AppendLine("public class {0} : {1} {{", type.Name, typeof(DuktapeBinding).Name);
             this.cg.AddTabLevel();
         }
 
