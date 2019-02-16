@@ -5,7 +5,7 @@ namespace Duktape
 {
     using UnityEngine;
     using UnityEditor;
-    
+
     // duktape 配置 (editor only)
     public class Prefs
     {
@@ -21,22 +21,45 @@ namespace Duktape
         {
             if (_prefs == null)
             {
-                _prefs = JsonUtility.FromJson<Prefs>(PATH);
+                try
+                {
+                    if (System.IO.File.Exists(PATH))
+                    {
+                        _prefs = JsonUtility.FromJson<Prefs>(PATH);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning(exception);
+                }
+                _prefs = new Prefs();
             }
             return _prefs;
         }
 
         public void MarkAsDirty()
         {
-            _dirty =  true;
+            if (!_dirty)
+            {
+                _dirty = true;
+                EditorApplication.delayCall += Save;
+            }
         }
 
         public void Save()
         {
-            if (_dirty) 
+            if (_dirty)
             {
-                var json = JsonUtility.ToJson(this, true);
-                System.IO.File.WriteAllText(PATH, json);
+                _dirty = false;
+                try
+                {
+                    var json = JsonUtility.ToJson(this, true);
+                    System.IO.File.WriteAllText(PATH, json);
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning(exception);
+                }
             }
         }
     }
