@@ -37,7 +37,8 @@ namespace Duktape
                 {
                     if (System.IO.File.Exists(PATH))
                     {
-                        _prefs = JsonUtility.FromJson<Prefs>(PATH);
+                        var json = System.IO.File.ReadAllText(PATH);
+                        _prefs = JsonUtility.FromJson<Prefs>(json);
                     }
                 }
                 catch (Exception exception)
