@@ -52,10 +52,5 @@ namespace Duktape
             // fixme 如果是 thread 则获取对应 main context
             return null;
         }
-
-        public void GC(int refid)
-        {
-            // fixme 加入回收队列
-        }
     }
 }

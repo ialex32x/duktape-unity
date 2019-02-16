@@ -5,10 +5,15 @@ namespace Duktape
     using UnityEngine;
     
     /// 持有脚本对象的引用
-    public abstract class DuktapeValue : IDisposable
+    public abstract class DuktapeValue : IDisposable, IContextualValue
     {
         protected DuktapeContext _ctx;
         protected int _refid;
+
+        public DuktapeContext GetContext()
+        {
+            return _ctx;
+        }
 
         public DuktapeValue(IntPtr ctx, int refid)
         {
@@ -31,7 +36,7 @@ namespace Duktape
         {
             if (this._refid != 0)
             {
-                this._ctx.GC(this._refid);
+                this._ctx.vm.GC(this._refid, DuktapeVM.duk_unref);
                 this._refid = 0;
             }
         }

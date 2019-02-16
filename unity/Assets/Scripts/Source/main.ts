@@ -1,4 +1,5 @@
-import { Foo } from "./mm/foo";
+import { Foo } from "./mm/foo"
+
 
 let foo = new Foo(12)
 

@@ -1,6 +1,8 @@
 
 type DUKTAPE_ENCODING = "hex" | "base64" | "jx" | "jc"
 
+declare function print(...args: any[]): void
+
 declare class Duktape {
     /**	Duktape version number: (major * 10000) + (minor * 100) + patch. */
     static version: number

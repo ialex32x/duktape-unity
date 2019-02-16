@@ -24,6 +24,11 @@ public class Sample : MonoBehaviour
         });
     }
 
+    void Update()
+    {
+        vm.Update(Time.deltaTime);
+    }
+
     void OnDestroy()
     {
         vm.Destroy();
