@@ -166,11 +166,12 @@ namespace Duktape
 
         public void AddMethod(MethodInfo methodInfo)
         {
+            var name = "Bind" + methodInfo.Name;
             List<MethodInfo> list;
-            if (!methods.TryGetValue(methodInfo.Name, out list))
+            if (!methods.TryGetValue(name, out list))
             {
                 list = new List<MethodInfo>();
-                methods.Add(methodInfo.Name, list);
+                methods.Add(name, list);
             }
             list.Add(methodInfo);
         }
@@ -185,7 +186,7 @@ namespace Duktape
                 {
                     var methodInfo = kv.Value[0];
                     var regName = methodInfo.Name;
-                    var funcName = methodInfo.Name;
+                    var funcName = kv.Key;
                     var bStatic = methodInfo.IsStatic;
                     cg.AppendLine("duk_put_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? "true" : "false");
                 }
