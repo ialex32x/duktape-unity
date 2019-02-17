@@ -253,6 +253,16 @@ namespace Duktape
             list.Add(methodInfo);
         }
 
+        // 获取指定类型在 ts 中的声明名称
+        protected string GetTypeScriptName(Type type)
+        {
+            if (this.cg.bindingManager.IsExported(type))
+            {
+                return type.FullName;
+            }
+            return "any";
+        }
+
         public override void Dispose()
         {
             using (new RegFuncCodeGen(cg))
@@ -278,7 +288,7 @@ namespace Duktape
                         bStatic ? "true" : "false");
 
                     var tsPropertyPrefix = propertyInfo.CanWrite ? "" : "readonly ";
-                    var tsPropertyType = "any";
+                    var tsPropertyType = GetTypeScriptName(propertyInfo.PropertyType);
                     cg.typescript.AppendLine("{0}{1}: {2}", tsPropertyPrefix, propertyInfo.Name, tsPropertyType);
                 }
                 foreach (var kv in fields)
@@ -288,7 +298,7 @@ namespace Duktape
                     var bStatic = fieldInfo.IsStatic ? "true" : "false";
                     cg.csharp.AppendLine("duk_put_field(ctx, \"{0}\", {1}, {2});", fieldInfo.Name, name, bStatic);
                     var tsPropertyPrefix = fieldInfo.IsStatic ? "static " : "";
-                    var tsPropertyType = "any";
+                    var tsPropertyType = GetTypeScriptName(fieldInfo.FieldType);
                     cg.typescript.AppendLine("{0}{1}: {2}", tsPropertyPrefix, fieldInfo.Name, tsPropertyType);
                 }
                 cg.csharp.AppendLine("duk_end_class(ctx);");

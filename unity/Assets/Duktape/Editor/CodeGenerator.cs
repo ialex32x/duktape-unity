@@ -10,11 +10,13 @@ namespace Duktape
 
     public partial class CodeGenerator
     {
+        public BindingManager bindingManager;
         public TextGenerator csharp;
         public TextGenerator typescript;
 
-        public CodeGenerator()
+        public CodeGenerator(BindingManager bindingManager)
         {
+            this.bindingManager = bindingManager;
             var tab = Prefs.GetPrefs().tab;
             string newline;
             switch (Prefs.GetPrefs().newLineStyle)

@@ -12,8 +12,10 @@ namespace Duktape
         [MenuItem("Duktape/Generate Bindings")]
         public static void GenerateBindings()
         {
-            var cg = new CodeGenerator();
-            cg.Generate(typeof(GameObject));
+            var bm = new BindingManager();
+            bm.AddExport(typeof(GameObject));
+            bm.AddExport(typeof(Transform));
+            bm.Generate();
         }
         #endregion
     }
