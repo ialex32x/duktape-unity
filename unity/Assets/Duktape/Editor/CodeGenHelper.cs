@@ -61,6 +61,33 @@ namespace Duktape
         }
     }
 
+    public class FieldCodeGen : IDisposable
+    {
+        protected CodeGenerator cg;
+        protected string name;
+        protected FieldInfo fieldInfo;
+
+        public FieldCodeGen(CodeGenerator cg, string name, FieldInfo fieldInfo)
+        {
+            this.cg = cg;
+            this.name = name;
+            this.fieldInfo = fieldInfo;
+
+            this.cg.csharp.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof(duk_c_function))]");
+            this.cg.csharp.AppendLine("[UnityEngine.Scripting.Preserve]");
+            this.cg.csharp.AppendLine("public static int {0}(IntPtr ctx)", name);
+            this.cg.csharp.AppendLine("{");
+            this.cg.csharp.AddTabLevel();
+        }
+
+        public void Dispose()
+        {
+            this.cg.csharp.AppendLine("return 0");
+            this.cg.csharp.DecTabLevel();
+            this.cg.csharp.AppendLine("}");
+        }
+    }
+
     public class MethodCodeGen : IDisposable
     {
         protected CodeGenerator cg;
@@ -143,10 +170,17 @@ namespace Duktape
     {
         private Dictionary<string, List<MethodInfo>> methods = new Dictionary<string, List<MethodInfo>>();
         private Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
+        private Dictionary<string, FieldInfo> fields = new Dictionary<string, FieldInfo>();
 
         public ClassCodeGen(CodeGenerator cg, Type type)
         : base(cg, type)
         {
+            // 收集所有 字段,属性,方法
+            var fields = type.GetFields();
+            foreach (var field in fields)
+            {
+                AddField(field);
+            }
             var properties = type.GetProperties();
             foreach (var property in properties)
             {
@@ -165,11 +199,18 @@ namespace Duktape
                 }
             }
 
+            // 生成函数体
             foreach (var kv in this.methods)
             {
                 using (new MethodCodeGen(cg, kv.Key, kv.Value))
                 {
 
+                }
+            }
+            foreach (var kv in this.fields)
+            {
+                using (new FieldCodeGen(cg, kv.Key, kv.Value))
+                {
                 }
             }
         }
@@ -188,10 +229,16 @@ namespace Duktape
             return false;
         }
 
+        public void AddField(FieldInfo fieldInfo)
+        {
+            var name = fieldInfo.Name;
+            fields.Add(name, fieldInfo);
+        }
 
         public void AddProperty(PropertyInfo propInfo)
         {
-            properties.Add(propInfo.Name, propInfo);
+            var name = propInfo.Name;
+            properties.Add(name, propInfo);
         }
 
         public void AddMethod(MethodInfo methodInfo)
@@ -229,10 +276,20 @@ namespace Duktape
                         propertyInfo.CanRead ? propertyInfo.GetMethod.Name : "null",
                         propertyInfo.CanWrite ? propertyInfo.SetMethod.Name : "null",
                         bStatic ? "true" : "false");
-                    
-                    var tsPropertyPrefix = propertyInfo.CanWrite ? "":"readonly ";
+
+                    var tsPropertyPrefix = propertyInfo.CanWrite ? "" : "readonly ";
                     var tsPropertyType = "any";
                     cg.typescript.AppendLine("{0}{1}: {2}", tsPropertyPrefix, propertyInfo.Name, tsPropertyType);
+                }
+                foreach (var kv in fields)
+                {
+                    var name = kv.Key;
+                    var fieldInfo = kv.Value;
+                    var bStatic = fieldInfo.IsStatic ? "true" : "false";
+                    cg.csharp.AppendLine("duk_put_field(ctx, \"{0}\", {1}, {2});", fieldInfo.Name, name, bStatic);
+                    var tsPropertyPrefix = fieldInfo.IsStatic ? "static " : "";
+                    var tsPropertyType = "any";
+                    cg.typescript.AppendLine("{0}{1}: {2}", tsPropertyPrefix, fieldInfo.Name, tsPropertyType);
                 }
                 cg.csharp.AppendLine("duk_end_class(ctx);");
                 cg.csharp.AppendLine("duk_end_namespace(ctx);");
