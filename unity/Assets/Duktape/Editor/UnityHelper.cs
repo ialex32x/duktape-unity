@@ -13,8 +13,6 @@ namespace Duktape
         public static void GenerateBindings()
         {
             var bm = new BindingManager();
-            bm.AddExport(typeof(GameObject));
-            bm.AddExport(typeof(Transform));
             bm.Generate();
             AssetDatabase.Refresh();
         }
