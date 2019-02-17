@@ -21,6 +21,12 @@ namespace Duktape
             bm.Cleanup();
             AssetDatabase.Refresh();
         }
+        
+        [MenuItem("Duktape/Prefs ...")]
+        public static void OpenPrefsEditor()
+        {
+            EditorWindow.GetWindow<PrefsEditor>().Show();
+        }
         #endregion
     }
 }
