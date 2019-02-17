@@ -64,9 +64,13 @@ namespace Duktape
 
         public void WriteTo(string outDir, string filename, string tx)
         {
-            var csPath = Path.Combine(outDir, filename + ".cs" + tx);
-            var tsPath = Path.Combine(outDir, filename + ".d.ts" + tx);
+            var csName = filename + ".cs" + tx;
+            var tsName = filename + ".d.ts" + tx;
+            var csPath = Path.Combine(outDir, csName);
+            var tsPath = Path.Combine(outDir, tsName);
             
+            this.bindingManager.AddOutputFile(csPath);
+            this.bindingManager.AddOutputFile(tsPath);
             File.WriteAllText(csPath, this.csharp.ToString());
             File.WriteAllText(tsPath, this.typescript.ToString());
         }

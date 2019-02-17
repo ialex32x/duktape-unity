@@ -32,6 +32,31 @@ namespace Duktape
         // 生成的绑定类所在命名空间
         public string ns = "DuktapeJS";
 
+        // 默认不导出任何类型, 需要指定导出类型列表
+        public List<string> explicitAssemblies = new List<string>(new string[]
+        {
+            "Assembly-CSharp-firstpass",
+            "Assembly-CSharp",
+        });
+
+        // 默认导出所有类型, 过滤黑名单
+        public List<string> implicitAssemblies = new List<string>(new string[]
+        {
+            "UnityEngine",
+            "UnityEngine.CoreModule",
+            "UnityEngine.UIModule",
+            "UnityEngine.TextRenderingModule",
+            "UnityEngine.TextRenderingModule",
+            "UnityEngine.UnityWebRequestWWWModule",
+            "UnityEngine.Physics2DModule",
+            "UnityEngine.AnimationModule",
+            "UnityEngine.TextRenderingModule",
+            "UnityEngine.IMGUIModule",
+            "UnityEngine.UnityWebRequestModule",
+            "UnityEngine.PhysicsModule",
+            "UnityEngine.UI",
+        });
+
         public static Prefs GetPrefs()
         {
             if (_prefs == null)

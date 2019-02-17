@@ -11,6 +11,7 @@ namespace Duktape
     public class BindingManager
     {
         private List<Type> types = new List<Type>();
+        private List<string> outputFiles = new List<string>();
 
         public void AddExport(Type type)
         {
@@ -30,31 +31,12 @@ namespace Duktape
 
         public void Collect()
         {
-            // project assembly
-            Collect(new string[]{
-                "Assembly-CSharp-firstpass",
-                "Assembly-CSharp",
-            }, false);
-            // unity assembly
-            Collect(new string[]{
-                "UnityEngine",
-                "UnityEngine.CoreModule",
-                "UnityEngine.UIModule",
-                "UnityEngine.TextRenderingModule",
-                "UnityEngine.TextRenderingModule",
-                "UnityEngine.UnityWebRequestWWWModule",
-                "UnityEngine.Physics2DModule",
-                "UnityEngine.AnimationModule",
-                "UnityEngine.TextRenderingModule",
-                "UnityEngine.IMGUIModule",
-                "UnityEngine.UnityWebRequestModule",
-                "UnityEngine.PhysicsModule",
-                "UnityEngine.UI",
-            }, true);
+            Collect(Prefs.GetPrefs().explicitAssemblies, false);
+            Collect(Prefs.GetPrefs().implicitAssemblies, true);
         }
 
         // implicitExport: 默认进行导出(黑名单例外), 否则根据导出标记或手工添加
-        public void Collect(string[] assemblyNames, bool implicitExport)
+        public void Collect(List<string> assemblyNames, bool implicitExport)
         {
             foreach (var assemblyName in assemblyNames)
             {
@@ -63,22 +45,48 @@ namespace Duktape
                     var assembly = Assembly.Load(assemblyName);
                     var types = assembly.GetExportedTypes();
 
-                    Debug.LogFormat("collecting assembly {0}: {1}", assemblyName, types.Length);
+                    // Debug.LogFormat("collecting assembly {0}: {1}", assemblyName, types.Length);
                     foreach (var type in types)
                     {
                         //TODO: filter for exporting
                         if (implicitExport)
                         {
-                            
+
                         }
-                        this.AddExport(type);
+                        // Debug.LogFormat("")
+                        // this.AddExport(type);
                     }
                 }
-                catch (Exception exception)
+                catch (Exception)
                 {
-                    Debug.LogWarning(exception);
+                    // Debug.LogWarning(exception);
                 }
             }
+        }
+
+        // 清理多余文件
+        public void Cleanup()
+        {
+            var outDir = Prefs.GetPrefs().outDir;
+            foreach (var file in Directory.GetFiles(outDir))
+            {
+                var nfile = file;
+                if (file.EndsWith(".meta"))
+                {
+                    nfile = file.Substring(0, file.Length - 5);
+                }
+                // Debug.LogFormat("checking file {0}", nfile);
+                if (!outputFiles.Contains(nfile))
+                {
+                    //TODO: remove file
+                    Debug.LogFormat("TODO: remove file {0}", file);
+                }
+            }
+        }
+
+        public void AddOutputFile(string filename)
+        {
+            outputFiles.Add(filename);
         }
 
         public void Generate()
