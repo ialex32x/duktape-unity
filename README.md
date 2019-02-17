@@ -4,9 +4,14 @@
 使你能动态执行 javascript. 
 可以使用 typescript 编写脚本, 提供完整的类型检查, 以及代码提示.
 
-# 目标特性 (未实现)
-* 生成 C# to js 静态绑定, 自动生成对应 d.ts 声明 
+# 目标特性
 * 支持 nodejs 风格的模块 (简单实现)
+* 生成 C# to js 静态绑定, 自动生成对应 d.ts 声明 (未实现)
+* 针对值类型的绑定优化 (未实现)
+* 基本的 eventloop 支持 (未实现)
+* socket (tcp/udp) (未实现)
+* websocket () (未实现)
+* 使用 protobufjs (未实现)
 
 # Example
 base/a.ts
@@ -53,3 +58,10 @@ let b = new B()
 b.square()
 
 ```
+
+# 使用及参考的库
+
+* [duktape](https://github.com/svaarala/duktape)
+* [slua](https://github.com/pangweiwei/slua)
+* [xLua](https://github.com/Tencent/xLua)
+
