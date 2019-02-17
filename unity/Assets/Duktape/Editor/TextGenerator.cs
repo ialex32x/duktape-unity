@@ -8,8 +8,25 @@ namespace Duktape
     using UnityEngine;
     using UnityEditor;
 
-    public partial class CodeGenerator
+    public class TextGenerator
     {
+        private string newline;
+        private string tab;
+        private StringBuilder sb = new StringBuilder();
+        private int tabLevel;
+
+        public TextGenerator(string newline, string tab)
+        {
+            this.newline = newline;
+            this.tab = tab;
+            this.tabLevel = 0;
+        }
+
+        public override string ToString()
+        {
+            return sb.ToString();
+        }
+
         public void AddTabLevel()
         {
             tabLevel++;

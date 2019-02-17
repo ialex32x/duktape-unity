@@ -6,16 +6,20 @@ declare namespace UnityEngine {
         static Warn(msg: string)
         static Error(msg: string)
     }
+}
 
-    class Object {
-        constructor()
-        Foo()
-        static Destroy(v: Object)
-    }
-
+declare namespace UnityEngine {
     class GameObject extends Object {
         constructor()
         readonly activeSelf: boolean
         SetActive(v: boolean)
+    }
+}
+
+declare namespace UnityEngine {
+    class Object {
+        constructor()
+        Foo()
+        static Destroy(v: Object)
     }
 }

@@ -9,29 +9,55 @@ namespace Duktape
     using UnityEngine;
     using UnityEditor;
 
+    public class TopLevelCodeGen : IDisposable
+    {
+        protected CodeGenerator cg;
+
+        public TopLevelCodeGen(CodeGenerator cg)
+        {
+            this.cg = cg;
+            this.cg.csharp.AppendLine("// {0} {1}", Environment.UserName, DateTime.Now);
+            this.cg.csharp.AppendLine("using System;");
+            this.cg.csharp.AppendLine("using System.Collections.Generic;");
+            this.cg.csharp.AppendLine();
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+
     public class NamespaceCodeGen : IDisposable
     {
         protected CodeGenerator cg;
         protected string ns;
+        protected Type type;
 
-        public NamespaceCodeGen(CodeGenerator cg, string ns)
+        public NamespaceCodeGen(CodeGenerator cg, string ns, Type type)
         {
             this.cg = cg;
             this.ns = ns;
+            this.type = type;
             if (!string.IsNullOrEmpty(ns))
             {
-                cg.AppendLine("namespace {0} {{", ns);
-                this.cg.AddTabLevel();
+                this.cg.csharp.AppendLine("namespace {0} {{", ns);
+                this.cg.csharp.AddTabLevel();
             }
+            this.cg.csharp.AppendLine("using Duktape;");
+            // cg.csharp.AppendLine("using UnityEngine;");
+            this.cg.typescript.AppendLine("declare namespace {0} {{", type.Namespace);
+            this.cg.typescript.AddTabLevel();
         }
 
         public void Dispose()
         {
             if (!string.IsNullOrEmpty(ns))
             {
-                this.cg.DecTabLevel();
-                cg.AppendLine("}");
+                this.cg.csharp.DecTabLevel();
+                this.cg.csharp.AppendLine("}");
             }
+            this.cg.typescript.DecTabLevel();
+            this.cg.typescript.AppendLine("}");
         }
     }
 
@@ -47,19 +73,19 @@ namespace Duktape
             this.name = name;
             this.methodInfos = methodInfos;
 
-            cg.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof(duk_c_function))]");
-            cg.AppendLine("[UnityEngine.Scripting.Preserve]");
-            cg.AppendLine("public static int {0}(IntPtr ctx)", name);
-            cg.AppendLine("{");
-            this.cg.AddTabLevel();
-            cg.AppendLine("// {0} overrides", methodInfos.Count);
+            cg.csharp.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof(duk_c_function))]");
+            cg.csharp.AppendLine("[UnityEngine.Scripting.Preserve]");
+            cg.csharp.AppendLine("public static int {0}(IntPtr ctx)", name);
+            cg.csharp.AppendLine("{");
+            this.cg.csharp.AddTabLevel();
+            cg.csharp.AppendLine("// {0} overrides", methodInfos.Count);
         }
 
         public virtual void Dispose()
         {
-            cg.AppendLine("return 0");
-            this.cg.DecTabLevel();
-            cg.AppendLine("}");
+            cg.csharp.AppendLine("return 0");
+            this.cg.csharp.DecTabLevel();
+            cg.csharp.AppendLine("}");
         }
     }
 
@@ -70,15 +96,15 @@ namespace Duktape
         public RegFuncCodeGen(CodeGenerator cg)
         {
             this.cg = cg;
-            cg.AppendLine("public static int reg(IntPtr ctx)");
-            cg.AppendLine("{");
-            this.cg.AddTabLevel();
+            cg.csharp.AppendLine("public static int reg(IntPtr ctx)");
+            cg.csharp.AppendLine("{");
+            this.cg.csharp.AddTabLevel();
         }
 
         public virtual void Dispose()
         {
-            this.cg.DecTabLevel();
-            cg.AppendLine("}");
+            this.cg.csharp.DecTabLevel();
+            cg.csharp.AppendLine("}");
         }
     }
 
@@ -91,10 +117,12 @@ namespace Duktape
         {
             this.cg = cg;
             this.type = type;
-            cg.AppendLine("[{0}]", typeof(JSTypeAttribute).Name);
-            cg.AppendLine("[UnityEngine.Scripting.Preserve]");
-            cg.AppendLine("public class {0} : {1} {{", GetTypeName(type), typeof(DuktapeBinding).Name);
-            this.cg.AddTabLevel();
+            this.cg.csharp.AppendLine("[{0}]", typeof(JSTypeAttribute).Name);
+            this.cg.csharp.AppendLine("[UnityEngine.Scripting.Preserve]");
+            this.cg.csharp.AppendLine("public class {0} : {1} {{", GetTypeName(type), typeof(DuktapeBinding).Name);
+            this.cg.csharp.AddTabLevel();
+            this.cg.typescript.AppendLine("class {0} {{", type.Name);
+            this.cg.typescript.AddTabLevel();
         }
 
         public string GetTypeName(Type type)
@@ -104,8 +132,10 @@ namespace Duktape
 
         public virtual void Dispose()
         {
-            this.cg.DecTabLevel();
-            cg.AppendLine("}");
+            this.cg.csharp.DecTabLevel();
+            this.cg.csharp.AppendLine("}");
+            this.cg.typescript.DecTabLevel();
+            this.cg.typescript.AppendLine("}");
         }
     }
 
@@ -180,28 +210,28 @@ namespace Duktape
         {
             using (new RegFuncCodeGen(cg))
             {
-                cg.AppendLine("duk_begin_namespace(ctx, \"{0}\");", type.Namespace);
-                cg.AppendLine("duk_begin_class(ctx, typeof({0}), ctor);", type.FullName);
+                cg.csharp.AppendLine("duk_begin_namespace(ctx, \"{0}\");", type.Namespace);
+                cg.csharp.AppendLine("duk_begin_class(ctx, typeof({0}), ctor);", type.FullName);
                 foreach (var kv in methods)
                 {
                     var methodInfo = kv.Value[0];
                     var regName = methodInfo.Name;
                     var funcName = kv.Key;
                     var bStatic = methodInfo.IsStatic;
-                    cg.AppendLine("duk_put_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? "true" : "false");
+                    cg.csharp.AppendLine("duk_put_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? "true" : "false");
                 }
                 foreach (var kv in properties)
                 {
                     var propertyInfo = kv.Value;
                     var bStatic = false;
-                    cg.AppendLine("duk_put_property(ctx, \"{0}\", {1}, {2}, {3});",
+                    cg.csharp.AppendLine("duk_put_property(ctx, \"{0}\", {1}, {2}, {3});",
                         propertyInfo.Name,
                         propertyInfo.CanRead ? propertyInfo.GetMethod.Name : "null",
                         propertyInfo.CanWrite ? propertyInfo.SetMethod.Name : "null",
                         bStatic ? "true" : "false");
                 }
-                cg.AppendLine("duk_end_class(ctx);");
-                cg.AppendLine("duk_end_namespace(ctx);");
+                cg.csharp.AppendLine("duk_end_class(ctx);");
+                cg.csharp.AppendLine("duk_end_namespace(ctx);");
             }
             base.Dispose();
         }
@@ -227,20 +257,20 @@ namespace Duktape
             switch (buildTarget)
             {
                 case BuildTarget.Android:
-                    cg.AppendLineL("#if UNITY_ANDROID");
+                    cg.csharp.AppendLineL("#if UNITY_ANDROID");
                     break;
                 case BuildTarget.iOS:
-                    cg.AppendLineL("#if UNITY_IOS");
+                    cg.csharp.AppendLineL("#if UNITY_IOS");
                     break;
                 case BuildTarget.StandaloneWindows:
                 case BuildTarget.StandaloneWindows64:
-                    cg.AppendLineL("#if UNITY_STANDALONE_WIN");
+                    cg.csharp.AppendLineL("#if UNITY_STANDALONE_WIN");
                     break;
                 case BuildTarget.StandaloneOSX:
-                    cg.AppendLineL("#if UNITY_STANDALONE_OSX");
+                    cg.csharp.AppendLineL("#if UNITY_STANDALONE_OSX");
                     break;
                 default:
-                    cg.AppendLineL("#if false");
+                    cg.csharp.AppendLineL("#if false");
                     break;
             }
         }
@@ -248,7 +278,7 @@ namespace Duktape
 
         public void Dispose()
         {
-            cg.AppendLineL("#endif");
+            cg.csharp.AppendLineL("#endif");
         }
     }
 }

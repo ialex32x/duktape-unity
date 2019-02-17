@@ -10,14 +10,13 @@ namespace Duktape
 
     public partial class CodeGenerator
     {
-        private string newline;
-        private string tab;
-        private StringBuilder sb = new StringBuilder();
-        private int tabLevel;
+        public TextGenerator csharp;
+        public TextGenerator typescript;
 
         public CodeGenerator()
         {
-            this.tab = Prefs.GetPrefs().tab;
+            var tab = Prefs.GetPrefs().tab;
+            string newline;
             switch (Prefs.GetPrefs().newLineStyle)
             {
                 case NewLineStyle.CR: newline = "\r"; break;
@@ -25,40 +24,38 @@ namespace Duktape
                 case NewLineStyle.CRLF: newline = "\r\n"; break;
                 default: newline = Environment.NewLine; break;
             }
+            csharp = new TextGenerator(newline, tab);
+            typescript = new TextGenerator(newline, tab);
         }
 
         public void Generate(Type type)
         {
             // Prefs.GetPrefs().outDir
-            Clear();
+            csharp.Clear();
+            typescript.Clear();
             using (new PlatformCodeGen(this))
             {
-                AppendLine("// {0} {1}", Environment.UserName, DateTime.Now);
-                AppendLine("using System;");
-                AppendLine("using System.Collections.Generic;");
-                AppendLine();
-
-                using (new NamespaceCodeGen(this, Prefs.GetPrefs().ns))
+                using (new TopLevelCodeGen(this))
                 {
-                    AppendLine("using Duktape;");
-                    // AppendLine("using UnityEngine;");
-
-                    if (type.IsEnum)
+                    using (new NamespaceCodeGen(this, Prefs.GetPrefs().ns, type))
                     {
-                        using (new EnumCodeGen(this, type))
+                        if (type.IsEnum)
                         {
-                            //
+                            using (new EnumCodeGen(this, type))
+                            {
+                            }
                         }
-                    }
-                    else
-                    {
-                        using (var ccg = new ClassCodeGen(this, type))
+                        else
                         {
+                            using (var ccg = new ClassCodeGen(this, type))
+                            {
+                            }
                         }
                     }
                 }
             }
-            Debug.Log(sb.ToString());
+            Debug.Log(csharp.ToString());
+            Debug.Log(typescript.ToString());
         }
     }
 }
