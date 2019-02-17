@@ -20,6 +20,8 @@ namespace Duktape
             this.cg.csharp.AppendLine("using System;");
             this.cg.csharp.AppendLine("using System.Collections.Generic;");
             this.cg.csharp.AppendLine();
+
+            this.cg.typescript.AppendLine("// {0} {1}", Environment.UserName, DateTime.Now);
         }
 
         public void Dispose()

@@ -16,6 +16,7 @@ namespace Duktape
             bm.AddExport(typeof(GameObject));
             bm.AddExport(typeof(Transform));
             bm.Generate();
+            AssetDatabase.Refresh();
         }
         #endregion
     }

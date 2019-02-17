@@ -60,8 +60,15 @@ namespace Duktape
                     }
                 }
             }
-            Debug.Log(csharp.ToString());
-            Debug.Log(typescript.ToString());
+        }
+
+        public void WriteTo(string outDir, string filename, string tx)
+        {
+            var csPath = Path.Combine(outDir, filename + ".cs" + tx);
+            var tsPath = Path.Combine(outDir, filename + ".d.ts" + tx);
+            
+            File.WriteAllText(csPath, this.csharp.ToString());
+            File.WriteAllText(tsPath, this.typescript.ToString());
         }
     }
 }
