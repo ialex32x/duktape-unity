@@ -10,6 +10,7 @@ namespace Duktape
 
     public class BindingManager
     {
+        private TextGenerator log;
         private HashSet<Type> blacklist;
         private HashSet<Type> whitelist;
         private List<Type> types = new List<Type>();
@@ -17,6 +18,9 @@ namespace Duktape
 
         public BindingManager()
         {
+            var tab = Prefs.GetPrefs().tab;
+            var newline = Prefs.GetPrefs().newline;
+            log = new TextGenerator(newline, tab);
             blacklist = new HashSet<Type>(new Type[]
             {
                 typeof(AOT.MonoPInvokeCallbackAttribute),
@@ -77,34 +81,41 @@ namespace Duktape
         {
             foreach (var assemblyName in assemblyNames)
             {
+                log.AppendLine("assembly: {0}", assemblyName);
+                log.AddTabLevel();
                 try
                 {
                     var assembly = Assembly.Load(assemblyName);
                     var types = assembly.GetExportedTypes();
 
-                    // Debug.LogFormat("collecting assembly {0}: {1}", assemblyName, types.Length);
+                    log.AppendLine("types {0}", types.Length);
                     foreach (var type in types)
                     {
                         if (IsExportingBlocked(type))
                         {
+                            log.AppendLine("blocked: {0}", type.FullName);
                             continue;
                         }
                         if (implicitExport || IsExportingExplicit(type))
                         {
+                            log.AppendLine("export: {0}", type.FullName);
                             this.AddExport(type);
                         }
                     }
                 }
-                catch (Exception)
+                catch (Exception exception)
                 {
-                    // Debug.LogWarning(exception);
+                    log.AppendLine(exception.ToString());
                 }
+                log.DecTabLevel();
             }
         }
 
         // 清理多余文件
         public void Cleanup()
         {
+            log.AppendLine("cleanup");
+            log.AddTabLevel();
             var outDir = Prefs.GetPrefs().outDir;
             foreach (var file in Directory.GetFiles(outDir))
             {
@@ -117,9 +128,10 @@ namespace Duktape
                 if (!outputFiles.Contains(nfile))
                 {
                     File.Delete(file);
-                    Debug.LogFormat("cleanup unused file {0}", file);
+                    log.AppendLine("remove unused file {0}", file);
                 }
             }
+            log.DecTabLevel();
         }
 
         public void AddOutputFile(string filename)
@@ -141,6 +153,9 @@ namespace Duktape
                 cg.Generate(type);
                 cg.WriteTo(outDir, GetFileName(type), tx);
             }
+
+            var logPath = Prefs.GetPrefs().logPath;
+            File.WriteAllText(logPath, log.ToString());
         }
     }
 }

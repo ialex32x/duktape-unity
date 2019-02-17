@@ -18,14 +18,7 @@ namespace Duktape
         {
             this.bindingManager = bindingManager;
             var tab = Prefs.GetPrefs().tab;
-            string newline;
-            switch (Prefs.GetPrefs().newLineStyle)
-            {
-                case NewLineStyle.CR: newline = "\r"; break;
-                case NewLineStyle.LF: newline = "\n"; break;
-                case NewLineStyle.CRLF: newline = "\r\n"; break;
-                default: newline = Environment.NewLine; break;
-            }
+            var newline = Prefs.GetPrefs().newline;
             csharp = new TextGenerator(newline, tab);
             typescript = new TextGenerator(newline, tab);
         }

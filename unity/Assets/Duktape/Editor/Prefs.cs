@@ -20,12 +20,28 @@ namespace Duktape
         private static Prefs _prefs;
         public const string PATH = "ProjectSettings/duktape.json";
 
+        public string logPath = "Temp/duktape.log";
+
         private bool _dirty;
 
         // 静态绑定代码的生成目录
         public string outDir = "Assets/Duktape/Generated";
 
         public NewLineStyle newLineStyle;
+
+        public string newline
+        {
+            get
+            {
+                switch (Prefs.GetPrefs().newLineStyle)
+                {
+                    case NewLineStyle.CR: return "\r"; 
+                    case NewLineStyle.LF: return "\n"; 
+                    case NewLineStyle.CRLF: return "\r\n"; 
+                    default: return Environment.NewLine; 
+                }
+            }
+        }
 
         public string tab = "    ";
 
