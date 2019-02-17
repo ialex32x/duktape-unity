@@ -13,10 +13,11 @@ namespace Duktape
     {
         protected CodeGenerator cg;
 
-        public TopLevelCodeGen(CodeGenerator cg)
+        public TopLevelCodeGen(CodeGenerator cg, Type type)
         {
             this.cg = cg;
-            this.cg.csharp.AppendLine("// {0} {1}", Environment.UserName, DateTime.Now);
+            this.cg.csharp.AppendLine("// UserName: {0} @ {1}", Environment.UserName, DateTime.Now);
+            this.cg.csharp.AppendLine("// Assembly: {0}", type.Assembly.GetName());
             this.cg.csharp.AppendLine("using System;");
             this.cg.csharp.AppendLine("using System.Collections.Generic;");
             this.cg.csharp.AppendLine();
@@ -239,8 +240,15 @@ namespace Duktape
 
         public void AddProperty(PropertyInfo propInfo)
         {
-            var name = propInfo.Name;
-            properties.Add(name, propInfo);
+            try
+            {
+                var name = propInfo.Name;
+                properties.Add(name, propInfo);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarningFormat("AddProperty failed {0}\n{1}", propInfo.Name, exception);
+            }
         }
 
         public void AddMethod(MethodInfo methodInfo)

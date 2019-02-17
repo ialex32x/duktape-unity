@@ -41,7 +41,7 @@ namespace Duktape
             Clear();
             using (new PlatformCodeGen(this))
             {
-                using (new TopLevelCodeGen(this))
+                using (new TopLevelCodeGen(this, type))
                 {
                     using (new NamespaceCodeGen(this, Prefs.GetPrefs().ns, type))
                     {

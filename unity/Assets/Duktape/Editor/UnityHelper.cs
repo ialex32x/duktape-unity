@@ -15,8 +15,8 @@ namespace Duktape
             var bm = new BindingManager();
             bm.Collect();
             // temp
-            bm.AddExport(typeof(GameObject));
-            bm.AddExport(typeof(Transform));
+            // bm.AddExport(typeof(GameObject));
+            // bm.AddExport(typeof(Transform));
             bm.Generate();
             bm.Cleanup();
             AssetDatabase.Refresh();

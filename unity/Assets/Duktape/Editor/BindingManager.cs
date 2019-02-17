@@ -10,8 +10,21 @@ namespace Duktape
 
     public class BindingManager
     {
+        private HashSet<Type> blacklist;
+        private HashSet<Type> whitelist;
         private List<Type> types = new List<Type>();
         private List<string> outputFiles = new List<string>();
+
+        public BindingManager()
+        {
+            blacklist = new HashSet<Type>(new Type[]
+            {
+                typeof(AOT.MonoPInvokeCallbackAttribute),
+            });
+            whitelist = new HashSet<Type>(new Type[]
+            {
+            });
+        }
 
         public void AddExport(Type type)
         {
@@ -21,6 +34,30 @@ namespace Duktape
         public bool IsExported(Type type)
         {
             return types.Contains(type);
+        }
+
+        // 是否在黑名单中屏蔽, 或者已知无需导出的类型
+        public bool IsExportingBlocked(Type type)
+        {
+            if (blacklist.Contains(type))
+            {
+                return true;
+            }
+            if (type.IsGenericType)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        // 是否显式要求导出
+        public bool IsExportingExplicit(Type type)
+        {
+            if (whitelist.Contains(type))
+            {
+                return true;
+            }
+            return false;
         }
 
         // 将类型名转换成简单字符串 (比如用于文件名)
@@ -48,13 +85,14 @@ namespace Duktape
                     // Debug.LogFormat("collecting assembly {0}: {1}", assemblyName, types.Length);
                     foreach (var type in types)
                     {
-                        //TODO: filter for exporting
-                        if (implicitExport)
+                        if (IsExportingBlocked(type))
                         {
-
+                            continue;
                         }
-                        // Debug.LogFormat("")
-                        // this.AddExport(type);
+                        if (implicitExport || IsExportingExplicit(type))
+                        {
+                            this.AddExport(type);
+                        }
                     }
                 }
                 catch (Exception)
@@ -78,8 +116,8 @@ namespace Duktape
                 // Debug.LogFormat("checking file {0}", nfile);
                 if (!outputFiles.Contains(nfile))
                 {
-                    //TODO: remove file
-                    Debug.LogFormat("TODO: remove file {0}", file);
+                    File.Delete(file);
+                    Debug.LogFormat("cleanup unused file {0}", file);
                 }
             }
         }
