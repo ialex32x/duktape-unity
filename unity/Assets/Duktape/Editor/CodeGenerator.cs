@@ -57,15 +57,29 @@ namespace Duktape
 
         public void WriteTo(string outDir, string filename, string tx)
         {
-            var csName = filename + ".cs" + tx;
-            var tsName = filename + ".d.ts" + tx;
-            var csPath = Path.Combine(outDir, csName);
-            var tsPath = Path.Combine(outDir, tsName);
-            
-            this.bindingManager.AddOutputFile(csPath);
-            this.bindingManager.AddOutputFile(tsPath);
-            File.WriteAllText(csPath, this.csharp.ToString());
-            File.WriteAllText(tsPath, this.typescript.ToString());
+            try
+            {
+                var csName = filename + ".cs" + tx;
+                var csPath = Path.Combine(outDir, csName);
+                this.bindingManager.AddOutputFile(csPath);
+                File.WriteAllText(csPath, this.csharp.ToString());
+            }
+            catch (Exception exception)
+            {
+                this.bindingManager.Error("write csharp file failed [{0}]: {1}", filename, exception.Message);
+            }
+
+            try
+            {
+                var tsName = filename + ".d.ts" + tx;
+                var tsPath = Path.Combine(outDir, tsName);
+                this.bindingManager.AddOutputFile(tsPath);
+                File.WriteAllText(tsPath, this.typescript.ToString());
+            }
+            catch (Exception exception)
+            {
+                this.bindingManager.Error("write typescript file failed [{0}]: {1}", filename, exception.Message);
+            }
         }
     }
 }

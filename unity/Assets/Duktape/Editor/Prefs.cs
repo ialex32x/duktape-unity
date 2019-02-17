@@ -73,6 +73,21 @@ namespace Duktape
             "UnityEngine.UI",
         });
 
+        // type.FullName 前缀满足以下任意一条时不会被导出
+        public List<string> typePrefixBlacklist = new List<string>(new string[]
+        {
+            "JetBrains.", 
+            "Unity.Collections.",
+            "Unity.Jobs.",
+            "Unity.Profiling.",
+            "UnityEditor.",
+            "UnityEditorInternal.",
+            "UnityEngineInternal.",
+            "UnityEditor.Experimental.",
+            "Unity.IO.LowLevel.",
+            "Unity.Burst.",
+        });
+
         public static Prefs GetPrefs()
         {
             if (_prefs == null)

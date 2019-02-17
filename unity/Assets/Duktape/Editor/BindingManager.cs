@@ -8,11 +8,12 @@ namespace Duktape
     using UnityEngine;
     using UnityEditor;
 
-    public class BindingManager
+    public partial class BindingManager
     {
-        private TextGenerator log;
+        public TextGenerator log;
         private HashSet<Type> blacklist;
         private HashSet<Type> whitelist;
+        private List<string> typePrefixBlacklist;
         private List<Type> types = new List<Type>();
         private List<string> outputFiles = new List<string>();
 
@@ -20,6 +21,7 @@ namespace Duktape
         {
             var tab = Prefs.GetPrefs().tab;
             var newline = Prefs.GetPrefs().newline;
+            typePrefixBlacklist = Prefs.GetPrefs().typePrefixBlacklist;
             log = new TextGenerator(newline, tab);
             blacklist = new HashSet<Type>(new Type[]
             {
@@ -51,6 +53,17 @@ namespace Duktape
             {
                 return true;
             }
+            if (type.Name.Contains("<"))
+            {
+                return true;
+            }
+            for (int i = 0, size = typePrefixBlacklist.Count; i < size; i++)
+            {
+                if (type.FullName.StartsWith(typePrefixBlacklist[i]))
+                {
+                    return true;
+                }
+            }
             return false;
         }
 
@@ -67,7 +80,8 @@ namespace Duktape
         // 将类型名转换成简单字符串 (比如用于文件名)
         public string GetFileName(Type type)
         {
-            return type.FullName.Replace(".", "_");
+            var filename = type.FullName.Replace(".", "_");
+            return filename;
         }
 
         public void Collect()
@@ -156,6 +170,7 @@ namespace Duktape
 
             var logPath = Prefs.GetPrefs().logPath;
             File.WriteAllText(logPath, log.ToString());
+            Debug.LogFormat("generated {0} types", types.Count);
         }
     }
 }

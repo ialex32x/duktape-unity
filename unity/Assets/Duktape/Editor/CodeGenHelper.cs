@@ -18,6 +18,7 @@ namespace Duktape
             this.cg = cg;
             this.cg.csharp.AppendLine("// UserName: {0} @ {1}", Environment.UserName, DateTime.Now);
             this.cg.csharp.AppendLine("// Assembly: {0}", type.Assembly.GetName());
+            this.cg.csharp.AppendLine("// Type: {0}", type.FullName);
             this.cg.csharp.AppendLine("using System;");
             this.cg.csharp.AppendLine("using System.Collections.Generic;");
             this.cg.csharp.AppendLine();
@@ -247,7 +248,7 @@ namespace Duktape
             }
             catch (Exception exception)
             {
-                Debug.LogWarningFormat("AddProperty failed {0}\n{1}", propInfo.Name, exception);
+                this.cg.bindingManager.Error("AddProperty failed {0}\n{1}", propInfo, exception);
             }
         }
 
