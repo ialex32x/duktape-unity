@@ -229,6 +229,10 @@ namespace Duktape
                         propertyInfo.CanRead ? propertyInfo.GetMethod.Name : "null",
                         propertyInfo.CanWrite ? propertyInfo.SetMethod.Name : "null",
                         bStatic ? "true" : "false");
+                    
+                    var tsPropertyPrefix = propertyInfo.CanWrite ? "":"readonly ";
+                    var tsPropertyType = "any";
+                    cg.typescript.AppendLine("{0}{1}: {2}", tsPropertyPrefix, propertyInfo.Name, tsPropertyType);
                 }
                 cg.csharp.AppendLine("duk_end_class(ctx);");
                 cg.csharp.AppendLine("duk_end_namespace(ctx);");
