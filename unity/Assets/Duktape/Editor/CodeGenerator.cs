@@ -30,11 +30,15 @@ namespace Duktape
             typescript = new TextGenerator(newline, tab);
         }
 
-        public void Generate(Type type)
+        public void Clear()
         {
-            // Prefs.GetPrefs().outDir
             csharp.Clear();
             typescript.Clear();
+        }
+
+        public void Generate(Type type)
+        {
+            Clear();
             using (new PlatformCodeGen(this))
             {
                 using (new TopLevelCodeGen(this))
