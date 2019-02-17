@@ -248,7 +248,7 @@ namespace Duktape
             }
             catch (Exception exception)
             {
-                this.cg.bindingManager.Error("AddProperty failed {0}\n{1}", propInfo, exception);
+                this.cg.bindingManager.Error("AddProperty failed {0} @ {1}\n{2}", propInfo, type, exception);
             }
         }
 
