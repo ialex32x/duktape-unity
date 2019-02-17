@@ -5,7 +5,9 @@ var foo = new foo_1.Foo(12);
 foo.greet();
 // UnityEngine.Debug.Log("greeting")
 var go = new UnityEngine.GameObject();
+console.log("go.activeSelf", go.activeSelf);
 go.SetActive(false);
+console.log("go.activeSelf", go.activeSelf);
 go.Foo();
 // UnityEngine.Object.Destroy(go)
 //# sourceMappingURL=main.js.map

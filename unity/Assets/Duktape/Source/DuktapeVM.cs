@@ -6,7 +6,12 @@ namespace Duktape
     using UnityEngine;
     using duk_ret_t = System.Int32;
 
-    // 临时
+    public struct UnrefAction
+    {
+        public int refid;
+        public Action<IntPtr, int> action;
+    }
+
     public class DuktapeVM // : Scripting.ScriptEngine
     {
         public const string HEAP_STASH_PROPS_REGISTRY = "registry";
@@ -17,6 +22,8 @@ namespace Duktape
         private ObjectCache _objectCache = new ObjectCache();
 
         private List<string> _searchPaths = new List<string>();
+
+        private Queue<UnrefAction> _unrefActions = new Queue<UnrefAction>();
 
         // 已经导出的本地类
         private Dictionary<Type, DuktapeFunction> _exported = new Dictionary<Type, DuktapeFunction>();
@@ -51,6 +58,13 @@ namespace Duktape
         public void AddExported(Type type, DuktapeFunction fn)
         {
             _exported.Add(type, fn);
+        }
+
+        // 得到注册在js中的类型对应的构造函数
+        public DuktapeFunction GetExported(Type type)
+        {
+            DuktapeFunction value;
+            return _exported.TryGetValue(type, out value) ? value : null;
         }
 
         public static void duk_open_ref(IntPtr ctx)
@@ -112,6 +126,38 @@ namespace Duktape
             DuktapeDLL.duk_push_int(ctx, freeid); // stash, array, array[0], freeid
             DuktapeDLL.duk_put_prop_index(ctx, -3, (uint)refid); // stash, array, array[0] ** set t[refid] = freeid
             DuktapeDLL.duk_pop_3(ctx); // []
+        }
+
+
+        public void GC(int refid, Action<IntPtr, int> op)
+        {
+            var act = new UnrefAction()
+            {
+                refid = refid,
+                action = op,
+            };
+            lock (_unrefActions)
+            {
+                _unrefActions.Enqueue(act);
+            }
+        }
+
+        public void Update(float dt)
+        {
+            var ctx = _ctx.rawValue;
+            lock (_unrefActions)
+            {
+                while (true)
+                {
+                    var count = _unrefActions.Count;
+                    if (count == 0)
+                    {
+                        break;
+                    }
+                    var act = _unrefActions.Dequeue();
+                    act.action(ctx, act.refid);
+                }
+            }
         }
 
         public static void duk_open_module(IntPtr ctx)
@@ -254,16 +300,22 @@ namespace Duktape
             return PushSuperPrototypeOf(ctx, baseType);
         }
 
-        public void EvalFile(string filename)
+        public void EvalSource(string source, string filename)
         {
+            if (filename == null)
+            {
+                filename = "eval";
+            }
+            if (string.IsNullOrEmpty(source))
+            {
+                return;
+            }
             var ctx = _ctx.rawValue;
-            var path = ResolvePath(filename);
-            var source = _fileManager.ReadAllText(path);
             DuktapeDLL.duk_push_string(ctx, source);
             DuktapeDLL.duk_push_string(ctx, filename);
             if (DuktapeDLL.duk_pcompile(ctx, 0) != 0)
             {
-                Debug.LogErrorFormat("compile error: {0}\n{1}", DuktapeDLL.duk_safe_to_string(ctx, -1), source);
+                Debug.LogErrorFormat("compile error: {0}\n{1}", DuktapeDLL.duk_safe_to_string(ctx, -1), filename);
                 DuktapeDLL.duk_pop(ctx);
             }
             else
@@ -271,11 +323,19 @@ namespace Duktape
                 // Debug.LogFormat("check top {0}", DuktapeDLL.duk_get_top(ctx));
                 if (DuktapeDLL.duk_pcall(ctx, 0) != DuktapeDLL.DUK_EXEC_SUCCESS)
                 {
-                    Debug.LogErrorFormat("call error: {0}\n{1}", DuktapeDLL.duk_safe_to_string(ctx, -1), source);
+                    Debug.LogErrorFormat("call error: {0}\n{1}", DuktapeDLL.duk_safe_to_string(ctx, -1), filename);
                 }
                 DuktapeDLL.duk_pop(ctx);
                 // Debug.LogFormat("check top {0}", DuktapeDLL.duk_get_top(ctx));
             }
+        }
+
+        public void EvalFile(string filename)
+        {
+            var ctx = _ctx.rawValue;
+            var path = ResolvePath(filename);
+            var source = _fileManager.ReadAllText(path);
+            EvalSource(source, filename);
         }
 
         public void EvalMain(string filename)

@@ -38,11 +38,24 @@ namespace Duktape
             return 0;
         }
 
+        [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+        static int get_activeSelf(IntPtr ctx)
+        {
+            DuktapeDLL.duk_push_this(ctx);
+            object self;
+            duk_get_any(ctx, -1, out self);
+            DuktapeDLL.duk_pop(ctx); // pop this
+            var go = (UnityEngine.GameObject)self;
+            DuktapeDLL.duk_push_boolean(ctx, go.activeSelf);
+            return 1;
+        }
+
         public static void reg(IntPtr ctx)
         {
             duk_begin_namespace(ctx, "UnityEngine");
             duk_begin_class(ctx, typeof(UnityEngine.GameObject), ctor);
             duk_put_method(ctx, "SetActive", SetActive, false);
+            duk_put_property(ctx, "activeSelf", get_activeSelf, null, false);
             duk_end_class(ctx);
             duk_end_namespace(ctx);
         }
