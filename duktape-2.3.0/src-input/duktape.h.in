@@ -1285,6 +1285,61 @@ DUK_EXTERNAL_DECL duk_ret_t duk_module_node_peval_main(duk_context *ctx, const c
 DUK_EXTERNAL_DECL void duk_module_node_init(duk_context *ctx);
 
 /*
+ * extra: unity helpers
+ */
+
+DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_unity_error_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt));
+
+DUK_EXTERNAL_DECL const char *duk_unity_get_lstring(duk_context *ctx, duk_idx_t idx, duk_uint_t *out_len);
+
+DUK_EXTERNAL_DECL duk_int_t duk_unity_compile_raw(duk_context *ctx, const char *src_buffer, duk_uint_t src_length, duk_uint_t flags);
+
+DUK_EXTERNAL_DECL duk_int_t duk_unity_eval_raw(duk_context *ctx, const char *src_buffer, duk_uint_t src_length, duk_uint_t flags);
+
+DUK_EXTERNAL_DECL duk_codepoint_t duk_unity_char_code_at(duk_context *ctx, duk_idx_t idx, duk_uint_t char_offset);
+
+DUK_EXTERNAL_DECL void duk_unity_substring(duk_context *ctx, duk_idx_t idx, duk_uint_t start_char_offset, duk_uint_t end_char_offset);
+
+DUK_EXTERNAL_DECL void *duk_unity_resize_buffer(duk_context *ctx, duk_idx_t idx, duk_uint_t new_size);
+DUK_EXTERNAL_DECL void *duk_unity_steal_buffer(duk_context *ctx, duk_idx_t idx, duk_uint_t *out_size);
+DUK_EXTERNAL_DECL void duk_unity_config_buffer(duk_context *ctx, duk_idx_t idx, void *ptr, duk_uint_t len);
+
+DUK_EXTERNAL_DECL duk_uint_t duk_unity_get_length(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL void duk_unity_set_length(duk_context *ctx, duk_idx_t idx, duk_uint_t len);
+
+DUK_EXTERNAL_DECL const char *duk_unity_safe_to_lstring(duk_context *ctx, duk_idx_t idx, duk_uint_t *out_len);
+
+DUK_EXTERNAL_DECL void *duk_unity_alloc_raw(duk_context *ctx, duk_uint_t size);
+DUK_EXTERNAL_DECL void *duk_unity_realloc_raw(duk_context *ctx, void *ptr, duk_uint_t size);
+DUK_EXTERNAL_DECL void *duk_unity_alloc(duk_context *ctx, duk_uint_t size);
+DUK_EXTERNAL_DECL void *duk_unity_realloc(duk_context *ctx, void *ptr, duk_uint_t size);
+
+DUK_EXTERNAL_DECL const char *duk_unity_push_lstring(duk_context *ctx, const char *str, duk_uint_t len);
+DUK_EXTERNAL_DECL const char *duk_unity_require_lstring(duk_context *ctx, duk_idx_t idx, duk_uint_t *out_len);
+DUK_EXTERNAL_DECL void *duk_unity_require_buffer(duk_context *ctx, duk_idx_t idx, duk_uint_t *out_size);
+DUK_EXTERNAL_DECL void *duk_unity_require_buffer_data(duk_context *ctx, duk_idx_t idx, duk_uint_t *out_size);
+
+DUK_EXTERNAL_DECL const char *duk_unity_to_lstring(duk_context *ctx, duk_idx_t idx, duk_uint_t *out_len);
+DUK_EXTERNAL_DECL void *duk_unity_to_buffer_raw(duk_context *ctx, duk_idx_t idx, duk_uint_t *out_size, duk_uint_t flags);
+
+DUK_EXTERNAL_DECL void *duk_unity_get_buffer(duk_context *ctx, duk_idx_t idx, duk_uint_t *out_size);
+DUK_EXTERNAL_DECL void *duk_unity_get_buffer_data(duk_context *ctx, duk_idx_t idx, duk_uint_t *out_size);
+
+DUK_EXTERNAL_DECL void duk_unity_push2i(duk_context *ctx, duk_int_t v1, duk_int_t v2);
+DUK_EXTERNAL_DECL void duk_unity_push3i(duk_context *ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3);
+DUK_EXTERNAL_DECL void duk_unity_push4i(duk_context *ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3, duk_int_t v4);
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_get2i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2);
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_get3i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2, duk_int_t *v3);
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_get4i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2, duk_int_t *v3, duk_int_t *v4);
+
+DUK_EXTERNAL_DECL void duk_unity_push2f(duk_context *ctx, float v1, float v2);
+DUK_EXTERNAL_DECL void duk_unity_push3f(duk_context *ctx, float v1, float v2, float v3);
+DUK_EXTERNAL_DECL void duk_unity_push4f(duk_context *ctx, float v1, float v2, float v3, float v4);
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_get2f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2);
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_get3f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3);
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_get4f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3, float *v4);
+
+/*
  *  C++ name mangling
  */
 

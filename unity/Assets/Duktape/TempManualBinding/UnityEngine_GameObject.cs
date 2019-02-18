@@ -54,8 +54,8 @@ namespace Duktape
         {
             duk_begin_namespace(ctx, "UnityEngine");
             duk_begin_class(ctx, typeof(UnityEngine.GameObject), ctor);
-            duk_put_method(ctx, "SetActive", SetActive, false);
-            duk_put_property(ctx, "activeSelf", get_activeSelf, null, false);
+            duk_add_method(ctx, "SetActive", SetActive, false);
+            duk_add_property(ctx, "activeSelf", get_activeSelf, null, false);
             duk_end_class(ctx);
             duk_end_namespace(ctx);
         }

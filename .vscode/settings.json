@@ -1,4 +1,10 @@
 {
     "explorer.openEditors.visible": 0,
-    "restructuredtext.confPath": ""
+    "restructuredtext.confPath": "",
+    "files.associations": {
+        "initializer_list": "c",
+        "type_traits": "c",
+        "xstring": "c",
+        "xutility": "c"
+    }
 }

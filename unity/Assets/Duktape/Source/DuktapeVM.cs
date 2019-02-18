@@ -96,7 +96,7 @@ namespace Duktape
             }
             else
             {
-                refid = (int)DuktapeDLL.duk_get_length(ctx, -2);
+                refid = (int)DuktapeDLL.duk_unity_get_length(ctx, -2);
                 DuktapeDLL.duk_dup(ctx, -4); // obj, stash, array, array[0], obj
                 DuktapeDLL.duk_put_prop_index(ctx, -3, (uint)refid); // obj, stash, array, array[0]
                 DuktapeDLL.duk_pop_n(ctx, 4); // []

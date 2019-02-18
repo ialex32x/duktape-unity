@@ -21,29 +21,6 @@ namespace Duktape
             return 0;
         }
 
-        public static bool duk_get_any(IntPtr ctx, int idx, out object o)
-        {
-            if (DuktapeDLL.duk_get_prop_string(ctx, -1, DuktapeVM.OBJ_PROP_NATIVE))
-            {
-                var id = DuktapeDLL.duk_get_int(ctx, -1);
-                DuktapeDLL.duk_pop(ctx);
-                return DuktapeVM.GetObjectCache(ctx).TryGetValue(id, out o);
-            }
-            else 
-            {
-                DuktapeDLL.duk_pop(ctx);
-            }
-            o = null;
-            return false;
-        }
-
-        // variant push
-        public static void duk_push_any(IntPtr ctx, object o)
-        {
-            var id = DuktapeVM.GetObjectCache(ctx).Add(o);
-            DuktapeDLL.duk_push_int(ctx, id);
-        }
-
         public static void duk_begin_namespace(IntPtr ctx, string el) // [parent]
         {
             // Debug.LogFormat("begin namespace {0}", DuktapeDLL.duk_get_top(ctx));
@@ -114,14 +91,14 @@ namespace Duktape
             // Debug.LogFormat("end class {0}", DuktapeDLL.duk_get_top(ctx));
         }
 
-        protected static void duk_put_method(IntPtr ctx, string name, DuktapeDLL.duk_c_function func, bool bStatic)
+        protected static void duk_add_method(IntPtr ctx, string name, DuktapeDLL.duk_c_function func, bool bStatic)
         {
             var idx = bStatic ? -3 : -2;
             DuktapeDLL.duk_push_c_function(ctx, func, DuktapeDLL.DUK_VARARGS);
             DuktapeDLL.duk_put_prop_string(ctx, idx, name);
         }
 
-        protected static void duk_put_property(IntPtr ctx, string name, DuktapeDLL.duk_c_function getter, DuktapeDLL.duk_c_function setter, bool bStatic)
+        protected static void duk_add_property(IntPtr ctx, string name, DuktapeDLL.duk_c_function getter, DuktapeDLL.duk_c_function setter, bool bStatic)
         {
             // [ctor, prototype]
             var idx = bStatic ? -3 : -2;
@@ -146,7 +123,7 @@ namespace Duktape
         }
 
         // always static
-        protected static void duk_put_value(IntPtr ctx, string name, int v)
+        protected static void duk_add_const(IntPtr ctx, string name, int v)
         {
             var idx = -3;
             DuktapeDLL.duk_push_string(ctx, name);
@@ -158,7 +135,19 @@ namespace Duktape
         }
 
         // always static
-        protected static void duk_put_value(IntPtr ctx, string name, string v)
+        protected static void duk_add_const(IntPtr ctx, string name, float v)
+        {
+            var idx = -3;
+            DuktapeDLL.duk_push_string(ctx, name);
+            DuktapeDLL.duk_push_number(ctx, v);
+            DuktapeDLL.duk_def_prop(ctx, idx, DuktapeDLL.DUK_DEFPROP_SET_ENUMERABLE
+                                            | DuktapeDLL.DUK_DEFPROP_CLEAR_CONFIGURABLE
+                                            | DuktapeDLL.DUK_DEFPROP_HAVE_VALUE
+                                            | DuktapeDLL.DUK_DEFPROP_CLEAR_WRITABLE);
+        }
+
+        // always static
+        protected static void duk_add_const(IntPtr ctx, string name, string v)
         {
             var idx = -3;
             DuktapeDLL.duk_push_string(ctx, name);

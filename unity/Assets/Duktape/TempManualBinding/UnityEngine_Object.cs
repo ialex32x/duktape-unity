@@ -41,8 +41,8 @@ namespace Duktape
         {
             duk_begin_namespace(ctx, "UnityEngine");
             duk_begin_class(ctx, typeof(UnityEngine.Object), ctor);
-            duk_put_method(ctx, "Destroy", Destroy, true);
-            duk_put_method(ctx, "Foo", Foo, false);
+            duk_add_method(ctx, "Destroy", Destroy, true);
+            duk_add_method(ctx, "Foo", Foo, false);
             duk_end_class(ctx);
             duk_end_namespace(ctx);
         }
