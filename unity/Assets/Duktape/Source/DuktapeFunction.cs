@@ -5,7 +5,7 @@ namespace Duktape
 {
     public class DuktapeFunction : DuktapeValue
     {
-        public DuktapeFunction(IntPtr ctx, int refid)
+        public DuktapeFunction(IntPtr ctx, uint refid)
         : base(ctx, refid)
         {
         }

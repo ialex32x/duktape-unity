@@ -11,8 +11,7 @@ namespace Duktape
         {
             DuktapeDLL.duk_push_this(ctx);
             var o = new UnityEngine.GameObject();
-            duk_push_any(ctx, o);
-            DuktapeDLL.duk_put_prop_string(ctx, -2, DuktapeVM.OBJ_PROP_NATIVE);
+            duk_bind_native(ctx, -1, o);
             DuktapeDLL.duk_pop(ctx);
             return 0;
         }

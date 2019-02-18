@@ -8,20 +8,31 @@ namespace Duktape
 
     public partial class DuktapeBinding
     {
+        public static void duk_bind_native(IntPtr ctx, int idx, object o)
+        {
+            var id = DuktapeVM.GetObjectCache(ctx).Add(o);
+            DuktapeDLL.duk_unity_set_prop_i(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE, id);
+        }
+
         // variant push
         public static void duk_push_any(IntPtr ctx, object o)
         {
             var id = DuktapeVM.GetObjectCache(ctx).Add(o);
-            DuktapeDLL.duk_push_int(ctx, id);
+            DuktapeDLL.duk_push_object(ctx);
+            DuktapeDLL.duk_unity_set_prop_i(ctx, -1, DuktapeVM.OBJ_PROP_NATIVE, id);
+            if (DuktapeVM.GetVM(ctx).PushChainedPrototypeOf(ctx, o.GetType()))
+            {
+                DuktapeDLL.duk_set_prototype(ctx, -2);
+            }
+            DuktapeDLL.duk_pop(ctx);
         }
-        
+
         // variant push
         public static void duk_push_any(IntPtr ctx, UnityEngine.Object o)
         {
-            var id = DuktapeVM.GetObjectCache(ctx).Add(o);
-            DuktapeDLL.duk_push_int(ctx, id);
+            duk_push_any(ctx, (object)o);
         }
-        
+
         public static void duk_push_any(IntPtr ctx, bool o)
         {
             DuktapeDLL.duk_push_boolean(ctx, o);
@@ -126,7 +137,7 @@ namespace Duktape
                 DuktapeDLL.duk_pop(ctx);
                 return DuktapeVM.GetObjectCache(ctx).TryGetValue(id, out o);
             }
-            else 
+            else
             {
                 DuktapeDLL.duk_pop(ctx);
             }

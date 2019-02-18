@@ -6,7 +6,7 @@
  *  comments.  Other parts of the header are Duktape internal and related to
  *  e.g. platform/compiler/feature detection.
  *
- *  Git commit 540fd4ed1c38dfa1d2a9f3bc2271c55aa3ea2c1e (540fd4e-dirty).
+ *  Git commit d477131cedb72a4275cd3f252fd24471f6539531 (d477131-dirty).
  *  Git branch develop.
  *
  *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and
@@ -171,8 +171,8 @@
  * which Duktape snapshot was used.  Not available in the ECMAScript
  * environment.
  */
-#define DUK_GIT_COMMIT                    "540fd4ed1c38dfa1d2a9f3bc2271c55aa3ea2c1e"
-#define DUK_GIT_DESCRIBE                  "540fd4e-dirty"
+#define DUK_GIT_COMMIT                    "d477131cedb72a4275cd3f252fd24471f6539531"
+#define DUK_GIT_DESCRIBE                  "d477131-dirty"
 #define DUK_GIT_BRANCH                    "develop"
 
 /* External duk_config.h provides platform/compiler/OS dependent
@@ -1464,6 +1464,14 @@ DUK_EXTERNAL_DECL void duk_unity_push4f(duk_context *ctx, float v1, float v2, fl
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get2f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get3f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get4f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3, float *v4);
+
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_prop_i(duk_context *ctx, duk_idx_t idx, const char *key, duk_int_t val);
+
+DUK_EXTERNAL_DECL void duk_unity_open(duk_context *ctx);
+
+DUK_EXTERNAL_DECL duk_uint_t duk_unity_ref(duk_context *ctx); /// Creates and returns a reference for the object at the top of the stack (and pops the object).
+DUK_EXTERNAL_DECL void duk_unity_unref(duk_context *ctx, duk_uint_t refid); /// 将refid关联的对象push到当前栈顶
+DUK_EXTERNAL_DECL void duk_unity_getref(duk_context *ctx, duk_uint_t refid); /// Releases reference refid
 
 /*
  *  C++ name mangling

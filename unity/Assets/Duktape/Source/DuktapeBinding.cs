@@ -75,7 +75,7 @@ namespace Duktape
             DuktapeDLL.duk_dup(ctx, -1);
             // Debug.LogFormat("begin check {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_dup(ctx, -1);
-            DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeVM.duk_ref(ctx)));
+            DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx)));
             // Debug.LogFormat("end check {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_put_prop_string(ctx, -3, typename);
             DuktapeDLL.duk_push_object(ctx); // [ctor, prototype]

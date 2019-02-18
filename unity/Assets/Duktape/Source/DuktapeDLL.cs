@@ -1469,6 +1469,20 @@ namespace Duktape
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_unity_get4f(IntPtr ctx, out float v1, out float v2, out float v3, out float v4);
 
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_unity_set_prop_i(IntPtr ctx, duk_idx_t idx, string key, duk_int_t val);
+        
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_uint_t duk_unity_open(IntPtr ctx); // 初始化附加内容 (比如ref/unref的使用)
+
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_uint_t duk_unity_ref(IntPtr ctx);
+        /// 将refid关联的对象push到当前栈顶
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void duk_unity_unref(IntPtr ctx, duk_uint_t refid);
+        /// Releases reference refid
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void duk_unity_getref(IntPtr ctx, duk_uint_t refid);
 
         // [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         // public static extern IntPtr duk_test_size(out duk_size_t out_size);

@@ -217,6 +217,7 @@ DUK_EXTERNAL void duk_unity_push4f(duk_context *ctx, float v1, float v2, float v
 }
 
 DUK_EXTERNAL duk_bool_t duk_unity_get2f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2) {
+    idx = duk_normalize_index(ctx, idx);
     if (duk_is_array(ctx, idx)) {
         if (duk_get_prop_index(ctx, idx, 0)) {
             *v1 = (float)duk_get_number(ctx, -1);
@@ -231,6 +232,7 @@ DUK_EXTERNAL duk_bool_t duk_unity_get2f(duk_context *ctx, duk_idx_t idx, float *
 }
 
 DUK_EXTERNAL duk_bool_t duk_unity_get3f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3) {
+    idx = duk_normalize_index(ctx, idx);
     if (duk_is_array(ctx, idx)) {
         if (duk_get_prop_index(ctx, idx, 0)) {
             *v1 = (float)duk_get_number(ctx, -1);
@@ -248,6 +250,7 @@ DUK_EXTERNAL duk_bool_t duk_unity_get3f(duk_context *ctx, duk_idx_t idx, float *
 }
 
 DUK_EXTERNAL duk_bool_t duk_unity_get4f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3, float *v4) {
+    idx = duk_normalize_index(ctx, idx);
     if (duk_is_array(ctx, idx)) {
         if (duk_get_prop_index(ctx, idx, 0)) {
             *v1 = (float)duk_get_number(ctx, -1);
@@ -270,6 +273,7 @@ DUK_EXTERNAL duk_bool_t duk_unity_get4f(duk_context *ctx, duk_idx_t idx, float *
 // int
 
 DUK_EXTERNAL duk_bool_t duk_unity_get2i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2) {
+    idx = duk_normalize_index(ctx, idx);
     if (duk_is_array(ctx, idx)) {
         if (duk_get_prop_index(ctx, idx, 0)) {
             *v1 = duk_get_int(ctx, -1);
@@ -284,6 +288,7 @@ DUK_EXTERNAL duk_bool_t duk_unity_get2i(duk_context *ctx, duk_idx_t idx, duk_int
 }
 
 DUK_EXTERNAL duk_bool_t duk_unity_get3i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2, duk_int_t *v3) {
+    idx = duk_normalize_index(ctx, idx);
     if (duk_is_array(ctx, idx)) {
         if (duk_get_prop_index(ctx, idx, 0)) {
             *v1 = duk_get_int(ctx, -1);
@@ -301,6 +306,7 @@ DUK_EXTERNAL duk_bool_t duk_unity_get3i(duk_context *ctx, duk_idx_t idx, duk_int
 }
 
 DUK_EXTERNAL duk_bool_t duk_unity_get4i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2, duk_int_t *v3, duk_int_t *v4) {
+    idx = duk_normalize_index(ctx, idx);
     if (duk_is_array(ctx, idx)) {
         if (duk_get_prop_index(ctx, idx, 0)) {
             *v1 = duk_get_int(ctx, -1);
@@ -319,3 +325,66 @@ DUK_EXTERNAL duk_bool_t duk_unity_get4i(duk_context *ctx, duk_idx_t idx, duk_int
     }
     return 0;
 }
+
+DUK_EXTERNAL duk_bool_t duk_unity_set_prop_i(duk_context *ctx, duk_idx_t idx, const char *key, duk_int_t val) {
+    idx = duk_normalize_index(ctx, idx);
+    duk_push_int(ctx, val);
+    return duk_put_prop_string(ctx, idx, key);
+}
+
+DUK_EXTERNAL void duk_unity_open(duk_context *ctx) {
+    // begin: ref system
+    duk_push_heap_stash(ctx); // [stash]
+    duk_push_array(ctx); // [stash, array]
+    duk_dup_top(ctx); // [stash, array, array]
+    duk_put_prop_string(ctx, -3, "c_registry"); // [stash, array]
+    duk_push_int(ctx, 0); // [stash, array, 0]
+    duk_put_prop_index(ctx, -2, 0); // [stash, array]
+    duk_pop_2(ctx);
+    // end: ref system
+}
+
+/// Creates and returns a reference for the object at the top of the stack (and pops the object).
+DUK_EXTERNAL duk_uint_t duk_unity_ref(duk_context *ctx) {
+    duk_push_heap_stash(ctx); // obj, stash
+    duk_get_prop_string(ctx, -1, "c_registry"); // obj, stash, array
+    duk_get_prop_index(ctx, -1, 0); // obj, stash, array, array[0]
+    duk_uint_t refid = duk_get_uint(ctx, -1); // obj, stash, array, array[0]
+    if (refid > 0) {
+        duk_get_prop_index(ctx, -2, refid); // obj, stash, array, array[0], array[refid]
+        duk_uint_t freeid = duk_get_uint(ctx, -1);
+        duk_put_prop_index(ctx, -3, 0); // obj, stash, array, array[0] ** update free ptr
+        duk_dup(ctx, -4); // obj, stash, array, array[0], obj
+        duk_put_prop_index(ctx, -3, refid); // obj, stash, array, array[0]
+        duk_pop_n(ctx, 4); // []
+    } else {
+        refid = (int)duk_unity_get_length(ctx, -2);
+        duk_dup(ctx, -4); // obj, stash, array, array[0], obj
+        duk_put_prop_index(ctx, -3, refid); // obj, stash, array, array[0]
+        duk_pop_n(ctx, 4); // []
+    }
+    return refid;
+}
+
+// push object referenced by refid to top of the stack
+DUK_EXTERNAL void duk_unity_getref(duk_context *ctx, duk_uint_t refid) {
+    duk_push_heap_stash(ctx); // stash
+    duk_get_prop_string(ctx, -1, "c_registry"); // stash, array
+    duk_get_prop_index(ctx, -1, refid); // stash, array, array[refid]
+    duk_remove(ctx, -2);
+    duk_remove(ctx, -2);
+}
+
+/// Releases reference refid
+DUK_EXTERNAL void duk_unity_unref(duk_context *ctx, duk_uint_t refid) {
+    duk_push_heap_stash(ctx); // stash
+    duk_get_prop_string(ctx, -1, "c_registry"); // stash, array
+    duk_get_prop_index(ctx, -1, 0); // stash, array, array[0]
+    duk_uint_t freeid = duk_get_int(ctx, -1); // stash, array, array[0]
+    duk_push_uint(ctx, refid); // stash, array, array[0], refid
+    duk_put_prop_index(ctx, -3, 0); // stash, array, array[0] ** set t[freeid] = refid
+    duk_push_uint(ctx, freeid); // stash, array, array[0], freeid
+    duk_put_prop_index(ctx, -3, refid); // stash, array, array[0] ** set t[refid] = freeid
+    duk_pop_3(ctx); // []
+}
+

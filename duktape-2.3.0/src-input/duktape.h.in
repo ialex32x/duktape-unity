@@ -1339,6 +1339,14 @@ DUK_EXTERNAL_DECL duk_bool_t duk_unity_get2f(duk_context *ctx, duk_idx_t idx, fl
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get3f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get4f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3, float *v4);
 
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_prop_i(duk_context *ctx, duk_idx_t idx, const char *key, duk_int_t val);
+
+DUK_EXTERNAL_DECL void duk_unity_open(duk_context *ctx);
+
+DUK_EXTERNAL_DECL duk_uint_t duk_unity_ref(duk_context *ctx); /// Creates and returns a reference for the object at the top of the stack (and pops the object).
+DUK_EXTERNAL_DECL void duk_unity_unref(duk_context *ctx, duk_uint_t refid); /// push object referenced by refid to top of the stack
+DUK_EXTERNAL_DECL void duk_unity_getref(duk_context *ctx, duk_uint_t refid); /// Releases reference refid
+
 /*
  *  C++ name mangling
  */
