@@ -278,7 +278,18 @@ namespace Duktape
         {
             using (new RegFuncCodeGen(cg))
             {
-                cg.csharp.AppendLine("duk_begin_namespace(ctx, \"{0}\");", type.Namespace);
+                cg.csharp.Append("duk_begin_namespace(ctx, ");
+                var split_ns = type.Namespace.Split('.');
+                for (var i = 0; i < split_ns.Length; i++) 
+                {
+                    var el_ns = split_ns[i];
+                    cg.csharp.AppendL("\"{0}\"", el_ns);
+                    if (i != split_ns.Length -1) 
+                    {
+                        cg.csharp.AppendL(",");
+                    }
+                }
+                cg.csharp.AppendLineL(");");
                 cg.csharp.AppendLine("duk_begin_class(ctx, typeof({0}), ctor);", type.FullName);
                 foreach (var kv in methods)
                 {

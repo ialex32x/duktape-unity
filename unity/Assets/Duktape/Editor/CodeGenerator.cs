@@ -59,10 +59,13 @@ namespace Duktape
         {
             try
             {
-                var csName = filename + ".cs" + tx;
-                var csPath = Path.Combine(outDir, csName);
-                this.bindingManager.AddOutputFile(csPath);
-                File.WriteAllText(csPath, this.csharp.ToString());
+                if (this.csharp.enabled)
+                {
+                    var csName = filename + ".cs" + tx;
+                    var csPath = Path.Combine(outDir, csName);
+                    this.bindingManager.AddOutputFile(csPath);
+                    File.WriteAllText(csPath, this.csharp.ToString());
+                }
             }
             catch (Exception exception)
             {
@@ -71,10 +74,13 @@ namespace Duktape
 
             try
             {
-                var tsName = filename + ".d.ts" + tx;
-                var tsPath = Path.Combine(outDir, tsName);
-                this.bindingManager.AddOutputFile(tsPath);
-                File.WriteAllText(tsPath, this.typescript.ToString());
+                if (this.typescript.enabled)
+                {
+                    var tsName = filename + ".d.ts" + tx;
+                    var tsPath = Path.Combine(outDir, tsName);
+                    this.bindingManager.AddOutputFile(tsPath);
+                    File.WriteAllText(tsPath, this.typescript.ToString());
+                }
             }
             catch (Exception exception)
             {
