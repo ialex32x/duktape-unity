@@ -6,7 +6,7 @@
  *  comments.  Other parts of the header are Duktape internal and related to
  *  e.g. platform/compiler/feature detection.
  *
- *  Git commit 430a706018877d64e33ad2c8fbebd1426c8173d2 (430a706-dirty).
+ *  Git commit 70d041b5e4a45b083b019db70bbc61adc3fa1b79 (70d041b-dirty).
  *  Git branch develop.
  *
  *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and
@@ -171,8 +171,8 @@
  * which Duktape snapshot was used.  Not available in the ECMAScript
  * environment.
  */
-#define DUK_GIT_COMMIT                    "430a706018877d64e33ad2c8fbebd1426c8173d2"
-#define DUK_GIT_DESCRIBE                  "430a706-dirty"
+#define DUK_GIT_COMMIT                    "70d041b5e4a45b083b019db70bbc61adc3fa1b79"
+#define DUK_GIT_DESCRIBE                  "70d041b-dirty"
 #define DUK_GIT_BRANCH                    "develop"
 
 /* External duk_config.h provides platform/compiler/OS dependent
@@ -1475,6 +1475,8 @@ DUK_EXTERNAL_DECL void duk_unity_getref(duk_context *ctx, duk_uint_t refid); ///
 
 DUK_EXTERNAL_DECL void *duk_unity_push_buffer_raw(duk_context *ctx, duk_uint_t size, duk_small_uint_t flags);
 DUK_EXTERNAL_DECL void duk_unity_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_uint_t byte_offset, duk_uint_t byte_length, duk_uint_t flags);
+
+DUK_EXTERNAL_DECL duk_idx_t duk_unity_push_error_object_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt);
 
 /*
  *  C++ name mangling

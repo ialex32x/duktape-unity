@@ -406,3 +406,7 @@ DUK_EXTERNAL void *duk_unity_push_buffer_raw(duk_context *ctx, duk_uint_t size, 
 DUK_EXTERNAL void duk_unity_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_uint_t byte_offset, duk_uint_t byte_length, duk_uint_t flags) {
     duk_push_buffer_object(ctx, idx_buffer, byte_offset, byte_length, flags);
 }
+
+DUK_EXTERNAL duk_idx_t duk_unity_push_error_object_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt) {
+    return duk_push_error_object_raw(ctx, err_code, filename, line, fmt);
+}
