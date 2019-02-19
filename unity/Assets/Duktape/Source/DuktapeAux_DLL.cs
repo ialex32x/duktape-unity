@@ -18,8 +18,8 @@ namespace Duktape
 
         public static byte[] duk_require_lstring(IntPtr ctx, duk_idx_t idx)
         {
-            var size_t = UIntPtr.Zero;
-            var ptr = DuktapeDLL.duk_require_lstring(ctx, idx, out size_t);
+            var size_t = 0U;
+            var ptr = DuktapeDLL.duk_unity_require_lstring(ctx, idx, out size_t);
             var out_size = (int)size_t;
             if (ptr != IntPtr.Zero && out_size > 0)
             {
@@ -32,8 +32,8 @@ namespace Duktape
 
         public static byte[] duk_require_buffer(IntPtr ctx, duk_idx_t idx)
         {
-            var size_t = UIntPtr.Zero;
-            var ptr = DuktapeDLL.duk_require_buffer(ctx, idx, out size_t);
+            var size_t = 0U;
+            var ptr = DuktapeDLL.duk_unity_require_lstring(ctx, idx, out size_t);
             var out_size = (int)size_t;
             if (ptr != IntPtr.Zero && out_size > 0)
             {
@@ -46,8 +46,8 @@ namespace Duktape
 
         public static byte[] duk_require_buffer_data(IntPtr ctx, duk_idx_t idx)
         {
-            var size_t = UIntPtr.Zero;
-            var ptr = DuktapeDLL.duk_require_buffer_data(ctx, idx, out size_t);
+            var size_t = 0U;
+            var ptr = DuktapeDLL.duk_unity_require_buffer_data(ctx, idx, out size_t);
             var out_size = (int)size_t;
             if (ptr != IntPtr.Zero && out_size > 0)
             {
@@ -72,8 +72,8 @@ namespace Duktape
 
         public static byte[] duk_to_lstring(IntPtr ctx, duk_idx_t idx)
         {
-            var size_t = UIntPtr.Zero;
-            var ptr = DuktapeDLL.duk_to_lstring(ctx, idx, out size_t);
+            var size_t = 0U;
+            var ptr = DuktapeDLL.duk_unity_to_lstring(ctx, idx, out size_t);
             var out_size = (int)size_t;
             if (ptr != IntPtr.Zero && out_size > 0)
             {
@@ -86,8 +86,8 @@ namespace Duktape
 
         public static byte[] duk_get_lstring(IntPtr ctx, duk_idx_t idx)
         {
-            var size_t = UIntPtr.Zero;
-            var ptr = DuktapeDLL.duk_get_lstring(ctx, idx, out size_t);
+            var size_t = 0U;
+            var ptr = DuktapeDLL.duk_unity_get_lstring(ctx, idx, out size_t);
             var out_size = (int)size_t;
             if (ptr != IntPtr.Zero && out_size > 0)
             {
@@ -100,7 +100,7 @@ namespace Duktape
 
         public static byte[] duk_to_buffer(IntPtr ctx, duk_idx_t idx)
         {
-            var size_t = UIntPtr.Zero;
+            var size_t = 0U;
             var ptr = DuktapeDLL.duk_to_buffer(ctx, idx, out size_t);
             var out_size = (int)size_t;
             if (ptr != IntPtr.Zero && out_size > 0)
@@ -114,8 +114,8 @@ namespace Duktape
 
         public static byte[] duk_get_buffer(IntPtr ctx, duk_idx_t idx)
         {
-            var size_t = UIntPtr.Zero;
-            var ptr = DuktapeDLL.duk_get_buffer(ctx, idx, out size_t);
+            var size_t = 0U;
+            var ptr = DuktapeDLL.duk_unity_get_buffer(ctx, idx, out size_t);
             var out_size = (int)size_t;
             if (ptr != IntPtr.Zero && out_size > 0)
             {
@@ -128,8 +128,8 @@ namespace Duktape
 
         public static byte[] duk_get_buffer_data(IntPtr ctx, duk_idx_t idx)
         {
-            var size_t = UIntPtr.Zero;
-            var ptr = DuktapeDLL.duk_get_buffer_data(ctx, idx, out size_t);
+            var size_t = 0U;
+            var ptr = DuktapeDLL.duk_unity_get_buffer_data(ctx, idx, out size_t);
             if (ptr != IntPtr.Zero)
             {
                 var size = (int)size_t;

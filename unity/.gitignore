@@ -1,9 +1,9 @@
 Assets/StreamingAssets/AssetBundles/
 Assets/StreamingAssets/AssetBundles.meta
-/Assets/Source/Generated/*.txt.meta
-/Assets/Duktape/Generated/*.txt.meta
-/Assets/Source/Generated/*.txt
-/Assets/Duktape/Generated/*.txt
+/Assets/Source/Generated
+/Assets/Duktape/Generated
+/Assets/Source/Generated.meta
+/Assets/Duktape/Generated.meta
 
 AssetBundles/
 /Library/

@@ -278,7 +278,18 @@ namespace Duktape
         {
             using (new RegFuncCodeGen(cg))
             {
-                cg.csharp.AppendLine("duk_begin_namespace(ctx, \"{0}\");", type.Namespace);
+                cg.csharp.Append("duk_begin_namespace(ctx, ");
+                var split_ns = type.Namespace.Split('.');
+                for (var i = 0; i < split_ns.Length; i++) 
+                {
+                    var el_ns = split_ns[i];
+                    cg.csharp.AppendL("\"{0}\"", el_ns);
+                    if (i != split_ns.Length -1) 
+                    {
+                        cg.csharp.AppendL(",");
+                    }
+                }
+                cg.csharp.AppendLineL(");");
                 cg.csharp.AppendLine("duk_begin_class(ctx, typeof({0}), ctor);", type.FullName);
                 foreach (var kv in methods)
                 {
@@ -286,13 +297,13 @@ namespace Duktape
                     var regName = methodInfo.Name;
                     var funcName = kv.Key;
                     var bStatic = methodInfo.IsStatic;
-                    cg.csharp.AppendLine("duk_put_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? "true" : "false");
+                    cg.csharp.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? "true" : "false");
                 }
                 foreach (var kv in properties)
                 {
                     var propertyInfo = kv.Value;
                     var bStatic = false;
-                    cg.csharp.AppendLine("duk_put_property(ctx, \"{0}\", {1}, {2}, {3});",
+                    cg.csharp.AppendLine("duk_add_property(ctx, \"{0}\", {1}, {2}, {3});",
                         propertyInfo.Name,
                         propertyInfo.CanRead ? propertyInfo.GetMethod.Name : "null",
                         propertyInfo.CanWrite ? propertyInfo.SetMethod.Name : "null",
@@ -307,7 +318,7 @@ namespace Duktape
                     var name = kv.Key;
                     var fieldInfo = kv.Value;
                     var bStatic = fieldInfo.IsStatic ? "true" : "false";
-                    cg.csharp.AppendLine("duk_put_field(ctx, \"{0}\", {1}, {2});", fieldInfo.Name, name, bStatic);
+                    cg.csharp.AppendLine("duk_add_field(ctx, \"{0}\", {1}, {2});", fieldInfo.Name, name, bStatic);
                     var tsPropertyPrefix = fieldInfo.IsStatic ? "static " : "";
                     var tsPropertyType = GetTypeScriptName(fieldInfo.FieldType);
                     cg.typescript.AppendLine("{0}{1}: {2}", tsPropertyPrefix, fieldInfo.Name, tsPropertyType);

@@ -8,14 +8,14 @@ namespace Duktape
     public abstract class DuktapeValue : IDisposable, IContextualValue
     {
         protected DuktapeContext _ctx;
-        protected int _refid;
+        protected uint _refid;
 
         public DuktapeContext GetContext()
         {
             return _ctx;
         }
 
-        public DuktapeValue(IntPtr ctx, int refid)
+        public DuktapeValue(IntPtr ctx, uint refid)
         {
             this._ctx = DuktapeContext.GetContext(ctx);
             this._refid = refid;
@@ -36,14 +36,14 @@ namespace Duktape
         {
             if (this._refid != 0)
             {
-                this._ctx.vm.GC(this._refid, DuktapeVM.duk_unref);
+                this._ctx.vm.GC(this._refid, DuktapeDLL.duk_unity_unref);
                 this._refid = 0;
             }
         }
 
         public void Push(IntPtr ctx)
         {
-            DuktapeVM.duk_push_ref(ctx, this._refid);
+            DuktapeDLL.duk_unity_getref(ctx, this._refid);
         }
 
         public override int GetHashCode()

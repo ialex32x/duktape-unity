@@ -10,6 +10,7 @@ namespace Duktape
 
     public class TextGenerator
     {
+        public bool enabled = true;
         private string newline;
         private string tab;
         private StringBuilder sb = new StringBuilder();
@@ -145,6 +146,30 @@ namespace Duktape
             sb.AppendFormat(text, args);
         }
 
+        public void AppendL(string text)
+        {
+            sb.Append(text);
+        }
+
+        public void AppendL(string text, object arg1)
+        {
+            sb.AppendFormat(text, arg1);
+        }
+
+        public void AppendL(string text, object arg1, object arg2)
+        {
+            sb.AppendFormat(text, arg1, arg2);
+        }
+
+        public void AppendL(string text, object arg1, object arg2, object arg3)
+        {
+            sb.AppendFormat(text, arg1, arg2, arg3);
+        }
+
+        public void AppendL(string text, params object[] args)
+        {
+            sb.AppendFormat(text, args);
+        }
 
         public void Clear()
         {

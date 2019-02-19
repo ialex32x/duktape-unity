@@ -9,10 +9,19 @@ namespace Duktape
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         static int ctor(IntPtr ctx)
         {
+            UnityEngine.GameObject o;
+            var argc = DuktapeDLL.duk_get_top(ctx);
+            if (argc == 1)
+            {
+                var arg1 = DuktapeAux.duk_get_string(ctx, 0);
+                o = new UnityEngine.GameObject(arg1);
+            }
+            else
+            {
+                o = new UnityEngine.GameObject();
+            }
             DuktapeDLL.duk_push_this(ctx);
-            var o = new UnityEngine.GameObject();
-            duk_push_any(ctx, o);
-            DuktapeDLL.duk_put_prop_string(ctx, -2, DuktapeVM.OBJ_PROP_NATIVE);
+            duk_bind_native(ctx, -1, o);
             DuktapeDLL.duk_pop(ctx);
             return 0;
         }
@@ -28,7 +37,7 @@ namespace Duktape
             if (DuktapeVM.GetObjectCache(ctx).TryGetValue(id, out o))
             {
                 var tp = (UnityEngine.GameObject)o;
-                var b = DuktapeDLL.duk_get_boolean(ctx, 1);
+                var b = DuktapeDLL.duk_get_boolean(ctx, 0);
                 tp.SetActive(b);
             }
             else
@@ -54,8 +63,8 @@ namespace Duktape
         {
             duk_begin_namespace(ctx, "UnityEngine");
             duk_begin_class(ctx, typeof(UnityEngine.GameObject), ctor);
-            duk_put_method(ctx, "SetActive", SetActive, false);
-            duk_put_property(ctx, "activeSelf", get_activeSelf, null, false);
+            duk_add_method(ctx, "SetActive", SetActive, false);
+            duk_add_property(ctx, "activeSelf", get_activeSelf, null, false);
             duk_end_class(ctx);
             duk_end_namespace(ctx);
         }
