@@ -13,6 +13,7 @@ using AOT;
 namespace Duktape
 {
     using duk_size_t = System.UIntPtr;
+    using duk_small_uint_t = System.UInt32;
     using duk_int_t = System.Int32;
     using duk_idx_t = System.Int32;
     using duk_uint_t = System.UInt32;
@@ -782,6 +783,81 @@ namespace Duktape
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_idx_t duk_push_proxy(IntPtr ctx, duk_uint_t proxy_flags);
 
+        public static duk_idx_t duk_push_thread(IntPtr ctx)
+        {
+            return duk_push_thread_raw((ctx), 0 /*flags*/);
+        }
+
+        public static duk_idx_t duk_push_thread_new_globalenv(IntPtr ctx)
+        {
+            return duk_push_thread_raw((ctx), DUK_THREAD_NEW_GLOBAL_ENV /*flags*/);
+        }
+
+        // [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        // public static extern duk_idx_t duk_push_error_object_raw(IntPtr ctx, duk_errcode_t err_code, string filename, duk_int_t line, string fmt, ...);
+
+        // #if defined(DUK_API_VARIADIC_MACROS)
+        // #define duk_push_error_object(ctx,err_code,...)  \
+        //     duk_push_error_object_raw((ctx), (err_code), (const char *) (DUK_FILE_MACRO), (duk_int_t) (DUK_LINE_MACRO), __VA_ARGS__)
+        // #else
+        // DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_stash(IntPtr ctx, duk_errcode_t err_code, const char *fmt, ...);
+        // /* Note: parentheses are required so that the comma expression works in assignments. */
+        // #define duk_push_error_object  \
+        //     (duk_api_global_filename = (const char *) (DUK_FILE_MACRO), \
+        //     duk_api_global_line = (duk_int_t) (DUK_LINE_MACRO), \
+        //     duk_push_error_object_stash)  /* last value is func pointer, arguments follow in parens */
+        // #endif
+
+        // DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_va_raw(IntPtr ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap);
+        // #define duk_push_error_object_va(ctx,err_code,fmt,ap)  \
+        //     duk_push_error_object_va_raw((ctx), (err_code), (const char *) (DUK_FILE_MACRO), (duk_int_t) (DUK_LINE_MACRO), (fmt), (ap))
+
+        public static readonly duk_uint_t DUK_BUF_FLAG_DYNAMIC = (1 << 0);    /* internal flag: dynamic buffer */
+        public static readonly duk_uint_t DUK_BUF_FLAG_EXTERNAL = (1 << 1);    /* internal flag: external buffer */
+        public static readonly duk_uint_t DUK_BUF_FLAG_NOZERO = (1 << 2);    /* internal flag: don't zero allocated buffer */
+
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr duk_unity_push_buffer_raw(IntPtr ctx, duk_uint_t size, duk_uint_t flags);
+
+        public static IntPtr duk_push_buffer(IntPtr ctx, duk_uint_t size, bool dynamic)
+        {
+            return duk_unity_push_buffer_raw((ctx), (size), (dynamic) ? DUK_BUF_FLAG_DYNAMIC : 0);
+        }
+
+        public static IntPtr duk_push_fixed_buffer(IntPtr ctx, duk_uint_t size)
+        {
+            return duk_unity_push_buffer_raw((ctx), (size), 0 /*flags*/);
+        }
+
+        public static IntPtr duk_push_dynamic_buffer(IntPtr ctx, duk_uint_t size)
+        {
+            return duk_unity_push_buffer_raw((ctx), (size), DUK_BUF_FLAG_DYNAMIC /*flags*/);
+        }
+
+        public static void duk_push_external_buffer(IntPtr ctx)
+        {
+            duk_unity_push_buffer_raw((ctx), 0U, DUK_BUF_FLAG_DYNAMIC | DUK_BUF_FLAG_EXTERNAL);
+        }
+
+        public static readonly duk_uint_t DUK_BUFOBJ_ARRAYBUFFER = 0;
+        public static readonly duk_uint_t DUK_BUFOBJ_NODEJS_BUFFER = 1;
+        public static readonly duk_uint_t DUK_BUFOBJ_DATAVIEW = 2;
+        public static readonly duk_uint_t DUK_BUFOBJ_INT8ARRAY = 3;
+        public static readonly duk_uint_t DUK_BUFOBJ_UINT8ARRAY = 4;
+        public static readonly duk_uint_t DUK_BUFOBJ_UINT8CLAMPEDARRAY = 5;
+        public static readonly duk_uint_t DUK_BUFOBJ_INT16ARRAY = 6;
+        public static readonly duk_uint_t DUK_BUFOBJ_UINT16ARRAY = 7;
+        public static readonly duk_uint_t DUK_BUFOBJ_INT32ARRAY = 8;
+        public static readonly duk_uint_t DUK_BUFOBJ_UINT32ARRAY = 9;
+        public static readonly duk_uint_t DUK_BUFOBJ_FLOAT32ARRAY = 10;
+        public static readonly duk_uint_t DUK_BUFOBJ_FLOAT64ARRAY = 11;
+
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void duk_unity_push_buffer_object(IntPtr ctx, duk_idx_t idx_buffer, duk_uint_t byte_offset, duk_uint_t byte_length, duk_uint_t flags);
+
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_idx_t duk_push_heapptr(IntPtr ctx, IntPtr ptr);
+
         /*
         *  Require operations: no coercion, throw error if index or type
         *  is incorrect.  No defaulting.
@@ -814,7 +890,7 @@ namespace Duktape
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr duk_unity_require_buffer(IntPtr ctx, duk_idx_t idx, out duk_uint_t out_size); // fixme
-        
+
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr duk_unity_require_buffer_data(IntPtr ctx, duk_idx_t idx, out duk_uint_t out_size); // fixme
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -1442,7 +1518,7 @@ namespace Duktape
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void duk_module_node_init(IntPtr ctx);
 
-        
+
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void duk_unity_push2i(IntPtr ctx, duk_int_t v1, duk_int_t v2);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -1471,7 +1547,7 @@ namespace Duktape
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_unity_set_prop_i(IntPtr ctx, duk_idx_t idx, string key, duk_int_t val);
-        
+
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_uint_t duk_unity_open(IntPtr ctx); // 初始化附加内容 (比如ref/unref的使用)
 

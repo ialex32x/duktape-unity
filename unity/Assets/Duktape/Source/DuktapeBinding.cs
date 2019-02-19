@@ -21,6 +21,12 @@ namespace Duktape
             return 0;
         }
 
+        [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+        static int object_private_ctor(IntPtr ctx)
+        {
+            return 0;
+        }
+
         public static void duk_begin_namespace(IntPtr ctx, string el) // [parent]
         {
             // Debug.LogFormat("begin namespace {0}", DuktapeDLL.duk_get_top(ctx));

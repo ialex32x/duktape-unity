@@ -346,6 +346,9 @@ DUK_EXTERNAL void duk_unity_open(duk_context *ctx) {
 
 /// Creates and returns a reference for the object at the top of the stack (and pops the object).
 DUK_EXTERNAL duk_uint_t duk_unity_ref(duk_context *ctx) {
+    if (duk_is_null_or_undefined(ctx, -1)) {
+        return 0;
+    }
     duk_push_heap_stash(ctx); // obj, stash
     duk_get_prop_string(ctx, -1, "c_registry"); // obj, stash, array
     duk_get_prop_index(ctx, -1, 0); // obj, stash, array, array[0]
@@ -368,6 +371,10 @@ DUK_EXTERNAL duk_uint_t duk_unity_ref(duk_context *ctx) {
 
 // push object referenced by refid to top of the stack
 DUK_EXTERNAL void duk_unity_getref(duk_context *ctx, duk_uint_t refid) {
+    if (refid == 0) {
+        duk_push_undefined(ctx);
+        return;
+    }
     duk_push_heap_stash(ctx); // stash
     duk_get_prop_string(ctx, -1, "c_registry"); // stash, array
     duk_get_prop_index(ctx, -1, refid); // stash, array, array[refid]
@@ -377,6 +384,10 @@ DUK_EXTERNAL void duk_unity_getref(duk_context *ctx, duk_uint_t refid) {
 
 /// Releases reference refid
 DUK_EXTERNAL void duk_unity_unref(duk_context *ctx, duk_uint_t refid) {
+    if (refid == 0) {
+        // do nothing for null/undefined reference
+        return;
+    }
     duk_push_heap_stash(ctx); // stash
     duk_get_prop_string(ctx, -1, "c_registry"); // stash, array
     duk_get_prop_index(ctx, -1, 0); // stash, array, array[0]
@@ -388,3 +399,10 @@ DUK_EXTERNAL void duk_unity_unref(duk_context *ctx, duk_uint_t refid) {
     duk_pop_3(ctx); // []
 }
 
+DUK_EXTERNAL void *duk_unity_push_buffer_raw(duk_context *ctx, duk_uint_t size, duk_uint_t flags) {
+    return duk_push_buffer_raw(ctx, (duk_size_t) size, (duk_small_uint_t) flags);
+}
+
+DUK_EXTERNAL void duk_unity_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_uint_t byte_offset, duk_uint_t byte_length, duk_uint_t flags) {
+    duk_push_buffer_object(ctx, idx_buffer, byte_offset, byte_length, flags);
+}

@@ -33,7 +33,17 @@ namespace Duktape
         static int Foo(IntPtr ctx)
         {
             Debug.Log("Object.Foo");
-            return 0;
+            var go = UnityEngine.GameObject.Find("testing");
+            IntPtr heapptr;
+            if (DuktapeVM.GetObjectCache(ctx).TryGetJSValue(go, out heapptr))
+            {
+                DuktapeDLL.duk_push_heapptr(ctx, heapptr);
+            }
+            else
+            {
+                DuktapeDLL.duk_push_null(ctx);
+            }
+            return 1;
         }
 
         public static void reg(IntPtr ctx)

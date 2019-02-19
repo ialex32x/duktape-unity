@@ -6,7 +6,7 @@
  *  comments.  Other parts of the header are Duktape internal and related to
  *  e.g. platform/compiler/feature detection.
  *
- *  Git commit d477131cedb72a4275cd3f252fd24471f6539531 (d477131-dirty).
+ *  Git commit 430a706018877d64e33ad2c8fbebd1426c8173d2 (430a706-dirty).
  *  Git branch develop.
  *
  *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and
@@ -171,8 +171,8 @@
  * which Duktape snapshot was used.  Not available in the ECMAScript
  * environment.
  */
-#define DUK_GIT_COMMIT                    "d477131cedb72a4275cd3f252fd24471f6539531"
-#define DUK_GIT_DESCRIBE                  "d477131-dirty"
+#define DUK_GIT_COMMIT                    "430a706018877d64e33ad2c8fbebd1426c8173d2"
+#define DUK_GIT_DESCRIBE                  "430a706-dirty"
 #define DUK_GIT_BRANCH                    "develop"
 
 /* External duk_config.h provides platform/compiler/OS dependent
@@ -1470,8 +1470,11 @@ DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_prop_i(duk_context *ctx, duk_idx_t id
 DUK_EXTERNAL_DECL void duk_unity_open(duk_context *ctx);
 
 DUK_EXTERNAL_DECL duk_uint_t duk_unity_ref(duk_context *ctx); /// Creates and returns a reference for the object at the top of the stack (and pops the object).
-DUK_EXTERNAL_DECL void duk_unity_unref(duk_context *ctx, duk_uint_t refid); /// 将refid关联的对象push到当前栈顶
+DUK_EXTERNAL_DECL void duk_unity_unref(duk_context *ctx, duk_uint_t refid); /// push object referenced by refid to top of the stack
 DUK_EXTERNAL_DECL void duk_unity_getref(duk_context *ctx, duk_uint_t refid); /// Releases reference refid
+
+DUK_EXTERNAL_DECL void *duk_unity_push_buffer_raw(duk_context *ctx, duk_uint_t size, duk_small_uint_t flags);
+DUK_EXTERNAL_DECL void duk_unity_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_uint_t byte_offset, duk_uint_t byte_length, duk_uint_t flags);
 
 /*
  *  C++ name mangling

@@ -9,8 +9,18 @@ namespace Duktape
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         static int ctor(IntPtr ctx)
         {
+            UnityEngine.GameObject o;
+            var argc = DuktapeDLL.duk_get_top(ctx);
+            if (argc == 1)
+            {
+                var arg1 = DuktapeAux.duk_get_string(ctx, 0);
+                o = new UnityEngine.GameObject(arg1);
+            }
+            else
+            {
+                o = new UnityEngine.GameObject();
+            }
             DuktapeDLL.duk_push_this(ctx);
-            var o = new UnityEngine.GameObject();
             duk_bind_native(ctx, -1, o);
             DuktapeDLL.duk_pop(ctx);
             return 0;
@@ -27,7 +37,7 @@ namespace Duktape
             if (DuktapeVM.GetObjectCache(ctx).TryGetValue(id, out o))
             {
                 var tp = (UnityEngine.GameObject)o;
-                var b = DuktapeDLL.duk_get_boolean(ctx, 1);
+                var b = DuktapeDLL.duk_get_boolean(ctx, 0);
                 tp.SetActive(b);
             }
             else

@@ -10,19 +10,37 @@ namespace Duktape
     {
         public static void duk_bind_native(IntPtr ctx, int idx, object o)
         {
-            var id = DuktapeVM.GetObjectCache(ctx).Add(o);
+            var cache = DuktapeVM.GetObjectCache(ctx);
+            var id = cache.Add(o);
             DuktapeDLL.duk_unity_set_prop_i(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE, id);
+            if (!o.GetType().IsValueType)
+            {
+                var heapptr = DuktapeDLL.duk_get_heapptr(ctx, idx);
+                cache.AddJSValue(o, heapptr);
+            }
         }
 
         // variant push
         public static void duk_push_any(IntPtr ctx, object o)
         {
-            var id = DuktapeVM.GetObjectCache(ctx).Add(o);
+            var cache = DuktapeVM.GetObjectCache(ctx);
+            IntPtr heapptr;
+            if (cache.TryGetJSValue(o, out heapptr))
+            {
+                DuktapeDLL.duk_push_heapptr(ctx, heapptr);
+                return;
+            }
+            var id = cache.Add(o);
             DuktapeDLL.duk_push_object(ctx);
             DuktapeDLL.duk_unity_set_prop_i(ctx, -1, DuktapeVM.OBJ_PROP_NATIVE, id);
             if (DuktapeVM.GetVM(ctx).PushChainedPrototypeOf(ctx, o.GetType()))
             {
                 DuktapeDLL.duk_set_prototype(ctx, -2);
+            }
+            if (!o.GetType().IsValueType)
+            {
+                heapptr = DuktapeDLL.duk_get_heapptr(ctx, -1);
+                cache.AddJSValue(o, heapptr);
             }
             DuktapeDLL.duk_pop(ctx);
         }
