@@ -29,16 +29,11 @@ namespace Duktape
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         static int SetActive(IntPtr ctx)
         {
-            DuktapeDLL.duk_push_this(ctx);
-            DuktapeDLL.duk_get_prop_string(ctx, -1, DuktapeVM.OBJ_PROP_NATIVE);
-            var id = DuktapeDLL.duk_get_int(ctx, -1);
-            DuktapeDLL.duk_pop_2(ctx);
-            object o;
-            if (DuktapeVM.GetObjectCache(ctx).TryGetValue(id, out o))
+            var o = (UnityEngine.GameObject)duk_get_this(ctx);
+            if (o != null)
             {
-                var tp = (UnityEngine.GameObject)o;
                 var b = DuktapeDLL.duk_get_boolean(ctx, 0);
-                tp.SetActive(b);
+                o.SetActive(b);
             }
             else
             {
