@@ -29,24 +29,24 @@ namespace Duktape
             typescript.Clear();
         }
 
-        public void Generate(Type type)
+        public void Generate(TypeBindingInfo typeBindingInfo)
         {
             Clear();
             using (new PlatformCodeGen(this))
             {
-                using (new TopLevelCodeGen(this, type))
+                using (new TopLevelCodeGen(this, typeBindingInfo))
                 {
-                    using (new NamespaceCodeGen(this, Prefs.GetPrefs().ns, type))
+                    using (new NamespaceCodeGen(this, Prefs.GetPrefs().ns, typeBindingInfo))
                     {
-                        if (type.IsEnum)
+                        if (typeBindingInfo.IsEnum)
                         {
-                            using (new EnumCodeGen(this, type))
+                            using (new EnumCodeGen(this, typeBindingInfo))
                             {
                             }
                         }
                         else
                         {
-                            using (var ccg = new ClassCodeGen(this, type))
+                            using (var ccg = new ClassCodeGen(this, typeBindingInfo))
                             {
                             }
                         }

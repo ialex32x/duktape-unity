@@ -13,7 +13,7 @@ namespace Duktape
     {
         protected CodeGenerator cg;
 
-        public TopLevelCodeGen(CodeGenerator cg, Type type)
+        public TopLevelCodeGen(CodeGenerator cg, TypeBindingInfo type)
         {
             this.cg = cg;
             this.cg.csharp.AppendLine("// UserName: {0} @ {1}", Environment.UserName, DateTime.Now);
@@ -35,9 +35,9 @@ namespace Duktape
     {
         protected CodeGenerator cg;
         protected string ns;
-        protected Type type;
+        protected TypeBindingInfo type;
 
-        public NamespaceCodeGen(CodeGenerator cg, string ns, Type type)
+        public NamespaceCodeGen(CodeGenerator cg, string ns, TypeBindingInfo type)
         {
             this.cg = cg;
             this.ns = ns;
@@ -142,15 +142,15 @@ namespace Duktape
     public class TypeCodeGen : IDisposable
     {
         protected CodeGenerator cg;
-        protected Type type;
+        protected TypeBindingInfo type;
 
-        public TypeCodeGen(CodeGenerator cg, Type type)
+        public TypeCodeGen(CodeGenerator cg, TypeBindingInfo type)
         {
             this.cg = cg;
             this.type = type;
             this.cg.csharp.AppendLine("[{0}]", typeof(JSBindingAttribute).Name);
             this.cg.csharp.AppendLine("[UnityEngine.Scripting.Preserve]");
-            this.cg.csharp.AppendLine("public class {0} : {1} {{", GetTypeName(type), typeof(DuktapeBinding).Name);
+            this.cg.csharp.AppendLine("public class {0} : {1} {{", type.JSBindingClassName, typeof(DuktapeBinding).Name);
             this.cg.csharp.AddTabLevel();
             this.cg.typescript.AppendLine("class {0} {{", type.Name);
             this.cg.typescript.AddTabLevel();
@@ -172,46 +172,18 @@ namespace Duktape
 
     public class ClassCodeGen : TypeCodeGen
     {
-        private Dictionary<string, List<MethodInfo>> methods = new Dictionary<string, List<MethodInfo>>();
-        private Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
-        private Dictionary<string, FieldInfo> fields = new Dictionary<string, FieldInfo>();
-
-        public ClassCodeGen(CodeGenerator cg, Type type)
+        public ClassCodeGen(CodeGenerator cg, TypeBindingInfo type)
         : base(cg, type)
         {
-            // 收集所有 字段,属性,方法
-            var fields = type.GetFields();
-            foreach (var field in fields)
-            {
-                AddField(field);
-            }
-            var properties = type.GetProperties();
-            foreach (var property in properties)
-            {
-                AddProperty(property);
-            }
-            var methods = type.GetMethods();
-            foreach (var method in methods)
-            {
-                var name = method.Name;
-                if (IsPropertyMethod(method))
-                {
-                }
-                else
-                {
-                    AddMethod(method);
-                }
-            }
-
             // 生成函数体
-            foreach (var kv in this.methods)
+            foreach (var kv in type.methods)
             {
                 using (new MethodCodeGen(cg, kv.Key, kv.Value))
                 {
 
                 }
             }
-            foreach (var kv in this.fields)
+            foreach (var kv in type.fields)
             {
                 using (new FieldCodeGen(cg, kv.Key, kv.Value))
                 {
@@ -219,79 +191,26 @@ namespace Duktape
             }
         }
 
-        public bool IsPropertyMethod(MethodInfo methodInfo)
+        public string GetTypeFullNameTS(Type type)
         {
-            var name = methodInfo.Name;
-            if (name.Length > 4 && (name.StartsWith("set_") || name.StartsWith("get_")))
-            {
-                PropertyInfo prop;
-                if (properties.TryGetValue(name.Substring(4), out prop))
-                {
-                    return prop.GetMethod == methodInfo || prop.SetMethod == methodInfo;
-                }
-            }
-            return false;
-        }
-
-        public void AddField(FieldInfo fieldInfo)
-        {
-            var name = fieldInfo.Name;
-            fields.Add(name, fieldInfo);
-        }
-
-        public void AddProperty(PropertyInfo propInfo)
-        {
-            try
-            {
-                var name = propInfo.Name;
-                properties.Add(name, propInfo);
-            }
-            catch (Exception exception)
-            {
-                this.cg.bindingManager.Error("AddProperty failed {0} @ {1}\n{2}", propInfo, type, exception);
-            }
-        }
-
-        public void AddMethod(MethodInfo methodInfo)
-        {
-            var name = "Bind" + methodInfo.Name;
-            List<MethodInfo> list;
-            if (!methods.TryGetValue(name, out list))
-            {
-                list = new List<MethodInfo>();
-                methods.Add(name, list);
-            }
-            list.Add(methodInfo);
-        }
-
-        // 获取指定类型在 ts 中的声明名称
-        protected string GetTypeScriptName(Type type)
-        {
-            if (this.cg.bindingManager.IsExported(type))
-            {
-                return type.FullName;
-            }
-            return "any";
+            var info = cg.bindingManager.GetExportedType(type);
+            return info != null ? info.FullName : "any";
         }
 
         public override void Dispose()
         {
             using (new RegFuncCodeGen(cg))
             {
-                cg.csharp.Append("duk_begin_namespace(ctx, ");
+                cg.csharp.Append("duk_begin_namespace(ctx");
                 var split_ns = type.Namespace.Split('.');
-                for (var i = 0; i < split_ns.Length; i++) 
+                for (var i = 0; i < split_ns.Length; i++)
                 {
                     var el_ns = split_ns[i];
-                    cg.csharp.AppendL("\"{0}\"", el_ns);
-                    if (i != split_ns.Length -1) 
-                    {
-                        cg.csharp.AppendL(",");
-                    }
+                    cg.csharp.AppendL(", \"{0}\"", el_ns);
                 }
                 cg.csharp.AppendLineL(");");
                 cg.csharp.AppendLine("duk_begin_class(ctx, typeof({0}), ctor);", type.FullName);
-                foreach (var kv in methods)
+                foreach (var kv in type.methods)
                 {
                     var methodInfo = kv.Value[0];
                     var regName = methodInfo.Name;
@@ -299,7 +218,7 @@ namespace Duktape
                     var bStatic = methodInfo.IsStatic;
                     cg.csharp.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? "true" : "false");
                 }
-                foreach (var kv in properties)
+                foreach (var kv in type.properties)
                 {
                     var propertyInfo = kv.Value;
                     var bStatic = false;
@@ -310,17 +229,17 @@ namespace Duktape
                         bStatic ? "true" : "false");
 
                     var tsPropertyPrefix = propertyInfo.CanWrite ? "" : "readonly ";
-                    var tsPropertyType = GetTypeScriptName(propertyInfo.PropertyType);
+                    var tsPropertyType = GetTypeFullNameTS(propertyInfo.PropertyType);
                     cg.typescript.AppendLine("{0}{1}: {2}", tsPropertyPrefix, propertyInfo.Name, tsPropertyType);
                 }
-                foreach (var kv in fields)
+                foreach (var kv in type.fields)
                 {
                     var name = kv.Key;
                     var fieldInfo = kv.Value;
                     var bStatic = fieldInfo.IsStatic ? "true" : "false";
                     cg.csharp.AppendLine("duk_add_field(ctx, \"{0}\", {1}, {2});", fieldInfo.Name, name, bStatic);
                     var tsPropertyPrefix = fieldInfo.IsStatic ? "static " : "";
-                    var tsPropertyType = GetTypeScriptName(fieldInfo.FieldType);
+                    var tsPropertyType = GetTypeFullNameTS(fieldInfo.FieldType);
                     cg.typescript.AppendLine("{0}{1}: {2}", tsPropertyPrefix, fieldInfo.Name, tsPropertyType);
                 }
                 cg.csharp.AppendLine("duk_end_class(ctx);");
@@ -332,7 +251,7 @@ namespace Duktape
 
     public class EnumCodeGen : TypeCodeGen
     {
-        public EnumCodeGen(CodeGenerator cg, Type type)
+        public EnumCodeGen(CodeGenerator cg, TypeBindingInfo type)
         : base(cg, type)
         {
         }

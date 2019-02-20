@@ -14,7 +14,7 @@ namespace Duktape
         private HashSet<Type> blacklist;
         private HashSet<Type> whitelist;
         private List<string> typePrefixBlacklist;
-        private List<Type> types = new List<Type>();
+        private Dictionary<Type, TypeBindingInfo> exportedTypes = new Dictionary<Type, TypeBindingInfo>();
         private List<string> outputFiles = new List<string>();
 
         public BindingManager()
@@ -34,12 +34,19 @@ namespace Duktape
 
         public void AddExport(Type type)
         {
-            types.Add(type);
+            var typeBindingInfo = new TypeBindingInfo(this, type);
+            exportedTypes.Add(type, typeBindingInfo);
         }
 
         public bool IsExported(Type type)
         {
-            return types.Contains(type);
+            return exportedTypes.ContainsKey(type);
+        }
+
+        public TypeBindingInfo GetExportedType(Type type)
+        {
+            TypeBindingInfo typeBindingInfo;
+            return exportedTypes.TryGetValue(type, out typeBindingInfo) ? typeBindingInfo : null;
         }
 
         // 是否在黑名单中屏蔽, 或者已知无需导出的类型
@@ -75,13 +82,6 @@ namespace Duktape
                 return true;
             }
             return false;
-        }
-
-        // 将类型名转换成简单字符串 (比如用于文件名)
-        public string GetFileName(Type type)
-        {
-            var filename = type.FullName.Replace(".", "_");
-            return filename;
         }
 
         public void Collect()
@@ -123,6 +123,11 @@ namespace Duktape
                 }
                 log.DecTabLevel();
             }
+
+            foreach (var typeBindingInfoKV in exportedTypes)
+            {
+                typeBindingInfoKV.Value.Collect();
+            }
         }
 
         // 清理多余文件
@@ -162,15 +167,16 @@ namespace Duktape
             {
                 Directory.CreateDirectory(outDir);
             }
-            foreach (var type in types)
+            foreach (var typeKV in exportedTypes)
             {
-                cg.Generate(type);
-                cg.WriteTo(outDir, GetFileName(type), tx);
+                var typeBindingInfo = typeKV.Value;
+                cg.Generate(typeBindingInfo);
+                cg.WriteTo(outDir, typeBindingInfo.GetFileName(), tx);
             }
 
             var logPath = Prefs.GetPrefs().logPath;
             File.WriteAllText(logPath, log.ToString());
-            Debug.LogFormat("generated {0} types", types.Count);
+            Debug.LogFormat("generated {0} types", exportedTypes.Count);
         }
     }
 }

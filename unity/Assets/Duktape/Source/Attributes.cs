@@ -4,9 +4,9 @@ namespace Duktape
 {
     // 指定类型生成JS类型绑定代码
     [AttributeUsage(AttributeTargets.Class
-                  | AttributeTargets.Struct 
+                  | AttributeTargets.Struct
                   | AttributeTargets.Enum,
-                    AllowMultiple = false, 
+                    AllowMultiple = false,
                     Inherited = false)]
     public class JSTypeAttribute : Attribute
     {
@@ -14,7 +14,7 @@ namespace Duktape
 
     // JS绑定代码
     [AttributeUsage(AttributeTargets.Class,
-                    AllowMultiple = false, 
+                    AllowMultiple = false,
                     Inherited = false)]
     public class JSBindingAttribute : Attribute
     {
@@ -22,9 +22,22 @@ namespace Duktape
 
     // 强制转换为 JS Array
     [AttributeUsage(AttributeTargets.Parameter
-                  | AttributeTargets.ReturnValue, 
+                  | AttributeTargets.ReturnValue,
                     AllowMultiple = false)]
     public class JSArrayAttribute : Attribute
     {
+    }
+
+    // 在JS中指定名称
+    [AttributeUsage(AttributeTargets.Class
+                  | AttributeTargets.Struct
+                  | AttributeTargets.Enum
+                  | AttributeTargets.Field
+                  | AttributeTargets.Method
+                  | AttributeTargets.Property, 
+                    AllowMultiple = false)]
+    public class JSNamingAttribute : Attribute
+    {
+
     }
 }

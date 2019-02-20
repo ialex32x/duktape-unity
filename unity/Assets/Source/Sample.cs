@@ -13,9 +13,16 @@ public struct SampleStruct
 {
     public int a;
 
-    public void Foo(List<int> list)
-    {
+    public void Foo(List<int> list) { }
 
+    public void Foo(int a, string b) { }
+    public void Foo(int a, params string[] b) { }
+}
+
+public static class SampleStructExtensions
+{
+    public static void Foo(this SampleStruct self)
+    {
     }
 }
 
@@ -45,6 +52,17 @@ public class Sample : MonoBehaviour
         {
             sb.AppendFormat("# array\n");
             sb.AppendFormat("    GetElementType: {0}\n", t.GetElementType());
+        }
+        foreach (var method in t.GetMethods())
+        {
+            if (method.Name == "Foo")
+            {
+                sb.AppendFormat("# method.Foo: {0} {1}\n", method, method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), false) ? "(Extension)" : "");
+                foreach (var parameter in method.GetParameters())
+                {
+                    sb.AppendFormat("    {0} {1}\n", parameter.IsDefined(typeof(ParamArrayAttribute), false) ? "(params)" : "", parameter);
+                }
+            }
         }
         Debug.Log(sb.ToString());
     }
