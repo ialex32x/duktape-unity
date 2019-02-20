@@ -42,15 +42,16 @@ namespace Duktape
             return 0;
         }
 
+        public struct FF {}
+
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         static int get_activeSelf(IntPtr ctx)
         {
             DuktapeDLL.duk_push_this(ctx);
-            object self;
-            duk_get_any(ctx, -1, out self);
+            UnityEngine.GameObject self;
+            duk_get_class_object(ctx, -1, out self);
             DuktapeDLL.duk_pop(ctx); // pop this
-            var go = (UnityEngine.GameObject)self;
-            DuktapeDLL.duk_push_boolean(ctx, go.activeSelf);
+            DuktapeDLL.duk_push_boolean(ctx, self.activeSelf);
             return 1;
         }
 
