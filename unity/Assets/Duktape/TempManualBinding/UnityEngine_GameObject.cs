@@ -4,6 +4,7 @@ using AOT;
 
 namespace Duktape
 {
+    [JSBinding]
     public class UnityEngine_GameObject : DuktapeBinding
     {
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]

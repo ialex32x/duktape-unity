@@ -148,7 +148,7 @@ namespace Duktape
         {
             this.cg = cg;
             this.type = type;
-            this.cg.csharp.AppendLine("[{0}]", typeof(JSTypeAttribute).Name);
+            this.cg.csharp.AppendLine("[{0}]", typeof(JSBindingAttribute).Name);
             this.cg.csharp.AppendLine("[UnityEngine.Scripting.Preserve]");
             this.cg.csharp.AppendLine("public class {0} : {1} {{", GetTypeName(type), typeof(DuktapeBinding).Name);
             this.cg.csharp.AddTabLevel();

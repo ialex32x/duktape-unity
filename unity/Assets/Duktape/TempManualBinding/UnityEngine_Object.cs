@@ -6,6 +6,7 @@ namespace Duktape
 {
     using UnityEngine;
 
+    [JSBinding]
     public class UnityEngine_Object : DuktapeBinding
     {
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
