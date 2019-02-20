@@ -21,6 +21,9 @@ public struct SampleStruct
 
 public class Sample : MonoBehaviour
 {
+    public delegate void DelegateFoo();
+    public DelegateFoo delegateFoo;
+
     DuktapeVM vm = new DuktapeVM();
 
     void checking<T>(T o)
@@ -28,7 +31,8 @@ public class Sample : MonoBehaviour
         var t = typeof(T);
         var sb = new System.Text.StringBuilder();
         sb.AppendFormat("# type: {0}\n", t.FullName);
-        sb.AppendFormat("# basic\n");
+        sb.AppendFormat("    value: {0}\n", o);
+        sb.AppendFormat("    null: {0}\n", o == null);
         sb.AppendFormat("    IsValueType: {0}\n", t.IsValueType);
         sb.AppendFormat("    IsPrimitive: {0}\n", t.IsPrimitive);
         sb.AppendFormat("    IsEnum: {0}\n", t.IsEnum);
@@ -57,6 +61,12 @@ public class Sample : MonoBehaviour
         checking(new int?[] { 1, 2, 3 });
         checking(new List<SampleStruct>());
         checking(new List<SampleStruct?>());
+        checking(delegateFoo);
+        delegateFoo = Awake;
+        checking(delegateFoo);
+        delegateFoo += Awake;
+        delegateFoo += Update;
+        checking(delegateFoo);
 
         var temp = new List<Action<IntPtr>>
         {
