@@ -9,6 +9,7 @@ public enum SampleEnum
     a, b, c
 }
 
+[Duktape.JSType]
 public struct SampleStruct
 {
     public int a;
@@ -17,6 +18,13 @@ public struct SampleStruct
 
     public void Foo(int a, string b) { }
     public void Foo(int a, params string[] b) { }
+
+    public static void X(string a1, string a2) { }
+    public static void X(string a1, int a2) { }
+    public static void X(string a1, params int[] a2)
+    {
+        Debug.LogFormat("X var {0}", a2.Length);
+    }
 }
 
 public static class SampleStructExtensions
@@ -85,6 +93,8 @@ public class Sample : MonoBehaviour
         delegateFoo += Awake;
         delegateFoo += Update;
         checking(delegateFoo);
+        SampleStruct.X("", 1);
+        SampleStruct.X("");
 
         var temp = new List<Action<IntPtr>>
         {

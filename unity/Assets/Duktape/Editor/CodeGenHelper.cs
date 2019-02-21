@@ -92,17 +92,25 @@ namespace Duktape
         }
     }
 
+    // 生成成员方法绑定代码
     public class MethodCodeGen : IDisposable
     {
         protected CodeGenerator cg;
         protected string name;
-        protected List<MethodInfo> methodInfos; // 所有重载
+        protected MethodVariants methods;
 
-        public MethodCodeGen(CodeGenerator cg, string name, List<MethodInfo> methodInfos)
+        public static int MethodComparer(MethodInfo a, MethodInfo b)
+        {
+            var va = a.GetParameters().Length;
+            var vb = b.GetParameters().Length;
+            return va > vb ? 1 : ((va == vb) ? 0 : -1);
+        }
+
+        public MethodCodeGen(CodeGenerator cg, string name, MethodVariants methods)
         {
             this.cg = cg;
             this.name = name;
-            this.methodInfos = methodInfos;
+            this.methods = methods;
 
             cg.csharp.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof(duk_c_function))]");
             cg.csharp.AppendLine("[UnityEngine.Scripting.Preserve]");
@@ -110,7 +118,65 @@ namespace Duktape
             cg.csharp.AppendLine("{");
             this.cg.csharp.AddTabLevel();
             //TODO: 如果是扩展方法且第一参数不是本类型, 则是因为目标类没有导出而降级的普通静态方法, 按普通静态方法处理
-            cg.csharp.AppendLine("// {0} overrides", methodInfos.Count);
+            if (this.methods.count > 1)
+            {
+                // 需要处理重载
+                cg.csharp.AppendLine("// override {0}", this.methods.count);
+                foreach (var variantKV in this.methods.variants)
+                {
+                    var argc = variantKV.Key;
+                    var variant = variantKV.Value;
+                    cg.csharp.AppendLine("if (argc >= {0}) {{", argc);
+                    cg.csharp.AddTabLevel();
+                    {
+                        cg.csharp.AppendLine("if (argc == {0}) {{", argc);
+                        cg.csharp.AddTabLevel();
+                        if (variant.plainMethods.Count > 1)
+                        {
+                            foreach (var method in variant.plainMethods)
+                            {
+                                cg.csharp.AppendLine("// {0}", method);
+                            }
+                        }
+                        else
+                        {
+                            foreach (var method in variant.plainMethods)
+                            {
+                                cg.csharp.AppendLine("// [if match] {0}", method);
+                            }
+                        }
+                        cg.csharp.DecTabLevel();
+                        cg.csharp.AppendLine("}");
+                    }
+                    {
+                        foreach (var method in variant.varargMethods)
+                        {
+                            cg.csharp.AppendLine("// [if match] {0}", method);
+                        }
+                    }
+                    cg.csharp.DecTabLevel();
+                    cg.csharp.AppendLine("}");
+                }
+            }
+            else
+            {
+                // 没有重载的情况
+                cg.csharp.AppendLine("// no override");
+                foreach (var variantKV in this.methods.variants)
+                {
+                    var argc = variantKV.Key;
+                    var variant = variantKV.Value;
+
+                    if (variant.isVararg)
+                    {
+                        cg.csharp.AppendLine("// argc >= {0} && match types", argc);
+                    }
+                    else
+                    {
+                        cg.csharp.AppendLine("// argc == {0} && match types", argc);
+                    }
+                }
+            }
         }
 
         public virtual void Dispose()
@@ -184,6 +250,13 @@ namespace Duktape
 
                 }
             }
+            foreach (var kv in type.staticMethods)
+            {
+                using (new MethodCodeGen(cg, kv.Key, kv.Value))
+                {
+
+                }
+            }
             foreach (var kv in type.fields)
             {
                 using (new FieldCodeGen(cg, kv.Key, kv.Value))
@@ -213,10 +286,16 @@ namespace Duktape
                 cg.csharp.AppendLine("duk_begin_class(ctx, typeof({0}), ctor);", type.FullName);
                 foreach (var kv in type.methods)
                 {
-                    var methodInfo = kv.Value[0];
-                    var regName = methodInfo.Name;
+                    var regName = kv.Value.name;
                     var funcName = kv.Key;
-                    var bStatic = methodInfo.IsStatic;
+                    var bStatic = false;
+                    cg.csharp.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? "true" : "false");
+                }                
+                foreach (var kv in type.staticMethods)
+                {
+                    var regName = kv.Value.name;
+                    var funcName = kv.Key;
+                    var bStatic = true;
                     cg.csharp.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? "true" : "false");
                 }
                 foreach (var kv in type.properties)

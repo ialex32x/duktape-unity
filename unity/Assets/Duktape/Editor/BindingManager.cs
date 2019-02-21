@@ -81,6 +81,10 @@ namespace Duktape
             {
                 return true;
             }
+            if (type.IsDefined(typeof(JSTypeAttribute), false))
+            {
+                return true;
+            }
             return false;
         }
 

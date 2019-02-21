@@ -34,10 +34,15 @@ namespace Duktape
                   | AttributeTargets.Enum
                   | AttributeTargets.Field
                   | AttributeTargets.Method
-                  | AttributeTargets.Property, 
+                  | AttributeTargets.Property,
                     AllowMultiple = false)]
     public class JSNamingAttribute : Attribute
     {
+        public string name { get; set; }
 
+        public JSNamingAttribute(string name)
+        {
+            this.name = name;
+        }
     }
 }
