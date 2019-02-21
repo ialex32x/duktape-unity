@@ -175,11 +175,13 @@ namespace Duktape
 
                     if (variant.isVararg)
                     {
-                        cg.csharp.AppendLine("// argc >= {0} && match types", argc);
+                        cg.csharp.AppendLine("// argc >= {0}", argc);
+                        cg.csharp.AppendLine("// {0}", variant.varargMethods[0]);
                     }
                     else
                     {
-                        cg.csharp.AppendLine("// argc == {0} && match types", argc);
+                        cg.csharp.AppendLine("// argc == {0}", argc);
+                        cg.csharp.AppendLine("// {0}", variant.plainMethods[0]);
                     }
                 }
             }
