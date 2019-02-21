@@ -128,25 +128,38 @@ namespace Duktape
             {
                 // 需要处理重载
                 cg.csharp.AppendLine("// override {0}", this.methods.count);
-                foreach (var variantKV in this.methods.variants)
+                cg.csharp.AppendLine("do {{");
+                cg.csharp.AddTabLevel();
                 {
-                    var argc = variantKV.Key;
-                    var variant = variantKV.Value;
-                    cg.csharp.AppendLine("if (argc >= {0}) {{", argc);
-                    cg.csharp.AddTabLevel();
+                    foreach (var variantKV in this.methods.variants)
                     {
-                        cg.csharp.AppendLine("if (argc == {0}) {{", argc);
+                        var argc = variantKV.Key;
+                        var variant = variantKV.Value;
+                        cg.csharp.AppendLine("if (argc >= {0}) {{", argc);
                         cg.csharp.AddTabLevel();
-                        if (variant.plainMethods.Count > 1)
                         {
-                            foreach (var method in variant.plainMethods)
+                            cg.csharp.AppendLine("if (argc == {0}) {{", argc);
+                            cg.csharp.AddTabLevel();
+                            if (variant.plainMethods.Count > 1)
                             {
-                                cg.csharp.AppendLine("// {0}", method);
+                                foreach (var method in variant.plainMethods)
+                                {
+                                    cg.csharp.AppendLine("// {0}", method);
+                                }
                             }
+                            else
+                            {
+                                foreach (var method in variant.plainMethods)
+                                {
+                                    cg.csharp.AppendLine("// [if match] {0}", method);
+                                }
+                            }
+                            cg.csharp.AppendLine("break;");
+                            cg.csharp.DecTabLevel();
+                            cg.csharp.AppendLine("}");
                         }
-                        else
                         {
-                            foreach (var method in variant.plainMethods)
+                            foreach (var method in variant.varargMethods)
                             {
                                 cg.csharp.AppendLine("// [if match] {0}", method);
                             }
@@ -154,15 +167,9 @@ namespace Duktape
                         cg.csharp.DecTabLevel();
                         cg.csharp.AppendLine("}");
                     }
-                    {
-                        foreach (var method in variant.varargMethods)
-                        {
-                            cg.csharp.AppendLine("// [if match] {0}", method);
-                        }
-                    }
-                    cg.csharp.DecTabLevel();
-                    cg.csharp.AppendLine("}");
                 }
+                cg.csharp.DecTabLevel();
+                cg.csharp.AppendLine("} while(false);");
             }
             else
             {
