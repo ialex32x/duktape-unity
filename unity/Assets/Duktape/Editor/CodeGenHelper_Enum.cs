@@ -31,7 +31,9 @@ namespace Duktape
                         foreach (var ev in Enum.GetValues(bindingInfo.type))
                         {
                             var value = Convert.ToInt32(ev);
-                            this.cg.csharp.AppendLine("duk_add_const(ctx, \"{0}\", {1});", ev.ToString(), value);
+                            var name = ev.ToString();
+                            this.cg.csharp.AppendLine("duk_add_const(ctx, \"{0}\", {1});", name, value);
+                            this.cg.typescript.AppendLine("{0} = {1},", name, value);
                         }
                         this.cg.csharp.AppendLine("duk_end_enum(ctx);");
                     }
