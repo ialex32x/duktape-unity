@@ -53,23 +53,26 @@ namespace Duktape
         }
     }
 
-    public class MethodVariants
+    public class MethodBindingInfo
     {
         private int _count = 0;
 
         // 按照参数数逆序排序所有变体
         public SortedDictionary<int, MethodVariant> variants = new SortedDictionary<int, MethodVariant>(new MethodVariantComparer());
 
-        public string name;
+        public string name; // 绑定代码名
+
+        public string regName; // 导出名
 
         public int count
         {
             get { return _count; }
         }
 
-        public MethodVariants(string name)
+        public MethodBindingInfo(bool bStatic, string regName)
         {
-            this.name = name;
+            this.name = (bStatic ? "BindStatic_" : "Bind_") + regName;
+            this.regName = regName;
         }
 
         public static bool IsVarargMethod(ParameterInfo[] parameters)
@@ -97,14 +100,63 @@ namespace Duktape
         }
     }
 
+    public class PropertyBindingInfo
+    {
+        public string getterName; // 绑定代码名
+        public string setterName;
+        public string regName; // js 注册名
+        public PropertyInfo propertyInfo;
+
+        public PropertyBindingInfo(PropertyInfo propertyInfo)
+        {
+            this.propertyInfo = propertyInfo;
+            this.getterName = propertyInfo.CanRead ? "BindRead_" + propertyInfo.Name : null;
+            this.setterName = propertyInfo.CanWrite ? "BindWrite_" + propertyInfo.Name : null;
+            this.regName = propertyInfo.Name;
+        }
+    }
+
+    public class FieldBindingInfo
+    {
+        public string getterName = null; // 绑定代码名
+        public string setterName = null;
+        public string regName = null; // js 注册名
+
+        public FieldInfo fieldInfo;
+
+        public bool isStatic { get { return fieldInfo.IsStatic; } }
+
+        public FieldBindingInfo(FieldInfo fieldInfo)
+        {
+            if (fieldInfo.IsStatic)
+            {
+                this.getterName = "BindRead_" + fieldInfo.Name;
+                if (!fieldInfo.IsInitOnly)
+                {
+                    this.setterName = "BindWrite_" + fieldInfo.Name;
+                }
+            }
+            else
+            {
+                this.getterName = "BindStaticRead_" + fieldInfo.Name;
+                if (!fieldInfo.IsInitOnly)
+                {
+                    this.setterName = "BindStaticWrite_" + fieldInfo.Name;
+                }
+            }
+            this.regName = fieldInfo.Name;
+            this.fieldInfo = fieldInfo;
+        }
+    }
+
     public class TypeBindingInfo
     {
         public BindingManager bindingManager;
         public Type type;
-        public Dictionary<string, MethodVariants> methods = new Dictionary<string, MethodVariants>();
-        public Dictionary<string, MethodVariants> staticMethods = new Dictionary<string, MethodVariants>();
-        public Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
-        public Dictionary<string, FieldInfo> fields = new Dictionary<string, FieldInfo>();
+        public Dictionary<string, MethodBindingInfo> methods = new Dictionary<string, MethodBindingInfo>();
+        public Dictionary<string, MethodBindingInfo> staticMethods = new Dictionary<string, MethodBindingInfo>();
+        public Dictionary<string, PropertyBindingInfo> properties = new Dictionary<string, PropertyBindingInfo>();
+        public Dictionary<string, FieldBindingInfo> fields = new Dictionary<string, FieldBindingInfo>();
 
         public Assembly Assembly
         {
@@ -131,6 +183,7 @@ namespace Duktape
             get { return type.IsEnum; }
         }
 
+        // 绑定代码名
         public string JSBindingClassName
         {
             get { return type.FullName.Replace(".", "_"); }
@@ -154,10 +207,10 @@ namespace Duktape
             var name = methodInfo.Name;
             if (name.Length > 4 && (name.StartsWith("set_") || name.StartsWith("get_")))
             {
-                PropertyInfo prop;
+                PropertyBindingInfo prop;
                 if (properties.TryGetValue(name.Substring(4), out prop))
                 {
-                    return prop.GetMethod == methodInfo || prop.SetMethod == methodInfo;
+                    return prop.propertyInfo.GetMethod == methodInfo || prop.propertyInfo.SetMethod == methodInfo;
                 }
             }
             return false;
@@ -167,8 +220,7 @@ namespace Duktape
         {
             try
             {
-                var name = fieldInfo.Name;
-                fields.Add(name, fieldInfo);
+                fields.Add(fieldInfo.Name, new FieldBindingInfo(fieldInfo));
                 // Debug.LogFormat("AddField {0}.{1}", type, fieldInfo.Name);
             }
             catch (Exception exception)
@@ -181,8 +233,7 @@ namespace Duktape
         {
             try
             {
-                var name = propInfo.Name;
-                properties.Add(name, propInfo);
+                properties.Add(propInfo.Name, new PropertyBindingInfo(propInfo));
             }
             catch (Exception exception)
             {
@@ -192,14 +243,12 @@ namespace Duktape
 
         public void AddMethod(MethodInfo methodInfo)
         {
-            var prefix = methodInfo.IsStatic ? "BindStatic_" : "Bind_";
-            var name = prefix + methodInfo.Name;
             var group = methodInfo.IsStatic ? staticMethods : methods;
-            MethodVariants overrides;
-            if (!group.TryGetValue(name, out overrides))
+            MethodBindingInfo overrides;
+            if (!group.TryGetValue(methodInfo.Name, out overrides))
             {
-                overrides = new MethodVariants(methodInfo.Name);
-                group.Add(name, overrides);
+                overrides = new MethodBindingInfo(methodInfo.IsStatic, methodInfo.Name);
+                group.Add(methodInfo.Name, overrides);
             }
             overrides.Add(methodInfo);
         }
