@@ -18,6 +18,17 @@ namespace Duktape
                     Inherited = false)]
     public class JSBindingAttribute : Attribute
     {
+        // 生成此 binding 代码对应的 duktape-unity 版本 (用于导入时给出版本不一致警告)
+        public int Version { get; set; }
+
+        public JSBindingAttribute()
+        {
+        } 
+        
+        public JSBindingAttribute(int version)
+        {
+            this.Version = version;
+        }
     }
 
     // 强制转换为 JS Array

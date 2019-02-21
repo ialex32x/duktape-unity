@@ -4,6 +4,7 @@ using UnityEngine;
 using Duktape;
 using System;
 
+[Duktape.JSType]
 public enum SampleEnum
 {
     a, b, c
@@ -13,6 +14,8 @@ public enum SampleEnum
 public struct SampleStruct
 {
     public int a;
+
+    public static string b;
 
     public void Foo(List<int> list) { }
 
@@ -25,6 +28,8 @@ public struct SampleStruct
     {
         Debug.LogFormat("X var {0}", a2.Length);
     }
+
+    public void VarargMethodWithoutOverride(int a, string[] b, params float[] c) { }
 }
 
 public static class SampleStructExtensions
