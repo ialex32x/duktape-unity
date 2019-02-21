@@ -14,48 +14,34 @@
 * 使用 protobufjs (未实现)
 
 # Example
-base/a.ts
+
 ```ts
+
+// 导入模块
+import { B } from "base/b"
+// 相对路径导入模块
+import { C } from "./base/c"
 
 export class A {
     private go: GameObject
     constructor () {
         this.go = new GameObject("test go")
         this.go.transform.localPosition = new Vector3(1, 2, 3)
+
+        let f = new Custom()
+        f.onload = DuktapeJS.on(this, this.onload)  // 添加监听
+        f.onload = DuktapeJS.off(this, this.onload) // 移除监听
+        f.onload = DuktapeJS.off(this)              // 清空监听
+    }
+
+    private onload() {
+
     }
 
     square() {
         console.log("A.square")
     }
 }
-
-```
-
-base/b.ts
-```ts
-import { A } from "./a"
-
-export class B extends A {
-
-    static foo() {
-
-    }
-
-    square() {
-        super.square()
-        console.log("A.square")
-    }
-}
-
-```
-
-main.ts
-```ts
-import { B } from "base/b"
-
-B.foo()
-let b = new B()
-b.square()
 
 ```
 

@@ -13,7 +13,7 @@ namespace Duktape
     {
         protected CodeGenerator cg;
 
-        public TopLevelCodeGen(CodeGenerator cg, Type type)
+        public TopLevelCodeGen(CodeGenerator cg, TypeBindingInfo type)
         {
             this.cg = cg;
             this.cg.csharp.AppendLine("// UserName: {0} @ {1}", Environment.UserName, DateTime.Now);
@@ -35,9 +35,9 @@ namespace Duktape
     {
         protected CodeGenerator cg;
         protected string ns;
-        protected Type type;
+        protected TypeBindingInfo type;
 
-        public NamespaceCodeGen(CodeGenerator cg, string ns, Type type)
+        public NamespaceCodeGen(CodeGenerator cg, string ns, TypeBindingInfo type)
         {
             this.cg = cg;
             this.ns = ns;
@@ -49,8 +49,11 @@ namespace Duktape
             }
             this.cg.csharp.AppendLine("using Duktape;");
             // cg.csharp.AppendLine("using UnityEngine;");
-            this.cg.typescript.AppendLine("declare namespace {0} {{", type.Namespace);
-            this.cg.typescript.AddTabLevel();
+            if (!string.IsNullOrEmpty(type.Namespace))
+            {
+                this.cg.typescript.AppendLine("declare namespace {0} {{", type.Namespace);
+                this.cg.typescript.AddTabLevel();
+            }
         }
 
         public void Dispose()
@@ -60,26 +63,27 @@ namespace Duktape
                 this.cg.csharp.DecTabLevel();
                 this.cg.csharp.AppendLine("}");
             }
-            this.cg.typescript.DecTabLevel();
-            this.cg.typescript.AppendLine("}");
+            if (!string.IsNullOrEmpty(type.Namespace))
+            {
+                this.cg.typescript.DecTabLevel();
+                this.cg.typescript.AppendLine("}");
+            }
         }
     }
 
-    public class FieldCodeGen : IDisposable
+    public class FieldGetterCodeGen : IDisposable
     {
         protected CodeGenerator cg;
-        protected string name;
-        protected FieldInfo fieldInfo;
+        protected FieldBindingInfo bindingInfo;
 
-        public FieldCodeGen(CodeGenerator cg, string name, FieldInfo fieldInfo)
+        public FieldGetterCodeGen(CodeGenerator cg, FieldBindingInfo bindingInfo)
         {
             this.cg = cg;
-            this.name = name;
-            this.fieldInfo = fieldInfo;
+            this.bindingInfo = bindingInfo;
 
             this.cg.csharp.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof(duk_c_function))]");
             this.cg.csharp.AppendLine("[UnityEngine.Scripting.Preserve]");
-            this.cg.csharp.AppendLine("public static int {0}(IntPtr ctx)", name);
+            this.cg.csharp.AppendLine("public static int {0}(IntPtr ctx)", bindingInfo.getterName);
             this.cg.csharp.AppendLine("{");
             this.cg.csharp.AddTabLevel();
         }
@@ -92,24 +96,123 @@ namespace Duktape
         }
     }
 
+    public class FieldSetterCodeGen : IDisposable
+    {
+        protected CodeGenerator cg;
+        protected FieldBindingInfo bindingInfo;
+
+        public FieldSetterCodeGen(CodeGenerator cg, FieldBindingInfo bindingInfo)
+        {
+            this.cg = cg;
+            this.bindingInfo = bindingInfo;
+
+            this.cg.csharp.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof(duk_c_function))]");
+            this.cg.csharp.AppendLine("[UnityEngine.Scripting.Preserve]");
+            this.cg.csharp.AppendLine("public static int {0}(IntPtr ctx)", bindingInfo.setterName);
+            this.cg.csharp.AppendLine("{");
+            this.cg.csharp.AddTabLevel();
+        }
+
+        public void Dispose()
+        {
+            this.cg.csharp.AppendLine("return 0");
+            this.cg.csharp.DecTabLevel();
+            this.cg.csharp.AppendLine("}");
+        }
+    }
+
+    // 生成成员方法绑定代码
     public class MethodCodeGen : IDisposable
     {
         protected CodeGenerator cg;
-        protected string name;
-        protected List<MethodInfo> methodInfos; // 所有重载
+        protected MethodBindingInfo bindingInfo;
 
-        public MethodCodeGen(CodeGenerator cg, string name, List<MethodInfo> methodInfos)
+        public static int MethodComparer(MethodInfo a, MethodInfo b)
+        {
+            var va = a.GetParameters().Length;
+            var vb = b.GetParameters().Length;
+            return va > vb ? 1 : ((va == vb) ? 0 : -1);
+        }
+
+        public MethodCodeGen(CodeGenerator cg, MethodBindingInfo bindingInfo)
         {
             this.cg = cg;
-            this.name = name;
-            this.methodInfos = methodInfos;
+            this.bindingInfo = bindingInfo;
 
             cg.csharp.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof(duk_c_function))]");
             cg.csharp.AppendLine("[UnityEngine.Scripting.Preserve]");
-            cg.csharp.AppendLine("public static int {0}(IntPtr ctx)", name);
+            cg.csharp.AppendLine("public static int {0}(IntPtr ctx)", bindingInfo.name);
             cg.csharp.AppendLine("{");
             this.cg.csharp.AddTabLevel();
-            cg.csharp.AppendLine("// {0} overrides", methodInfos.Count);
+            //TODO: 如果是扩展方法且第一参数不是本类型, 则是因为目标类没有导出而降级的普通静态方法, 按普通静态方法处理
+            if (this.bindingInfo.count > 1)
+            {
+                // 需要处理重载
+                cg.csharp.AppendLine("// override {0}", this.bindingInfo.count);
+                cg.csharp.AppendLine("do {");
+                cg.csharp.AddTabLevel();
+                {
+                    foreach (var variantKV in this.bindingInfo.variants)
+                    {
+                        var argc = variantKV.Key;
+                        var variant = variantKV.Value;
+                        cg.csharp.AppendLine("if (argc >= {0}) {{", argc);
+                        cg.csharp.AddTabLevel();
+                        {
+                            cg.csharp.AppendLine("if (argc == {0}) {{", argc);
+                            cg.csharp.AddTabLevel();
+                            if (variant.plainMethods.Count > 1)
+                            {
+                                foreach (var method in variant.plainMethods)
+                                {
+                                    cg.csharp.AppendLine("// {0}", method);
+                                }
+                            }
+                            else
+                            {
+                                foreach (var method in variant.plainMethods)
+                                {
+                                    cg.csharp.AppendLine("// [if match] {0}", method);
+                                }
+                            }
+                            cg.csharp.AppendLine("break;");
+                            cg.csharp.DecTabLevel();
+                            cg.csharp.AppendLine("}");
+                        }
+                        {
+                            foreach (var method in variant.varargMethods)
+                            {
+                                cg.csharp.AppendLine("// [if match] {0}", method);
+                            }
+                        }
+                        cg.csharp.DecTabLevel();
+                        cg.csharp.AppendLine("}");
+                    }
+                }
+                cg.csharp.DecTabLevel();
+                cg.csharp.AppendLine("} while(false);");
+            }
+            else
+            {
+                // 没有重载的情况
+                cg.csharp.AppendLine("// no override");
+                foreach (var variantKV in this.bindingInfo.variants)
+                {
+                    var argc = variantKV.Key;
+                    var variant = variantKV.Value;
+
+                    if (variant.isVararg)
+                    {
+                        cg.csharp.AppendLine("// argc >= {0}", argc);
+                        cg.csharp.AppendLine("// {0}", variant.varargMethods[0]);
+                    }
+                    else
+                    {
+                        cg.csharp.AppendLine("// argc == {0}", argc);
+                        cg.csharp.AppendLine("// {0}", variant.plainMethods[0]);
+                    }
+                }
+            }
         }
 
         public virtual void Dispose()
@@ -142,17 +245,17 @@ namespace Duktape
     public class TypeCodeGen : IDisposable
     {
         protected CodeGenerator cg;
-        protected Type type;
+        protected TypeBindingInfo bindingInfo;
 
-        public TypeCodeGen(CodeGenerator cg, Type type)
+        public TypeCodeGen(CodeGenerator cg, TypeBindingInfo bindingInfo)
         {
             this.cg = cg;
-            this.type = type;
-            this.cg.csharp.AppendLine("[{0}]", typeof(JSTypeAttribute).Name);
+            this.bindingInfo = bindingInfo;
+            this.cg.csharp.AppendLine("[{0}]", typeof(JSBindingAttribute).Name);
             this.cg.csharp.AppendLine("[UnityEngine.Scripting.Preserve]");
-            this.cg.csharp.AppendLine("public class {0} : {1} {{", GetTypeName(type), typeof(DuktapeBinding).Name);
+            this.cg.csharp.AppendLine("public class {0} : {1} {{", bindingInfo.JSBindingClassName, typeof(DuktapeBinding).Name);
             this.cg.csharp.AddTabLevel();
-            this.cg.typescript.AppendLine("class {0} {{", type.Name);
+            this.cg.typescript.AppendLine("class {0} {{", bindingInfo.Name);
             this.cg.typescript.AddTabLevel();
         }
 
@@ -172,104 +275,61 @@ namespace Duktape
 
     public class ClassCodeGen : TypeCodeGen
     {
-        private Dictionary<string, List<MethodInfo>> methods = new Dictionary<string, List<MethodInfo>>();
-        private Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
-        private Dictionary<string, FieldInfo> fields = new Dictionary<string, FieldInfo>();
-
-        public ClassCodeGen(CodeGenerator cg, Type type)
+        public ClassCodeGen(CodeGenerator cg, TypeBindingInfo type)
         : base(cg, type)
         {
-            // 收集所有 字段,属性,方法
-            var fields = type.GetFields();
-            foreach (var field in fields)
-            {
-                AddField(field);
-            }
-            var properties = type.GetProperties();
-            foreach (var property in properties)
-            {
-                AddProperty(property);
-            }
-            var methods = type.GetMethods();
-            foreach (var method in methods)
-            {
-                var name = method.Name;
-                if (IsPropertyMethod(method))
-                {
-                }
-                else
-                {
-                    AddMethod(method);
-                }
-            }
-
             // 生成函数体
-            foreach (var kv in this.methods)
+            foreach (var kv in type.methods)
             {
-                using (new MethodCodeGen(cg, kv.Key, kv.Value))
+                var bindingInfo = kv.Value;
+                using (new MethodCodeGen(cg, bindingInfo))
                 {
 
                 }
             }
-            foreach (var kv in this.fields)
+            foreach (var kv in type.staticMethods)
             {
-                using (new FieldCodeGen(cg, kv.Key, kv.Value))
+                var bindingInfo = kv.Value;
+                using (new MethodCodeGen(cg, bindingInfo))
                 {
+                }
+            }
+            foreach (var kv in type.fields)
+            {
+                var bindingInfo = kv.Value;
+                using (new FieldGetterCodeGen(cg, bindingInfo))
+                {
+                }
+                if (bindingInfo.setterName != null)
+                {
+                    using (new FieldSetterCodeGen(cg, bindingInfo))
+                    {
+                    }
                 }
             }
         }
 
-        public bool IsPropertyMethod(MethodInfo methodInfo)
+        public string GetTypeFullNameTS(Type type)
         {
-            var name = methodInfo.Name;
-            if (name.Length > 4 && (name.StartsWith("set_") || name.StartsWith("get_")))
+            var info = cg.bindingManager.GetExportedType(type);
+            if (info != null)
             {
-                PropertyInfo prop;
-                if (properties.TryGetValue(name.Substring(4), out prop))
+                return info.FullName;
+            }
+            if (type.IsPrimitive && type.IsValueType)
+            {
+                if (type == typeof(sbyte) || type == typeof(byte)
+                || type == typeof(int) || type == typeof(uint)
+                || type == typeof(short) || type == typeof(ushort)
+                || type == typeof(long) || type == typeof(ulong)
+                || type == typeof(float) || type == typeof(double))
                 {
-                    return prop.GetMethod == methodInfo || prop.SetMethod == methodInfo;
+                    return "number";
                 }
-            }
-            return false;
-        }
-
-        public void AddField(FieldInfo fieldInfo)
-        {
-            var name = fieldInfo.Name;
-            fields.Add(name, fieldInfo);
-        }
-
-        public void AddProperty(PropertyInfo propInfo)
-        {
-            try
-            {
-                var name = propInfo.Name;
-                properties.Add(name, propInfo);
-            }
-            catch (Exception exception)
-            {
-                this.cg.bindingManager.Error("AddProperty failed {0} @ {1}\n{2}", propInfo, type, exception);
-            }
-        }
-
-        public void AddMethod(MethodInfo methodInfo)
-        {
-            var name = "Bind" + methodInfo.Name;
-            List<MethodInfo> list;
-            if (!methods.TryGetValue(name, out list))
-            {
-                list = new List<MethodInfo>();
-                methods.Add(name, list);
-            }
-            list.Add(methodInfo);
-        }
-
-        // 获取指定类型在 ts 中的声明名称
-        protected string GetTypeScriptName(Type type)
-        {
-            if (this.cg.bindingManager.IsExported(type))
-            {
-                return type.FullName;
+                if (type == typeof(string) || type == typeof(char))
+                {
+                    return "string";
+                }
             }
             return "any";
         }
@@ -278,50 +338,63 @@ namespace Duktape
         {
             using (new RegFuncCodeGen(cg))
             {
-                cg.csharp.Append("duk_begin_namespace(ctx, ");
-                var split_ns = type.Namespace.Split('.');
-                for (var i = 0; i < split_ns.Length; i++) 
+                cg.csharp.Append("duk_begin_namespace(ctx");
+                // Debug.LogErrorFormat("{0}: {1}", bindingInfo.type, bindingInfo.Namespace);
+                if (bindingInfo.Namespace != null)
                 {
-                    var el_ns = split_ns[i];
-                    cg.csharp.AppendL("\"{0}\"", el_ns);
-                    if (i != split_ns.Length -1) 
+                    var split_ns = bindingInfo.Namespace.Split('.');
+                    for (var i = 0; i < split_ns.Length; i++)
                     {
-                        cg.csharp.AppendL(",");
+                        var el_ns = split_ns[i];
+                        cg.csharp.AppendL(", \"{0}\"", el_ns);
                     }
                 }
                 cg.csharp.AppendLineL(");");
-                cg.csharp.AppendLine("duk_begin_class(ctx, typeof({0}), ctor);", type.FullName);
-                foreach (var kv in methods)
+                cg.csharp.AppendLine("duk_begin_class(ctx, typeof({0}), ctor);", bindingInfo.FullName);
+                foreach (var kv in bindingInfo.methods)
                 {
-                    var methodInfo = kv.Value[0];
-                    var regName = methodInfo.Name;
-                    var funcName = kv.Key;
-                    var bStatic = methodInfo.IsStatic;
-                    cg.csharp.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? "true" : "false");
+                    var regName = kv.Value.regName;
+                    var funcName = kv.Value.name;
+                    var bStatic = "false";
+                    cg.csharp.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic);
                 }
-                foreach (var kv in properties)
+                foreach (var kv in bindingInfo.staticMethods)
                 {
-                    var propertyInfo = kv.Value;
-                    var bStatic = false;
+                    var regName = kv.Value.regName;
+                    var funcName = kv.Value.name;
+                    var bStatic = "true";
+                    cg.csharp.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic);
+                }
+                foreach (var kv in bindingInfo.properties)
+                {
+                    var bindingInfo = kv.Value;
+                    var bStatic = "false";
                     cg.csharp.AppendLine("duk_add_property(ctx, \"{0}\", {1}, {2}, {3});",
-                        propertyInfo.Name,
-                        propertyInfo.CanRead ? propertyInfo.GetMethod.Name : "null",
-                        propertyInfo.CanWrite ? propertyInfo.SetMethod.Name : "null",
-                        bStatic ? "true" : "false");
+                        bindingInfo.regName,
+                        bindingInfo.getterName,
+                        bindingInfo.setterName,
+                        bStatic);
 
-                    var tsPropertyPrefix = propertyInfo.CanWrite ? "" : "readonly ";
-                    var tsPropertyType = GetTypeScriptName(propertyInfo.PropertyType);
-                    cg.typescript.AppendLine("{0}{1}: {2}", tsPropertyPrefix, propertyInfo.Name, tsPropertyType);
+                    var tsPropertyPrefix = bindingInfo.setterName != null ? "" : "readonly ";
+                    var tsPropertyType = GetTypeFullNameTS(bindingInfo.propertyInfo.PropertyType);
+                    cg.typescript.AppendLine("{0}{1}: {2}", tsPropertyPrefix, bindingInfo.propertyInfo.Name, tsPropertyType);
                 }
-                foreach (var kv in fields)
+                foreach (var kv in bindingInfo.fields)
                 {
-                    var name = kv.Key;
                     var fieldInfo = kv.Value;
-                    var bStatic = fieldInfo.IsStatic ? "true" : "false";
-                    cg.csharp.AppendLine("duk_add_field(ctx, \"{0}\", {1}, {2});", fieldInfo.Name, name, bStatic);
-                    var tsPropertyPrefix = fieldInfo.IsStatic ? "static " : "";
-                    var tsPropertyType = GetTypeScriptName(fieldInfo.FieldType);
-                    cg.typescript.AppendLine("{0}{1}: {2}", tsPropertyPrefix, fieldInfo.Name, tsPropertyType);
+                    var bStatic = fieldInfo.isStatic ? "true" : "false";
+                    cg.csharp.AppendLine("duk_add_property(ctx, \"{0}\", {1}, {2}, {3});",
+                        fieldInfo.regName,
+                        fieldInfo.getterName != null ? fieldInfo.getterName : "null",
+                        fieldInfo.setterName != null ? fieldInfo.setterName : "null",
+                        bStatic);
+                    var tsPropertyPrefix = fieldInfo.isStatic ? "static " : "";
+                    if (fieldInfo.setterName == null)
+                    {
+                        tsPropertyPrefix += "readonly ";
+                    }
+                    var tsPropertyType = GetTypeFullNameTS(fieldInfo.fieldInfo.FieldType);
+                    cg.typescript.AppendLine("{0}{1}: {2}", tsPropertyPrefix, fieldInfo.regName, tsPropertyType);
                 }
                 cg.csharp.AppendLine("duk_end_class(ctx);");
                 cg.csharp.AppendLine("duk_end_namespace(ctx);");
@@ -332,7 +405,7 @@ namespace Duktape
 
     public class EnumCodeGen : TypeCodeGen
     {
-        public EnumCodeGen(CodeGenerator cg, Type type)
+        public EnumCodeGen(CodeGenerator cg, TypeBindingInfo type)
         : base(cg, type)
         {
         }

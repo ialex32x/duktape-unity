@@ -6,6 +6,7 @@ namespace Duktape
 {
     using UnityEngine;
 
+    [JSBinding]
     public class UnityEngine_Object : DuktapeBinding
     {
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
@@ -21,11 +22,10 @@ namespace Duktape
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         static int Destroy(IntPtr ctx)
         {
-            object arg1;
-            duk_get_any(ctx, 1, out arg1);
+            Object arg1;
+            duk_get_class_object(ctx, 0, out arg1);
             DuktapeDLL.duk_pop(ctx); // pop this
-            var tp = (Object)arg1;
-            Object.Destroy(tp);
+            Object.Destroy(arg1);
             return 0;
         }
 

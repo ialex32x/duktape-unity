@@ -1,5 +1,9 @@
 {
     "outDir": "Assets/Duktape/Generated",
     "newLineStyle": 0,
+    "implicitAssemblies": [], 
+    "explicitAssemblies": [
+        "Assembly-CSharp"
+    ],
     "tab": "    "
 }

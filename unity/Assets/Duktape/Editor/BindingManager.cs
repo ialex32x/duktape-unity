@@ -14,7 +14,7 @@ namespace Duktape
         private HashSet<Type> blacklist;
         private HashSet<Type> whitelist;
         private List<string> typePrefixBlacklist;
-        private List<Type> types = new List<Type>();
+        private Dictionary<Type, TypeBindingInfo> exportedTypes = new Dictionary<Type, TypeBindingInfo>();
         private List<string> outputFiles = new List<string>();
 
         public BindingManager()
@@ -34,12 +34,19 @@ namespace Duktape
 
         public void AddExport(Type type)
         {
-            types.Add(type);
+            var typeBindingInfo = new TypeBindingInfo(this, type);
+            exportedTypes.Add(type, typeBindingInfo);
         }
 
         public bool IsExported(Type type)
         {
-            return types.Contains(type);
+            return exportedTypes.ContainsKey(type);
+        }
+
+        public TypeBindingInfo GetExportedType(Type type)
+        {
+            TypeBindingInfo typeBindingInfo;
+            return exportedTypes.TryGetValue(type, out typeBindingInfo) ? typeBindingInfo : null;
         }
 
         // 是否在黑名单中屏蔽, 或者已知无需导出的类型
@@ -74,24 +81,25 @@ namespace Duktape
             {
                 return true;
             }
+            if (type.IsDefined(typeof(JSTypeAttribute), false))
+            {
+                return true;
+            }
             return false;
-        }
-
-        // 将类型名转换成简单字符串 (比如用于文件名)
-        public string GetFileName(Type type)
-        {
-            var filename = type.FullName.Replace(".", "_");
-            return filename;
         }
 
         public void Collect()
         {
             Collect(Prefs.GetPrefs().explicitAssemblies, false);
             Collect(Prefs.GetPrefs().implicitAssemblies, true);
+            foreach (var typeBindingInfoKV in exportedTypes)
+            {
+                typeBindingInfoKV.Value.Collect();
+            }
         }
 
         // implicitExport: 默认进行导出(黑名单例外), 否则根据导出标记或手工添加
-        public void Collect(List<string> assemblyNames, bool implicitExport)
+        private void Collect(List<string> assemblyNames, bool implicitExport)
         {
             foreach (var assemblyName in assemblyNames)
             {
@@ -162,15 +170,24 @@ namespace Duktape
             {
                 Directory.CreateDirectory(outDir);
             }
-            foreach (var type in types)
+            foreach (var typeKV in exportedTypes)
             {
-                cg.Generate(type);
-                cg.WriteTo(outDir, GetFileName(type), tx);
+                var typeBindingInfo = typeKV.Value;
+                try
+                {
+                    cg.Generate(typeBindingInfo);
+                    cg.WriteTo(outDir, typeBindingInfo.GetFileName(), tx);
+                }
+                catch (Exception exception)
+                {
+                    Error(string.Format("generate failed {0}: {1}", typeBindingInfo.Name, exception.Message));
+                    Debug.LogError(exception.StackTrace);
+                }
             }
 
             var logPath = Prefs.GetPrefs().logPath;
             File.WriteAllText(logPath, log.ToString());
-            Debug.LogFormat("generated {0} types", types.Count);
+            Debug.LogFormat("generated {0} types", exportedTypes.Count);
         }
     }
 }

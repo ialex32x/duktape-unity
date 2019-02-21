@@ -27,6 +27,13 @@ namespace Duktape
             return 0;
         }
 
+        // 无命名空间, 直接外围对象作为容器 (通常是global)
+        public static void duk_begin_namespace(IntPtr ctx) // [parent]
+        {
+            // Debug.LogFormat("begin namespace {0}", DuktapeDLL.duk_get_top(ctx));
+            DuktapeDLL.duk_dup_top(ctx); // [parent, parent]
+        }
+
         public static void duk_begin_namespace(IntPtr ctx, string el) // [parent]
         {
             // Debug.LogFormat("begin namespace {0}", DuktapeDLL.duk_get_top(ctx));

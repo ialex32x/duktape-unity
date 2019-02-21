@@ -46,6 +46,14 @@ namespace Duktape
             }
         }
 
+        public void AppendLines(params string[] lines)
+        {
+            foreach(var line in lines)
+            {
+                AppendLine(line);
+            }
+        }
+
         public void AppendLine()
         {
             sb.Append(newline);

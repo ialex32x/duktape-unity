@@ -4,6 +4,7 @@ using AOT;
 
 namespace Duktape
 {
+    [JSBinding]
     public class UnityEngine_GameObject : DuktapeBinding
     {
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
@@ -29,16 +30,11 @@ namespace Duktape
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         static int SetActive(IntPtr ctx)
         {
-            DuktapeDLL.duk_push_this(ctx);
-            DuktapeDLL.duk_get_prop_string(ctx, -1, DuktapeVM.OBJ_PROP_NATIVE);
-            var id = DuktapeDLL.duk_get_int(ctx, -1);
-            DuktapeDLL.duk_pop_2(ctx);
-            object o;
-            if (DuktapeVM.GetObjectCache(ctx).TryGetValue(id, out o))
+            var o = (UnityEngine.GameObject)duk_get_this(ctx);
+            if (o != null)
             {
-                var tp = (UnityEngine.GameObject)o;
                 var b = DuktapeDLL.duk_get_boolean(ctx, 0);
-                tp.SetActive(b);
+                o.SetActive(b);
             }
             else
             {
@@ -47,15 +43,16 @@ namespace Duktape
             return 0;
         }
 
+        public struct FF {}
+
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         static int get_activeSelf(IntPtr ctx)
         {
             DuktapeDLL.duk_push_this(ctx);
-            object self;
-            duk_get_any(ctx, -1, out self);
+            UnityEngine.GameObject self;
+            duk_get_class_object(ctx, -1, out self);
             DuktapeDLL.duk_pop(ctx); // pop this
-            var go = (UnityEngine.GameObject)self;
-            DuktapeDLL.duk_push_boolean(ctx, go.activeSelf);
+            DuktapeDLL.duk_push_boolean(ctx, self.activeSelf);
             return 1;
         }
 
