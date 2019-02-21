@@ -27,6 +27,8 @@ public struct SampleStruct
     {
         Debug.LogFormat("X var {0}", a2.Length);
     }
+
+    public void VarargMethodWithoutOverride(int a, string[] b, params float[] c) { }
 }
 
 public static class SampleStructExtensions

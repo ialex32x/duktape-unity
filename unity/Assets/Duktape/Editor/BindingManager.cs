@@ -10,6 +10,7 @@ namespace Duktape
 
     public partial class BindingManager
     {
+        public DateTime dateTime;
         public TextGenerator log;
         private HashSet<Type> blacklist;
         private HashSet<Type> whitelist;
@@ -19,6 +20,7 @@ namespace Duktape
 
         public BindingManager()
         {
+            this.dateTime = DateTime.Now;
             var tab = Prefs.GetPrefs().tab;
             var newline = Prefs.GetPrefs().newline;
             typePrefixBlacklist = Prefs.GetPrefs().typePrefixBlacklist;
@@ -43,8 +45,51 @@ namespace Duktape
             return exportedTypes.ContainsKey(type);
         }
 
+        // 获取在typescript中的完整名类型
+        public string GetTypeFullNameTS(Type type)
+        {
+            if (type == null)
+            {
+                return "void";
+            }
+            var info = GetExportedType(type);
+            if (info != null)
+            {
+                return info.FullName;
+            }
+            if (type == typeof(void))
+            {
+                return "void";
+            }
+            if (type.IsPrimitive && type.IsValueType)
+            {
+                if (type == typeof(sbyte) || type == typeof(byte)
+                || type == typeof(int) || type == typeof(uint)
+                || type == typeof(short) || type == typeof(ushort)
+                || type == typeof(long) || type == typeof(ulong)
+                || type == typeof(float) || type == typeof(double))
+                {
+                    return "number";
+                }
+            }
+            if (type == typeof(string) || type == typeof(char))
+            {
+                return "string";
+            }
+            if (type.IsArray)
+            {
+                var elementType = type.GetElementType();
+                return GetTypeFullNameTS(elementType) + "[]";
+            }
+            return "any";
+        }
+
         public TypeBindingInfo GetExportedType(Type type)
         {
+            if (type == null)
+            {
+                return null;
+            }
             TypeBindingInfo typeBindingInfo;
             return exportedTypes.TryGetValue(type, out typeBindingInfo) ? typeBindingInfo : null;
         }

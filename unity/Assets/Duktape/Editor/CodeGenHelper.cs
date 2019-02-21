@@ -16,14 +16,14 @@ namespace Duktape
         public TopLevelCodeGen(CodeGenerator cg, TypeBindingInfo type)
         {
             this.cg = cg;
-            this.cg.csharp.AppendLine("// UserName: {0} @ {1}", Environment.UserName, DateTime.Now);
+            this.cg.csharp.AppendLine("// UserName: {0} @ {1}", Environment.UserName, this.cg.bindingManager.dateTime);
             this.cg.csharp.AppendLine("// Assembly: {0}", type.Assembly.GetName());
             this.cg.csharp.AppendLine("// Type: {0}", type.FullName);
             this.cg.csharp.AppendLine("using System;");
             this.cg.csharp.AppendLine("using System.Collections.Generic;");
             this.cg.csharp.AppendLine();
 
-            this.cg.typescript.AppendLine("// {0} {1}", Environment.UserName, DateTime.Now);
+            this.cg.typescript.AppendLine("// {0} {1}", Environment.UserName, this.cg.bindingManager.dateTime);
         }
 
         public void Dispose()
@@ -219,16 +219,61 @@ namespace Duktape
 
                     if (variant.isVararg)
                     {
+                        var method = variant.varargMethods[0];
                         cg.csharp.AppendLine("// argc >= {0}", argc);
-                        cg.csharp.AppendLine("// {0}", variant.varargMethods[0]);
+                        cg.csharp.AppendLine("// {0}", method);
+
                     }
                     else
                     {
+                        var method = variant.plainMethods[0];
                         cg.csharp.AppendLine("// argc == {0}", argc);
-                        cg.csharp.AppendLine("// {0}", variant.plainMethods[0]);
+                        cg.csharp.AppendLine("// {0}", method);
                     }
                 }
             }
+
+            foreach (var variantKV in this.bindingInfo.variants)
+            {
+                foreach (var method in variantKV.Value.plainMethods)
+                {
+                    WriteTSDeclaration(method);
+                }
+                foreach (var method in variantKV.Value.varargMethods)
+                {
+                    WriteTSDeclaration(method);
+                }
+            }
+        }
+
+        private void WriteTSDeclaration(MethodInfo method)
+        {
+            //TODO: 需要处理参数类型归并问题, 因为如果类型没有导入 ts 中, 可能会在声明中出现相同参数列表的定义
+            this.cg.typescript.Append("{0}(", this.bindingInfo.regName);
+            var parameters = method.GetParameters();
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var parameter = parameters[i];
+                if (parameter.IsDefined(typeof(ParamArrayAttribute), false) && i == parameters.Length - 1)
+                {
+                    var elementType = parameter.ParameterType.GetElementType();
+                    var elementTS = this.cg.bindingManager.GetTypeFullNameTS(elementType);
+                    this.cg.typescript.AppendL("...{0}: {1}[]", parameter.Name, elementTS);
+                }
+                else
+                {
+                    var parameterType = parameter.ParameterType;
+                    var parameterTS = this.cg.bindingManager.GetTypeFullNameTS(parameterType);
+                    this.cg.typescript.AppendL("{0}: {1}", parameter.Name, parameterTS);
+                }
+                if (i != parameters.Length - 1)
+                {
+                    this.cg.typescript.AppendL(", ");
+                }
+            }
+            var returnTypeTS = this.cg.bindingManager.GetTypeFullNameTS(method.ReturnType);
+            this.cg.typescript.AppendL("): {0}", returnTypeTS);
+            this.cg.typescript.AppendLine();
         }
 
         public virtual void Dispose()
@@ -301,7 +346,6 @@ namespace Duktape
                 var bindingInfo = kv.Value;
                 using (new MethodCodeGen(cg, bindingInfo))
                 {
-
                 }
             }
             foreach (var kv in type.staticMethods)
@@ -324,31 +368,6 @@ namespace Duktape
                     }
                 }
             }
-        }
-
-        public string GetTypeFullNameTS(Type type)
-        {
-            var info = cg.bindingManager.GetExportedType(type);
-            if (info != null)
-            {
-                return info.FullName;
-            }
-            if (type.IsPrimitive && type.IsValueType)
-            {
-                if (type == typeof(sbyte) || type == typeof(byte)
-                || type == typeof(int) || type == typeof(uint)
-                || type == typeof(short) || type == typeof(ushort)
-                || type == typeof(long) || type == typeof(ulong)
-                || type == typeof(float) || type == typeof(double))
-                {
-                    return "number";
-                }
-                if (type == typeof(string) || type == typeof(char))
-                {
-                    return "string";
-                }
-            }
-            return "any";
         }
 
         public override void Dispose()
@@ -393,7 +412,7 @@ namespace Duktape
                         bStatic);
 
                     var tsPropertyPrefix = bindingInfo.setterName != null ? "" : "readonly ";
-                    var tsPropertyType = GetTypeFullNameTS(bindingInfo.propertyInfo.PropertyType);
+                    var tsPropertyType = this.cg.bindingManager.GetTypeFullNameTS(bindingInfo.propertyInfo.PropertyType);
                     cg.typescript.AppendLine("{0}{1}: {2}", tsPropertyPrefix, bindingInfo.propertyInfo.Name, tsPropertyType);
                 }
                 foreach (var kv in bindingInfo.fields)
@@ -410,7 +429,7 @@ namespace Duktape
                     {
                         tsPropertyPrefix += "readonly ";
                     }
-                    var tsPropertyType = GetTypeFullNameTS(fieldInfo.fieldInfo.FieldType);
+                    var tsPropertyType = this.cg.bindingManager.GetTypeFullNameTS(fieldInfo.fieldInfo.FieldType);
                     cg.typescript.AppendLine("{0}{1}: {2}", tsPropertyPrefix, fieldInfo.regName, tsPropertyType);
                 }
                 cg.csharp.AppendLine("duk_end_class(ctx);");
