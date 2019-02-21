@@ -14,6 +14,8 @@ public struct SampleStruct
 {
     public int a;
 
+    public static string b;
+
     public void Foo(List<int> list) { }
 
     public void Foo(int a, string b) { }

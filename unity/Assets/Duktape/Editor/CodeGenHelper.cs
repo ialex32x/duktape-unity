@@ -86,11 +86,28 @@ namespace Duktape
             this.cg.csharp.AppendLine("public static int {0}(IntPtr ctx)", bindingInfo.getterName);
             this.cg.csharp.AppendLine("{");
             this.cg.csharp.AddTabLevel();
+            this.GenerateBody();
+        }
+
+        private void GenerateBody()
+        {
+            if (bindingInfo.isStatic)
+            {
+                this.cg.csharp.AppendLine("var ret = {0}.{1};", bindingInfo.fieldInfo.DeclaringType, bindingInfo.fieldInfo.Name);
+                this.cg.csharp.AppendLine("duk_push_any(ctx, ret);");
+                this.cg.csharp.AppendLine("return 1;");
+            }
+            else
+            {
+                this.cg.csharp.AppendLine("var self = ({0})duk_get_this(ctx);", bindingInfo.fieldInfo.DeclaringType);
+                this.cg.csharp.AppendLine("var ret = self.{0};", bindingInfo.fieldInfo.Name);
+                this.cg.csharp.AppendLine("duk_push_any(ctx, ret);");
+                this.cg.csharp.AppendLine("return 1;");
+            }
         }
 
         public void Dispose()
         {
-            this.cg.csharp.AppendLine("return 0");
             this.cg.csharp.DecTabLevel();
             this.cg.csharp.AppendLine("}");
         }
@@ -115,7 +132,6 @@ namespace Duktape
 
         public void Dispose()
         {
-            this.cg.csharp.AppendLine("return 0");
             this.cg.csharp.DecTabLevel();
             this.cg.csharp.AppendLine("}");
         }
@@ -217,7 +233,6 @@ namespace Duktape
 
         public virtual void Dispose()
         {
-            cg.csharp.AppendLine("return 0");
             this.cg.csharp.DecTabLevel();
             cg.csharp.AppendLine("}");
         }
@@ -230,15 +245,16 @@ namespace Duktape
         public RegFuncCodeGen(CodeGenerator cg)
         {
             this.cg = cg;
-            cg.csharp.AppendLine("public static int reg(IntPtr ctx)");
-            cg.csharp.AppendLine("{");
+            this.cg.csharp.AppendLine("public static int reg(IntPtr ctx)");
+            this.cg.csharp.AppendLine("{");
             this.cg.csharp.AddTabLevel();
         }
 
         public virtual void Dispose()
         {
+            this.cg.csharp.AppendLine("return 0;");
             this.cg.csharp.DecTabLevel();
-            cg.csharp.AppendLine("}");
+            this.cg.csharp.AppendLine("}");
         }
     }
 
@@ -251,10 +267,11 @@ namespace Duktape
         {
             this.cg = cg;
             this.bindingInfo = bindingInfo;
-            this.cg.csharp.AppendLine("[{0}]", typeof(JSBindingAttribute).Name);
+            this.cg.csharp.AppendLine("[{0}({1})]", typeof(JSBindingAttribute).Name, DuktapeVM.VERSION);
             this.cg.csharp.AppendLine("[UnityEngine.Scripting.Preserve]");
             this.cg.csharp.AppendLine("public class {0} : {1} {{", bindingInfo.JSBindingClassName, typeof(DuktapeBinding).Name);
             this.cg.csharp.AddTabLevel();
+
             this.cg.typescript.AppendLine("class {0} {{", bindingInfo.Name);
             this.cg.typescript.AddTabLevel();
         }
