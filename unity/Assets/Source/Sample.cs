@@ -4,6 +4,7 @@ using UnityEngine;
 using Duktape;
 using System;
 
+[Duktape.JSType]
 public enum SampleEnum
 {
     a, b, c
