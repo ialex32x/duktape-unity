@@ -49,8 +49,11 @@ namespace Duktape
             }
             this.cg.csharp.AppendLine("using Duktape;");
             // cg.csharp.AppendLine("using UnityEngine;");
-            this.cg.typescript.AppendLine("declare namespace {0} {{", type.Namespace);
-            this.cg.typescript.AddTabLevel();
+            if (!string.IsNullOrEmpty(type.Namespace))
+            {
+                this.cg.typescript.AppendLine("declare namespace {0} {{", type.Namespace);
+                this.cg.typescript.AddTabLevel();
+            }
         }
 
         public void Dispose()
@@ -60,8 +63,11 @@ namespace Duktape
                 this.cg.csharp.DecTabLevel();
                 this.cg.csharp.AppendLine("}");
             }
-            this.cg.typescript.DecTabLevel();
-            this.cg.typescript.AppendLine("}");
+            if (!string.IsNullOrEmpty(type.Namespace))
+            {
+                this.cg.typescript.DecTabLevel();
+                this.cg.typescript.AppendLine("}");
+            }
         }
     }
 
@@ -268,7 +274,26 @@ namespace Duktape
         public string GetTypeFullNameTS(Type type)
         {
             var info = cg.bindingManager.GetExportedType(type);
-            return info != null ? info.FullName : "any";
+            if (info != null)
+            {
+                return info.FullName;
+            }
+            if (type.IsPrimitive && type.IsValueType)
+            {
+                if (type == typeof(sbyte) || type == typeof(byte)
+                || type == typeof(int) || type == typeof(uint)
+                || type == typeof(short) || type == typeof(ushort)
+                || type == typeof(long) || type == typeof(ulong)
+                || type == typeof(float) || type == typeof(double))
+                {
+                    return "number";
+                }
+                if (type == typeof(string) || type == typeof(char))
+                {
+                    return "string";
+                }
+            }
+            return "any";
         }
 
         public override void Dispose()
@@ -276,11 +301,14 @@ namespace Duktape
             using (new RegFuncCodeGen(cg))
             {
                 cg.csharp.Append("duk_begin_namespace(ctx");
-                var split_ns = type.Namespace.Split('.');
-                for (var i = 0; i < split_ns.Length; i++)
+                if (type.Namespace != null)
                 {
-                    var el_ns = split_ns[i];
-                    cg.csharp.AppendL(", \"{0}\"", el_ns);
+                    var split_ns = type.Namespace.Split('.');
+                    for (var i = 0; i < split_ns.Length; i++)
+                    {
+                        var el_ns = split_ns[i];
+                        cg.csharp.AppendL(", \"{0}\"", el_ns);
+                    }
                 }
                 cg.csharp.AppendLineL(");");
                 cg.csharp.AppendLine("duk_begin_class(ctx, typeof({0}), ctor);", type.FullName);
@@ -290,7 +318,7 @@ namespace Duktape
                     var funcName = kv.Key;
                     var bStatic = false;
                     cg.csharp.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? "true" : "false");
-                }                
+                }
                 foreach (var kv in type.staticMethods)
                 {
                     var regName = kv.Value.name;

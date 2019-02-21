@@ -92,10 +92,14 @@ namespace Duktape
         {
             Collect(Prefs.GetPrefs().explicitAssemblies, false);
             Collect(Prefs.GetPrefs().implicitAssemblies, true);
+            foreach (var typeBindingInfoKV in exportedTypes)
+            {
+                typeBindingInfoKV.Value.Collect();
+            }
         }
 
         // implicitExport: 默认进行导出(黑名单例外), 否则根据导出标记或手工添加
-        public void Collect(List<string> assemblyNames, bool implicitExport)
+        private void Collect(List<string> assemblyNames, bool implicitExport)
         {
             foreach (var assemblyName in assemblyNames)
             {
@@ -126,11 +130,6 @@ namespace Duktape
                     log.AppendLine(exception.ToString());
                 }
                 log.DecTabLevel();
-            }
-
-            foreach (var typeBindingInfoKV in exportedTypes)
-            {
-                typeBindingInfoKV.Value.Collect();
             }
         }
 
@@ -174,8 +173,16 @@ namespace Duktape
             foreach (var typeKV in exportedTypes)
             {
                 var typeBindingInfo = typeKV.Value;
-                cg.Generate(typeBindingInfo);
-                cg.WriteTo(outDir, typeBindingInfo.GetFileName(), tx);
+                try
+                {
+                    cg.Generate(typeBindingInfo);
+                    cg.WriteTo(outDir, typeBindingInfo.GetFileName(), tx);
+                }
+                catch (Exception exception)
+                {
+                    Error(string.Format("generate failed {0}: {1}", typeBindingInfo.Name, exception.Message));
+                    Debug.LogError(exception.StackTrace);
+                }
             }
 
             var logPath = Prefs.GetPrefs().logPath;

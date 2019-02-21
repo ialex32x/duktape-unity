@@ -165,8 +165,16 @@ namespace Duktape
 
         public void AddField(FieldInfo fieldInfo)
         {
-            var name = fieldInfo.Name;
-            fields.Add(name, fieldInfo);
+            try
+            {
+                var name = fieldInfo.Name;
+                fields.Add(name, fieldInfo);
+                // Debug.LogFormat("AddField {0}.{1}", type, fieldInfo.Name);
+            }
+            catch (Exception exception)
+            {
+                bindingManager.Error("AddField failed {0} @ {1}: {2}", fieldInfo, type, exception.Message);
+            }
         }
 
         public void AddProperty(PropertyInfo propInfo)
@@ -178,7 +186,7 @@ namespace Duktape
             }
             catch (Exception exception)
             {
-                bindingManager.Error("AddProperty failed {0} @ {1}\n{2}", propInfo, type, exception);
+                bindingManager.Error("AddProperty failed {0} @ {1}: {2}", propInfo, type, exception.Message);
             }
         }
 

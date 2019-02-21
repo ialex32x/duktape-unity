@@ -46,7 +46,7 @@ namespace Duktape
                         }
                         else
                         {
-                            using (var ccg = new ClassCodeGen(this, typeBindingInfo))
+                            using (new ClassCodeGen(this, typeBindingInfo))
                             {
                             }
                         }
