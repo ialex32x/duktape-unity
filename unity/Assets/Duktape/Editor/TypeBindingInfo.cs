@@ -105,6 +105,11 @@ namespace Duktape
             list.Add(methodInfo);
         }
 
+        public bool IsExtensionMethod(MethodInfo methodInfo)
+        {
+            return methodInfo.IsDefined(typeof(ExtensionAttribute), false);
+        }
+
         public void Collect()
         {
 
@@ -130,7 +135,7 @@ namespace Duktape
                 {
                     do
                     {
-                        if (method.IsDefined(typeof(ExtensionAttribute), false))
+                        if (IsExtensionMethod(method))
                         {
                             var targetType = method.GetParameters()[0].ParameterType;
                             var targetInfo = bindingManager.GetExportedType(targetType);
@@ -139,6 +144,7 @@ namespace Duktape
                                 targetInfo.AddMethod(method);
                                 break;
                             }
+                            // else fallthrough (as normal static method)
                         }
                         AddMethod(method);
                     } while (false);

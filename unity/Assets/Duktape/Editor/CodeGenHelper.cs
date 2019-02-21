@@ -109,6 +109,7 @@ namespace Duktape
             cg.csharp.AppendLine("public static int {0}(IntPtr ctx)", name);
             cg.csharp.AppendLine("{");
             this.cg.csharp.AddTabLevel();
+            //TODO: 如果是扩展方法且第一参数不是本类型, 则是因为目标类没有导出而降级的普通静态方法, 按普通静态方法处理
             cg.csharp.AppendLine("// {0} overrides", methodInfos.Count);
         }
 
