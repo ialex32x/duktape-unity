@@ -177,19 +177,32 @@ namespace Duktape
             this.cg.csharp.AddTabLevel();
         }
 
+        private string GetVarName(Type type)
+        {
+            var name = type.Name;
+            return name[0].ToString().ToLower() + name.Substring(1);
+        }
+
+        private void AddCatchClause(Type exceptionType, string handler)
+        {
+            var varName = GetVarName(exceptionType);
+            this.cg.csharp.AppendLine("catch ({0} {1})", exceptionType.Name, varName);
+            this.cg.csharp.AppendLine("{");
+            this.cg.csharp.AddTabLevel();
+            {
+                this.cg.csharp.AppendLine("return DuktapeDLL.{0}(ctx, {1}.ToString());", handler, varName);
+            }
+            this.cg.csharp.DecTabLevel();
+            this.cg.csharp.AppendLine("}");
+        }
+
         public virtual void Dispose()
         {
             this.cg.csharp.DecTabLevel();
             this.cg.csharp.AppendLine("}");
-            this.cg.csharp.AppendLine("catch (Exception exception)");
-            this.cg.csharp.AppendLine("{");
-            this.cg.csharp.AddTabLevel();
-            {
-                this.cg.csharp.AppendLine("DuktapeDLL.duk_push_string(ctx, exception.ToString());");
-                this.cg.csharp.AppendLine("return DuktapeDLL.duk_throw_error(ctx);");
-            }
-            this.cg.csharp.DecTabLevel();
-            this.cg.csharp.AppendLine("}");
+            this.AddCatchClause(typeof(NullReferenceException), "duk_reference_error");
+            this.AddCatchClause(typeof(IndexOutOfRangeException), "duk_range_error");
+            this.AddCatchClause(typeof(Exception), "duk_generic_error");
         }
     }
 
