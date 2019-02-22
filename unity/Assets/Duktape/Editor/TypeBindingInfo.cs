@@ -130,18 +130,18 @@ namespace Duktape
         {
             if (fieldInfo.IsStatic)
             {
-                this.getterName = "BindRead_" + fieldInfo.Name;
-                if (!fieldInfo.IsInitOnly)
-                {
-                    this.setterName = "BindWrite_" + fieldInfo.Name;
-                }
-            }
-            else
-            {
                 this.getterName = "BindStaticRead_" + fieldInfo.Name;
                 if (!fieldInfo.IsInitOnly)
                 {
                     this.setterName = "BindStaticWrite_" + fieldInfo.Name;
+                }
+            }
+            else
+            {
+                this.getterName = "BindRead_" + fieldInfo.Name;
+                if (!fieldInfo.IsInitOnly)
+                {
+                    this.setterName = "BindWrite_" + fieldInfo.Name;
                 }
             }
             this.regName = fieldInfo.Name;

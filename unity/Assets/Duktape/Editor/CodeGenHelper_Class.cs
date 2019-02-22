@@ -19,12 +19,13 @@ namespace Duktape
             this.cg.typescript.AddTabLevel();
 
             // 生成函数体
+            // 非静态成员方法
             foreach (var kv in type.methods)
             {
                 var bindingInfo = kv.Value;
                 using (new PInvokeGuardCodeGen(cg))
                 {
-                    using (new BindingFuncCodeGen(cg, bindingInfo.name))
+                    using (new BindingFuncDeclareCodeGen(cg, bindingInfo.name))
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {
@@ -35,12 +36,13 @@ namespace Duktape
                     }
                 }
             }
+            // 静态成员方法
             foreach (var kv in type.staticMethods)
             {
                 var bindingInfo = kv.Value;
                 using (new PInvokeGuardCodeGen(cg))
                 {
-                    using (new BindingFuncCodeGen(cg, bindingInfo.name))
+                    using (new BindingFuncDeclareCodeGen(cg, bindingInfo.name))
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {
@@ -51,12 +53,46 @@ namespace Duktape
                     }
                 }
             }
+            // 所有属性
+            foreach (var kv in type.properties)
+            {
+                var bindingInfo = kv.Value;
+                using (new PInvokeGuardCodeGen(cg))
+                {
+                    using (new BindingFuncDeclareCodeGen(cg, bindingInfo.getterName))
+                    {
+                        using (new TryCatchGuradCodeGen(cg))
+                        {
+                            using (new PropertyGetterCodeGen(cg, bindingInfo))
+                            {
+                            }
+                        }
+                    }
+                }
+                // 可写属性
+                if (bindingInfo.setterName != null)
+                {
+                    using (new PInvokeGuardCodeGen(cg))
+                    {
+                        using (new BindingFuncDeclareCodeGen(cg, bindingInfo.setterName))
+                        {
+                            using (new TryCatchGuradCodeGen(cg))
+                            {
+                                using (new PropertySetterCodeGen(cg, bindingInfo))
+                                {
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // 所有字段
             foreach (var kv in type.fields)
             {
                 var bindingInfo = kv.Value;
                 using (new PInvokeGuardCodeGen(cg))
                 {
-                    using (new BindingFuncCodeGen(cg, bindingInfo.getterName))
+                    using (new BindingFuncDeclareCodeGen(cg, bindingInfo.getterName))
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {
@@ -66,11 +102,12 @@ namespace Duktape
                         }
                     }
                 }
+                // 可写字段 
                 if (bindingInfo.setterName != null)
                 {
                     using (new PInvokeGuardCodeGen(cg))
                     {
-                        using (new BindingFuncCodeGen(cg, bindingInfo.setterName))
+                        using (new BindingFuncDeclareCodeGen(cg, bindingInfo.setterName))
                         {
                             using (new TryCatchGuradCodeGen(cg))
                             {
@@ -113,8 +150,8 @@ namespace Duktape
                             var bStatic = "false";
                             cg.csharp.AppendLine("duk_add_property(ctx, \"{0}\", {1}, {2}, {3});",
                                 bindingInfo.regName,
-                                bindingInfo.getterName,
-                                bindingInfo.setterName,
+                                bindingInfo.getterName != null ? bindingInfo.getterName : "null",
+                                bindingInfo.setterName != null ? bindingInfo.setterName : "null",
                                 bStatic);
 
                             var tsPropertyPrefix = bindingInfo.setterName != null ? "" : "readonly ";
@@ -125,7 +162,7 @@ namespace Duktape
                         {
                             var fieldInfo = kv.Value;
                             var bStatic = fieldInfo.isStatic ? "true" : "false";
-                            cg.csharp.AppendLine("duk_add_property(ctx, \"{0}\", {1}, {2}, {3});",
+                            cg.csharp.AppendLine("duk_add_field(ctx, \"{0}\", {1}, {2}, {3});",
                                 fieldInfo.regName,
                                 fieldInfo.getterName != null ? fieldInfo.getterName : "null",
                                 fieldInfo.setterName != null ? fieldInfo.setterName : "null",

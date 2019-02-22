@@ -169,11 +169,11 @@ namespace Duktape
         }
     }
 
-    public class BindingFuncCodeGen : IDisposable
+    public class BindingFuncDeclareCodeGen : IDisposable
     {
         protected CodeGenerator cg;
 
-        public BindingFuncCodeGen(CodeGenerator cg, string name)
+        public BindingFuncDeclareCodeGen(CodeGenerator cg, string name)
         {
             this.cg = cg;
             this.cg.csharp.AppendLine("public static int {0}(IntPtr ctx)", name);

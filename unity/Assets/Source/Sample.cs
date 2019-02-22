@@ -13,9 +13,29 @@ public enum SampleEnum
 [Duktape.JSType]
 public struct SampleStruct
 {
-    public int a;
+    // field 
+    public int field_a;
 
-    public static string b;
+    // static field
+    public static string static_field_b;
+
+    // readonly property
+    public int readonly_property_c { get; }
+
+    // read/write property
+    public float readwrite_property_d { get; set; }
+
+    // static read/write property
+    public static double static_readwrite_property_d { get; set; }
+
+    // vararg method without override
+    public void VarargMethodWithoutOverride(int a, string[] b, params float[] c) { }
+
+    public static string StaticMethodWithReturnAndNoOverride(Vector3 a) { return a.ToString(); }
+
+    public bool MethodWithOutParameter(int a, int b, out int c) { c = a + b; return true; }
+
+    public bool MethodWithRefParameter(int a, int b, ref int c) { c = a + b + c; return false; }
 
     public void Foo(List<int> list) { }
 
@@ -28,8 +48,6 @@ public struct SampleStruct
     {
         Debug.LogFormat("X var {0}", a2.Length);
     }
-
-    public void VarargMethodWithoutOverride(int a, string[] b, params float[] c) { }
 }
 
 public static class SampleStructExtensions
