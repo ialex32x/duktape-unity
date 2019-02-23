@@ -142,7 +142,7 @@ namespace Duktape
                 {
                     arglist += ", ";
                 }
-                cg.csharp.AppendLine("{0} arg{1};", parameter.ParameterType.FullName, i);
+                cg.csharp.AppendLine("{0} arg{1};", this.cg.bindingManager.GetTypeFullNameCS(parameter.ParameterType), i);
                 cg.csharp.AppendLine("duk_get_???(ctx, {0}, out arg{0});", i);
             }
             var caller = "";
