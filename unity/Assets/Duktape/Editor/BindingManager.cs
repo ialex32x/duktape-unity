@@ -52,11 +52,6 @@ namespace Duktape
             {
                 return "void";
             }
-            var info = GetExportedType(type);
-            if (info != null)
-            {
-                return info.FullName;
-            }
             if (type == typeof(void))
             {
                 return "void";
@@ -71,6 +66,10 @@ namespace Duktape
                 {
                     return "number";
                 }
+                if (type == typeof(bool))
+                {
+                    return "boolean";
+                }
             }
             if (type == typeof(string) || type == typeof(char))
             {
@@ -80,6 +79,11 @@ namespace Duktape
             {
                 var elementType = type.GetElementType();
                 return GetTypeFullNameTS(elementType) + "[]";
+            }
+            var info = GetExportedType(type);
+            if (info != null)
+            {
+                return info.FullName.Replace('+', '.');
             }
             return "any";
         }
