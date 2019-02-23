@@ -94,8 +94,40 @@ namespace Duktape
                     else
                     {
                         var method = variant.plainMethods[0];
-                        cg.csharp.AppendLine("// argc == {0}", argc);
-                        cg.csharp.AppendLine("// {0}", method);
+                        var parameters = method.GetParameters();
+                        var arglist = "";
+                        for (var i = 0; i < parameters.Length; i++)
+                        {
+                            var parameter = parameters[i];
+                            arglist += "arg" + i;
+                            if (i != parameters.Length - 1)
+                            {
+                                arglist += ", ";
+                            }
+                            cg.csharp.AppendLine("{0} arg{1};", parameter.ParameterType.FullName, i);
+                            cg.csharp.AppendLine("duk_get_???(ctx, {0}, out arg{0});", i);
+                        }
+                        var caller = "";
+                        if (method.IsStatic)
+                        {
+                            caller = method.DeclaringType.FullName;
+                        }
+                        else
+                        {
+                            caller = "self";
+                            cg.csharp.AppendLine("var self = duk_get_this(ctx);");
+                        }
+                        if (method.ReturnType == typeof(void))
+                        {
+                            cg.csharp.AppendLine("{0}.{1}({2});", caller, method.Name, arglist);
+                            cg.csharp.AppendLine("return 0;");
+                        }
+                        else
+                        {
+                            cg.csharp.AppendLine("var ret = {0}.{1}({2});", caller, method.Name, arglist);
+                            cg.csharp.AppendLine("duk_push_???(ctx, ret);");
+                            cg.csharp.AppendLine("return 1;");
+                        }
                     }
                 }
             }
@@ -117,6 +149,10 @@ namespace Duktape
         {
             //TODO: 需要处理参数类型归并问题, 因为如果类型没有导入 ts 中, 可能会在声明中出现相同参数列表的定义
             //      在 MethodVariant 中创建每个方法对应的TS类型名参数列表, 完全相同的不再输出
+            if (method.IsStatic)
+            {
+                this.cg.typescript.Append("static ");
+            }
             this.cg.typescript.Append("{0}(", this.bindingInfo.regName);
             var parameters = method.GetParameters();
             for (var i = 0; i < parameters.Length; i++)
