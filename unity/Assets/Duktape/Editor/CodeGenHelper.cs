@@ -222,8 +222,8 @@ namespace Duktape
         {
             this.cg.csharp.DecTabLevel();
             this.cg.csharp.AppendLine("}");
-            this.AddCatchClause(typeof(NullReferenceException), "duk_reference_error");
-            this.AddCatchClause(typeof(IndexOutOfRangeException), "duk_range_error");
+            // this.AddCatchClause(typeof(NullReferenceException), "duk_reference_error");
+            // this.AddCatchClause(typeof(IndexOutOfRangeException), "duk_range_error");
             this.AddCatchClause(typeof(Exception), "duk_generic_error");
         }
     }

@@ -31,7 +31,7 @@ public struct SampleStruct
     // vararg method without override
     public void VarargMethodWithoutOverride(int a, string[] b, params float[] c) { }
 
-    public static string StaticMethodWithReturnAndNoOverride(Vector3 a) { return a.ToString(); }
+    public static string StaticMethodWithReturnAndNoOverride(Vector3 a, ref float b, out string[] c) { c = null; return a.ToString(); }
 
     public bool MethodWithOutParameter(int a, int b, out int c) { c = a + b; return true; }
 
