@@ -97,6 +97,8 @@ namespace Duktape
                 }
             }
 
+            //TODO: 如果产生了无法在 typescript 中声明的方法, 则作标记, 并输出一条万能声明 
+            //      [key: string]: any
             foreach (var variantKV in this.bindingInfo.variants)
             {
                 foreach (var method in variantKV.Value.plainMethods)
