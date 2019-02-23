@@ -94,8 +94,72 @@ namespace Duktape
                     else
                     {
                         var method = variant.plainMethods[0];
-                        cg.csharp.AppendLine("// argc == {0}", argc);
-                        cg.csharp.AppendLine("// {0}", method);
+                        var parameters = method.GetParameters();
+                        var returnParameters = new List<ParameterInfo>();
+                        var arglist = "";
+                        for (var i = 0; i < parameters.Length; i++)
+                        {
+                            var parameter = parameters[i];
+                            //TODO: 需要处理 ref/out 参数在 js 中的返回方式问题
+                            //      可能的处理方式是将这些参数合并函数返回值转化为一个 object 作为最终返回值
+                            if (parameter.IsOut && parameter.ParameterType.IsByRef)
+                            {
+                                arglist += "out ";
+                                returnParameters.Add(parameter);
+                            }
+                            else if (parameter.ParameterType.IsByRef)
+                            {
+                                arglist += "ref ";
+                                returnParameters.Add(parameter);
+                            }
+                            arglist += "arg" + i;
+                            if (i != parameters.Length - 1)
+                            {
+                                arglist += ", ";
+                            }
+                            cg.csharp.AppendLine("{0} arg{1};", parameter.ParameterType.FullName, i);
+                            cg.csharp.AppendLine("duk_get_???(ctx, {0}, out arg{0});", i);
+                        }
+                        var caller = "";
+                        if (method.IsStatic)
+                        {
+                            caller = method.DeclaringType.FullName;
+                        }
+                        else
+                        {
+                            caller = "self";
+                            cg.csharp.AppendLine("var self = duk_get_this(ctx);");
+                        }
+                        if (method.ReturnType == typeof(void))
+                        {
+                            cg.csharp.AppendLine("{0}.{1}({2});", caller, method.Name, arglist);
+                            if (returnParameters.Count > 0)
+                            {
+                                cg.csharp.AppendLine("duk_push_object(ctx);");
+                                //TODO: 填充返回值组合
+                                cg.csharp.AppendLine("// fill object properties here;");
+                                cg.csharp.AppendLine("return 1;");
+                            }
+                            else
+                            {
+                                cg.csharp.AppendLine("return 0;");
+                            }
+                        }
+                        else
+                        {
+                            cg.csharp.AppendLine("var ret = {0}.{1}({2});", caller, method.Name, arglist);
+                            if (returnParameters.Count > 0)
+                            {
+                                cg.csharp.AppendLine("duk_push_object(ctx);");
+                                //TODO: 填充返回值组合
+                                cg.csharp.AppendLine("// fill object properties here;");
+                            }
+                            else
+                            {
+                                cg.csharp.AppendLine("duk_push_???(ctx, ret);");
+                            }
+                            cg.csharp.AppendLine("return 1;");
+                        }
                     }
                 }
             }
@@ -117,31 +181,69 @@ namespace Duktape
         {
             //TODO: 需要处理参数类型归并问题, 因为如果类型没有导入 ts 中, 可能会在声明中出现相同参数列表的定义
             //      在 MethodVariant 中创建每个方法对应的TS类型名参数列表, 完全相同的不再输出
-            this.cg.typescript.Append("{0}(", this.bindingInfo.regName);
+            var prefix = "";
+            if (method.IsStatic)
+            {
+                prefix = "static ";
+            }
+            this.cg.typescript.Append("{0}{1}(", prefix, this.bindingInfo.regName);
             var parameters = method.GetParameters();
+            var returnParameters = new List<ParameterInfo>();
             for (var i = 0; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
+                var parameter_prefix = "";
+                if (parameter.IsOut && parameter.ParameterType.IsByRef)
+                {
+                    parameter_prefix = "/*out*/ ";
+                    returnParameters.Add(parameter);
+                }
+                else if (parameter.ParameterType.IsByRef)
+                {
+                    parameter_prefix = "/*ref*/ ";
+                    returnParameters.Add(parameter);
+                }
                 if (parameter.IsDefined(typeof(ParamArrayAttribute), false) && i == parameters.Length - 1)
                 {
                     var elementType = parameter.ParameterType.GetElementType();
                     var elementTS = this.cg.bindingManager.GetTypeFullNameTS(elementType);
-                    this.cg.typescript.AppendL("...{0}: {1}[]", parameter.Name, elementTS);
+                    this.cg.typescript.AppendL("{0}...{1}: {2}[]", parameter_prefix, parameter.Name, elementTS);
                 }
                 else
                 {
                     var parameterType = parameter.ParameterType;
                     var parameterTS = this.cg.bindingManager.GetTypeFullNameTS(parameterType);
-                    this.cg.typescript.AppendL("{0}: {1}", parameter.Name, parameterTS);
+                    this.cg.typescript.AppendL("{0}{1}: {2}", parameter_prefix, parameter.Name, parameterTS);
                 }
                 if (i != parameters.Length - 1)
                 {
                     this.cg.typescript.AppendL(", ");
                 }
             }
+            //TODO: 如果存在 ref/out 参数， 则返回值改写为带定义的 object
+            //      例如 foo(/*out*/ b: string): { b: string, ret: original_return_type }
             var returnTypeTS = this.cg.bindingManager.GetTypeFullNameTS(method.ReturnType);
-            this.cg.typescript.AppendL("): {0}", returnTypeTS);
-            this.cg.typescript.AppendLine();
+            if (returnParameters.Count > 0)
+            {
+                this.cg.typescript.AppendL("): {");
+                this.cg.typescript.AppendLine();
+                this.cg.typescript.AddTabLevel();
+                this.cg.typescript.AppendLine("ret: {0}, ", returnTypeTS);
+                for (var i = 0; i < returnParameters.Count; i++)
+                {
+                    var parameter = returnParameters[i];
+                    var parameterType = parameter.ParameterType;
+                    var parameterTypeTS = this.cg.bindingManager.GetTypeFullNameTS(parameterType);
+                    this.cg.typescript.AppendLine("{0}: {1}, ", parameter.Name, parameterTypeTS);
+                }
+                this.cg.typescript.DecTabLevel();
+                this.cg.typescript.AppendLine("}");
+            }
+            else
+            {
+                this.cg.typescript.AppendL("): {0}", returnTypeTS);
+                this.cg.typescript.AppendLine();
+            }
         }
 
         public virtual void Dispose()

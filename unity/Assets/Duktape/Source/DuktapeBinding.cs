@@ -111,6 +111,12 @@ namespace Duktape
             DuktapeDLL.duk_put_prop_string(ctx, idx, name);
         }
 
+        protected static void duk_add_field(IntPtr ctx, string name, DuktapeDLL.duk_c_function getter, DuktapeDLL.duk_c_function setter, bool bStatic)
+        {
+            // js 层面field与property绑定代码结构完全一致
+            duk_add_property(ctx, name, getter, setter, bStatic); 
+        }
+
         protected static void duk_add_property(IntPtr ctx, string name, DuktapeDLL.duk_c_function getter, DuktapeDLL.duk_c_function setter, bool bStatic)
         {
             // [ctor, prototype]

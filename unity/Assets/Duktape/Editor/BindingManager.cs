@@ -109,6 +109,10 @@ namespace Duktape
             {
                 return true;
             }
+            if (type.IsDefined(typeof(JSBindingAttribute), false))
+            {
+                return true;
+            }
             for (int i = 0, size = typePrefixBlacklist.Count; i < size; i++)
             {
                 if (type.FullName.StartsWith(typePrefixBlacklist[i]))
@@ -167,7 +171,9 @@ namespace Duktape
                         {
                             log.AppendLine("export: {0}", type.FullName);
                             this.AddExport(type);
+                            continue;
                         }
+                        log.AppendLine("skip: {0}", type.FullName);
                     }
                 }
                 catch (Exception exception)

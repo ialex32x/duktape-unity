@@ -169,11 +169,11 @@ namespace Duktape
         }
     }
 
-    public class BindingFuncCodeGen : IDisposable
+    public class BindingFuncDeclareCodeGen : IDisposable
     {
         protected CodeGenerator cg;
 
-        public BindingFuncCodeGen(CodeGenerator cg, string name)
+        public BindingFuncDeclareCodeGen(CodeGenerator cg, string name)
         {
             this.cg = cg;
             this.cg.csharp.AppendLine("public static int {0}(IntPtr ctx)", name);
@@ -222,8 +222,8 @@ namespace Duktape
         {
             this.cg.csharp.DecTabLevel();
             this.cg.csharp.AppendLine("}");
-            this.AddCatchClause(typeof(NullReferenceException), "duk_reference_error");
-            this.AddCatchClause(typeof(IndexOutOfRangeException), "duk_range_error");
+            // this.AddCatchClause(typeof(NullReferenceException), "duk_reference_error");
+            // this.AddCatchClause(typeof(IndexOutOfRangeException), "duk_range_error");
             this.AddCatchClause(typeof(Exception), "duk_generic_error");
         }
     }
