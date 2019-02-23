@@ -149,6 +149,18 @@ namespace Duktape
         }
     }
 
+    public class ConstructorBindingInfo
+    {
+        public string name = "BindConstructor";
+        public string regName = "constructor";
+        public List<ConstructorInfo> variants = new List<ConstructorInfo>();
+
+        public void Add(ConstructorInfo constructorInfo)
+        {
+            this.variants.Add(constructorInfo);
+        }
+    }
+
     public class TypeBindingInfo
     {
         public BindingManager bindingManager;
@@ -157,6 +169,7 @@ namespace Duktape
         public Dictionary<string, MethodBindingInfo> staticMethods = new Dictionary<string, MethodBindingInfo>();
         public Dictionary<string, PropertyBindingInfo> properties = new Dictionary<string, PropertyBindingInfo>();
         public Dictionary<string, FieldBindingInfo> fields = new Dictionary<string, FieldBindingInfo>();
+        public ConstructorBindingInfo constructors = new ConstructorBindingInfo();
 
         public Assembly Assembly
         {
@@ -259,6 +272,11 @@ namespace Duktape
             overrides.Add(methodInfo);
         }
 
+        public void AddConstructor(ConstructorInfo constructorInfo)
+        {
+            constructors.Add(constructorInfo);
+        }
+
         public bool IsExtensionMethod(MethodInfo methodInfo)
         {
             return methodInfo.IsDefined(typeof(ExtensionAttribute), false);
@@ -295,6 +313,15 @@ namespace Duktape
                     continue;
                 }
                 AddProperty(property);
+            }
+            var constructors = type.GetConstructors(bindingFlags);
+            foreach (var constructor in constructors)
+            {
+                if (constructor.IsDefined(typeof(ObsoleteAttribute), false))
+                {
+                    continue;
+                }
+                AddConstructor(constructor);
             }
             var methods = type.GetMethods(bindingFlags);
             foreach (var method in methods)

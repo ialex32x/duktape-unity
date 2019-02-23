@@ -27,7 +27,6 @@ namespace Duktape
             this.cg = cg;
             this.bindingInfo = bindingInfo;
 
-            //TODO: 如果是扩展方法且第一参数不是本类型, 则是因为目标类没有导出而降级的普通静态方法, 按普通静态方法处理
             if (this.bindingInfo.count > 1)
             {
                 // 需要处理重载
@@ -87,79 +86,13 @@ namespace Duktape
                     if (variant.isVararg)
                     {
                         var method = variant.varargMethods[0];
-                        cg.csharp.AppendLine("// argc >= {0}", argc);
-                        cg.csharp.AppendLine("// {0}", method);
+                        WriteVarargMethod(method, argc);
 
                     }
                     else
                     {
                         var method = variant.plainMethods[0];
-                        var parameters = method.GetParameters();
-                        var returnParameters = new List<ParameterInfo>();
-                        var arglist = "";
-                        for (var i = 0; i < parameters.Length; i++)
-                        {
-                            var parameter = parameters[i];
-                            //TODO: 需要处理 ref/out 参数在 js 中的返回方式问题
-                            //      可能的处理方式是将这些参数合并函数返回值转化为一个 object 作为最终返回值
-                            if (parameter.IsOut && parameter.ParameterType.IsByRef)
-                            {
-                                arglist += "out ";
-                                returnParameters.Add(parameter);
-                            }
-                            else if (parameter.ParameterType.IsByRef)
-                            {
-                                arglist += "ref ";
-                                returnParameters.Add(parameter);
-                            }
-                            arglist += "arg" + i;
-                            if (i != parameters.Length - 1)
-                            {
-                                arglist += ", ";
-                            }
-                            cg.csharp.AppendLine("{0} arg{1};", parameter.ParameterType.FullName, i);
-                            cg.csharp.AppendLine("duk_get_???(ctx, {0}, out arg{0});", i);
-                        }
-                        var caller = "";
-                        if (method.IsStatic)
-                        {
-                            caller = method.DeclaringType.FullName;
-                        }
-                        else
-                        {
-                            caller = "self";
-                            cg.csharp.AppendLine("var self = duk_get_this(ctx);");
-                        }
-                        if (method.ReturnType == typeof(void))
-                        {
-                            cg.csharp.AppendLine("{0}.{1}({2});", caller, method.Name, arglist);
-                            if (returnParameters.Count > 0)
-                            {
-                                cg.csharp.AppendLine("duk_push_object(ctx);");
-                                //TODO: 填充返回值组合
-                                cg.csharp.AppendLine("// fill object properties here;");
-                                cg.csharp.AppendLine("return 1;");
-                            }
-                            else
-                            {
-                                cg.csharp.AppendLine("return 0;");
-                            }
-                        }
-                        else
-                        {
-                            cg.csharp.AppendLine("var ret = {0}.{1}({2});", caller, method.Name, arglist);
-                            if (returnParameters.Count > 0)
-                            {
-                                cg.csharp.AppendLine("duk_push_object(ctx);");
-                                //TODO: 填充返回值组合
-                                cg.csharp.AppendLine("// fill object properties here;");
-                            }
-                            else
-                            {
-                                cg.csharp.AppendLine("duk_push_???(ctx, ret);");
-                            }
-                            cg.csharp.AppendLine("return 1;");
-                        }
+                        WritePlainMethod(method, argc);
                     }
                 }
             }
@@ -174,6 +107,83 @@ namespace Duktape
                 {
                     WriteTSDeclaration(method);
                 }
+            }
+        }
+
+        //TODO: 如果是扩展方法且第一参数不是本类型, 则是因为目标类没有导出而降级的普通静态方法, 按普通静态方法处理
+        private void WriteVarargMethod(MethodInfo method, int argc)
+        {
+            cg.csharp.AppendLine("// argc >= {0}", argc);
+            cg.csharp.AppendLine("// {0}", method);
+        }
+
+        private void WritePlainMethod(MethodInfo method, int argc)
+        {
+            var parameters = method.GetParameters();
+            var returnParameters = new List<ParameterInfo>();
+            var arglist = "";
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var parameter = parameters[i];
+                //TODO: 需要处理 ref/out 参数在 js 中的返回方式问题
+                //      可能的处理方式是将这些参数合并函数返回值转化为一个 object 作为最终返回值
+                if (parameter.IsOut)
+                {
+                    arglist += "out ";
+                    returnParameters.Add(parameter);
+                }
+                else if (parameter.ParameterType.IsByRef)
+                {
+                    arglist += "ref ";
+                    returnParameters.Add(parameter);
+                }
+                arglist += "arg" + i;
+                if (i != parameters.Length - 1)
+                {
+                    arglist += ", ";
+                }
+                cg.csharp.AppendLine("{0} arg{1};", parameter.ParameterType.FullName, i);
+                cg.csharp.AppendLine("duk_get_???(ctx, {0}, out arg{0});", i);
+            }
+            var caller = "";
+            if (method.IsStatic)
+            {
+                caller = method.DeclaringType.FullName;
+            }
+            else
+            {
+                caller = "self";
+                cg.csharp.AppendLine("var self = duk_get_this(ctx);");
+            }
+            if (method.ReturnType == typeof(void))
+            {
+                cg.csharp.AppendLine("{0}.{1}({2});", caller, method.Name, arglist);
+                if (returnParameters.Count > 0)
+                {
+                    cg.csharp.AppendLine("duk_push_object(ctx);");
+                    //TODO: 填充返回值组合
+                    cg.csharp.AppendLine("// fill object properties here;");
+                    cg.csharp.AppendLine("return 1;");
+                }
+                else
+                {
+                    cg.csharp.AppendLine("return 0;");
+                }
+            }
+            else
+            {
+                cg.csharp.AppendLine("var ret = {0}.{1}({2});", caller, method.Name, arglist);
+                if (returnParameters.Count > 0)
+                {
+                    cg.csharp.AppendLine("duk_push_object(ctx);");
+                    //TODO: 填充返回值组合
+                    cg.csharp.AppendLine("// fill object properties here;");
+                }
+                else
+                {
+                    cg.csharp.AppendLine("duk_push_???(ctx, ret);");
+                }
+                cg.csharp.AppendLine("return 1;");
             }
         }
 
