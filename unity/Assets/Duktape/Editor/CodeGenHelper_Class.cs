@@ -20,14 +20,17 @@ namespace Duktape
 
             // 生成函数体
             // 构造函数
-            using (new PInvokeGuardCodeGen(cg))
+            if (type.constructors.hasValid)
             {
-                using (new BindingFuncDeclareCodeGen(cg, type.constructors.name))
+                using (new PInvokeGuardCodeGen(cg))
                 {
-                    using (new TryCatchGuradCodeGen(cg))
+                    using (new BindingFuncDeclareCodeGen(cg, type.constructors.name))
                     {
-                        using (new ConstructorCodeGen(cg, type.constructors))
+                        using (new TryCatchGuradCodeGen(cg))
                         {
+                            using (new ConstructorCodeGen(cg, type.constructors))
+                            {
+                            }
                         }
                     }
                 }
@@ -142,7 +145,8 @@ namespace Duktape
                 {
                     using (new RegFuncNamespaceCodeGen(cg, bindingInfo))
                     {
-                        cg.csharp.AppendLine("duk_begin_class(ctx, typeof({0}), {1});", bindingInfo.FullName, bindingInfo.constructors.name);
+                        var constructor = bindingInfo.constructors.hasValid ? bindingInfo.constructors.name : "object_private_ctor";
+                        cg.csharp.AppendLine("duk_begin_class(ctx, typeof({0}), {1});", bindingInfo.FullName, constructor);
                         foreach (var kv in bindingInfo.methods)
                         {
                             var regName = kv.Value.regName;

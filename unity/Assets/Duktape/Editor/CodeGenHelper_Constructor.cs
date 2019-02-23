@@ -19,15 +19,27 @@ namespace Duktape
             this.cg = cg;
             this.bindingInfo = bindingInfo;
 
-            foreach (var constructor in this.bindingInfo.variants)
+            if (this.bindingInfo.variants.Count > 0)
             {
-                WriteTSDeclaration(constructor);
+                foreach (var constructor in this.bindingInfo.variants)
+                {
+                    WriteTSDeclaration(constructor);
+                }
+            }
+            else
+            {
+                WriteDefaultTSDeclaration();
             }
         }
 
         public void Dispose()
         {
 
+        }
+
+        private void WriteDefaultTSDeclaration()
+        {
+            this.cg.typescript.AppendLine("{0}()", this.bindingInfo.regName);
         }
 
         private void WriteTSDeclaration(ConstructorInfo constructor)

@@ -153,7 +153,25 @@ namespace Duktape
     {
         public string name = "BindConstructor";
         public string regName = "constructor";
+        public Type decalringType;
         public List<ConstructorInfo> variants = new List<ConstructorInfo>();
+
+        public bool hasValid
+        {
+            get
+            {
+                if (decalringType.IsValueType && !decalringType.IsPrimitive)
+                {
+                    return true; // default constructor for struct
+                }
+                return variants.Count > 0;
+            }
+        }
+
+        public ConstructorBindingInfo(Type decalringType)
+        {
+            this.decalringType = decalringType;
+        }
 
         public void Add(ConstructorInfo constructorInfo)
         {
@@ -169,7 +187,7 @@ namespace Duktape
         public Dictionary<string, MethodBindingInfo> staticMethods = new Dictionary<string, MethodBindingInfo>();
         public Dictionary<string, PropertyBindingInfo> properties = new Dictionary<string, PropertyBindingInfo>();
         public Dictionary<string, FieldBindingInfo> fields = new Dictionary<string, FieldBindingInfo>();
-        public ConstructorBindingInfo constructors = new ConstructorBindingInfo();
+        public ConstructorBindingInfo constructors;
 
         public Assembly Assembly
         {
@@ -206,6 +224,7 @@ namespace Duktape
         {
             this.bindingManager = bindingManager;
             this.type = type;
+            this.constructors = new ConstructorBindingInfo(type);
         }
 
         // 将类型名转换成简单字符串 (比如用于文件名)
@@ -314,7 +333,7 @@ namespace Duktape
                 }
                 AddProperty(property);
             }
-            var constructors = type.GetConstructors(bindingFlags);
+            var constructors = type.GetConstructors();
             foreach (var constructor in constructors)
             {
                 if (constructor.IsDefined(typeof(ObsoleteAttribute), false))
