@@ -21,7 +21,35 @@ namespace Duktape
             bm.Cleanup();
             AssetDatabase.Refresh();
         }
-        
+
+        [MenuItem("Duktape/Compile TypeScript (tsc)")]
+        public static void ExecTypeScriptCompilation()
+        {
+            var tsc = Application.platform == RuntimePlatform.WindowsEditor ? "tsc.cmd" : "tsc";
+            var proc = new System.Diagnostics.Process();
+            proc.StartInfo.UseShellExecute = false;
+            proc.StartInfo.RedirectStandardOutput = true;
+            proc.StartInfo.RedirectStandardError = true;
+            proc.StartInfo.FileName = tsc;
+            proc.StartInfo.Arguments = "";
+            proc.StartInfo.CreateNoWindow = true;
+
+            proc.Start();
+            proc.WaitForExit();
+
+            var output = proc.StandardOutput.ReadToEnd();
+            var error = proc.StandardError.ReadToEnd();
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                Debug.LogErrorFormat("tsc: {0}", error);
+            }
+            else
+            {
+                Debug.Log("tsc: done");
+            }
+        }
+
         [MenuItem("Duktape/Prefs ...")]
         public static void OpenPrefsEditor()
         {

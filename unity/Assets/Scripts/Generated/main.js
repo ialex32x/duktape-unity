@@ -16,5 +16,5 @@ var ss = new SampleStruct();
 ss.field_a = 12345;
 console.log(ss.field_a);
 var sc = new SampleClass("testcase of SampleClass");
-console.log(sc.name + ".sum = " + sc.Sum([1, 2, 3]));
+console.log(sc.name + ".sum = " + sc.Sum([1, 2, 3, 4, 5]));
 //# sourceMappingURL=main.js.map
