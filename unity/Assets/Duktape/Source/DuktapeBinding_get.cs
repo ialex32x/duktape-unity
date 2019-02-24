@@ -30,8 +30,8 @@ namespace Duktape
                 }
                 return true;
             }
-            o = null;
-            return false;
+            duk_get_classvalue<bool[]>(ctx, idx, out o);
+            return true;
         }
 
         public static bool duk_get_primitive(IntPtr ctx, int idx, out sbyte o)
@@ -56,8 +56,8 @@ namespace Duktape
                 }
                 return true;
             }
-            o = null;
-            return false;
+            duk_get_classvalue<sbyte[]>(ctx, idx, out o);
+            return true;
         }
 
         public static bool duk_get_primitive(IntPtr ctx, int idx, out byte o)
@@ -82,8 +82,8 @@ namespace Duktape
                 }
                 return true;
             }
-            o = null;
-            return false;
+            duk_get_classvalue<byte[]>(ctx, idx, out o);
+            return true;
         }
 
         public static bool duk_get_primitive(IntPtr ctx, int idx, out char o)
@@ -108,8 +108,8 @@ namespace Duktape
                 }
                 return true;
             }
-            o = null;
-            return false;
+            duk_get_classvalue<char[]>(ctx, idx, out o);
+            return true;
         }
 
         public static bool duk_get_primitive(IntPtr ctx, int idx, out string o)
@@ -134,8 +134,8 @@ namespace Duktape
                 }
                 return true;
             }
-            o = null;
-            return false;
+            duk_get_classvalue<string[]>(ctx, idx, out o);
+            return true;
         }
 
         public static bool duk_get_primitive(IntPtr ctx, int idx, out short o)
@@ -160,8 +160,8 @@ namespace Duktape
                 }
                 return true;
             }
-            o = null;
-            return false;
+            duk_get_classvalue<short[]>(ctx, idx, out o);
+            return true;
         }
 
         public static bool duk_get_primitive(IntPtr ctx, int idx, out ushort o)
@@ -186,8 +186,8 @@ namespace Duktape
                 }
                 return true;
             }
-            o = null;
-            return false;
+            duk_get_classvalue<ushort[]>(ctx, idx, out o);
+            return true;
         }
 
         public static bool duk_get_primitive(IntPtr ctx, int idx, out int o)
@@ -212,8 +212,8 @@ namespace Duktape
                 }
                 return true;
             }
-            o = null;
-            return false;
+            duk_get_classvalue<int[]>(ctx, idx, out o);
+            return true;
         }
 
         public static bool duk_get_primitive(IntPtr ctx, int idx, out uint o)
@@ -238,8 +238,8 @@ namespace Duktape
                 }
                 return true;
             }
-            o = null;
-            return false;
+            duk_get_classvalue<uint[]>(ctx, idx, out o);
+            return true;
         }
 
         public static bool duk_get_primitive(IntPtr ctx, int idx, out long o)
@@ -264,8 +264,8 @@ namespace Duktape
                 }
                 return true;
             }
-            o = null;
-            return false;
+            duk_get_classvalue<long[]>(ctx, idx, out o);
+            return true;
         }
 
         public static bool duk_get_primitive(IntPtr ctx, int idx, out ulong o)
@@ -290,8 +290,8 @@ namespace Duktape
                 }
                 return true;
             }
-            o = null;
-            return false;
+            duk_get_classvalue<ulong[]>(ctx, idx, out o);
+            return true;
         }
 
         public static bool duk_get_primitive(IntPtr ctx, int idx, out float o)
@@ -316,8 +316,8 @@ namespace Duktape
                 }
                 return true;
             }
-            o = null;
-            return false;
+            duk_get_classvalue<float[]>(ctx, idx, out o);
+            return true;
         }
 
         public static bool duk_get_primitive(IntPtr ctx, int idx, out double o)
@@ -342,8 +342,8 @@ namespace Duktape
                 }
                 return true;
             }
-            o = null;
-            return false;
+            duk_get_classvalue<double[]>(ctx, idx, out o);
+            return true;
         }
 
         public static bool duk_get_structvalue(IntPtr ctx, int idx, out LayerMask o)
@@ -435,42 +435,6 @@ namespace Duktape
             return ret;
         }
 
-        // not value type (except string/array)
-        public static bool duk_get_classvalue<T>(IntPtr ctx, int idx, out T o)
-        where T : class
-        {
-            object o_t;
-            var ret = duk_get_object(ctx, idx, out o_t);
-            o = o_t as T;
-            if (o_t != null && o == null)
-            {
-                throw new InvalidCastException(string.Format("{0} type mismatch {1}", o_t.GetType(), typeof(T)));
-                // return false;
-            }
-            return ret;
-        }
-
-        public static bool duk_get_object(IntPtr ctx, int idx, out object o)
-        {
-            if (DuktapeDLL.duk_is_null_or_undefined(ctx, idx)) // or check for object?
-            {
-                o = null;
-                return true;
-            }
-            if (DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE))
-            {
-                var id = DuktapeDLL.duk_get_int(ctx, -1);
-                DuktapeDLL.duk_pop(ctx);
-                return DuktapeVM.GetObjectCache(ctx).TryGetValue(id, out o);
-            }
-            else
-            {
-                DuktapeDLL.duk_pop(ctx);
-            }
-            o = null;
-            return false;
-        }
-
         public static bool duk_get_structvalue_array<T>(IntPtr ctx, int idx, out T[] o)
         where T : struct
         {
@@ -512,6 +476,42 @@ namespace Duktape
                     }
                 }
                 return true;
+            }
+            o = null;
+            return false;
+        }
+
+        // not value type (except string/array)
+        public static bool duk_get_classvalue<T>(IntPtr ctx, int idx, out T o)
+        where T : class
+        {
+            object o_t;
+            var ret = duk_get_object(ctx, idx, out o_t);
+            o = o_t as T;
+            if (o_t != null && o == null)
+            {
+                throw new InvalidCastException(string.Format("{0} type mismatch {1}", o_t.GetType(), typeof(T)));
+                // return false;
+            }
+            return ret;
+        }
+
+        public static bool duk_get_object(IntPtr ctx, int idx, out object o)
+        {
+            if (DuktapeDLL.duk_is_null_or_undefined(ctx, idx)) // or check for object?
+            {
+                o = null;
+                return true;
+            }
+            if (DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE))
+            {
+                var id = DuktapeDLL.duk_get_int(ctx, -1);
+                DuktapeDLL.duk_pop(ctx);
+                return DuktapeVM.GetObjectCache(ctx).TryGetValue(id, out o);
+            }
+            else
+            {
+                DuktapeDLL.duk_pop(ctx);
             }
             o = null;
             return false;
