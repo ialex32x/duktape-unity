@@ -10,6 +10,7 @@ namespace Duktape
     using UnityEditor;
 
     // 生成成员方法绑定代码
+    //TODO: 带有 JSMutable 属性的 struct 非静态成员方法调用完成后补充一个 duk_rebind_this()
     public class MethodCodeGen : IDisposable
     {
         protected CodeGenerator cg;
@@ -151,6 +152,7 @@ namespace Duktape
                 cg.csharp.AppendLine("{0} arg{1};", this.cg.bindingManager.GetTypeFullNameCS(parameter.ParameterType), i);
                 cg.csharp.AppendLine("{0}(ctx, {1}, out arg{1});", this.cg.GetDuktapeGetter(parameter.ParameterType), i);
             }
+
             if (method.ReturnType == typeof(void))
             {
                 // 方法本身没有返回值
@@ -164,6 +166,13 @@ namespace Duktape
                 }
                 else
                 {
+                    if (!method.IsStatic && method.DeclaringType.IsValueType) // struct 非静态方法 检查 Mutable 属性
+                    {
+                        if (method.IsDefined(typeof(JSMutableAttribute), false))
+                        {
+                            cg.csharp.AppendLine("duk_rebind_this(ctx, {0});", caller);
+                        }
+                    }
                     cg.csharp.AppendLine("return 0;");
                 }
             }

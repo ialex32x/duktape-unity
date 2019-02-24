@@ -112,7 +112,7 @@ namespace Duktape
             this.propertyInfo = propertyInfo;
             this.getterName = propertyInfo.CanRead ? "BindRead_" + propertyInfo.Name : null;
             this.setterName = propertyInfo.CanWrite ? "BindWrite_" + propertyInfo.Name : null;
-            this.regName = propertyInfo.Name;
+            this.regName = TypeBindingInfo.GetNamingAttribute(propertyInfo) ?? propertyInfo.Name;
         }
     }
 
@@ -144,7 +144,7 @@ namespace Duktape
                     this.setterName = "BindWrite_" + fieldInfo.Name;
                 }
             }
-            this.regName = fieldInfo.Name;
+            this.regName = TypeBindingInfo.GetNamingAttribute(fieldInfo) ?? fieldInfo.Name;
             this.fieldInfo = fieldInfo;
         }
     }
@@ -214,12 +214,22 @@ namespace Duktape
             get { return type.IsEnum; }
         }
 
+        public static string GetNamingAttribute(MemberInfo info)
+        {
+            var naming = info.GetCustomAttribute(typeof(JSNamingAttribute), false) as JSNamingAttribute;
+            if (naming != null && !string.IsNullOrEmpty(naming.name))
+            {
+                return naming.name;
+            }
+            return null;
+        }
+
         public TypeBindingInfo(BindingManager bindingManager, Type type)
         {
             this.bindingManager = bindingManager;
             this.type = type;
-            this.name = "DuktapeJS_" + type.FullName.Replace('.', '_');
-            this.regName = type.Name;
+            this.name = "DuktapeJS_" + type.FullName.Replace('.', '_').Replace('+', '_');
+            this.regName = GetNamingAttribute(type) ?? type.Name;
             this.constructors = new ConstructorBindingInfo(type);
         }
 
@@ -281,7 +291,7 @@ namespace Duktape
             MethodBindingInfo overrides;
             if (!group.TryGetValue(methodInfo.Name, out overrides))
             {
-                overrides = new MethodBindingInfo(methodInfo.IsStatic, methodInfo.Name);
+                overrides = new MethodBindingInfo(methodInfo.IsStatic, TypeBindingInfo.GetNamingAttribute(methodInfo) ?? methodInfo.Name);
                 group.Add(methodInfo.Name, overrides);
             }
             overrides.Add(methodInfo);

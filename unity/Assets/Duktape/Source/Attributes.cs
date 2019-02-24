@@ -23,8 +23,8 @@ namespace Duktape
 
         public JSBindingAttribute()
         {
-        } 
-        
+        }
+
         public JSBindingAttribute(int version)
         {
             this.Version = version;
@@ -55,5 +55,12 @@ namespace Duktape
         {
             this.name = name;
         }
+    }
+
+    // 用于标记 struct 非静态方法, 表明该方法调用将修改 struct 自身 (在 js 中产生一次 rebind)
+    [AttributeUsage(AttributeTargets.Method,
+                    AllowMultiple = false)]
+    public class JSMutableAttribute : Attribute
+    {
     }
 }
