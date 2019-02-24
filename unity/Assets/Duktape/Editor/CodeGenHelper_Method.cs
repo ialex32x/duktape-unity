@@ -166,7 +166,7 @@ namespace Duktape
                 }
                 else
                 {
-                    if (method.DeclaringType.IsValueType)
+                    if (!method.IsStatic && method.DeclaringType.IsValueType) // struct 非静态方法 检查 Mutable 属性
                     {
                         if (method.IsDefined(typeof(JSMutableAttribute), false))
                         {
