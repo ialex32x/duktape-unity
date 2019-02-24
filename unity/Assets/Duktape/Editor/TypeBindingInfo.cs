@@ -265,7 +265,7 @@ namespace Duktape
             try
             {
                 fields.Add(fieldInfo.Name, new FieldBindingInfo(fieldInfo));
-                // Debug.LogFormat("AddField {0}.{1}", type, fieldInfo.Name);
+                bindingManager.Info("[AddField] {0}.{1}", type, fieldInfo.Name);
             }
             catch (Exception exception)
             {
@@ -278,6 +278,7 @@ namespace Duktape
             try
             {
                 properties.Add(propInfo.Name, new PropertyBindingInfo(propInfo));
+                bindingManager.Info("[AddProperty] {0}.{1}", type, propInfo.Name);
             }
             catch (Exception exception)
             {
@@ -295,11 +296,13 @@ namespace Duktape
                 group.Add(methodInfo.Name, overrides);
             }
             overrides.Add(methodInfo);
+            bindingManager.Info("[AddMethod] {0}.{1}", type, methodInfo);
         }
 
         public void AddConstructor(ConstructorInfo constructorInfo)
         {
             constructors.Add(constructorInfo);
+            this.bindingManager.Info("[AddConstructor] {0}.{1}", type, constructorInfo);
         }
 
         public bool IsExtensionMethod(MethodInfo methodInfo)

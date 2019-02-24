@@ -8,7 +8,8 @@ namespace Duktape
     public interface IDuktapeListener
     {
         void OnTypesBinding(DuktapeVM vm);
+        void OnBindingError(DuktapeVM vm, Type type);
         void OnProgress(DuktapeVM vm, int step, int total);
-        void onLoaded(DuktapeVM vm);
+        void OnLoaded(DuktapeVM vm);
     }
 }

@@ -43,6 +43,20 @@ namespace Duktape
         private void WriteCSConstructor(ConstructorInfo constructor)
         {
             //TODO: 写入构造函数
+            var parameters = constructor.GetParameters();
+            if (parameters.Length == 0)
+            {
+                WriteDefaultCSConstructor();
+            }
+            else
+            {
+                var arglist = this.cg.AppendGetParameters(parameters, null);
+
+                this.cg.csharp.AppendLine("var o = new {0}({1});", this.bindingInfo.decalringType.FullName, arglist);
+                this.cg.csharp.AppendLine("DuktapeDLL.duk_push_this(ctx);");
+                this.cg.csharp.AppendLine("duk_bind_native(ctx, -1, o);");
+                this.cg.csharp.AppendLine("DuktapeDLL.duk_pop(ctx);");
+            }
         }
 
         private void WriteDefaultCSConstructor()
