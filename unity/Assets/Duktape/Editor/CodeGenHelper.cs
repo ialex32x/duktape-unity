@@ -165,7 +165,7 @@ namespace Duktape
         public PInvokeGuardCodeGen(CodeGenerator cg)
         : base(cg)
         {
-            this.cg.csharp.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof(duk_c_function))]");
+            this.cg.csharp.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]");
         }
     }
 

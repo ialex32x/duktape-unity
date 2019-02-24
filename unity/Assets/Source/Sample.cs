@@ -33,26 +33,26 @@ public struct SampleStruct
     // static read/write property
     public static double static_readwrite_property_d { get; set; }
 
-    // vararg method without override
-    public void VarargMethodWithoutOverride(int a, string[] b, params float[] c) { }
-
     public static string StaticMethodWithReturnAndNoOverride(Vector3 a, ref float b, out string[] c) { c = null; return a.ToString(); }
 
-    public bool MethodWithOutParameter(int a, int b, out int c) { c = a + b; return true; }
+    // vararg method without override
+    // public void VarargMethodWithoutOverride(int a, string[] b, params float[] c) { }
 
-    public bool MethodWithRefParameter(int a, int b, ref int c) { c = a + b + c; return false; }
+    // public bool MethodWithOutParameter(int a, int b, out int c) { c = a + b; return true; }
 
-    public void Foo(List<int> list) { }
+    // public bool MethodWithRefParameter(int a, int b, ref int c) { c = a + b + c; return false; }
 
-    public void Foo(int a, string b) { }
-    public void Foo(int a, params string[] b) { }
+    // public void Foo(List<int> list) { }
 
-    public static void X(string a1, string a2) { }
-    public static void X(string a1, int a2) { }
-    public static void X(string a1, params int[] a2)
-    {
-        Debug.LogFormat("X var {0}", a2.Length);
-    }
+    // public void Foo(int a, string b) { }
+    // public void Foo(int a, params string[] b) { }
+
+    // public static void X(string a1, string a2) { }
+    // public static void X(string a1, int a2) { }
+    // public static void X(string a1, params int[] a2)
+    // {
+    //     Debug.LogFormat("X var {0}", a2.Length);
+    // }
 }
 
 public static class SampleStructExtensions
@@ -121,8 +121,8 @@ public class Sample : MonoBehaviour
         delegateFoo += Awake;
         delegateFoo += Update;
         checking(delegateFoo);
-        SampleStruct.X("", 1);
-        SampleStruct.X("");
+        // SampleStruct.X("", 1);
+        // SampleStruct.X("");
 
         var temp = new List<Action<IntPtr>>
         {
