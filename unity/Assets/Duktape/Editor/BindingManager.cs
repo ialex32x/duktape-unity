@@ -306,7 +306,7 @@ namespace Duktape
         {
             var cg = new CodeGenerator(this);
             var outDir = Prefs.GetPrefs().outDir;
-            var tx = ".txt";
+            var tx = Prefs.GetPrefs().extraExt;
             // var tx = "";
             if (!Directory.Exists(outDir))
             {

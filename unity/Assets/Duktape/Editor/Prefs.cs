@@ -27,6 +27,8 @@ namespace Duktape
         // 静态绑定代码的生成目录
         public string outDir = "Assets/Duktape/Generated";
 
+        public string extraExt = ""; // 生成文件的额外后缀
+
         public NewLineStyle newLineStyle;
 
         public string newline
