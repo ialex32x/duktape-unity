@@ -10,6 +10,7 @@ namespace Duktape
     using UnityEditor;
 
     // 生成成员方法绑定代码
+    //TODO: 带有 JSMutable 属性的 struct 非静态成员方法调用完成后补充一个 duk_rebind_this()
     public class MethodCodeGen : IDisposable
     {
         protected CodeGenerator cg;
