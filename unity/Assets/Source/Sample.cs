@@ -20,6 +20,7 @@ public class SampleClass
         get { return _name; }
     }
 
+    [JSDoc("简单构造函数测试")]
     public SampleClass(string name)
     {
         this._name = name;
