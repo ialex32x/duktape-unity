@@ -199,10 +199,16 @@ namespace Duktape
         {
             Collect(Prefs.GetPrefs().explicitAssemblies, false);
             Collect(Prefs.GetPrefs().implicitAssemblies, true);
+            log.AppendLine("collecting members");
+            log.AddTabLevel();
             foreach (var typeBindingInfoKV in exportedTypes)
             {
+                log.AppendLine("type: {0}", typeBindingInfoKV.Value.type);
+                log.AddTabLevel();
                 typeBindingInfoKV.Value.Collect();
+                log.DecTabLevel();
             }
+            log.DecTabLevel();
         }
 
         // implicitExport: 默认进行导出(黑名单例外), 否则根据导出标记或手工添加
