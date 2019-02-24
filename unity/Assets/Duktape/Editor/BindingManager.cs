@@ -151,6 +151,8 @@ namespace Duktape
             if (type.IsArray)
             {
                 //TODO: 处理数组取参操作函数指定
+                var elementType = type.GetElementType();
+                return GetDuktapeGetter(elementType) + "_array"; //TODO: 嵌套数组的问题
             }
             if (type.IsValueType)
             {
@@ -159,6 +161,10 @@ namespace Duktape
                     return "duk_get_primitive";
                 }
                 return "duk_get_struct_object";
+            }
+            if (type == typeof(string))
+            {
+                return "duk_get_primitive";
             }
             return "duk_get_class_object";
         }
