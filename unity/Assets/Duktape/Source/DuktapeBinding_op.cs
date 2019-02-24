@@ -9,14 +9,14 @@ namespace Duktape
     public partial class DuktapeBinding
     {
         // 返回当前 this 对应的 native object
-        public static object duk_get_this(IntPtr ctx)
+        public static bool duk_get_this<T>(IntPtr ctx, out T self)
         {
             DuktapeDLL.duk_push_this(ctx);
-            DuktapeDLL.duk_get_prop_string(ctx, -1, DuktapeVM.OBJ_PROP_NATIVE);
-            var id = DuktapeDLL.duk_get_int(ctx, -1);
-            DuktapeDLL.duk_pop_2(ctx); // pop [this, object-id]
-            object o;
-            return DuktapeVM.GetObjectCache(ctx).TryGetValue(id, out o) ? o : null;
+            object o_t;
+            var ret = duk_get_object(ctx, -1, out o_t);
+            self = (T)o_t;
+            DuktapeDLL.duk_pop(ctx); // pop this 
+            return ret;
         }
 
         public static void duk_bind_native(IntPtr ctx, int idx, object o)

@@ -124,6 +124,20 @@ namespace Duktape
             var parameters = method.GetParameters();
             var returnParameters = new List<ParameterInfo>();
             var arglist = "";
+            
+            // get 'this'
+            var caller = "";
+            if (method.IsStatic)
+            {
+                caller = method.DeclaringType.FullName;
+            }
+            else
+            {
+                caller = "self";
+                cg.csharp.AppendLine("{0} {1};", this.cg.bindingManager.GetTypeFullNameCS(method.DeclaringType), caller);
+                cg.csharp.AppendLine("{0}(ctx, out {1});", this.cg.bindingManager.GetDuktapeThisGetter(method.DeclaringType), caller);
+            }
+            // get all parameters
             for (var i = 0; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
@@ -145,17 +159,7 @@ namespace Duktape
                     arglist += ", ";
                 }
                 cg.csharp.AppendLine("{0} arg{1};", this.cg.bindingManager.GetTypeFullNameCS(parameter.ParameterType), i);
-                cg.csharp.AppendLine("duk_get_???(ctx, {0}, out arg{0});", i);
-            }
-            var caller = "";
-            if (method.IsStatic)
-            {
-                caller = method.DeclaringType.FullName;
-            }
-            else
-            {
-                caller = "self";
-                cg.csharp.AppendLine("var self = duk_get_this(ctx);");
+                cg.csharp.AppendLine("{0}(ctx, {1}, out arg{1});", this.cg.bindingManager.GetDuktapeGetter(parameter.ParameterType), i);
             }
             if (method.ReturnType == typeof(void))
             {

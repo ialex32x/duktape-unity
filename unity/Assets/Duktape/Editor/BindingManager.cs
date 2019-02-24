@@ -132,7 +132,7 @@ namespace Duktape
             {
                 fullname = new Regex(@"`\d", RegexOptions.None).Replace(fullname, "");
                 //TODO: maybe conflict?
-                fullname = fullname.Replace("[", "<"); 
+                fullname = fullname.Replace("[", "<");
                 fullname = fullname.Replace("]", ">");
             }
             if (_csTypeNameMapS.TryGetValue(fullname, out name))
@@ -140,6 +140,32 @@ namespace Duktape
                 return name;
             }
             return fullname;
+        }
+
+        public string GetDuktapeGetter(Type type)
+        {
+            if (type.IsByRef)
+            {
+                return GetDuktapeGetter(type.GetElementType());
+            }
+            if (type.IsArray)
+            {
+                //TODO: 处理数组取参操作函数指定
+            }
+            if (type.IsValueType)
+            {
+                if (type.IsPrimitive)
+                {
+                    return "duk_get_primitive";
+                }
+                return "duk_get_struct_object";
+            }
+            return "duk_get_class_object";
+        }
+
+        public string GetDuktapeThisGetter(Type type)
+        {
+            return "duk_get_this";
         }
 
         public TypeBindingInfo GetExportedType(Type type)
