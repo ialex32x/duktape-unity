@@ -19,19 +19,11 @@ namespace Duktape
             this.cg = cg;
             this.bindingInfo = bindingInfo;
 
-            if (bindingInfo.propertyInfo.GetMethod.IsStatic)
-            {
-                this.cg.csharp.AppendLine("var ret = {0}.{1};", bindingInfo.propertyInfo.DeclaringType, bindingInfo.propertyInfo.Name);
-                this.cg.csharp.AppendLine("duk_push_any(ctx, ret);");
-                this.cg.csharp.AppendLine("return 1;");
-            }
-            else
-            {
-                this.cg.csharp.AppendLine("var self = ({0})duk_get_this(ctx);", bindingInfo.propertyInfo.DeclaringType);
-                this.cg.csharp.AppendLine("var ret = self.{0};", bindingInfo.propertyInfo.Name);
-                this.cg.csharp.AppendLine("duk_push_any(ctx, ret);");
-                this.cg.csharp.AppendLine("return 1;");
-            }
+            var caller = this.cg.AppendGetThisCS(bindingInfo.propertyInfo.GetMethod);
+
+            this.cg.csharp.AppendLine("var ret = {0}.{1};", caller, bindingInfo.propertyInfo.Name);
+            this.cg.csharp.AppendLine("{0}(ctx, ret);", this.cg.GetDuktapePusher(bindingInfo.propertyInfo.PropertyType));
+            this.cg.csharp.AppendLine("return 1;");
         }
 
         public virtual void Dispose()
@@ -49,19 +41,13 @@ namespace Duktape
             this.cg = cg;
             this.bindingInfo = bindingInfo;
 
-            if (bindingInfo.propertyInfo.SetMethod.IsStatic)
-            {
-                this.cg.csharp.AppendLine("var value = ({0})duk_get_primitive(ctx, 0);", bindingInfo.propertyInfo.PropertyType);
-                this.cg.csharp.AppendLine("{0}.{1} = value;", bindingInfo.propertyInfo.DeclaringType, bindingInfo.propertyInfo.Name);
-                this.cg.csharp.AppendLine("return 0;");
-            }
-            else
-            {
-                this.cg.csharp.AppendLine("var value = ({0})duk_get_primitive(ctx, 0);", bindingInfo.propertyInfo.PropertyType);
-                this.cg.csharp.AppendLine("var self = ({0})duk_get_this(ctx);", bindingInfo.propertyInfo.DeclaringType);
-                this.cg.csharp.AppendLine("self.{0} = value;", bindingInfo.propertyInfo.Name);
-                this.cg.csharp.AppendLine("return 0;");
-            }
+            var caller = this.cg.AppendGetThisCS(bindingInfo.propertyInfo.GetMethod);
+            var propertyInfo = this.bindingInfo.propertyInfo;
+            
+            this.cg.csharp.AppendLine("{0} value;", this.cg.bindingManager.GetTypeFullNameCS(propertyInfo.PropertyType));
+            this.cg.csharp.AppendLine("{0}(ctx, 0, out value);", this.cg.GetDuktapeGetter(propertyInfo.PropertyType));
+            this.cg.csharp.AppendLine("{0}.{1} = value;", caller, propertyInfo.Name);
+            this.cg.csharp.AppendLine("return 0;");
         }
 
         public virtual void Dispose()

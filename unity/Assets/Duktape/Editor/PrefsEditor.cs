@@ -13,7 +13,19 @@ namespace Duktape
     {
         void OnGUI()
         {
-
+            if (GUILayout.Button("Generate"))
+            {
+                UnityHelper.GenerateBindings();
+            }
+            if (GUILayout.Button("Reload from disk"))
+            {
+                Prefs.Reload();
+            }
+            if(GUILayout.Button("Clear"))
+            {
+                BindingManager.Cleanup(Prefs.GetPrefs().outDir, null, null);
+                AssetDatabase.Refresh();
+            }
         }
     }
 }

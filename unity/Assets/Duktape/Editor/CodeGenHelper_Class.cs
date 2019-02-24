@@ -15,7 +15,7 @@ namespace Duktape
         : base(cg, type)
         {
             var prefix = bindingInfo.Namespace != null ? "" : "declare ";
-            this.cg.typescript.AppendLine("{0}class DuktapeJS_{1} {{", prefix, bindingInfo.name);
+            this.cg.typescript.AppendLine("{0}class {1} {{", prefix, bindingInfo.regName);
             this.cg.typescript.AddTabLevel();
 
             // 生成函数体

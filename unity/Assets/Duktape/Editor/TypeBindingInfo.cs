@@ -184,9 +184,9 @@ namespace Duktape
         public BindingManager bindingManager;
         public Type type;
 
-        public string name;
+        public string name; // 绑定代码名
 
-        public string regName;
+        public string regName; // js注册名
 
         public Dictionary<string, MethodBindingInfo> methods = new Dictionary<string, MethodBindingInfo>();
         public Dictionary<string, MethodBindingInfo> staticMethods = new Dictionary<string, MethodBindingInfo>();
@@ -212,12 +212,6 @@ namespace Duktape
         public bool IsEnum
         {
             get { return type.IsEnum; }
-        }
-
-        // 绑定代码名
-        public string JSBindingClassName
-        {
-            get { return type.FullName.Replace(".", "_"); }
         }
 
         public TypeBindingInfo(BindingManager bindingManager, Type type)

@@ -124,6 +124,12 @@ namespace Duktape
             }
         }
 
+        public static void Reload()
+        {
+            _prefs = null;
+            GetPrefs();
+        }
+
         public void Save()
         {
             if (_dirty)

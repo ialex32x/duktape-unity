@@ -1,6 +1,6 @@
 {
     "outDir": "Assets/Duktape/Generated",
-    "extraExt": ".txt",
+    "extraExt": "",
     "newLineStyle": 0,
     "implicitAssemblies": [], 
     "explicitAssemblies": [

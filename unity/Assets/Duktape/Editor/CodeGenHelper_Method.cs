@@ -126,17 +126,7 @@ namespace Duktape
             var arglist = "";
             
             // get 'this'
-            var caller = "";
-            if (method.IsStatic)
-            {
-                caller = method.DeclaringType.FullName;
-            }
-            else
-            {
-                caller = "self";
-                cg.csharp.AppendLine("{0} {1};", this.cg.bindingManager.GetTypeFullNameCS(method.DeclaringType), caller);
-                cg.csharp.AppendLine("{0}(ctx, out {1});", this.cg.bindingManager.GetDuktapeThisGetter(method.DeclaringType), caller);
-            }
+            var caller = this.cg.AppendGetThisCS(method);
             // get all parameters
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -159,14 +149,15 @@ namespace Duktape
                     arglist += ", ";
                 }
                 cg.csharp.AppendLine("{0} arg{1};", this.cg.bindingManager.GetTypeFullNameCS(parameter.ParameterType), i);
-                cg.csharp.AppendLine("{0}(ctx, {1}, out arg{1});", this.cg.bindingManager.GetDuktapeGetter(parameter.ParameterType), i);
+                cg.csharp.AppendLine("{0}(ctx, {1}, out arg{1});", this.cg.GetDuktapeGetter(parameter.ParameterType), i);
             }
             if (method.ReturnType == typeof(void))
             {
+                // 方法本身没有返回值
                 cg.csharp.AppendLine("{0}.{1}({2});", caller, method.Name, arglist);
                 if (returnParameters.Count > 0)
                 {
-                    cg.csharp.AppendLine("duk_push_object(ctx);");
+                    cg.csharp.AppendLine("DuktapeDLL.duk_push_object(ctx);");
                     //TODO: 填充返回值组合
                     cg.csharp.AppendLine("// fill object properties here;");
                     cg.csharp.AppendLine("return 1;");
@@ -178,16 +169,17 @@ namespace Duktape
             }
             else
             {
+                // 方法本身有返回值
                 cg.csharp.AppendLine("var ret = {0}.{1}({2});", caller, method.Name, arglist);
                 if (returnParameters.Count > 0)
                 {
-                    cg.csharp.AppendLine("duk_push_object(ctx);");
+                    cg.csharp.AppendLine("DuktapeDLL.duk_push_object(ctx);");
                     //TODO: 填充返回值组合
                     cg.csharp.AppendLine("// fill object properties here;");
                 }
                 else
                 {
-                    cg.csharp.AppendLine("duk_push_???(ctx, ret);");
+                    cg.csharp.AppendLine("{0}(ctx, ret);", this.cg.GetDuktapePusher(method.ReturnType));
                 }
                 cg.csharp.AppendLine("return 1;");
             }
