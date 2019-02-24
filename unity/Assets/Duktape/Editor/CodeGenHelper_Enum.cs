@@ -27,7 +27,7 @@ namespace Duktape
                 {
                     using (new RegFuncNamespaceCodeGen(cg, bindingInfo))
                     {
-                        this.cg.csharp.AppendLine("duk_begin_enum(ctx, typeof({0}));", bindingInfo.FullName);
+                        this.cg.csharp.AppendLine("duk_begin_enum(ctx, \"{0}\", typeof({1}));", bindingInfo.regName, bindingInfo.FullName);
                         foreach (var ev in Enum.GetValues(bindingInfo.type))
                         {
                             var value = Convert.ToInt32(ev);

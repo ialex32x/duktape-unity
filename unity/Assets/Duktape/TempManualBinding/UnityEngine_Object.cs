@@ -49,7 +49,7 @@ namespace Duktape
         public static void reg(IntPtr ctx)
         {
             duk_begin_namespace(ctx, "UnityEngine");
-            duk_begin_class(ctx, typeof(UnityEngine.Object), ctor);
+            duk_begin_class(ctx, "Object", typeof(UnityEngine.Object), ctor);
             duk_add_method(ctx, "Destroy", Destroy, true);
             duk_add_method(ctx, "Foo", Foo, false);
             duk_end_class(ctx);

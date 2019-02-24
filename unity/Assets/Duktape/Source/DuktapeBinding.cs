@@ -80,9 +80,8 @@ namespace Duktape
             // Debug.LogFormat("end namespace {0}", DuktapeDLL.duk_get_top(ctx));
         }
 
-        protected static void duk_begin_class(IntPtr ctx, Type type, DuktapeDLL.duk_c_function ctor)
+        protected static void duk_begin_class(IntPtr ctx, string typename, Type type, DuktapeDLL.duk_c_function ctor)
         {
-            var typename = type.Name;
             // Debug.LogFormat("begin class {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_push_c_function(ctx, ctor, DuktapeDLL.DUK_VARARGS); // [ctor]
             DuktapeDLL.duk_dup(ctx, -1);
@@ -100,8 +99,25 @@ namespace Duktape
 
         protected static void duk_end_class(IntPtr ctx)
         {
-            DuktapeDLL.duk_pop_2(ctx);
+            DuktapeDLL.duk_pop_2(ctx); // remove [ctor, prototype]
             // Debug.LogFormat("end class {0}", DuktapeDLL.duk_get_top(ctx));
+        }
+
+        protected static void duk_begin_enum(IntPtr ctx, string typename, Type type)
+        {
+            // Debug.LogFormat("begin enum {0}", DuktapeDLL.duk_get_top(ctx));
+            DuktapeDLL.duk_push_object(ctx);
+            // Debug.LogFormat("begin check {0}", DuktapeDLL.duk_get_top(ctx));
+            DuktapeDLL.duk_dup(ctx, -1);
+            DuktapeDLL.duk_dup(ctx, -1);
+            DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx)));
+            // Debug.LogFormat("end check {0}", DuktapeDLL.duk_get_top(ctx));
+            DuktapeDLL.duk_put_prop_string(ctx, -3, typename);
+        }
+
+        protected static void duk_end_enum(IntPtr ctx)
+        {
+            DuktapeDLL.duk_pop(ctx); // remove [enum]
         }
 
         protected static void duk_add_method(IntPtr ctx, string name, DuktapeDLL.duk_c_function func, bool bStatic)
