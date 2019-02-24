@@ -124,12 +124,7 @@ public class Sample : MonoBehaviour
         // SampleStruct.X("", 1);
         // SampleStruct.X("");
 
-        var temp = new List<Action<IntPtr>>
-        {
-            Duktape.UnityEngine_Object.reg,
-            Duktape.UnityEngine_GameObject.reg,
-        };
-        vm.Initialize(new FakeFileSystem(), temp, null, () =>
+        vm.Initialize(new FakeFileSystem(), null, () =>
         {
             vm.AddSearchPath("Assets/Scripts/polyfills");
             vm.AddSearchPath("Assets/Scripts/Generated");

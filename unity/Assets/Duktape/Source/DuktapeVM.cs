@@ -15,7 +15,7 @@ namespace Duktape
     public class DuktapeVM // : Scripting.ScriptEngine
     {
         // duktape-unity 版本, 生成规则发生无法兼容的改变时增加版本号
-        public const int VERSION = 0x10001; 
+        public const int VERSION = 0x10001;
         public const string HEAP_STASH_PROPS_REGISTRY = "registry";
         public static readonly string OBJ_PROP_NATIVE = DuktapeDLL.DUK_HIDDEN_SYMBOL("native");
 
@@ -182,7 +182,7 @@ namespace Duktape
             return 1;
         }
 
-        public void Initialize(IFileSystem fs, List<Action<IntPtr>> custom, Action<float> onprogress, Action onloaded)
+        public void Initialize(IFileSystem fs, Action<float> onprogress, Action onloaded)
         {
             this._fileManager = fs;
             var ctx = DuktapeDLL.duk_create_heap_default();
@@ -192,10 +192,19 @@ namespace Duktape
             DuktapeDLL.duk_unity_open(ctx);
 
             DuktapeDLL.duk_push_global_object(ctx);
-            for (int i = 0, size = custom.Count; i < size; i++)
+            var exportedTypes = this.GetType().Assembly.GetExportedTypes();
+            var ctx_t = new object[] { ctx };
+            for (int i = 0, size = exportedTypes.Length; i < size; i++)
             {
-                var reg = custom[i];
-                reg(ctx);
+                var type = exportedTypes[i];
+                if (type.IsDefined(typeof(JSBindingAttribute), false))
+                {
+                    var reg = type.GetMethod("reg");
+                    if (reg != null)
+                    {
+                        reg.Invoke(null, ctx_t);
+                    }
+                }
             }
             DuktapeDLL.duk_pop(ctx);
             // Debug.LogFormat("exported {0} classes", _exported.Count);
