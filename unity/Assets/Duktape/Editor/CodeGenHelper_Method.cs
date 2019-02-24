@@ -78,7 +78,6 @@ namespace Duktape
             else
             {
                 // 没有重载的情况
-                cg.csharp.AppendLine("// no override");
                 foreach (var variantKV in this.bindingInfo.variants)
                 {
                     var argc = variantKV.Key;
@@ -124,34 +123,11 @@ namespace Duktape
         {
             var parameters = method.GetParameters();
             var returnParameters = new List<ParameterInfo>();
-            var arglist = "";
             
             // get 'this'
             var caller = this.cg.AppendGetThisCS(method);
             // get all parameters
-            for (var i = 0; i < parameters.Length; i++)
-            {
-                var parameter = parameters[i];
-                //TODO: 需要处理 ref/out 参数在 js 中的返回方式问题
-                //      可能的处理方式是将这些参数合并函数返回值转化为一个 object 作为最终返回值
-                if (parameter.IsOut)
-                {
-                    arglist += "out ";
-                    returnParameters.Add(parameter);
-                }
-                else if (parameter.ParameterType.IsByRef)
-                {
-                    arglist += "ref ";
-                    returnParameters.Add(parameter);
-                }
-                arglist += "arg" + i;
-                if (i != parameters.Length - 1)
-                {
-                    arglist += ", ";
-                }
-                cg.csharp.AppendLine("{0} arg{1};", this.cg.bindingManager.GetTypeFullNameCS(parameter.ParameterType), i);
-                cg.csharp.AppendLine("{0}(ctx, {1}, out arg{1});", this.cg.GetDuktapeGetter(parameter.ParameterType), i);
-            }
+            var arglist = this.cg.AppendGetParameters(parameters, returnParameters);
 
             if (method.ReturnType == typeof(void))
             {

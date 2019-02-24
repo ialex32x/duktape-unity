@@ -153,5 +153,39 @@ namespace Duktape
             return caller;
         }
 
+        public string AppendGetParameters(ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
+        {
+            var arglist = "";
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var parameter = parameters[i];
+                //TODO: 需要处理 ref/out 参数在 js 中的返回方式问题
+                //      可能的处理方式是将这些参数合并函数返回值转化为一个 object 作为最终返回值
+                if (parameter.IsOut)
+                {
+                    arglist += "out ";
+                    if (parametersByRef != null)
+                    {
+                        parametersByRef.Add(parameter);
+                    }
+                }
+                else if (parameter.ParameterType.IsByRef)
+                {
+                    arglist += "ref ";
+                    if (parametersByRef != null)
+                    {
+                        parametersByRef.Add(parameter);
+                    }
+                }
+                arglist += "arg" + i;
+                if (i != parameters.Length - 1)
+                {
+                    arglist += ", ";
+                }
+                this.csharp.AppendLine("{0} arg{1};", this.bindingManager.GetTypeFullNameCS(parameter.ParameterType), i);
+                this.csharp.AppendLine("{0}(ctx, {1}, out arg{1});", this.GetDuktapeGetter(parameter.ParameterType), i);
+            }
+            return arglist;
+        }
     }
 }

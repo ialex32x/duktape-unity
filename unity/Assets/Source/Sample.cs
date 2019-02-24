@@ -13,6 +13,30 @@ public enum SampleEnum
 [Duktape.JSType]
 public class SampleClass
 {
+    private string _name;
+
+    public string name
+    {
+        get { return _name; }
+    }
+
+    public SampleClass(string name)
+    {
+        this._name = name;
+    }
+
+    public int Sum(int[] all)
+    {
+        var sum = 0;
+        if (all != null)
+        {
+            for (int i = 0, size = all.Length; i < size; i++)
+            {
+                sum += all[i];
+            }
+        }
+        return sum;
+    }
 }
 
 [Duktape.JSType]
@@ -36,9 +60,9 @@ public struct SampleStruct
     public static string StaticMethodWithReturnAndNoOverride(Vector3 a, ref float b, out string[] c) { c = null; return a.ToString(); }
 
     [Duktape.JSMutable]
-    public void ChangeFieldA()
+    public void ChangeFieldA(int a)
     {
-        this.field_a++;
+        this.field_a += a;
     }
 
     // vararg method without override
@@ -116,11 +140,15 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
         // xxx.reg(ctx);
     }
 
+    public void OnBindingError(DuktapeVM vm, Type type)
+    {
+    }
+
     public void OnProgress(DuktapeVM vm, int step, int total)
     {
     }
 
-    public void onLoaded(DuktapeVM vm)
+    public void OnLoaded(DuktapeVM vm)
     {
         vm.AddSearchPath("Assets/Scripts/polyfills");
         vm.AddSearchPath("Assets/Scripts/Generated");
@@ -149,6 +177,11 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
         // SampleStruct.X("", 1);
         // SampleStruct.X("");
 
+        var ctors = typeof(SampleClass).GetConstructors();
+        foreach (var ctor in ctors)
+        {
+            Debug.Log(ctor);
+        }
         vm.Initialize(new FakeFileSystem(), this);
     }
 

@@ -201,12 +201,24 @@ namespace Duktape
             for (int i = 0, size = exportedTypes.Length; i < size; i++)
             {
                 var type = exportedTypes[i];
-                if (type.IsDefined(typeof(JSBindingAttribute), false))
+                var attributes = type.GetCustomAttributes(typeof(JSBindingAttribute), false);
+                if (attributes.Length == 1)
                 {
-                    var reg = type.GetMethod("reg");
-                    if (reg != null)
+                    var jsBinding = attributes[0] as JSBindingAttribute;
+                    if (jsBinding.Version == 0 || jsBinding.Version == VERSION)
                     {
-                        reg.Invoke(null, ctx_t);
+                        var reg = type.GetMethod("reg");
+                        if (reg != null)
+                        {
+                            reg.Invoke(null, ctx_t);
+                        }
+                    }
+                    else
+                    {
+                        if (listener != null)
+                        {
+                            listener.OnBindingError(this, type);
+                        }
                     }
                 }
             }
@@ -230,7 +242,7 @@ namespace Duktape
 
             if (listener != null)
             {
-                listener.onLoaded(this);
+                listener.OnLoaded(this);
             }
         }
 
