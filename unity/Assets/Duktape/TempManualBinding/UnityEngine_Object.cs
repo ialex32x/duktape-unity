@@ -23,7 +23,7 @@ namespace Duktape
         static int Destroy(IntPtr ctx)
         {
             Object arg1;
-            duk_get_class_object(ctx, 0, out arg1);
+            duk_get_classvalue(ctx, 0, out arg1);
             DuktapeDLL.duk_pop(ctx); // pop this
             Object.Destroy(arg1);
             return 0;

@@ -160,13 +160,13 @@ namespace Duktape
                 {
                     return "duk_get_primitive";
                 }
-                return "duk_get_struct_object";
+                return "duk_get_structvalue";
             }
             if (type == typeof(string))
             {
                 return "duk_get_primitive";
             }
-            return "duk_get_class_object";
+            return "duk_get_classvalue";
         }
 
         public string GetDuktapeThisGetter(Type type)

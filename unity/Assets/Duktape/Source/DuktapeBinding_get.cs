@@ -86,13 +86,21 @@ namespace Duktape
             return true;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out LayerMask o)
+        public static bool duk_get_primitive_array<T>(IntPtr ptr, int idx, out T[] o)
+        where T : struct
+        {
+            //TODO: checkout array of primitive types
+            o = new T[0];
+            return true;
+        }
+
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out LayerMask o)
         {
             o = (LayerMask)DuktapeDLL.duk_get_int(ctx, idx);
             return true;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out Color o)
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out Color o)
         {
             float r, g, b, a;
             var ret = DuktapeDLL.duk_unity_get4f(ctx, idx, out r, out g, out b, out a);
@@ -100,7 +108,7 @@ namespace Duktape
             return ret;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out Color32 o)
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out Color32 o)
         {
             int r, g, b, a;
             var ret = DuktapeDLL.duk_unity_get4i(ctx, idx, out r, out g, out b, out a);
@@ -108,7 +116,7 @@ namespace Duktape
             return ret;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out Vector2 o)
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out Vector2 o)
         {
             float x, y;
             var ret = DuktapeDLL.duk_unity_get2f(ctx, idx, out x, out y);
@@ -116,7 +124,7 @@ namespace Duktape
             return ret;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out Vector2Int o)
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out Vector2Int o)
         {
             int x, y;
             var ret = DuktapeDLL.duk_unity_get2i(ctx, idx, out x, out y);
@@ -124,7 +132,7 @@ namespace Duktape
             return ret;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out Vector3 o)
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out Vector3 o)
         {
             float x, y, z;
             var ret = DuktapeDLL.duk_unity_get3f(ctx, idx, out x, out y, out z);
@@ -132,7 +140,7 @@ namespace Duktape
             return ret;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out Vector3Int o)
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out Vector3Int o)
         {
             int x, y, z;
             var ret = DuktapeDLL.duk_unity_get3i(ctx, idx, out x, out y, out z);
@@ -140,7 +148,7 @@ namespace Duktape
             return ret;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out Vector4 o)
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out Vector4 o)
         {
             float x, y, z, w;
             var ret = DuktapeDLL.duk_unity_get4f(ctx, idx, out x, out y, out z, out w);
@@ -148,7 +156,7 @@ namespace Duktape
             return ret;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out Quaternion o)
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out Quaternion o)
         {
             float x, y, z, w;
             var ret = DuktapeDLL.duk_unity_get4f(ctx, idx, out x, out y, out z, out w);
@@ -157,7 +165,7 @@ namespace Duktape
         }
 
         // fallthrough
-        public static bool duk_get_struct_object<T>(IntPtr ctx, int idx, out T o)
+        public static bool duk_get_structvalue<T>(IntPtr ctx, int idx, out T o)
         where T : struct
         {
             object o_t;
@@ -166,7 +174,7 @@ namespace Duktape
             return ret;
         }
 
-        public static bool duk_get_struct_object<T>(IntPtr ctx, int idx, out T? o)
+        public static bool duk_get_structvalue<T>(IntPtr ctx, int idx, out T? o)
         where T : struct
         {
             object o_t;
@@ -176,7 +184,7 @@ namespace Duktape
         }
 
         // not value type (except string/array)
-        public static bool duk_get_class_object<T>(IntPtr ctx, int idx, out T o)
+        public static bool duk_get_classvalue<T>(IntPtr ctx, int idx, out T o)
         where T : class
         {
             object o_t;
@@ -211,7 +219,7 @@ namespace Duktape
             return false;
         }
 
-        public static bool duk_get_struct_array<T>(IntPtr ctx, int idx, out T[] o)
+        public static bool duk_get_structvalue_array<T>(IntPtr ctx, int idx, out T[] o)
         where T : struct
         {
             if (DuktapeDLL.duk_is_array(ctx, idx))
@@ -223,7 +231,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     T e;
-                    if (duk_get_struct_object(ctx, -1, out e))
+                    if (duk_get_structvalue(ctx, -1, out e))
                     {
                         o[i] = e;
                     }
@@ -234,7 +242,7 @@ namespace Duktape
             return false;
         }
 
-        public static bool duk_get_struct_array<T>(IntPtr ctx, int idx, out T?[] o)
+        public static bool duk_get_structvalue_array<T>(IntPtr ctx, int idx, out T?[] o)
         where T : struct
         {
             if (DuktapeDLL.duk_is_array(ctx, idx))
@@ -246,7 +254,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     T? e;
-                    if (duk_get_struct_object(ctx, -1, out e))
+                    if (duk_get_structvalue(ctx, -1, out e))
                     {
                         o[i] = e;
                     }
@@ -257,7 +265,7 @@ namespace Duktape
             return false;
         }
 
-        public static bool duk_get_class_array<T>(IntPtr ctx, int idx, out T[] o)
+        public static bool duk_get_classvalue_array<T>(IntPtr ctx, int idx, out T[] o)
         where T : class
         {
             if (DuktapeDLL.duk_is_array(ctx, idx))
@@ -269,7 +277,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     T e;
-                    if (duk_get_class_object(ctx, -1, out e))
+                    if (duk_get_classvalue(ctx, -1, out e))
                     {
                         o[i] = e;
                     }
