@@ -15,7 +15,7 @@ namespace Duktape
         : base(cg, type)
         {
             var prefix = bindingInfo.Namespace != null ? "" : "export ";
-            this.cg.typescript.AppendLine("{0}enum {1} {{", prefix, bindingInfo.Name);
+            this.cg.typescript.AppendLine("{0}enum {1} {{", prefix, bindingInfo.regName);
             this.cg.typescript.AddTabLevel();
         }
 

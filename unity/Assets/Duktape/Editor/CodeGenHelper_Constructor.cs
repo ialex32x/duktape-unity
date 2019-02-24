@@ -19,6 +19,8 @@ namespace Duktape
             this.cg = cg;
             this.bindingInfo = bindingInfo;
 
+            this.cg.csharp.AppendLine("return 0;");
+
             if (this.bindingInfo.variants.Count > 0)
             {
                 foreach (var constructor in this.bindingInfo.variants)

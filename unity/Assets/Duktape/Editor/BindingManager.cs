@@ -307,6 +307,7 @@ namespace Duktape
             var cg = new CodeGenerator(this);
             var outDir = Prefs.GetPrefs().outDir;
             var tx = ".txt";
+            // var tx = "";
             if (!Directory.Exists(outDir))
             {
                 Directory.CreateDirectory(outDir);
@@ -321,7 +322,7 @@ namespace Duktape
                 }
                 catch (Exception exception)
                 {
-                    Error(string.Format("generate failed {0}: {1}", typeBindingInfo.Name, exception.Message));
+                    Error(string.Format("generate failed {0}: {1}", typeBindingInfo.type.Name, exception.Message));
                     Debug.LogError(exception.StackTrace);
                 }
             }
