@@ -30,7 +30,8 @@ namespace Duktape
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         static int SetActive(IntPtr ctx)
         {
-            var o = (UnityEngine.GameObject)duk_get_this(ctx);
+            UnityEngine.GameObject o;
+            duk_get_this(ctx, out o);
             if (o != null)
             {
                 var b = DuktapeDLL.duk_get_boolean(ctx, 0);

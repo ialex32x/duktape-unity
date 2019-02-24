@@ -131,7 +131,7 @@ namespace Duktape
             if (fieldInfo.IsStatic)
             {
                 this.getterName = "BindStaticRead_" + fieldInfo.Name;
-                if (!fieldInfo.IsInitOnly)
+                if (!fieldInfo.IsInitOnly && !fieldInfo.IsLiteral)
                 {
                     this.setterName = "BindStaticWrite_" + fieldInfo.Name;
                 }
@@ -139,13 +139,43 @@ namespace Duktape
             else
             {
                 this.getterName = "BindRead_" + fieldInfo.Name;
-                if (!fieldInfo.IsInitOnly)
+                if (!fieldInfo.IsInitOnly && !fieldInfo.IsLiteral)
                 {
                     this.setterName = "BindWrite_" + fieldInfo.Name;
                 }
             }
             this.regName = fieldInfo.Name;
             this.fieldInfo = fieldInfo;
+        }
+    }
+
+    public class ConstructorBindingInfo
+    {
+        public string name = "BindConstructor";
+        public string regName = "constructor";
+        public Type decalringType;
+        public List<ConstructorInfo> variants = new List<ConstructorInfo>();
+
+        public bool hasValid
+        {
+            get
+            {
+                if (decalringType.IsValueType && !decalringType.IsPrimitive)
+                {
+                    return true; // default constructor for struct
+                }
+                return variants.Count > 0;
+            }
+        }
+
+        public ConstructorBindingInfo(Type decalringType)
+        {
+            this.decalringType = decalringType;
+        }
+
+        public void Add(ConstructorInfo constructorInfo)
+        {
+            this.variants.Add(constructorInfo);
         }
     }
 
@@ -157,6 +187,7 @@ namespace Duktape
         public Dictionary<string, MethodBindingInfo> staticMethods = new Dictionary<string, MethodBindingInfo>();
         public Dictionary<string, PropertyBindingInfo> properties = new Dictionary<string, PropertyBindingInfo>();
         public Dictionary<string, FieldBindingInfo> fields = new Dictionary<string, FieldBindingInfo>();
+        public ConstructorBindingInfo constructors;
 
         public Assembly Assembly
         {
@@ -193,6 +224,7 @@ namespace Duktape
         {
             this.bindingManager = bindingManager;
             this.type = type;
+            this.constructors = new ConstructorBindingInfo(type);
         }
 
         // 将类型名转换成简单字符串 (比如用于文件名)
@@ -202,19 +234,25 @@ namespace Duktape
             return filename;
         }
 
-        public bool IsPropertyMethod(MethodInfo methodInfo)
+        public bool IsGenericMethod(MethodInfo methodInfo)
         {
-            var name = methodInfo.Name;
-            if (name.Length > 4 && (name.StartsWith("set_") || name.StartsWith("get_")))
-            {
-                PropertyBindingInfo prop;
-                if (properties.TryGetValue(name.Substring(4), out prop))
-                {
-                    return prop.propertyInfo.GetMethod == methodInfo || prop.propertyInfo.SetMethod == methodInfo;
-                }
-            }
-            return false;
+            return methodInfo.GetGenericArguments().Length > 0;
         }
+
+        // //replaced by method.IsSpecialName
+        // public bool IsPropertyMethod(MethodInfo methodInfo)
+        // {
+        //     var name = methodInfo.Name;
+        //     if (name.Length > 4 && (name.StartsWith("set_") || name.StartsWith("get_")))
+        //     {
+        //         PropertyBindingInfo prop;
+        //         if (properties.TryGetValue(name.Substring(4), out prop))
+        //         {
+        //             return prop.propertyInfo.GetMethod == methodInfo || prop.propertyInfo.SetMethod == methodInfo;
+        //         }
+        //     }
+        //     return false;
+        // }
 
         public void AddField(FieldInfo fieldInfo)
         {
@@ -253,6 +291,11 @@ namespace Duktape
             overrides.Add(methodInfo);
         }
 
+        public void AddConstructor(ConstructorInfo constructorInfo)
+        {
+            constructors.Add(constructorInfo);
+        }
+
         public bool IsExtensionMethod(MethodInfo methodInfo)
         {
             return methodInfo.IsDefined(typeof(ExtensionAttribute), false);
@@ -260,43 +303,81 @@ namespace Duktape
 
         public void Collect()
         {
-
+            var bindingFlags = BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
             // 收集所有 字段,属性,方法
-            var fields = type.GetFields();
+            var fields = type.GetFields(bindingFlags);
             foreach (var field in fields)
             {
+                if (field.IsSpecialName)
+                {
+                    continue;
+                }
+                if (field.IsDefined(typeof(ObsoleteAttribute), false))
+                {
+                    bindingManager.Info("skip obsolete field: {0}", field.Name);
+                    continue;
+                }
                 AddField(field);
             }
-            var properties = type.GetProperties();
+            var properties = type.GetProperties(bindingFlags);
             foreach (var property in properties)
             {
+                if (property.IsSpecialName)
+                {
+                    continue;
+                }
+                if (property.IsDefined(typeof(ObsoleteAttribute), false))
+                {
+                    bindingManager.Info("skip obsolete property: {0}", property.Name);
+                    continue;
+                }
                 AddProperty(property);
             }
-            var methods = type.GetMethods();
+            var constructors = type.GetConstructors();
+            foreach (var constructor in constructors)
+            {
+                if (constructor.IsDefined(typeof(ObsoleteAttribute), false))
+                {
+                    continue;
+                }
+                AddConstructor(constructor);
+            }
+            var methods = type.GetMethods(bindingFlags);
             foreach (var method in methods)
             {
                 var name = method.Name;
-                if (IsPropertyMethod(method))
+                if (IsGenericMethod(method))
                 {
+                    continue;
                 }
-                else
+                if (method.IsSpecialName)
                 {
-                    do
+                    continue;
+                }
+                if (method.IsDefined(typeof(ObsoleteAttribute), false))
+                {
+                    bindingManager.Info("skip obsolete method: {0}", method.Name);
+                    continue;
+                }
+                // if (IsPropertyMethod(method))
+                // {
+                //     continue;
+                // }
+                do
+                {
+                    if (IsExtensionMethod(method))
                     {
-                        if (IsExtensionMethod(method))
+                        var targetType = method.GetParameters()[0].ParameterType;
+                        var targetInfo = bindingManager.GetExportedType(targetType);
+                        if (targetInfo != null)
                         {
-                            var targetType = method.GetParameters()[0].ParameterType;
-                            var targetInfo = bindingManager.GetExportedType(targetType);
-                            if (targetInfo != null)
-                            {
-                                targetInfo.AddMethod(method);
-                                break;
-                            }
-                            // else fallthrough (as normal static method)
+                            targetInfo.AddMethod(method);
+                            break;
                         }
-                        AddMethod(method);
-                    } while (false);
-                }
+                        // else fallthrough (as normal static method)
+                    }
+                    AddMethod(method);
+                } while (false);
             }
         }
     }

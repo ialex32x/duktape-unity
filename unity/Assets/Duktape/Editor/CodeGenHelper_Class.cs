@@ -14,11 +14,27 @@ namespace Duktape
         public ClassCodeGen(CodeGenerator cg, TypeBindingInfo type)
         : base(cg, type)
         {
-            var prefix = bindingInfo.Namespace != null ? "" : "export ";
+            var prefix = bindingInfo.Namespace != null ? "" : "declare ";
             this.cg.typescript.AppendLine("{0}class {1} {{", prefix, bindingInfo.Name);
             this.cg.typescript.AddTabLevel();
 
             // 生成函数体
+            // 构造函数
+            if (type.constructors.hasValid)
+            {
+                using (new PInvokeGuardCodeGen(cg))
+                {
+                    using (new BindingFuncDeclareCodeGen(cg, type.constructors.name))
+                    {
+                        using (new TryCatchGuradCodeGen(cg))
+                        {
+                            using (new ConstructorCodeGen(cg, type.constructors))
+                            {
+                            }
+                        }
+                    }
+                }
+            }
             // 非静态成员方法
             foreach (var kv in type.methods)
             {
@@ -129,7 +145,8 @@ namespace Duktape
                 {
                     using (new RegFuncNamespaceCodeGen(cg, bindingInfo))
                     {
-                        cg.csharp.AppendLine("duk_begin_class(ctx, typeof({0}), ctor);", bindingInfo.FullName);
+                        var constructor = bindingInfo.constructors.hasValid ? bindingInfo.constructors.name : "object_private_ctor";
+                        cg.csharp.AppendLine("duk_begin_class(ctx, typeof({0}), {1});", bindingInfo.FullName, constructor);
                         foreach (var kv in bindingInfo.methods)
                         {
                             var regName = kv.Value.regName;

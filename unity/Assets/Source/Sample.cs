@@ -11,6 +11,11 @@ public enum SampleEnum
 }
 
 [Duktape.JSType]
+public class SampleClass
+{
+}
+
+[Duktape.JSType]
 public struct SampleStruct
 {
     // field 

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Duktape
 {
@@ -18,6 +19,10 @@ namespace Duktape
         private Dictionary<Type, TypeBindingInfo> exportedTypes = new Dictionary<Type, TypeBindingInfo>();
         private List<string> outputFiles = new List<string>();
 
+        private Dictionary<Type, string> _tsTypeNameMap = new Dictionary<Type, string>();
+        private Dictionary<Type, string> _csTypeNameMap = new Dictionary<Type, string>();
+        private Dictionary<string, string> _csTypeNameMapS = new Dictionary<string, string>();
+
         public BindingManager()
         {
             this.dateTime = DateTime.Now;
@@ -32,6 +37,41 @@ namespace Duktape
             whitelist = new HashSet<Type>(new Type[]
             {
             });
+
+            _tsTypeNameMap[typeof(sbyte)] = "number";
+            _tsTypeNameMap[typeof(byte)] = "number";
+            _tsTypeNameMap[typeof(int)] = "number";
+            _tsTypeNameMap[typeof(uint)] = "number";
+            _tsTypeNameMap[typeof(short)] = "number";
+            _tsTypeNameMap[typeof(ushort)] = "number";
+            _tsTypeNameMap[typeof(long)] = "number";
+            _tsTypeNameMap[typeof(ulong)] = "number";
+            _tsTypeNameMap[typeof(float)] = "number";
+            _tsTypeNameMap[typeof(double)] = "number";
+            _tsTypeNameMap[typeof(bool)] = "boolean";
+            _tsTypeNameMap[typeof(string)] = "string";
+            _tsTypeNameMap[typeof(char)] = "string";
+
+            AddTypeNameMapCS(typeof(sbyte), "sbyte");
+            AddTypeNameMapCS(typeof(byte), "byte");
+            AddTypeNameMapCS(typeof(int), "int");
+            AddTypeNameMapCS(typeof(uint), "uint");
+            AddTypeNameMapCS(typeof(short), "short");
+            AddTypeNameMapCS(typeof(ushort), "ushort");
+            AddTypeNameMapCS(typeof(long), "long");
+            AddTypeNameMapCS(typeof(ulong), "ulong");
+            AddTypeNameMapCS(typeof(float), "float");
+            AddTypeNameMapCS(typeof(double), "double");
+            AddTypeNameMapCS(typeof(bool), "bool");
+            AddTypeNameMapCS(typeof(string), "string");
+            AddTypeNameMapCS(typeof(char), "char");
+            AddTypeNameMapCS(typeof(System.Object), "object");
+        }
+
+        private void AddTypeNameMapCS(Type type, string name)
+        {
+            _csTypeNameMap[type] = name;
+            _csTypeNameMapS[type.FullName] = name;
         }
 
         public void AddExport(Type type)
@@ -45,43 +85,87 @@ namespace Duktape
             return exportedTypes.ContainsKey(type);
         }
 
-        // 获取在typescript中的完整名类型
+        // 获取 type 在 typescript 中对应类型名
         public string GetTypeFullNameTS(Type type)
         {
-            if (type == null)
+            if (type == null || type == typeof(void))
             {
                 return "void";
             }
-            var info = GetExportedType(type);
-            if (info != null)
+            string name;
+            if (_tsTypeNameMap.TryGetValue(type, out name))
             {
-                return info.FullName;
-            }
-            if (type == typeof(void))
-            {
-                return "void";
-            }
-            if (type.IsPrimitive && type.IsValueType)
-            {
-                if (type == typeof(sbyte) || type == typeof(byte)
-                || type == typeof(int) || type == typeof(uint)
-                || type == typeof(short) || type == typeof(ushort)
-                || type == typeof(long) || type == typeof(ulong)
-                || type == typeof(float) || type == typeof(double))
-                {
-                    return "number";
-                }
-            }
-            if (type == typeof(string) || type == typeof(char))
-            {
-                return "string";
+                return name;
             }
             if (type.IsArray)
             {
                 var elementType = type.GetElementType();
                 return GetTypeFullNameTS(elementType) + "[]";
             }
+            var info = GetExportedType(type);
+            if (info != null)
+            {
+                return info.FullName.Replace('+', '.');
+            }
             return "any";
+        }
+
+        // 获取 type 在 绑定代码 中对应类型名
+        public string GetTypeFullNameCS(Type type)
+        {
+            // Debug.LogFormat("{0} Array {1} ByRef {2} GetElementType {3}", type, type.IsArray, type.IsByRef, type.GetElementType());
+            if (type.IsArray)
+            {
+                return GetTypeFullNameCS(type.GetElementType()) + "[]";
+            }
+            if (type.IsByRef)
+            {
+                return GetTypeFullNameCS(type.GetElementType());
+            }
+            string name;
+            if (_csTypeNameMap.TryGetValue(type, out name))
+            {
+                return name;
+            }
+            var fullname = type.FullName.Replace('+', '.');
+            if (fullname.Contains("`"))
+            {
+                fullname = new Regex(@"`\d", RegexOptions.None).Replace(fullname, "");
+                //TODO: maybe conflict?
+                fullname = fullname.Replace("[", "<");
+                fullname = fullname.Replace("]", ">");
+            }
+            if (_csTypeNameMapS.TryGetValue(fullname, out name))
+            {
+                return name;
+            }
+            return fullname;
+        }
+
+        public string GetDuktapeGetter(Type type)
+        {
+            if (type.IsByRef)
+            {
+                return GetDuktapeGetter(type.GetElementType());
+            }
+            if (type.IsArray)
+            {
+                //TODO: 处理数组取参操作函数指定
+            }
+            if (type.IsValueType)
+            {
+                if (type.IsPrimitive)
+                {
+                    return "duk_get_primitive";
+                }
+                return "duk_get_struct_object";
+            }
+            return "duk_get_class_object";
+        }
+
+        public string GetDuktapeThisGetter(Type type)
+        {
+            return "duk_get_this";
         }
 
         public TypeBindingInfo GetExportedType(Type type)
