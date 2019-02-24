@@ -51,7 +51,7 @@ namespace Duktape
         {
             DuktapeDLL.duk_push_this(ctx);
             UnityEngine.GameObject self;
-            duk_get_class_object(ctx, -1, out self);
+            duk_get_classvalue(ctx, -1, out self);
             DuktapeDLL.duk_pop(ctx); // pop this
             DuktapeDLL.duk_push_boolean(ctx, self.activeSelf);
             return 1;
@@ -60,7 +60,7 @@ namespace Duktape
         public static void reg(IntPtr ctx)
         {
             duk_begin_namespace(ctx, "UnityEngine");
-            duk_begin_class(ctx, typeof(UnityEngine.GameObject), ctor);
+            duk_begin_class(ctx, "GameObject", typeof(UnityEngine.GameObject), ctor);
             duk_add_method(ctx, "SetActive", SetActive, false);
             duk_add_property(ctx, "activeSelf", get_activeSelf, null, false);
             duk_end_class(ctx);

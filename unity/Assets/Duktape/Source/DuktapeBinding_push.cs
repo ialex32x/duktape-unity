@@ -131,7 +131,7 @@ namespace Duktape
 
         public static void duk_push_any(IntPtr ctx, Array o)
         {
-            //TODO: implement native array => js array push
+            duk_push_any(ctx, (object)o);
         }
 
         // variant push

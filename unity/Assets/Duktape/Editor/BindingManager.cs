@@ -142,32 +142,6 @@ namespace Duktape
             return fullname;
         }
 
-        public string GetDuktapeGetter(Type type)
-        {
-            if (type.IsByRef)
-            {
-                return GetDuktapeGetter(type.GetElementType());
-            }
-            if (type.IsArray)
-            {
-                //TODO: 处理数组取参操作函数指定
-            }
-            if (type.IsValueType)
-            {
-                if (type.IsPrimitive)
-                {
-                    return "duk_get_primitive";
-                }
-                return "duk_get_struct_object";
-            }
-            return "duk_get_class_object";
-        }
-
-        public string GetDuktapeThisGetter(Type type)
-        {
-            return "duk_get_this";
-        }
-
         public TypeBindingInfo GetExportedType(Type type)
         {
             if (type == null)
@@ -273,7 +247,15 @@ namespace Duktape
         {
             log.AppendLine("cleanup");
             log.AddTabLevel();
-            var outDir = Prefs.GetPrefs().outDir;
+            Cleanup(Prefs.GetPrefs().outDir, outputFiles, file =>
+            {
+                log.AppendLine("remove unused file {0}", file);
+            });
+            log.DecTabLevel();
+        }
+
+        public static void Cleanup(string outDir, List<string> excludedFiles, Action<string> ondelete)
+        {
             foreach (var file in Directory.GetFiles(outDir))
             {
                 var nfile = file;
@@ -282,13 +264,15 @@ namespace Duktape
                     nfile = file.Substring(0, file.Length - 5);
                 }
                 // Debug.LogFormat("checking file {0}", nfile);
-                if (!outputFiles.Contains(nfile))
+                if (excludedFiles == null || !excludedFiles.Contains(nfile))
                 {
                     File.Delete(file);
-                    log.AppendLine("remove unused file {0}", file);
+                    if (ondelete != null)
+                    {
+                        ondelete(file);
+                    }
                 }
             }
-            log.DecTabLevel();
         }
 
         public void AddOutputFile(string filename)
@@ -300,7 +284,8 @@ namespace Duktape
         {
             var cg = new CodeGenerator(this);
             var outDir = Prefs.GetPrefs().outDir;
-            var tx = ".txt";
+            var tx = Prefs.GetPrefs().extraExt;
+            // var tx = "";
             if (!Directory.Exists(outDir))
             {
                 Directory.CreateDirectory(outDir);
@@ -315,7 +300,7 @@ namespace Duktape
                 }
                 catch (Exception exception)
                 {
-                    Error(string.Format("generate failed {0}: {1}", typeBindingInfo.Name, exception.Message));
+                    Error(string.Format("generate failed {0}: {1}", typeBindingInfo.type.Name, exception.Message));
                     Debug.LogError(exception.StackTrace);
                 }
             }

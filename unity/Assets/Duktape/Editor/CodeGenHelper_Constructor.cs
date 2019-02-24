@@ -23,18 +23,35 @@ namespace Duktape
             {
                 foreach (var constructor in this.bindingInfo.variants)
                 {
+                    WriteCSConstructor(constructor);
                     WriteTSDeclaration(constructor);
                 }
             }
             else
             {
+                WriteDefaultCSConstructor();
                 WriteDefaultTSDeclaration();
             }
+            this.cg.csharp.AppendLine("return 0;");
         }
 
         public void Dispose()
         {
 
+        }
+
+        private void WriteCSConstructor(ConstructorInfo constructor)
+        {
+            //TODO: 写入构造函数
+        }
+
+        private void WriteDefaultCSConstructor()
+        {
+            //TODO: 写入默认构造函数 (struct 无参构造)
+            this.cg.csharp.AppendLine("var o = new {0}();", this.bindingInfo.decalringType.FullName);
+            this.cg.csharp.AppendLine("DuktapeDLL.duk_push_this(ctx);");
+            this.cg.csharp.AppendLine("duk_bind_native(ctx, -1, o);");
+            this.cg.csharp.AppendLine("DuktapeDLL.duk_pop(ctx);");
         }
 
         private void WriteDefaultTSDeclaration()

@@ -14,9 +14,49 @@ namespace Duktape
             return true;
         }
 
+        public static bool duk_get_primitive_array(IntPtr ctx, int idx, out bool[] o)
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                var nidx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                o = new bool[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    bool e;
+                    duk_get_primitive(ctx, -1, out e);
+                    DuktapeDLL.duk_pop(ctx);
+                }
+                return true;
+            }
+            duk_get_classvalue<bool[]>(ctx, idx, out o);
+            return true;
+        }
+
         public static bool duk_get_primitive(IntPtr ctx, int idx, out sbyte o)
         {
             o = (sbyte)DuktapeDLL.duk_get_int(ctx, idx); // no check
+            return true;
+        }
+
+        public static bool duk_get_primitive_array(IntPtr ctx, int idx, out sbyte[] o)
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                var nidx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                o = new sbyte[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    sbyte e;
+                    duk_get_primitive(ctx, -1, out e);
+                    DuktapeDLL.duk_pop(ctx);
+                }
+                return true;
+            }
+            duk_get_classvalue<sbyte[]>(ctx, idx, out o);
             return true;
         }
 
@@ -26,9 +66,49 @@ namespace Duktape
             return true;
         }
 
+        public static bool duk_get_primitive_array(IntPtr ctx, int idx, out byte[] o)
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                var nidx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                o = new byte[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    byte e;
+                    duk_get_primitive(ctx, -1, out e);
+                    DuktapeDLL.duk_pop(ctx);
+                }
+                return true;
+            }
+            duk_get_classvalue<byte[]>(ctx, idx, out o);
+            return true;
+        }
+
         public static bool duk_get_primitive(IntPtr ctx, int idx, out char o)
         {
             o = (char)DuktapeDLL.duk_get_int(ctx, idx); // no check
+            return true;
+        }
+
+        public static bool duk_get_primitive_array(IntPtr ctx, int idx, out char[] o)
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                var nidx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                o = new char[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    char e;
+                    duk_get_primitive(ctx, -1, out e);
+                    DuktapeDLL.duk_pop(ctx);
+                }
+                return true;
+            }
+            duk_get_classvalue<char[]>(ctx, idx, out o);
             return true;
         }
 
@@ -38,9 +118,49 @@ namespace Duktape
             return true;
         }
 
+        public static bool duk_get_primitive_array(IntPtr ctx, int idx, out string[] o)
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                var nidx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                o = new string[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    string e;
+                    duk_get_primitive(ctx, -1, out e);
+                    DuktapeDLL.duk_pop(ctx);
+                }
+                return true;
+            }
+            duk_get_classvalue<string[]>(ctx, idx, out o);
+            return true;
+        }
+
         public static bool duk_get_primitive(IntPtr ctx, int idx, out short o)
         {
             o = (short)DuktapeDLL.duk_get_int(ctx, idx); // no check
+            return true;
+        }
+
+        public static bool duk_get_primitive_array(IntPtr ctx, int idx, out short[] o)
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                var nidx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                o = new short[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    short e;
+                    duk_get_primitive(ctx, -1, out e);
+                    DuktapeDLL.duk_pop(ctx);
+                }
+                return true;
+            }
+            duk_get_classvalue<short[]>(ctx, idx, out o);
             return true;
         }
 
@@ -50,9 +170,49 @@ namespace Duktape
             return true;
         }
 
+        public static bool duk_get_primitive_array(IntPtr ctx, int idx, out ushort[] o)
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                var nidx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                o = new ushort[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    ushort e;
+                    duk_get_primitive(ctx, -1, out e);
+                    DuktapeDLL.duk_pop(ctx);
+                }
+                return true;
+            }
+            duk_get_classvalue<ushort[]>(ctx, idx, out o);
+            return true;
+        }
+
         public static bool duk_get_primitive(IntPtr ctx, int idx, out int o)
         {
             o = DuktapeDLL.duk_get_int(ctx, idx); // no check
+            return true;
+        }
+
+        public static bool duk_get_primitive_array(IntPtr ctx, int idx, out int[] o)
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                var nidx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                o = new int[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    int e;
+                    duk_get_primitive(ctx, -1, out e);
+                    DuktapeDLL.duk_pop(ctx);
+                }
+                return true;
+            }
+            duk_get_classvalue<int[]>(ctx, idx, out o);
             return true;
         }
 
@@ -62,9 +222,49 @@ namespace Duktape
             return true;
         }
 
+        public static bool duk_get_primitive_array(IntPtr ctx, int idx, out uint[] o)
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                var nidx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                o = new uint[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    uint e;
+                    duk_get_primitive(ctx, -1, out e);
+                    DuktapeDLL.duk_pop(ctx);
+                }
+                return true;
+            }
+            duk_get_classvalue<uint[]>(ctx, idx, out o);
+            return true;
+        }
+
         public static bool duk_get_primitive(IntPtr ctx, int idx, out long o)
         {
             o = (long)DuktapeDLL.duk_get_number(ctx, idx); // no check, dangerous
+            return true;
+        }
+
+        public static bool duk_get_primitive_array(IntPtr ctx, int idx, out long[] o)
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                var nidx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                o = new long[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    long e;
+                    duk_get_primitive(ctx, -1, out e);
+                    DuktapeDLL.duk_pop(ctx);
+                }
+                return true;
+            }
+            duk_get_classvalue<long[]>(ctx, idx, out o);
             return true;
         }
 
@@ -74,9 +274,49 @@ namespace Duktape
             return true;
         }
 
+        public static bool duk_get_primitive_array(IntPtr ctx, int idx, out ulong[] o)
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                var nidx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                o = new ulong[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    ulong e;
+                    duk_get_primitive(ctx, -1, out e);
+                    DuktapeDLL.duk_pop(ctx);
+                }
+                return true;
+            }
+            duk_get_classvalue<ulong[]>(ctx, idx, out o);
+            return true;
+        }
+
         public static bool duk_get_primitive(IntPtr ctx, int idx, out float o)
         {
             o = (float)DuktapeDLL.duk_get_number(ctx, idx); // no check
+            return true;
+        }
+
+        public static bool duk_get_primitive_array(IntPtr ctx, int idx, out float[] o)
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                var nidx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                o = new float[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    float e;
+                    duk_get_primitive(ctx, -1, out e);
+                    DuktapeDLL.duk_pop(ctx);
+                }
+                return true;
+            }
+            duk_get_classvalue<float[]>(ctx, idx, out o);
             return true;
         }
 
@@ -86,13 +326,33 @@ namespace Duktape
             return true;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out LayerMask o)
+        public static bool duk_get_primitive_array(IntPtr ctx, int idx, out double[] o)
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                var nidx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                o = new double[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    double e;
+                    duk_get_primitive(ctx, -1, out e);
+                    DuktapeDLL.duk_pop(ctx);
+                }
+                return true;
+            }
+            duk_get_classvalue<double[]>(ctx, idx, out o);
+            return true;
+        }
+
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out LayerMask o)
         {
             o = (LayerMask)DuktapeDLL.duk_get_int(ctx, idx);
             return true;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out Color o)
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out Color o)
         {
             float r, g, b, a;
             var ret = DuktapeDLL.duk_unity_get4f(ctx, idx, out r, out g, out b, out a);
@@ -100,7 +360,7 @@ namespace Duktape
             return ret;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out Color32 o)
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out Color32 o)
         {
             int r, g, b, a;
             var ret = DuktapeDLL.duk_unity_get4i(ctx, idx, out r, out g, out b, out a);
@@ -108,7 +368,7 @@ namespace Duktape
             return ret;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out Vector2 o)
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out Vector2 o)
         {
             float x, y;
             var ret = DuktapeDLL.duk_unity_get2f(ctx, idx, out x, out y);
@@ -116,7 +376,7 @@ namespace Duktape
             return ret;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out Vector2Int o)
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out Vector2Int o)
         {
             int x, y;
             var ret = DuktapeDLL.duk_unity_get2i(ctx, idx, out x, out y);
@@ -124,7 +384,7 @@ namespace Duktape
             return ret;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out Vector3 o)
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out Vector3 o)
         {
             float x, y, z;
             var ret = DuktapeDLL.duk_unity_get3f(ctx, idx, out x, out y, out z);
@@ -132,7 +392,7 @@ namespace Duktape
             return ret;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out Vector3Int o)
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out Vector3Int o)
         {
             int x, y, z;
             var ret = DuktapeDLL.duk_unity_get3i(ctx, idx, out x, out y, out z);
@@ -140,7 +400,7 @@ namespace Duktape
             return ret;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out Vector4 o)
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out Vector4 o)
         {
             float x, y, z, w;
             var ret = DuktapeDLL.duk_unity_get4f(ctx, idx, out x, out y, out z, out w);
@@ -148,7 +408,7 @@ namespace Duktape
             return ret;
         }
 
-        public static bool duk_get_struct_object(IntPtr ctx, int idx, out Quaternion o)
+        public static bool duk_get_structvalue(IntPtr ctx, int idx, out Quaternion o)
         {
             float x, y, z, w;
             var ret = DuktapeDLL.duk_unity_get4f(ctx, idx, out x, out y, out z, out w);
@@ -157,7 +417,7 @@ namespace Duktape
         }
 
         // fallthrough
-        public static bool duk_get_struct_object<T>(IntPtr ctx, int idx, out T o)
+        public static bool duk_get_structvalue<T>(IntPtr ctx, int idx, out T o)
         where T : struct
         {
             object o_t;
@@ -166,17 +426,63 @@ namespace Duktape
             return ret;
         }
 
-        public static bool duk_get_struct_object<T>(IntPtr ctx, int idx, out T? o)
+        public static bool duk_get_structvalue<T>(IntPtr ctx, int idx, out T? o)
         where T : struct
         {
             object o_t;
             var ret = duk_get_object(ctx, idx, out o_t);
             o = (T)o_t;
             return ret;
+        }
+
+        public static bool duk_get_structvalue_array<T>(IntPtr ctx, int idx, out T[] o)
+        where T : struct
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                o = new T[length];
+                idx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    T e;
+                    if (duk_get_structvalue(ctx, -1, out e))
+                    {
+                        o[i] = e;
+                    }
+                }
+                return true;
+            }
+            o = null;
+            return false;
+        }
+
+        public static bool duk_get_structvalue_array<T>(IntPtr ctx, int idx, out T?[] o)
+        where T : struct
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                o = new T?[length];
+                idx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    T? e;
+                    if (duk_get_structvalue(ctx, -1, out e))
+                    {
+                        o[i] = e;
+                    }
+                }
+                return true;
+            }
+            o = null;
+            return false;
         }
 
         // not value type (except string/array)
-        public static bool duk_get_class_object<T>(IntPtr ctx, int idx, out T o)
+        public static bool duk_get_classvalue<T>(IntPtr ctx, int idx, out T o)
         where T : class
         {
             object o_t;
@@ -211,53 +517,7 @@ namespace Duktape
             return false;
         }
 
-        public static bool duk_get_struct_array<T>(IntPtr ctx, int idx, out T[] o)
-        where T : struct
-        {
-            if (DuktapeDLL.duk_is_array(ctx, idx))
-            {
-                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
-                o = new T[length];
-                idx = DuktapeDLL.duk_normalize_index(ctx, idx);
-                for (var i = 0U; i < length; i++)
-                {
-                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
-                    T e;
-                    if (duk_get_struct_object(ctx, -1, out e))
-                    {
-                        o[i] = e;
-                    }
-                }
-                return true;
-            }
-            o = null;
-            return false;
-        }
-
-        public static bool duk_get_struct_array<T>(IntPtr ctx, int idx, out T?[] o)
-        where T : struct
-        {
-            if (DuktapeDLL.duk_is_array(ctx, idx))
-            {
-                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
-                o = new T?[length];
-                idx = DuktapeDLL.duk_normalize_index(ctx, idx);
-                for (var i = 0U; i < length; i++)
-                {
-                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
-                    T? e;
-                    if (duk_get_struct_object(ctx, -1, out e))
-                    {
-                        o[i] = e;
-                    }
-                }
-                return true;
-            }
-            o = null;
-            return false;
-        }
-
-        public static bool duk_get_class_array<T>(IntPtr ctx, int idx, out T[] o)
+        public static bool duk_get_classvalue_array<T>(IntPtr ctx, int idx, out T[] o)
         where T : class
         {
             if (DuktapeDLL.duk_is_array(ctx, idx))
@@ -269,7 +529,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     T e;
-                    if (duk_get_class_object(ctx, -1, out e))
+                    if (duk_get_classvalue(ctx, -1, out e))
                     {
                         o[i] = e;
                     }

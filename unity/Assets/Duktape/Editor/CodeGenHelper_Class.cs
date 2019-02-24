@@ -15,7 +15,7 @@ namespace Duktape
         : base(cg, type)
         {
             var prefix = bindingInfo.Namespace != null ? "" : "declare ";
-            this.cg.typescript.AppendLine("{0}class {1} {{", prefix, bindingInfo.Name);
+            this.cg.typescript.AppendLine("{0}class {1} {{", prefix, bindingInfo.regName);
             this.cg.typescript.AddTabLevel();
 
             // 生成函数体
@@ -146,7 +146,7 @@ namespace Duktape
                     using (new RegFuncNamespaceCodeGen(cg, bindingInfo))
                     {
                         var constructor = bindingInfo.constructors.hasValid ? bindingInfo.constructors.name : "object_private_ctor";
-                        cg.csharp.AppendLine("duk_begin_class(ctx, typeof({0}), {1});", bindingInfo.FullName, constructor);
+                        cg.csharp.AppendLine("duk_begin_class(ctx, \"{0}\", typeof({1}), {2});", bindingInfo.regName, bindingInfo.FullName, constructor);
                         foreach (var kv in bindingInfo.methods)
                         {
                             var regName = kv.Value.regName;

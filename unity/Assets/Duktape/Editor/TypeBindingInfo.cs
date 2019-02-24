@@ -183,6 +183,11 @@ namespace Duktape
     {
         public BindingManager bindingManager;
         public Type type;
+
+        public string name; // 绑定代码名
+
+        public string regName; // js注册名
+
         public Dictionary<string, MethodBindingInfo> methods = new Dictionary<string, MethodBindingInfo>();
         public Dictionary<string, MethodBindingInfo> staticMethods = new Dictionary<string, MethodBindingInfo>();
         public Dictionary<string, PropertyBindingInfo> properties = new Dictionary<string, PropertyBindingInfo>();
@@ -204,26 +209,17 @@ namespace Duktape
             get { return type.FullName; }
         }
 
-        public string Name
-        {
-            get { return type.Name; }
-        }
-
         public bool IsEnum
         {
             get { return type.IsEnum; }
-        }
-
-        // 绑定代码名
-        public string JSBindingClassName
-        {
-            get { return type.FullName.Replace(".", "_"); }
         }
 
         public TypeBindingInfo(BindingManager bindingManager, Type type)
         {
             this.bindingManager = bindingManager;
             this.type = type;
+            this.name = "DuktapeJS_" + type.FullName.Replace('.', '_');
+            this.regName = type.Name;
             this.constructors = new ConstructorBindingInfo(type);
         }
 

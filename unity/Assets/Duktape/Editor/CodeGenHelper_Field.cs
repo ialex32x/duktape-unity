@@ -19,19 +19,11 @@ namespace Duktape
             this.cg = cg;
             this.bindingInfo = bindingInfo;
 
-            if (bindingInfo.isStatic)
-            {
-                this.cg.csharp.AppendLine("var ret = {0}.{1};", bindingInfo.fieldInfo.DeclaringType, bindingInfo.fieldInfo.Name);
-                this.cg.csharp.AppendLine("duk_push_any(ctx, ret);");
-                this.cg.csharp.AppendLine("return 1;");
-            }
-            else
-            {
-                this.cg.csharp.AppendLine("var self = ({0})duk_get_this(ctx);", bindingInfo.fieldInfo.DeclaringType);
-                this.cg.csharp.AppendLine("var ret = self.{0};", bindingInfo.fieldInfo.Name);
-                this.cg.csharp.AppendLine("duk_push_any(ctx, ret);");
-                this.cg.csharp.AppendLine("return 1;");
-            }
+            var caller = this.cg.AppendGetThisCS(bindingInfo);
+
+            this.cg.csharp.AppendLine("var ret = {0}.{1};", caller, bindingInfo.fieldInfo.Name);
+            this.cg.csharp.AppendLine("{0}(ctx, ret);", this.cg.GetDuktapePusher(bindingInfo.fieldInfo.FieldType));
+            this.cg.csharp.AppendLine("return 1;");
         }
 
         public virtual void Dispose()
@@ -49,19 +41,19 @@ namespace Duktape
             this.cg = cg;
             this.bindingInfo = bindingInfo;
 
-            if (bindingInfo.isStatic)
+            var caller = this.cg.AppendGetThisCS(bindingInfo);
+            var fieldInfo = bindingInfo.fieldInfo;
+            var declaringType = fieldInfo.DeclaringType;
+
+            this.cg.csharp.AppendLine("{0} value;", this.cg.bindingManager.GetTypeFullNameCS(fieldInfo.FieldType));
+            this.cg.csharp.AppendLine("{0}(ctx, 0, out value);", this.cg.GetDuktapeGetter(fieldInfo.FieldType));
+            this.cg.csharp.AppendLine("{0}.{1} = value;", caller, fieldInfo.Name);
+            if (declaringType.IsValueType && !fieldInfo.IsStatic)
             {
-                this.cg.csharp.AppendLine("var value = ({0})duk_get_primitive(ctx, 0);", bindingInfo.fieldInfo.FieldType);
-                this.cg.csharp.AppendLine("{0}.{1} = value;", bindingInfo.fieldInfo.DeclaringType, bindingInfo.fieldInfo.Name);
-                this.cg.csharp.AppendLine("return 0;");
+                // 非静态结构体字段修改, 尝试替换实例
+                this.cg.csharp.AppendLine("duk_rebind_this(ctx, {0});", caller);
             }
-            else
-            {
-                this.cg.csharp.AppendLine("var value = ({0})duk_get_primitive(ctx, 0);", bindingInfo.fieldInfo.FieldType);
-                this.cg.csharp.AppendLine("var self = ({0})duk_get_this(ctx);", bindingInfo.fieldInfo.DeclaringType);
-                this.cg.csharp.AppendLine("self.{0} = value;", bindingInfo.fieldInfo.Name);
-                this.cg.csharp.AppendLine("return 0;");
-            }
+            this.cg.csharp.AppendLine("return 0;");
         }
 
         public virtual void Dispose()

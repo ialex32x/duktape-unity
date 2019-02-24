@@ -23,7 +23,7 @@ namespace Duktape
         static int Destroy(IntPtr ctx)
         {
             Object arg1;
-            duk_get_class_object(ctx, 0, out arg1);
+            duk_get_classvalue(ctx, 0, out arg1);
             DuktapeDLL.duk_pop(ctx); // pop this
             Object.Destroy(arg1);
             return 0;
@@ -49,7 +49,7 @@ namespace Duktape
         public static void reg(IntPtr ctx)
         {
             duk_begin_namespace(ctx, "UnityEngine");
-            duk_begin_class(ctx, typeof(UnityEngine.Object), ctor);
+            duk_begin_class(ctx, "Object", typeof(UnityEngine.Object), ctor);
             duk_add_method(ctx, "Destroy", Destroy, true);
             duk_add_method(ctx, "Foo", Foo, false);
             duk_end_class(ctx);

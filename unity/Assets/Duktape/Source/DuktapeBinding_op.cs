@@ -30,5 +30,32 @@ namespace Duktape
                 cache.AddJSValue(o, heapptr);
             }
         }
+
+        public static bool duk_rebind_this(IntPtr ctx, object o)
+        {
+            DuktapeDLL.duk_push_this(ctx);
+            var ret = duk_rebind_native(ctx, -1, o);
+            DuktapeDLL.duk_pop(ctx);
+            return ret;
+        }
+
+        public static bool duk_rebind_native(IntPtr ctx, int idx, object o)
+        {
+            if (DuktapeDLL.duk_is_null_or_undefined(ctx, idx)) // or check for object?
+            {
+                return true;
+            }
+            if (DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE))
+            {
+                var id = DuktapeDLL.duk_get_int(ctx, -1);
+                DuktapeDLL.duk_pop(ctx); // pop OBJ_PROP_NATIVE
+                return DuktapeVM.GetObjectCache(ctx).SetValue(id, o);
+            }
+            else
+            {
+                DuktapeDLL.duk_pop(ctx);
+            }
+            return false;
+        }
     }
 }
