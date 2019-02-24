@@ -41,12 +41,19 @@ namespace Duktape
             this.cg = cg;
             this.bindingInfo = bindingInfo;
 
-            var caller = this.cg.AppendGetThisCS(bindingInfo.propertyInfo.GetMethod);
+            var method = bindingInfo.propertyInfo.SetMethod;
+            var caller = this.cg.AppendGetThisCS(method);
             var propertyInfo = this.bindingInfo.propertyInfo;
+            var declaringType = propertyInfo.DeclaringType;
             
             this.cg.csharp.AppendLine("{0} value;", this.cg.bindingManager.GetTypeFullNameCS(propertyInfo.PropertyType));
             this.cg.csharp.AppendLine("{0}(ctx, 0, out value);", this.cg.GetDuktapeGetter(propertyInfo.PropertyType));
             this.cg.csharp.AppendLine("{0}.{1} = value;", caller, propertyInfo.Name);
+            if (declaringType.IsValueType && !method.IsStatic)
+            {
+                // 非静态结构体属性修改, 尝试替换实例
+                this.cg.csharp.AppendLine("duk_rebind_this(ctx, {0});", caller);
+            }
             this.cg.csharp.AppendLine("return 0;");
         }
 

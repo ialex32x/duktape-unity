@@ -12,4 +12,7 @@ console.log("go.activeSelf", go.activeSelf);
 go.SetActive(false);
 console.log("go.activeSelf", go.activeSelf);
 // UnityEngine.Object.Destroy(go)
+var ss = new SampleStruct();
+ss.field_a = 12345;
+console.log(ss.field_a);
 //# sourceMappingURL=main.js.map

@@ -75,6 +75,17 @@ namespace Duktape
             return false;
         }
 
+        // 覆盖已有记录, 无记录返回 false
+        public bool SetValue(int id, object o)
+        {
+            if (_map.ContainsKey(id))
+            {
+                _map[id] = o;
+                return true;
+            }
+            return false;
+        }
+
         public bool TryGetValue(int id, out object o)
         {
             return _map.TryGetValue(id, out o);

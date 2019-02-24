@@ -43,10 +43,16 @@ namespace Duktape
 
             var caller = this.cg.AppendGetThisCS(bindingInfo);
             var fieldInfo = bindingInfo.fieldInfo;
+            var declaringType = fieldInfo.DeclaringType;
 
             this.cg.csharp.AppendLine("{0} value;", this.cg.bindingManager.GetTypeFullNameCS(fieldInfo.FieldType));
             this.cg.csharp.AppendLine("{0}(ctx, 0, out value);", this.cg.GetDuktapeGetter(fieldInfo.FieldType));
             this.cg.csharp.AppendLine("{0}.{1} = value;", caller, fieldInfo.Name);
+            if (declaringType.IsValueType && !fieldInfo.IsStatic)
+            {
+                // 非静态结构体字段修改, 尝试替换实例
+                this.cg.csharp.AppendLine("duk_rebind_this(ctx, {0});", caller);
+            }
             this.cg.csharp.AppendLine("return 0;");
         }
 
