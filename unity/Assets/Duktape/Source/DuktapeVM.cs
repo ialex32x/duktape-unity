@@ -182,7 +182,7 @@ namespace Duktape
             return 1;
         }
 
-        public void Initialize(IFileSystem fs, Action<float> onprogress, Action onloaded)
+        public void Initialize(IFileSystem fs, IDuktapeListener listener)
         {
             this._fileManager = fs;
             var ctx = DuktapeDLL.duk_create_heap_default();
@@ -192,6 +192,10 @@ namespace Duktape
             DuktapeDLL.duk_unity_open(ctx);
 
             DuktapeDLL.duk_push_global_object(ctx);
+            if (listener != null)
+            {
+                listener.OnTypesBinding(this);
+            }
             var exportedTypes = this.GetType().Assembly.GetExportedTypes();
             var ctx_t = new object[] { ctx };
             for (int i = 0, size = exportedTypes.Length; i < size; i++)
@@ -224,9 +228,9 @@ namespace Duktape
                 DuktapeDLL.duk_pop(ctx);
             }
 
-            if (onloaded != null)
+            if (listener != null)
             {
-                onloaded();
+                listener.onLoaded(this);
             }
         }
 

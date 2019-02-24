@@ -35,6 +35,12 @@ public struct SampleStruct
 
     public static string StaticMethodWithReturnAndNoOverride(Vector3 a, ref float b, out string[] c) { c = null; return a.ToString(); }
 
+    [Duktape.JSMutable]
+    public void ChangeFieldA()
+    {
+        this.field_a++;
+    }
+
     // vararg method without override
     // public void VarargMethodWithoutOverride(int a, string[] b, params float[] c) { }
 
@@ -62,7 +68,7 @@ public static class SampleStructExtensions
     }
 }
 
-public class Sample : MonoBehaviour
+public class Sample : MonoBehaviour, Duktape.IDuktapeListener
 {
     public delegate void DelegateFoo();
     public DelegateFoo delegateFoo;
@@ -103,6 +109,25 @@ public class Sample : MonoBehaviour
         Debug.Log(sb.ToString());
     }
 
+    public void OnTypesBinding(DuktapeVM vm)
+    {
+        // 此处进行手工导入
+        // var ctx = vm.context.rawValue;
+        // xxx.reg(ctx);
+    }
+
+    public void OnProgress(DuktapeVM vm, int step, int total)
+    {
+    }
+
+    public void onLoaded(DuktapeVM vm)
+    {
+        vm.AddSearchPath("Assets/Scripts/polyfills");
+        vm.AddSearchPath("Assets/Scripts/Generated");
+        vm.EvalFile("console-minimal.js");
+        vm.EvalMain("main.js");
+    }
+
     void Awake()
     {
         checking(1);
@@ -124,13 +149,7 @@ public class Sample : MonoBehaviour
         // SampleStruct.X("", 1);
         // SampleStruct.X("");
 
-        vm.Initialize(new FakeFileSystem(), null, () =>
-        {
-            vm.AddSearchPath("Assets/Scripts/polyfills");
-            vm.AddSearchPath("Assets/Scripts/Generated");
-            vm.EvalFile("console-minimal.js");
-            vm.EvalMain("main.js");
-        });
+        vm.Initialize(new FakeFileSystem(), this);
     }
 
     void Update()
