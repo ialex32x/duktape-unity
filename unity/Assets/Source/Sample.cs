@@ -125,10 +125,15 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
         var sb = new System.Text.StringBuilder();
         sb.AppendFormat("# type: {0}\n", t.FullName);
         sb.AppendFormat("    value: {0}\n", o);
+        sb.AppendFormat("    BaseType: {0}\n", t.BaseType);
         sb.AppendFormat("    null: {0}\n", o == null);
         sb.AppendFormat("    IsValueType: {0}\n", t.IsValueType);
         sb.AppendFormat("    IsPrimitive: {0}\n", t.IsPrimitive);
-        sb.AppendFormat("    IsEnum: {0}\n", t.IsEnum);
+        if (t.IsEnum)
+        {
+            sb.AppendFormat("    # Enum\n");
+            sb.AppendFormat("    GetEnumUnderlyingType: {0}\n", t.GetEnumUnderlyingType());
+        }
         if (t.IsGenericType)
         {
             sb.AppendFormat("# generic\n");

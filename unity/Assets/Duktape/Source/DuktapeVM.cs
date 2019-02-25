@@ -18,6 +18,7 @@ namespace Duktape
         public const int VERSION = 0x10001;
         public const string HEAP_STASH_PROPS_REGISTRY = "registry";
         public static readonly string OBJ_PROP_NATIVE = DuktapeDLL.DUK_HIDDEN_SYMBOL("native");
+        public static readonly string OBJ_PROP_EXPORTED_REFID = DuktapeDLL.DUK_HIDDEN_SYMBOL("exported-refid");
 
         private DuktapeContext _ctx;
         private IFileSystem _fileManager;
@@ -29,6 +30,7 @@ namespace Duktape
 
         // 已经导出的本地类
         private Dictionary<Type, DuktapeFunction> _exported = new Dictionary<Type, DuktapeFunction>();
+        private Dictionary<uint, Type> _exportedTypes = new Dictionary<uint, Type>(); // 从 refid 反查 Type
 
         public DuktapeContext context
         {
@@ -57,9 +59,19 @@ namespace Duktape
             }
         }
 
-        public void AddExported(Type type, DuktapeFunction fn)
+        public uint AddExported(Type type, DuktapeFunction fn)
         {
+            var refid = fn.rawValue;
+
             _exported.Add(type, fn);
+            _exportedTypes[refid] = type;
+            return refid;
+        }
+
+        public Type GetExportedType(uint refid)
+        {
+            Type type;
+            return _exportedTypes.TryGetValue(refid, out type) ? type : null;
         }
 
         // 得到注册在js中的类型对应的构造函数
@@ -192,6 +204,7 @@ namespace Duktape
             DuktapeDLL.duk_unity_open(ctx);
 
             DuktapeDLL.duk_push_global_object(ctx);
+            DuktapeJSBuiltins.reg(ctx);
             if (listener != null)
             {
                 listener.OnTypesBinding(this);

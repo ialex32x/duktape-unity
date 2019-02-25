@@ -24,3 +24,4 @@ var res2 = sc.CheckingVA2(1, 2, 3, 4, 5);
 console.log("res1 = " + res1);
 console.log("res2 = " + res2);
 //# sourceMappingURL=main.js.map
+DuktapeJS.GetEnumName(SampleEnum)

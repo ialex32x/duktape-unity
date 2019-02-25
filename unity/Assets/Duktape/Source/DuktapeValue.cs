@@ -3,12 +3,16 @@ using System;
 namespace Duktape
 {
     using UnityEngine;
-    
+
     /// 持有脚本对象的引用
     public abstract class DuktapeValue : IDisposable, IContextualValue
     {
         protected DuktapeContext _ctx;
         protected uint _refid;
+
+        public bool isValid { get { return _refid > 0; } }
+
+        public uint rawValue { get { return _refid; } }
 
         public DuktapeContext GetContext()
         {

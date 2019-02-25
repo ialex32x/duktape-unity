@@ -80,6 +80,20 @@ namespace Duktape
             // Debug.LogFormat("end namespace {0}", DuktapeDLL.duk_get_top(ctx));
         }
 
+        protected static void duk_begin_object(IntPtr ctx, string objectname, Type type)
+        {
+            DuktapeDLL.duk_push_object(ctx);
+            DuktapeDLL.duk_dup(ctx, -1);
+            // DuktapeDLL.duk_dup(ctx, -1);
+            // DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx)));
+            DuktapeDLL.duk_put_prop_string(ctx, -2, objectname);
+        }
+
+        protected static void duk_end_object(IntPtr ctx)
+        {
+            DuktapeDLL.duk_pop(ctx);
+        }
+
         protected static void duk_begin_class(IntPtr ctx, string typename, Type type, DuktapeDLL.duk_c_function ctor)
         {
             // Debug.LogFormat("begin class {0}", DuktapeDLL.duk_get_top(ctx));
@@ -87,7 +101,9 @@ namespace Duktape
             DuktapeDLL.duk_dup(ctx, -1);
             // Debug.LogFormat("begin check {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_dup(ctx, -1);
-            DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx)));
+            var refid = DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx)));
+            DuktapeDLL.duk_push_uint(ctx, refid);
+            DuktapeDLL.duk_put_prop_string(ctx, -3, DuktapeVM.OBJ_PROP_EXPORTED_REFID);
             // Debug.LogFormat("end check {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_put_prop_string(ctx, -3, typename);
             DuktapeDLL.duk_push_object(ctx); // [ctor, prototype]
@@ -110,7 +126,9 @@ namespace Duktape
             // Debug.LogFormat("begin check {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_dup(ctx, -1);
             DuktapeDLL.duk_dup(ctx, -1);
-            DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx)));
+            var refid = DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx)));
+            DuktapeDLL.duk_push_uint(ctx, refid);
+            DuktapeDLL.duk_put_prop_string(ctx, -3, DuktapeVM.OBJ_PROP_EXPORTED_REFID);
             // Debug.LogFormat("end check {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_put_prop_string(ctx, -3, typename);
         }
@@ -118,6 +136,13 @@ namespace Duktape
         protected static void duk_end_enum(IntPtr ctx)
         {
             DuktapeDLL.duk_pop(ctx); // remove [enum]
+        }
+
+        protected static void duk_add_method(IntPtr ctx, string name, DuktapeDLL.duk_c_function func, int idx)
+        {
+            idx = DuktapeDLL.duk_normalize_index(ctx, idx);
+            DuktapeDLL.duk_push_c_function(ctx, func, DuktapeDLL.DUK_VARARGS);
+            DuktapeDLL.duk_put_prop_string(ctx, idx, name);
         }
 
         protected static void duk_add_method(IntPtr ctx, string name, DuktapeDLL.duk_c_function func, bool bStatic)
