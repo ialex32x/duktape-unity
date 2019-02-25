@@ -1,11 +1,11 @@
-Assets/StreamingAssets/AssetBundles/
-Assets/StreamingAssets/AssetBundles.meta
+# Assets/StreamingAssets/AssetBundles/
+# Assets/StreamingAssets/AssetBundles.meta
 /Assets/Source/Generated
-/Assets/Duktape/Generated
 /Assets/Source/Generated.meta
-/Assets/Duktape/Generated.meta
+# /Assets/Duktape/Generated
+# /Assets/Duktape/Generated.meta
 
-AssetBundles/
+# AssetBundles/
 /Library/
 /obj/
 /Temp/
