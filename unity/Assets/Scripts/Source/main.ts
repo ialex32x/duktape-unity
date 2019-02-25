@@ -19,7 +19,7 @@ let ss = new SampleStruct()
 ss.field_a = 12345
 console.log(ss.field_a)
 
-let sc = new SampleClass("testcase of SampleClass")
+let sc = new SampleClass("testcase of SampleClass:", "a1", "a2", "a3")
 sc.SetEnum(SampleEnum.b)
 console.log(`${sc.name}.sum = ${sc.Sum([1, 2, 3, 4, 5])}`)
 console.log(`${sc.sampleEnum}`)
