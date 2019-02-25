@@ -63,4 +63,23 @@ namespace Duktape
     public class JSMutableAttribute : Attribute
     {
     }
+
+    //TODO: generate comments in .d.ts
+    [AttributeUsage(AttributeTargets.Class
+                  | AttributeTargets.Struct
+                  | AttributeTargets.Enum
+                  | AttributeTargets.Field
+                  | AttributeTargets.Method
+                  | AttributeTargets.Property
+                  | AttributeTargets.Constructor,
+                    AllowMultiple = false)]
+    public class JSDocAttribute : Attribute
+    {
+        public string text { get; set; }
+
+        public JSDocAttribute(string text)
+        {
+            this.text = text;
+        }
+    }
 }
