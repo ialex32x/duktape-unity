@@ -159,7 +159,7 @@ namespace Duktape
                 }
                 else
                 {
-                    cg.csharp.AppendLine("{0}(ctx, ret);", this.cg.GetDuktapePusher(method.ReturnType));
+                    this.cg.AppendPushValue(method.ReturnType, "ret");
                 }
                 cg.csharp.AppendLine("return 1;");
             }

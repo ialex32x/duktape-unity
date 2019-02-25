@@ -22,7 +22,7 @@ namespace Duktape
             var caller = this.cg.AppendGetThisCS(bindingInfo);
 
             this.cg.csharp.AppendLine("var ret = {0}.{1};", caller, bindingInfo.fieldInfo.Name);
-            this.cg.csharp.AppendLine("{0}(ctx, ret);", this.cg.GetDuktapePusher(bindingInfo.fieldInfo.FieldType));
+            this.cg.AppendPushValue(bindingInfo.fieldInfo.FieldType, "ret");
             this.cg.csharp.AppendLine("return 1;");
         }
 

@@ -1,5 +1,5 @@
 #if UNITY_STANDALONE_WIN
-// UserName: julio @ 2019/2/25 22:35:44
+// UserName: julio @ 2019/2/25 23:15:05
 // Assembly: Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 // Type: SampleClass
 using System;
@@ -147,7 +147,7 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 var ret = self.sampleEnum;
-                duk_push_any(ctx, ret);
+                duk_push_any(ctx, (System.Int32)ret);
                 return 1;
             }
             catch (Exception exception)
