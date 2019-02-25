@@ -35,6 +35,16 @@ public class SampleClass
         this._name = name;
     }
 
+    public int CheckingVA(params int[] args)
+    {
+        return Sum(args);
+    }
+
+    public int CheckingVA2(int b, params int[] args)
+    {
+        return Sum(args) + b;
+    }
+
     public int Sum(int[] all)
     {
         var sum = 0;

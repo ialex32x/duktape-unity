@@ -50,6 +50,13 @@ namespace Duktape
             }
         }
 
+        [MenuItem("Duktape/Clear")]
+        public static void ClearBindings()
+        {
+            BindingManager.Cleanup(Prefs.GetPrefs().outDir, null, null);
+            AssetDatabase.Refresh();
+        }
+
         [MenuItem("Duktape/Prefs ...")]
         public static void OpenPrefsEditor()
         {

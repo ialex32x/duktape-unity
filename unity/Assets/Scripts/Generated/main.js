@@ -19,4 +19,8 @@ var sc = new SampleClass("testcase of SampleClass");
 sc.SetEnum(SampleEnum.b);
 console.log(sc.name + ".sum = " + sc.Sum([1, 2, 3, 4, 5]));
 console.log("" + sc.sampleEnum);
+var res1 = sc.CheckingVA(1, 2, 3, 4, 5);
+var res2 = sc.CheckingVA2(1, 2, 3, 4, 5);
+console.log("res1 = " + res1);
+console.log("res2 = " + res2);
 //# sourceMappingURL=main.js.map

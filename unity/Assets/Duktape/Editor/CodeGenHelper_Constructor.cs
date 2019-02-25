@@ -50,7 +50,9 @@ namespace Duktape
             }
             else
             {
-                var arglist = this.cg.AppendGetParameters(parameters, null);
+                var isVararg = parameters[parameters.Length - 1].IsDefined(typeof(ParamArrayAttribute), false);
+                var argc = this.cg.AppendGetArgc(isVararg);
+                var arglist = this.cg.AppendGetParameters(argc, parameters, null);
 
                 this.cg.csharp.AppendLine("var o = new {0}({1});", this.bindingInfo.decalringType.FullName, arglist);
                 this.cg.csharp.AppendLine("DuktapeDLL.duk_push_this(ctx);");
