@@ -130,7 +130,7 @@ namespace Duktape
         protected static void duk_add_field(IntPtr ctx, string name, DuktapeDLL.duk_c_function getter, DuktapeDLL.duk_c_function setter, bool bStatic)
         {
             // js 层面field与property绑定代码结构完全一致
-            duk_add_property(ctx, name, getter, setter, bStatic); 
+            duk_add_property(ctx, name, getter, setter, bStatic);
         }
 
         protected static void duk_add_property(IntPtr ctx, string name, DuktapeDLL.duk_c_function getter, DuktapeDLL.duk_c_function setter, bool bStatic)
@@ -157,7 +157,42 @@ namespace Duktape
                                             | DuktapeDLL.DUK_DEFPROP_CLEAR_CONFIGURABLE);
         }
 
-        // always static
+        protected static void duk_add_const(IntPtr ctx, string name, bool v)
+        {
+            var idx = -3;
+            DuktapeDLL.duk_push_string(ctx, name);
+            DuktapeDLL.duk_push_boolean(ctx, v);
+            DuktapeDLL.duk_def_prop(ctx, idx, DuktapeDLL.DUK_DEFPROP_SET_ENUMERABLE
+                                            | DuktapeDLL.DUK_DEFPROP_CLEAR_CONFIGURABLE
+                                            | DuktapeDLL.DUK_DEFPROP_HAVE_VALUE
+                                            | DuktapeDLL.DUK_DEFPROP_CLEAR_WRITABLE);
+        }
+
+        protected static void duk_add_const(IntPtr ctx, string name, char v)
+        {
+            duk_add_const(ctx, name, (int)v);
+        }
+
+        protected static void duk_add_const(IntPtr ctx, string name, byte v)
+        {
+            duk_add_const(ctx, name, (int)v);
+        }
+
+        protected static void duk_add_const(IntPtr ctx, string name, sbyte v)
+        {
+            duk_add_const(ctx, name, (int)v);
+        }
+
+        protected static void duk_add_const(IntPtr ctx, string name, short v)
+        {
+            duk_add_const(ctx, name, (int)v);
+        }
+
+        protected static void duk_add_const(IntPtr ctx, string name, ushort v)
+        {
+            duk_add_const(ctx, name, (int)v);
+        }
+
         protected static void duk_add_const(IntPtr ctx, string name, int v)
         {
             var idx = -3;
@@ -170,7 +205,19 @@ namespace Duktape
         }
 
         // always static
-        protected static void duk_add_const(IntPtr ctx, string name, float v)
+        protected static void duk_add_const(IntPtr ctx, string name, uint v)
+        {
+            var idx = -3;
+            DuktapeDLL.duk_push_string(ctx, name);
+            DuktapeDLL.duk_push_uint(ctx, v);
+            DuktapeDLL.duk_def_prop(ctx, idx, DuktapeDLL.DUK_DEFPROP_SET_ENUMERABLE
+                                            | DuktapeDLL.DUK_DEFPROP_CLEAR_CONFIGURABLE
+                                            | DuktapeDLL.DUK_DEFPROP_HAVE_VALUE
+                                            | DuktapeDLL.DUK_DEFPROP_CLEAR_WRITABLE);
+        }
+
+        // always static
+        protected static void duk_add_const(IntPtr ctx, string name, double v)
         {
             var idx = -3;
             DuktapeDLL.duk_push_string(ctx, name);
@@ -179,6 +226,11 @@ namespace Duktape
                                             | DuktapeDLL.DUK_DEFPROP_CLEAR_CONFIGURABLE
                                             | DuktapeDLL.DUK_DEFPROP_HAVE_VALUE
                                             | DuktapeDLL.DUK_DEFPROP_CLEAR_WRITABLE);
+        }
+
+        protected static void duk_add_const(IntPtr ctx, string name, float v)
+        {
+            duk_add_const(ctx, name, (double)v);
         }
 
         // always static
