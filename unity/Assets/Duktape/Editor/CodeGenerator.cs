@@ -157,7 +157,18 @@ namespace Duktape
             return caller;
         }
 
-        public string AppendGetParameters(ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
+        public string AppendGetArgc(bool isVararg)
+        {
+            if (isVararg)
+            {
+                var varName = "argc";
+                csharp.AppendLine("var {0} = DuktapeDLL.duk_get_top(ctx);", varName);
+                return varName;
+            }
+            return null;
+        }
+
+        public string AppendGetParameters(string argc, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
         {
             var arglist = "";
             for (var i = 0; i < parameters.Length; i++)
@@ -186,8 +197,32 @@ namespace Duktape
                 {
                     arglist += ", ";
                 }
-                this.csharp.AppendLine("{0} arg{1};", this.bindingManager.GetTypeFullNameCS(parameter.ParameterType), i);
-                this.csharp.AppendLine("{0}(ctx, {1}, out arg{1});", this.GetDuktapeGetter(parameter.ParameterType), i);
+                if (argc != null && i == parameters.Length - 1)
+                {
+                    this.csharp.AppendLine("{0} arg{1} = new {2}[{3}];",
+                        this.bindingManager.GetTypeFullNameCS(parameter.ParameterType),
+                        i,
+                        this.bindingManager.GetTypeFullNameCS(parameter.ParameterType.GetElementType()),
+                        i == 0 ? argc : argc + " - " + i);
+                    this.csharp.AppendLine("for (var i = {0}; i < {1}; i++)", i, argc);
+                    this.csharp.AppendLine("{");
+                    this.csharp.AddTabLevel();
+                    {
+                        // this.csharp.AppendLine("{0} el;", this.bindingManager.GetTypeFullNameCS(parameter.ParameterType.GetElementType()));
+                        this.csharp.AppendLine("{0}(ctx, i, out arg{1}[i{2}]);",
+                            this.GetDuktapeGetter(parameter.ParameterType.GetElementType()),
+                            i,
+                            i == 0 ? "" : " - " + i);
+                        // this.csharp.AppendLine("arg{0}[i] = el;", i);
+                    }
+                    this.csharp.DecTabLevel();
+                    this.csharp.AppendLine("}");
+                }
+                else
+                {
+                    this.csharp.AppendLine("{0} arg{1};", this.bindingManager.GetTypeFullNameCS(parameter.ParameterType), i);
+                    this.csharp.AppendLine("{0}(ctx, {1}, out arg{1});", this.GetDuktapeGetter(parameter.ParameterType), i);
+                }
             }
             return arglist;
         }

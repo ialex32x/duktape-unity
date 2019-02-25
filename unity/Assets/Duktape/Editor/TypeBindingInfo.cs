@@ -83,17 +83,17 @@ namespace Duktape
         public void Add(MethodInfo methodInfo)
         {
             var parameters = methodInfo.GetParameters();
-            var argc = parameters.Length;
+            var args = parameters.Length;
             var isVararg = IsVarargMethod(parameters);
             MethodVariant variants;
             if (isVararg)
             {
-                argc--;
+                args--;
             }
-            if (!this.variants.TryGetValue(argc, out variants))
+            if (!this.variants.TryGetValue(args, out variants))
             {
-                variants = new MethodVariant(argc);
-                this.variants.Add(argc, variants);
+                variants = new MethodVariant(args);
+                this.variants.Add(args, variants);
             }
             _count++;
             variants.Add(methodInfo, isVararg);

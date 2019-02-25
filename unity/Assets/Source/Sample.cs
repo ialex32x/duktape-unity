@@ -30,9 +30,19 @@ public class SampleClass
     }
 
     [JSDoc("简单构造函数测试")]
-    public SampleClass(string name)
+    public SampleClass(string name, params string[] additional)
     {
-        this._name = name;
+        this._name = name + String.Join("+", additional);
+    }
+
+    public int CheckingVA(params int[] args)
+    {
+        return Sum(args);
+    }
+
+    public int CheckingVA2(int b, params int[] args)
+    {
+        return Sum(args) + b;
     }
 
     public int Sum(int[] all)

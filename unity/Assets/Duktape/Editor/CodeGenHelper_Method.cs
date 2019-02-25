@@ -31,18 +31,18 @@ namespace Duktape
             if (this.bindingInfo.count > 1)
             {
                 // 需要处理重载
-                cg.csharp.AppendLine("// override {0}", this.bindingInfo.count);
+                var argc = cg.AppendGetArgc(true);
                 cg.csharp.AppendLine("do {");
                 cg.csharp.AddTabLevel();
                 {
                     foreach (var variantKV in this.bindingInfo.variants)
                     {
-                        var argc = variantKV.Key;
+                        var args = variantKV.Key;
                         var variant = variantKV.Value;
-                        cg.csharp.AppendLine("if (argc >= {0}) {{", argc);
+                        cg.csharp.AppendLine("if (argc >= {0}) {{", args);
                         cg.csharp.AddTabLevel();
                         {
-                            cg.csharp.AppendLine("if (argc == {0}) {{", argc);
+                            cg.csharp.AppendLine("if (argc == {0}) {{", args);
                             cg.csharp.AddTabLevel();
                             if (variant.plainMethods.Count > 1)
                             {
@@ -77,22 +77,23 @@ namespace Duktape
             }
             else
             {
-                // 没有重载的情况
+                // 没有重载的情况 (this.bindingInfo.variants.Count == 1)
                 foreach (var variantKV in this.bindingInfo.variants)
                 {
-                    var argc = variantKV.Key;
+                    var args = variantKV.Key;
                     var variant = variantKV.Value;
+                    var argc = cg.AppendGetArgc(variant.isVararg);
 
                     if (variant.isVararg)
                     {
                         var method = variant.varargMethods[0];
-                        WriteVarargMethod(method, argc);
+                        WriteMethod(method, argc, true);
 
                     }
                     else
                     {
                         var method = variant.plainMethods[0];
-                        WritePlainMethod(method, argc);
+                        WriteMethod(method, argc, false);
                     }
                 }
             }
@@ -113,21 +114,15 @@ namespace Duktape
         }
 
         //TODO: 如果是扩展方法且第一参数不是本类型, 则是因为目标类没有导出而降级的普通静态方法, 按普通静态方法处理
-        private void WriteVarargMethod(MethodInfo method, int argc)
-        {
-            cg.csharp.AppendLine("// argc >= {0}", argc);
-            cg.csharp.AppendLine("// {0}", method);
-        }
-
-        private void WritePlainMethod(MethodInfo method, int argc)
+        private void WriteMethod(MethodInfo method, string argc, bool isVararg)
         {
             var parameters = method.GetParameters();
             var returnParameters = new List<ParameterInfo>();
-            
+
             // get 'this'
             var caller = this.cg.AppendGetThisCS(method);
             // get all parameters
-            var arglist = this.cg.AppendGetParameters(parameters, returnParameters);
+            var arglist = this.cg.AppendGetParameters(argc, parameters, returnParameters);
 
             if (method.ReturnType == typeof(void))
             {

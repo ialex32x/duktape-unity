@@ -23,8 +23,7 @@ namespace Duktape
             }
             if(GUILayout.Button("Clear"))
             {
-                BindingManager.Cleanup(Prefs.GetPrefs().outDir, null, null);
-                AssetDatabase.Refresh();
+                UnityHelper.ClearBindings();
             }
         }
     }
