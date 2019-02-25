@@ -552,5 +552,14 @@ namespace Duktape
             o = null;
             return false;
         }
+
+        public static bool duk_get_enumvalue<T>(IntPtr ctx, int idx, out T o)
+        where T : Enum
+        {
+            int v;
+            var ret = duk_get_primitive(ctx, idx, out v);
+            o = (T)Enum.ToObject(typeof(T), v);
+            return ret;
+        }
     }
 }

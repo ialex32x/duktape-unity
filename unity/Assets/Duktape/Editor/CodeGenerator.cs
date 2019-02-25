@@ -112,6 +112,10 @@ namespace Duktape
                 {
                     return "duk_get_primitive";
                 }
+                if (type.IsEnum)
+                {
+                    return "duk_get_enumvalue";
+                }
                 return "duk_get_structvalue";
             }
             if (type == typeof(string))

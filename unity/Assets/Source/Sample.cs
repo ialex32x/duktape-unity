@@ -14,10 +14,19 @@ public enum SampleEnum
 public class SampleClass
 {
     private string _name;
+    private SampleEnum _sampleEnum;
 
     public string name
     {
         get { return _name; }
+    }
+
+    public SampleEnum sampleEnum { get { return _sampleEnum; } }
+
+    public bool SetEnum(SampleEnum sampleEnum)
+    {
+        _sampleEnum = sampleEnum;
+        return true;
     }
 
     [JSDoc("简单构造函数测试")]

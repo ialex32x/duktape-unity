@@ -21,4 +21,7 @@ ss.field_a = 12345
 console.log(ss.field_a)
 
 var sc = new SampleClass("testcase of SampleClass")
+sc.SetEnum(SampleEnum.b)
 console.log(`${sc.name}.sum = ${sc.Sum([1, 2, 3, 4, 5])}`)
+console.log(`${sc.sampleEnum}`)
+
