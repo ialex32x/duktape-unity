@@ -1,4 +1,4 @@
-// julio 2019/2/25 22:35:44
+// julio 2019/2/25 23:15:05
 declare class SampleClass {
     constructor(name: string, ...additional: string[])
     SetEnum(sampleEnum: SampleEnum): boolean

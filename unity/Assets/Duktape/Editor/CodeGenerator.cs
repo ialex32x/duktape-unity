@@ -125,10 +125,15 @@ namespace Duktape
             return "duk_get_classvalue";
         }
 
-        public string GetDuktapePusher(Type type)
+        public void AppendPushValue(Type type, string value)
         {
             //TODO: push 分类需要继续完善
-            return "duk_push_any";
+            if (type.IsEnum)
+            {
+                this.csharp.AppendLine("duk_push_any(ctx, ({0}){1});", type.GetEnumUnderlyingType().FullName, value);
+                return;
+            }
+            this.csharp.AppendLine("duk_push_any(ctx, {0});", value);
         }
 
         public string AppendGetThisCS(FieldBindingInfo bindingInfo)

@@ -22,7 +22,7 @@ namespace Duktape
             var caller = this.cg.AppendGetThisCS(bindingInfo.propertyInfo.GetMethod);
 
             this.cg.csharp.AppendLine("var ret = {0}.{1};", caller, bindingInfo.propertyInfo.Name);
-            this.cg.csharp.AppendLine("{0}(ctx, ret);", this.cg.GetDuktapePusher(bindingInfo.propertyInfo.PropertyType));
+            this.cg.AppendPushValue(bindingInfo.propertyInfo.PropertyType, "ret");
             this.cg.csharp.AppendLine("return 1;");
         }
 
@@ -45,7 +45,7 @@ namespace Duktape
             var caller = this.cg.AppendGetThisCS(method);
             var propertyInfo = this.bindingInfo.propertyInfo;
             var declaringType = propertyInfo.DeclaringType;
-            
+
             this.cg.csharp.AppendLine("{0} value;", this.cg.bindingManager.GetTypeFullNameCS(propertyInfo.PropertyType));
             this.cg.csharp.AppendLine("{0}(ctx, 0, out value);", this.cg.GetDuktapeGetter(propertyInfo.PropertyType));
             this.cg.csharp.AppendLine("{0}.{1} = value;", caller, propertyInfo.Name);
