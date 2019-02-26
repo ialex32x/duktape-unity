@@ -26,11 +26,8 @@ namespace Duktape
             DuktapeDLL.duk_remove(ctx, -2);
         }
 
-        public void Call()
+        private void _InnerCall(IntPtr ctx, int nargs)
         {
-            var ctx = _ctx.rawValue;
-            this.Push(ctx);
-            var nargs = 0;
             if (_argv != null)
             {
                 nargs = _argv.Length;
@@ -49,6 +46,54 @@ namespace Duktape
             DuktapeDLL.duk_pop(ctx);
         }
 
-        // public void Call(object args)
+        // 传参调用, 如果此函数已携带js参数, js参数排在invoke参数后
+        public void Invoke(object arg0)
+        {
+            var ctx = _ctx.rawValue;
+            this.Push(ctx);
+            DuktapeBinding.duk_push_var(ctx, arg0);
+            _InnerCall(ctx, 1);
+        }
+
+        public void Invoke(object arg0, object arg1)
+        {
+            var ctx = _ctx.rawValue;
+            this.Push(ctx);
+            DuktapeBinding.duk_push_var(ctx, arg0);
+            DuktapeBinding.duk_push_var(ctx, arg1);
+            _InnerCall(ctx, 2);
+        }
+
+        public void Invoke(object arg0, object arg1, object arg2)
+        {
+            var ctx = _ctx.rawValue;
+            this.Push(ctx);
+            DuktapeBinding.duk_push_var(ctx, arg0);
+            DuktapeBinding.duk_push_var(ctx, arg1);
+            DuktapeBinding.duk_push_var(ctx, arg2);
+            _InnerCall(ctx, 3);
+        }
+
+        public void Invoke(object arg0, object arg1, object arg2, params object[] args)
+        {
+            var ctx = _ctx.rawValue;
+            this.Push(ctx);
+            DuktapeBinding.duk_push_var(ctx, arg0);
+            DuktapeBinding.duk_push_var(ctx, arg1);
+            DuktapeBinding.duk_push_var(ctx, arg2);
+            var size = args.Length;
+            for (var i = 0; i < size; i++)
+            {
+                DuktapeBinding.duk_push_var(ctx, args[i]);
+            }
+            _InnerCall(ctx, size + 3);
+        }
+
+        public void Call()
+        {
+            var ctx = _ctx.rawValue;
+            this.Push(ctx);
+            _InnerCall(ctx, 0);
+        }
     }
 }

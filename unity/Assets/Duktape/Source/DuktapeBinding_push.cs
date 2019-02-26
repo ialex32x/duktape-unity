@@ -180,5 +180,24 @@ namespace Duktape
             }
             DuktapeDLL.duk_pop(ctx);
         }
+
+        // 自动判断类型
+        public static void duk_push_var(IntPtr ctx, object o)
+        {
+            if (o == null)
+            {
+                DuktapeDLL.duk_push_null(ctx);
+                return;
+            }
+            var type = o.GetType();
+            if (type.IsEnum)
+            {
+                duk_push_any(ctx, Convert.ToInt32(o));
+                return;
+            }
+            //TODO: 1. push as simple types
+            //TODO: 2. fallthrough, push as object
+            duk_push_any(ctx, o);
+        }
     }
 }
