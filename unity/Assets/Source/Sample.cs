@@ -197,7 +197,6 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
         delegateFoo = Awake;
         checking(delegateFoo);
         delegateFoo += Awake;
-        delegateFoo += Update;
         checking(delegateFoo);
         // SampleStruct.X("", 1);
         // SampleStruct.X("");
@@ -208,11 +207,6 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
             Debug.Log(ctor);
         }
         vm.Initialize(new FakeFileSystem(), this);
-    }
-
-    void Update()
-    {
-        vm.Update(Time.deltaTime);
     }
 
     void OnDestroy()
