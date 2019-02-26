@@ -29,7 +29,11 @@ public class SampleClass
         return true;
     }
 
-    [JSDoc("简单构造函数测试")]
+    [JSDoc(
+        "简单构造函数测试",
+        "@param name 测试字符串",
+        "@param additional 测试可变参数"
+        )]
     public SampleClass(string name, params string[] additional)
     {
         this._name = name + String.Join("+", additional);
@@ -197,7 +201,6 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
         delegateFoo = Awake;
         checking(delegateFoo);
         delegateFoo += Awake;
-        delegateFoo += Update;
         checking(delegateFoo);
         // SampleStruct.X("", 1);
         // SampleStruct.X("");
@@ -208,11 +211,6 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
             Debug.Log(ctor);
         }
         vm.Initialize(new FakeFileSystem(), this);
-    }
-
-    void Update()
-    {
-        vm.Update(Time.deltaTime);
     }
 
     void OnDestroy()

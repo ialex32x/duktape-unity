@@ -40,3 +40,7 @@ setTimeout((a, b) => {
     console.log("timeout tick", a, b)
     clearInterval(timer1)
 }, 3500, "额外参数1", 222)
+
+console.log("JSON?:", JSON)
+console.log("encodeURIComponent?:", encodeURIComponent)
+console.log("decodeURIComponent?:", decodeURIComponent)

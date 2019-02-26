@@ -116,7 +116,7 @@ namespace Duktape
             }
         }
 
-        public void Update(float dt)
+        private void OnUpdate()
         {
             var ctx = _ctx.rawValue;
             lock (_unrefActions)
@@ -275,6 +275,7 @@ namespace Duktape
                 }
                 DuktapeDLL.duk_pop(ctx);
             }
+            DuktapeRunner.SetInterval(this.OnUpdate, 100f);
 
             if (listener != null)
             {

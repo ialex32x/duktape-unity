@@ -75,11 +75,16 @@ namespace Duktape
                     AllowMultiple = false)]
     public class JSDocAttribute : Attribute
     {
-        public string text { get; set; }
+        public string[] lines { get; set; }
 
         public JSDocAttribute(string text)
         {
-            this.text = text;
+            this.lines = new string[] { text };
+        }
+
+        public JSDocAttribute(params string[] lines)
+        {
+            this.lines = lines;
         }
     }
 }

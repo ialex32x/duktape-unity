@@ -1,5 +1,5 @@
 #if UNITY_STANDALONE_WIN
-// UserName: julio @ 2019/2/26 20:15:10
+// UserName: julio @ 2019/2/27 6:17:53
 // Assembly: Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 // Type: SampleEnum
 using System;

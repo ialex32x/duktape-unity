@@ -231,5 +231,27 @@ namespace Duktape
             }
             return arglist;
         }
+
+        public void AppendJSDoc(MemberInfo info)
+        {
+            var jsdoc = info.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
+            if (jsdoc != null)
+            {
+                var lines = jsdoc.lines;
+                if (lines.Length > 1)
+                {
+                    this.typescript.AppendLine("/**");
+                    foreach (var line in lines)
+                    {
+                        this.typescript.AppendLine(" * {0}", line.Replace('\r', ' '));
+                    }
+                }
+                else
+                {
+                    this.typescript.AppendLine("/** {0}", lines[0]);
+                }
+                this.typescript.AppendLine(" */");
+            }
+        }
     }
 }

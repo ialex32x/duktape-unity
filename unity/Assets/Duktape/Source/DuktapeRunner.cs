@@ -19,6 +19,7 @@ namespace Duktape
             {
                 var go = new GameObject();
                 go.hideFlags = HideFlags.HideAndDontSave;
+                GameObject.DontDestroyOnLoad(go);
                 _runner = go.AddComponent<DuktapeRunner>();
             }
             return _runner;
@@ -48,6 +49,13 @@ namespace Duktape
             return id;
         }
 
+        public static int SetInterval(Action fn, float ms)
+        {
+            var id = ++_id;
+            GetRunner().AddInterval(id, fn, ms * 0.001f);
+            return id;
+        }
+
         public static bool Clear(int id)
         {
             return GetRunner().RemoveTimer(id);
@@ -59,6 +67,11 @@ namespace Duktape
         }
 
         private void AddInterval(int id, DuktapeFunction fn, float seconds)
+        {
+            _timers[id] = StartCoroutine(_Interval(id, fn, seconds));
+        }
+
+        private void AddInterval(int id, Action fn, float seconds)
         {
             _timers[id] = StartCoroutine(_Interval(id, fn, seconds));
         }
@@ -88,6 +101,16 @@ namespace Duktape
             {
                 yield return wait;
                 fn.Call();
+            }
+        }
+
+        private IEnumerator _Interval(int id, Action fn, float seconds)
+        {
+            var wait = new WaitForSeconds(seconds);
+            while (true)
+            {
+                yield return wait;
+                fn();
             }
         }
     }

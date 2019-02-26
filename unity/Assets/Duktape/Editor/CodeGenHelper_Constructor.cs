@@ -79,6 +79,7 @@ namespace Duktape
         {
             //TODO: 需要处理参数类型归并问题, 因为如果类型没有导入 ts 中, 可能会在声明中出现相同参数列表的定义
             //      在 MethodVariant 中创建每个方法对应的TS类型名参数列表, 完全相同的不再输出
+            this.cg.AppendJSDoc(constructor);
             var prefix = "";
             this.cg.typescript.Append("{0}{1}(", prefix, this.bindingInfo.regName);
             var parameters = constructor.GetParameters();
