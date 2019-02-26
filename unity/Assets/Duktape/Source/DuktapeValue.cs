@@ -5,7 +5,7 @@ namespace Duktape
     using UnityEngine;
 
     /// 持有脚本对象的引用
-    public abstract class DuktapeValue : IDisposable, IContextualValue
+    public class DuktapeValue : IDisposable, IContextualValue
     {
         protected DuktapeContext _ctx;
         protected uint _refid;
