@@ -5,9 +5,17 @@ namespace Duktape
 {
     public class DuktapeFunction : DuktapeValue
     {
+        private DuktapeValue[] _argv;
+
         public DuktapeFunction(IntPtr ctx, uint refid)
         : base(ctx, refid)
         {
+        }
+
+        public DuktapeFunction(IntPtr ctx, uint refid, DuktapeValue[] argv)
+        : base(ctx, refid)
+        {
+            _argv = argv;
         }
 
         // push 当前函数的 prototype 
@@ -22,7 +30,16 @@ namespace Duktape
         {
             var ctx = _ctx.rawValue;
             this.Push(ctx);
-            var ret = DuktapeDLL.duk_pcall(ctx, 0);
+            var nargs = 0;
+            if (_argv != null)
+            {
+                nargs = _argv.Length;
+                for (var i = 0; i < nargs; i++)
+                {
+                    _argv[i].Push(ctx);
+                }
+            }
+            var ret = DuktapeDLL.duk_pcall(ctx, nargs);
             if (ret != DuktapeDLL.DUK_EXEC_SUCCESS)
             {
                 var err = DuktapeAux.duk_to_string(ctx, -1);

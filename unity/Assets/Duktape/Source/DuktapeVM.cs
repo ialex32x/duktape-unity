@@ -130,6 +130,7 @@ namespace Duktape
                     }
                     var act = _unrefActions.Dequeue();
                     act.action(ctx, act.refid);
+                    // Debug.LogFormat("duktape gc {0}", act.refid);
                 }
             }
         }

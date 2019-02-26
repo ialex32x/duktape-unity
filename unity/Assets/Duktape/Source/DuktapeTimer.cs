@@ -24,11 +24,21 @@ namespace Duktape
             return _runner;
         }
 
+        public static int SetTimeout(DuktapeFunction fn, double ms)
+        {
+            return SetTimeout(fn, (float)ms);
+        }
+
         public static int SetTimeout(DuktapeFunction fn, float ms)
         {
             var id = ++_id;
             GetRunner().AddTimeout(id, fn, ms * 0.001f);
             return id;
+        }
+
+        public static int SetInterval(DuktapeFunction fn, double ms)
+        {
+            return SetInterval(fn, (float)ms);
         }
 
         public static int SetInterval(DuktapeFunction fn, float ms)
@@ -38,9 +48,9 @@ namespace Duktape
             return id;
         }
 
-        public static void Clear(int id)
+        public static bool Clear(int id)
         {
-            GetRunner().RemoveTimer(id);
+            return GetRunner().RemoveTimer(id);
         }
 
         private void AddTimeout(int id, DuktapeFunction fn, float seconds)

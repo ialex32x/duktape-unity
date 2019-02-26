@@ -1,5 +1,5 @@
-#if UNITY_STANDALONE_OSX
-// UserName: huliangjie @ 2/26/2019 9:23:05 AM
+#if UNITY_STANDALONE_WIN
+// UserName: julio @ 2019/2/26 20:15:10
 // Assembly: Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 // Type: SampleStruct
 using System;
