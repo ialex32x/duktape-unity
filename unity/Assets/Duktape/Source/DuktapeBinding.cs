@@ -24,7 +24,7 @@ namespace Duktape
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         static int object_private_ctor(IntPtr ctx)
         {
-            return 0;
+            return DuktapeDLL.duk_generic_error(ctx, "cant call constructor on this type");
         }
 
         // 无命名空间, 直接外围对象作为容器 (通常是global)
@@ -80,6 +80,38 @@ namespace Duktape
             // Debug.LogFormat("end namespace {0}", DuktapeDLL.duk_get_top(ctx));
         }
 
+        protected static void duk_begin_object(IntPtr ctx, string objectname, Type type)
+        {
+            DuktapeDLL.duk_push_object(ctx);
+            DuktapeDLL.duk_dup(ctx, -1);
+            // DuktapeDLL.duk_dup(ctx, -1);
+            // DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx)));
+            DuktapeDLL.duk_put_prop_string(ctx, -2, objectname);
+        }
+
+        protected static void duk_end_object(IntPtr ctx)
+        {
+            DuktapeDLL.duk_pop(ctx);
+        }
+
+        protected static void duk_begin_special(IntPtr ctx, string name)
+        {
+            DuktapeDLL.duk_push_c_function(ctx, object_private_ctor, 0); // ctor
+            DuktapeDLL.duk_dup(ctx, -1);
+            DuktapeDLL.duk_dup(ctx, -1);
+            var typeValue = new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx)); // ctor, ctor
+            DuktapeVM.GetVM(ctx).AddSpecial(name, typeValue);
+            DuktapeDLL.duk_put_prop_string(ctx, -3, name); // ctor
+            DuktapeDLL.duk_push_object(ctx); // ctor, prototype
+            DuktapeDLL.duk_dup_top(ctx); // ctor, prototype, prototype
+            DuktapeDLL.duk_put_prop_string(ctx, -3, "prototype"); // ctor, prototype
+        }
+
+        protected static void duk_end_special(IntPtr ctx)
+        {
+            DuktapeDLL.duk_pop_2(ctx); // remove [ctor, prototype]
+        }
+
         protected static void duk_begin_class(IntPtr ctx, string typename, Type type, DuktapeDLL.duk_c_function ctor)
         {
             // Debug.LogFormat("begin class {0}", DuktapeDLL.duk_get_top(ctx));
@@ -87,7 +119,9 @@ namespace Duktape
             DuktapeDLL.duk_dup(ctx, -1);
             // Debug.LogFormat("begin check {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_dup(ctx, -1);
-            DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx)));
+            var refid = DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx)));
+            DuktapeDLL.duk_push_uint(ctx, refid);
+            DuktapeDLL.duk_put_prop_string(ctx, -3, DuktapeVM.OBJ_PROP_EXPORTED_REFID);
             // Debug.LogFormat("end check {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_put_prop_string(ctx, -3, typename);
             DuktapeDLL.duk_push_object(ctx); // [ctor, prototype]
@@ -105,19 +139,19 @@ namespace Duktape
 
         protected static void duk_begin_enum(IntPtr ctx, string typename, Type type)
         {
-            // Debug.LogFormat("begin enum {0}", DuktapeDLL.duk_get_top(ctx));
-            DuktapeDLL.duk_push_object(ctx);
-            // Debug.LogFormat("begin check {0}", DuktapeDLL.duk_get_top(ctx));
-            DuktapeDLL.duk_dup(ctx, -1);
-            DuktapeDLL.duk_dup(ctx, -1);
-            DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx)));
-            // Debug.LogFormat("end check {0}", DuktapeDLL.duk_get_top(ctx));
-            DuktapeDLL.duk_put_prop_string(ctx, -3, typename);
+            duk_begin_class(ctx, typename, type, object_private_ctor);
         }
 
         protected static void duk_end_enum(IntPtr ctx)
         {
-            DuktapeDLL.duk_pop(ctx); // remove [enum]
+            duk_end_class(ctx);
+        }
+
+        protected static void duk_add_method(IntPtr ctx, string name, DuktapeDLL.duk_c_function func, int idx)
+        {
+            idx = DuktapeDLL.duk_normalize_index(ctx, idx);
+            DuktapeDLL.duk_push_c_function(ctx, func, DuktapeDLL.DUK_VARARGS);
+            DuktapeDLL.duk_put_prop_string(ctx, idx, name);
         }
 
         protected static void duk_add_method(IntPtr ctx, string name, DuktapeDLL.duk_c_function func, bool bStatic)
@@ -159,7 +193,7 @@ namespace Duktape
 
         protected static void duk_add_const(IntPtr ctx, string name, bool v)
         {
-            var idx = -3;
+            var idx = -4;
             DuktapeDLL.duk_push_string(ctx, name);
             DuktapeDLL.duk_push_boolean(ctx, v);
             DuktapeDLL.duk_def_prop(ctx, idx, DuktapeDLL.DUK_DEFPROP_SET_ENUMERABLE
@@ -195,7 +229,7 @@ namespace Duktape
 
         protected static void duk_add_const(IntPtr ctx, string name, int v)
         {
-            var idx = -3;
+            var idx = -4;
             DuktapeDLL.duk_push_string(ctx, name);
             DuktapeDLL.duk_push_int(ctx, v);
             DuktapeDLL.duk_def_prop(ctx, idx, DuktapeDLL.DUK_DEFPROP_SET_ENUMERABLE
@@ -207,7 +241,7 @@ namespace Duktape
         // always static
         protected static void duk_add_const(IntPtr ctx, string name, uint v)
         {
-            var idx = -3;
+            var idx = -4;
             DuktapeDLL.duk_push_string(ctx, name);
             DuktapeDLL.duk_push_uint(ctx, v);
             DuktapeDLL.duk_def_prop(ctx, idx, DuktapeDLL.DUK_DEFPROP_SET_ENUMERABLE
@@ -219,7 +253,7 @@ namespace Duktape
         // always static
         protected static void duk_add_const(IntPtr ctx, string name, double v)
         {
-            var idx = -3;
+            var idx = -4;
             DuktapeDLL.duk_push_string(ctx, name);
             DuktapeDLL.duk_push_number(ctx, v);
             DuktapeDLL.duk_def_prop(ctx, idx, DuktapeDLL.DUK_DEFPROP_SET_ENUMERABLE
@@ -236,7 +270,7 @@ namespace Duktape
         // always static
         protected static void duk_add_const(IntPtr ctx, string name, string v)
         {
-            var idx = -3;
+            var idx = -4;
             DuktapeDLL.duk_push_string(ctx, name);
             DuktapeDLL.duk_push_string(ctx, v);
             DuktapeDLL.duk_def_prop(ctx, idx, DuktapeDLL.DUK_DEFPROP_SET_ENUMERABLE

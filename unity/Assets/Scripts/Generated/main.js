@@ -23,4 +23,7 @@ var res1 = sc.CheckingVA(1, 2, 3, 4, 5);
 var res2 = sc.CheckingVA2(1, 2, 3, 4, 5);
 console.log("res1 = " + res1);
 console.log("res2 = " + res2);
+for (var p in DuktapeJS.Enum) {
+    console.log(p);
+}
 //# sourceMappingURL=main.js.map

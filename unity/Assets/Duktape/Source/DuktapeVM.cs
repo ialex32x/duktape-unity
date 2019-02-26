@@ -18,6 +18,10 @@ namespace Duktape
         public const int VERSION = 0x10001;
         public const string HEAP_STASH_PROPS_REGISTRY = "registry";
         public static readonly string OBJ_PROP_NATIVE = DuktapeDLL.DUK_HIDDEN_SYMBOL("native");
+        public static readonly string OBJ_PROP_EXPORTED_REFID = DuktapeDLL.DUK_HIDDEN_SYMBOL("exported-refid");
+        // public static readonly string OBJ_PROP_SPECIAL_REFID = DuktapeDLL.DUK_HIDDEN_SYMBOL("special-refid");
+
+        public const string SPECIAL_ENUM = "Enum";
 
         private DuktapeContext _ctx;
         private IFileSystem _fileManager;
@@ -29,6 +33,9 @@ namespace Duktape
 
         // 已经导出的本地类
         private Dictionary<Type, DuktapeFunction> _exported = new Dictionary<Type, DuktapeFunction>();
+        private Dictionary<uint, Type> _exportedTypes = new Dictionary<uint, Type>(); // 从 refid 反查 Type
+
+        private Dictionary<string, DuktapeFunction> _specialTypes = new Dictionary<string, DuktapeFunction>(); // 从 refid 反查 Type
 
         public DuktapeContext context
         {
@@ -57,9 +64,36 @@ namespace Duktape
             }
         }
 
-        public void AddExported(Type type, DuktapeFunction fn)
+        public DuktapeFunction GetSpecial(string name)
         {
+            DuktapeFunction val;
+            if (_specialTypes.TryGetValue(name, out val))
+            {
+                return val;
+            }
+            return null;
+        }
+
+        public uint AddSpecial(string name, DuktapeFunction val)
+        {
+            // Debug.LogFormat("Add Special {0} {1}", name, val.rawValue);
+            var refid = val.rawValue;
+            _specialTypes[name] = val;
+            return refid;
+        }
+
+        public uint AddExported(Type type, DuktapeFunction fn)
+        {
+            var refid = fn.rawValue;
             _exported.Add(type, fn);
+            _exportedTypes[refid] = type;
+            return refid;
+        }
+
+        public Type GetExportedType(uint refid)
+        {
+            Type type;
+            return _exportedTypes.TryGetValue(refid, out type) ? type : null;
         }
 
         // 得到注册在js中的类型对应的构造函数
@@ -192,6 +226,7 @@ namespace Duktape
             DuktapeDLL.duk_unity_open(ctx);
 
             DuktapeDLL.duk_push_global_object(ctx);
+            DuktapeJSBuiltins.reg(ctx);
             if (listener != null)
             {
                 listener.OnTypesBinding(this);
@@ -250,6 +285,15 @@ namespace Duktape
         // 没有对应的基类 prototype 时, 不压栈
         public bool PushChainedPrototypeOf(IntPtr ctx, Type baseType)
         {
+            if (baseType == typeof(Enum))
+            {
+                DuktapeFunction val;
+                if (_specialTypes.TryGetValue(SPECIAL_ENUM, out val))
+                {
+                    val.PushPrototype(ctx);
+                    return true;
+                }
+            }
             if (baseType == typeof(object) || baseType == typeof(ValueType))
             {
                 // Debug.LogFormat("super terminated {0}", baseType);
