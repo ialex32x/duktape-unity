@@ -31,3 +31,12 @@ console.log(`res2 = ${res2}`)
 for (let p in DuktapeJS.Enum) {
     console.log(p)
 }
+
+let timer1 = setInterval(() => {
+    console.log("interval tick")
+}, 1000)
+
+setTimeout((a, b) => {
+    console.log("timeout tick", a, b)
+    clearInterval(timer1)
+}, 3500, "额外参数1", 222)
