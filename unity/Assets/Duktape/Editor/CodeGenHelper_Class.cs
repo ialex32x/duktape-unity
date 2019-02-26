@@ -14,6 +14,7 @@ namespace Duktape
         public ClassCodeGen(CodeGenerator cg, TypeBindingInfo type)
         : base(cg, type)
         {
+            this.cg.AppendJSDoc(type.type);
             var prefix = bindingInfo.Namespace != null ? "" : "declare ";
             this.cg.typescript.AppendLine("{0}class {1} {{", prefix, bindingInfo.regName);
             this.cg.typescript.AddTabLevel();
