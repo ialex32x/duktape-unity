@@ -94,3 +94,5 @@ export class A {
 # 其他
 
 * [vscode-duktape-debug](https://github.com/harold-b/vscode-duktape-debug)
+* [duktape-doc-debugger](https://github.com/svaarala/duktape/blob/master/doc/debugger.rst)
+
