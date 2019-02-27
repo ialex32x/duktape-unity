@@ -19,6 +19,7 @@
 * socket (tcp/udp)
 * websocket ()
 * 使用 protobufjs
+* enable debugger support (vscode)
 
 # 依赖环境
 使用 typescript 编写脚本时, 需要安装 typescript
@@ -89,3 +90,7 @@ export class A {
 * [slua](https://github.com/pangweiwei/slua)
 * [xLua](https://github.com/Tencent/xLua)
 * [typescript-for-unity](https://github.com/SpiralP/typescript-for-unity)
+
+# 其他
+
+* [vscode-duktape-debug](https://github.com/harold-b/vscode-duktape-debug)
