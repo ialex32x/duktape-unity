@@ -411,7 +411,6 @@ def main():
         'duk_api_debug.c',
         'duk_extra_module_node.c',
         'duk_extra_unity.c',
-        'duk_extra_debugger.c',
         'duk_bi_array.c',
         'duk_bi_boolean.c',
         'duk_bi_buffer.c',

@@ -179,6 +179,9 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
 
     public void OnLoaded(DuktapeVM vm)
     {
+        // var buffer = new byte[32];
+        // var handle = System.Runtime.InteropServices.GCHandle.Alloc(buffer);
+        // handle.Free();
         vm.AddSearchPath("Assets/Scripts/polyfills");
         vm.AddSearchPath("Assets/Scripts/Generated");
         vm.EvalFile("console-minimal.js");
