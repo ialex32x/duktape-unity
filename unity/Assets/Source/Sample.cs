@@ -179,6 +179,11 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
 
     public void OnLoaded(DuktapeVM vm)
     {
+        // var buffer = new byte[32];
+        // var handle = System.Runtime.InteropServices.GCHandle.Alloc(buffer);
+        // handle.Free();
+        DuktapeDebugger.CreateDebugger(vm.context.rawValue);
+
         vm.AddSearchPath("Assets/Scripts/polyfills");
         vm.AddSearchPath("Assets/Scripts/Generated");
         vm.EvalFile("console-minimal.js");
@@ -215,6 +220,7 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
 
     void OnDestroy()
     {
+        DuktapeDebugger.Shutdown();
         vm.Destroy();
         vm = null;
     }

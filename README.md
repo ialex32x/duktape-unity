@@ -27,6 +27,11 @@
 npm install -g typescript
 ```
 
+如果重新生成 duktape 源代码, 需要安装 python, pip, 以及 pyyaml
+```shell
+pip install pyyaml
+```
+
 # Example
 
 ```ts
