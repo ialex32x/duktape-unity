@@ -410,3 +410,23 @@ DUK_EXTERNAL void duk_unity_push_buffer_object(duk_context *ctx, duk_idx_t idx_b
 DUK_EXTERNAL duk_idx_t duk_unity_push_error_object_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt) {
     return duk_push_error_object_raw(ctx, err_code, filename, line, fmt);
 }
+
+// debugger support
+
+DUK_LOCAL void duk_unity_debugger_detached_cb(duk_context *ctx, void *udata) {
+    duk_trans_socket_finish();
+}
+
+DUK_EXTERNAL void duk_unity_attch_debugger(duk_context *ctx) {
+    duk_trans_socket_init();
+    duk_trans_socket_waitconn();
+    duk_debugger_attach(ctx, 
+                        duk_trans_socket_read_cb,         /* read callback */
+                        duk_trans_socket_write_cb,        /* write callback */
+                        duk_trans_socket_peek_cb,         /* peek callback (optional) */
+                        duk_trans_socket_read_flush_cb,   /* read flush callback (optional) */
+                        duk_trans_socket_write_flush_cb,  /* write flush callback (optional) */
+                        NULL,                             /* app request callback (optional) */
+                        duk_unity_debugger_detached_cb,   /* debugger detached callback */
+                        NULL);                            /* debug udata */
+}

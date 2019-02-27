@@ -1353,6 +1353,21 @@ DUK_EXTERNAL_DECL void duk_unity_push_buffer_object(duk_context *ctx, duk_idx_t 
 DUK_EXTERNAL_DECL duk_idx_t duk_unity_push_error_object_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt);
 
 /*
+ * debugger supported
+ */
+
+DUK_EXTERNAL_DECL void duk_unity_attch_debugger(duk_context *ctx);
+
+DUK_INTERNAL_DECL void duk_trans_socket_init(void);
+DUK_INTERNAL_DECL void duk_trans_socket_finish(void);
+DUK_INTERNAL_DECL void duk_trans_socket_waitconn(void);
+DUK_INTERNAL_DECL duk_size_t duk_trans_socket_read_cb(void *udata, char *buffer, duk_size_t length);
+DUK_INTERNAL_DECL duk_size_t duk_trans_socket_write_cb(void *udata, const char *buffer, duk_size_t length);
+DUK_INTERNAL_DECL duk_size_t duk_trans_socket_peek_cb(void *udata);
+DUK_INTERNAL_DECL void duk_trans_socket_read_flush_cb(void *udata);
+DUK_INTERNAL_DECL void duk_trans_socket_write_flush_cb(void *udata);
+
+/*
  *  C++ name mangling
  */
 
