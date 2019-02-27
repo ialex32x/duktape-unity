@@ -445,7 +445,7 @@ DUK_LOCAL duk_size_t duk_unity_wrap_debug_write_function(void *udata, const char
 DUK_LOCAL duk_size_t duk_unity_wrap_debug_peek_function(void *udata) {
     duk_unity_debugger *debugger = (duk_unity_debugger *)udata;
     if (debugger != NULL) {
-        return (duk_size_t)debugger->dbg_peek_cb(debugger->udata, buffer, (duk_int_t)length);
+        return (duk_size_t)debugger->dbg_peek_cb(debugger->udata);
     }
     return 0;
 }
@@ -467,7 +467,7 @@ DUK_LOCAL void duk_unity_wrap_debug_write_flush_function(void *udata) {
 DUK_LOCAL duk_idx_t duk_unity_wrap_debug_request_function(duk_context *ctx, void *udata, duk_idx_t nvalues) {
     duk_unity_debugger *debugger = (duk_unity_debugger *)udata;
     if (debugger != NULL) {
-        return debugger->dbg_request_cb(debugger->udata);
+        return debugger->dbg_request_cb(ctx, debugger->udata, nvalues);
     }
     return 0;
 }
@@ -506,7 +506,7 @@ DUK_EXTERNAL void *duk_unity_attch_debugger(duk_context *ctx,
                             duk_unity_wrap_debug_read_flush_function,    /* read flush callback (optional) */
                             duk_unity_wrap_debug_write_flush_function,   /* write flush callback (optional) */
                             duk_unity_wrap_debug_request_function,       /* app request callback (optional) */
-                            duk_unity_wrap_debugger_detached_cb,    /* debugger detached callback */
+                            duk_unity_wrap_debug_detached_function,    /* debugger detached callback */
                             debugger);                              /* debug udata */
     }
     return debugger;
