@@ -16,6 +16,7 @@
         // "listEmittedFiles": true,
         "noImplicitAny": false,
         "allowJs": false,
+        "inlineSourceMap": false,
         "sourceMap": true
     },
     "exclude": [

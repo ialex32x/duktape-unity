@@ -148,16 +148,16 @@ namespace Duktape
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_unity_debug_read_function))]
         private static uint duk_unity_debug_read_function(int udata, IntPtr buffer, uint length)
         {
-            Debug.LogWarning("duk_unity_debug_read_function");
+            // Debug.LogWarning("duk_unity_debug_read_function");
             try
             {
                 if (_instance != null && _instance._client != null)
                 {
                     var bufferSize = _buffer.Length;
                     var size = bufferSize > length ? (int)length : bufferSize;
-                    Debug.LogWarningFormat("debugger read: {0} {1}", size, length);
+                    // Debug.LogWarningFormat("debugger read: {0} {1}", size, length);
                     var n = _instance._client.Receive(_buffer, size, SocketFlags.None);
-                    Debug.LogWarningFormat("debugger recv: {0}", n);
+                    // Debug.LogWarningFormat("debugger recv: {0}", n);
                     if (n > 0)
                     {
                         Marshal.Copy(_buffer, 0, buffer, n);
@@ -178,7 +178,7 @@ namespace Duktape
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_unity_debug_write_function))]
         private static uint duk_unity_debug_write_function(int udata, IntPtr buffer, uint length)
         {
-            Debug.LogWarning("duk_unity_debug_write_function");
+            // Debug.LogWarning("duk_unity_debug_write_function");
             try
             {
                 if (_instance != null && _instance._client != null)
@@ -186,9 +186,9 @@ namespace Duktape
                     var bufferSize = _buffer.Length;
                     var size = bufferSize > length ? (int)length : bufferSize;
                     Marshal.Copy(buffer, _buffer, 0, size);
-                    Debug.LogWarningFormat("debugger write: {0} {1}", size, length);
+                    // Debug.LogWarningFormat("debugger write: {0} {1}", size, length);
                     var n = _instance._client.Send(_buffer, size, SocketFlags.None);
-                    Debug.LogWarningFormat("debugger sent: {0}", n);
+                    // Debug.LogWarningFormat("debugger sent: {0}", n);
                     if (n > 0)
                     {
                         return (uint)n;
@@ -208,7 +208,7 @@ namespace Duktape
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_unity_debug_peek_function))]
         private static uint duk_unity_debug_peek_function(int udata)
         {
-            Debug.LogWarning("duk_unity_debug_peek_function");
+            // Debug.LogWarning("duk_unity_debug_peek_function");
             try
             {
                 if (_instance != null && _instance._client != null)
@@ -218,7 +218,7 @@ namespace Duktape
                         if (_instance._client.Poll(1000, SelectMode.SelectRead))
                         {
                             var n = _instance._client.Available;
-                            Debug.LogWarningFormat("Available {0}", n);
+                            // Debug.LogWarningFormat("Available {0}", n);
                             if (n > 0)
                             {
                                 return (uint)n;
@@ -227,15 +227,15 @@ namespace Duktape
                         }
                         else if (_instance._client.Poll(1000, SelectMode.SelectError))
                         {
-                            Debug.LogWarningFormat("Error");
+                            // Debug.LogWarningFormat("Error");
                         }
                         else
                         {
-                            Debug.LogWarningFormat("Not Readable");
+                            // Debug.LogWarningFormat("Not Readable");
                             return 0;
                         }
                     }
-                    Debug.LogWarningFormat("debugger closing");
+                    // Debug.LogWarningFormat("debugger closing");
                     _instance._client.Close();
                     _instance._client = null;
                 }
