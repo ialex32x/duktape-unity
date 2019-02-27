@@ -488,7 +488,7 @@ DUK_EXTERNAL void *duk_unity_attch_debugger(duk_context *ctx,
                                            duk_unity_debug_request_function request_cb,
                                            duk_unity_debug_detached_function detached_cb, 
                                            duk_int_t udata) {
-    // 
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
     duk_unity_debugger *debugger = duk_alloc(ctx, sizeof(duk_unity_debugger));
     if (debugger != NULL) {
         debugger->dbg_read_cb = read_cb;
@@ -510,6 +510,9 @@ DUK_EXTERNAL void *duk_unity_attch_debugger(duk_context *ctx,
                             debugger);                              /* debug udata */
     }
     return debugger;
+#else
+    return NULL;
+#endif
 }
 
 DUK_EXTERNAL void duk_unity_detach_debugger(duk_context *ctx, void *debugger) {
