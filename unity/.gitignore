@@ -23,5 +23,5 @@ UpgradeLog.htm
 *.beam
 
 node_modules
-/.vscode/launch.json
+# /.vscode/launch.json
 
