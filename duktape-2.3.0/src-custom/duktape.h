@@ -6,7 +6,7 @@
  *  comments.  Other parts of the header are Duktape internal and related to
  *  e.g. platform/compiler/feature detection.
  *
- *  Git commit f60c354feeab55abdecdcd92d6e37e986b03eb0b (f60c354-dirty).
+ *  Git commit 4924eec5952240b5e00c70afebe217dd2db838a0 (4924eec-dirty).
  *  Git branch features/debugger.
  *
  *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and
@@ -171,8 +171,8 @@
  * which Duktape snapshot was used.  Not available in the ECMAScript
  * environment.
  */
-#define DUK_GIT_COMMIT                    "f60c354feeab55abdecdcd92d6e37e986b03eb0b"
-#define DUK_GIT_DESCRIBE                  "f60c354-dirty"
+#define DUK_GIT_COMMIT                    "4924eec5952240b5e00c70afebe217dd2db838a0"
+#define DUK_GIT_DESCRIBE                  "4924eec-dirty"
 #define DUK_GIT_BRANCH                    "features/debugger"
 
 /* External duk_config.h provides platform/compiler/OS dependent
@@ -1490,7 +1490,7 @@ typedef void (*duk_unity_debug_write_flush_function) (duk_int_t udata);
 typedef duk_idx_t (*duk_unity_debug_request_function) (duk_context *ctx, duk_int_t udata, duk_idx_t nvalues);
 typedef void (*duk_unity_debug_detached_function) (duk_context *ctx, duk_int_t udata);
 
-DUK_EXTERNAL_DECL void *duk_unity_attch_debugger(duk_context *ctx, 
+DUK_EXTERNAL_DECL void *duk_unity_attach_debugger(duk_context *ctx, 
                                            duk_unity_debug_read_function read_cb, 
                                            duk_unity_debug_write_function write_cb, 
                                            duk_unity_debug_peek_function peek_cb, 

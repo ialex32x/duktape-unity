@@ -1364,7 +1364,7 @@ typedef void (*duk_unity_debug_write_flush_function) (duk_int_t udata);
 typedef duk_idx_t (*duk_unity_debug_request_function) (duk_context *ctx, duk_int_t udata, duk_idx_t nvalues);
 typedef void (*duk_unity_debug_detached_function) (duk_context *ctx, duk_int_t udata);
 
-DUK_EXTERNAL_DECL void *duk_unity_attch_debugger(duk_context *ctx, 
+DUK_EXTERNAL_DECL void *duk_unity_attach_debugger(duk_context *ctx, 
                                            duk_unity_debug_read_function read_cb, 
                                            duk_unity_debug_write_function write_cb, 
                                            duk_unity_debug_peek_function peek_cb, 

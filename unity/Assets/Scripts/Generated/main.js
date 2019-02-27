@@ -27,8 +27,11 @@ for (var p in DuktapeJS.Enum) {
     console.log(p);
 }
 var timer1 = setInterval(function () {
-    console.log("interval tick");
+    console.log("interval tick 1");
 }, 1000);
+setInterval(function () {
+    console.log("interval tick 2");
+}, 2000);
 setTimeout(function (a, b) {
     console.log("timeout tick", a, b);
     clearInterval(timer1);

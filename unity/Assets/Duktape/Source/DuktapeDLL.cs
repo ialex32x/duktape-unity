@@ -78,6 +78,7 @@ namespace Duktape
         public delegate void duk_decode_char_function(IntPtr udata, duk_codepoint_t codepoint);
         public delegate duk_codepoint_t duk_map_char_function(IntPtr udata, duk_codepoint_t codepoint);
         public delegate duk_ret_t duk_safe_call_function(IntPtr ctx, IntPtr udata);
+
         public delegate duk_uint_t duk_unity_debug_read_function(duk_int_t udata, IntPtr buffer, duk_uint_t length);
         public delegate duk_uint_t duk_unity_debug_write_function(duk_int_t udata, IntPtr buffer, duk_uint_t length);
         public delegate duk_uint_t duk_unity_debug_peek_function(duk_int_t udata);
@@ -85,7 +86,6 @@ namespace Duktape
         public delegate void duk_unity_debug_write_flush_function(duk_int_t udata);
         public delegate duk_idx_t duk_unity_debug_request_function(IntPtr ctx, duk_int_t udata, duk_idx_t nvalues);
         public delegate void duk_unity_debug_detached_function(IntPtr ctx, duk_int_t udata);
-
 #endif
         [StructLayout(LayoutKind.Sequential)]
         public struct duk_function_list_entry
@@ -1672,7 +1672,7 @@ namespace Duktape
 
         /// debugger support
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr duk_unity_attch_debugger(IntPtr ctx, 
+        public static extern IntPtr duk_unity_attach_debugger(IntPtr ctx, 
                                                 duk_unity_debug_read_function read_cb, 
                                                 duk_unity_debug_write_function write_cb, 
                                                 duk_unity_debug_peek_function peek_cb, 

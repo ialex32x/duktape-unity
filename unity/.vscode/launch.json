@@ -12,8 +12,9 @@
             "address": "localhost",
             "port": 9091,
             "localRoot": "${workspaceRoot}",
-            "sourceMaps": true,
-            "outDir": "${workspaceRoot}/Assets/Scripts/Generated"
+            "sourceMaps": false,
+            "debugLog": true,
+            "outDir": "${workspaceRoot}" // /Assets/Scripts/Generated
         }
     ]
 }

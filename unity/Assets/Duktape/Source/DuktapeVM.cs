@@ -171,12 +171,14 @@ namespace Duktape
             var module_id = EnsureExtension(DuktapeAux.duk_require_string(ctx, 0));
             var parent_id = DuktapeAux.duk_require_string(ctx, 1);
             string resolve_to = null;
+            // Debug.LogFormat("cb_resolve_module module_id:'{0}', parent_id:'{1}'\n", module_id, parent_id);
 
             if (module_id.StartsWith("./") || module_id.StartsWith("../"))
             {
                 // 显式相对路径直接从 parent 模块路径拼接
                 var parent_path = PathUtils.GetDirectoryName(parent_id);
                 resolve_to = PathUtils.GetFullPath(PathUtils.Combine(parent_path, module_id), '/');
+                resolve_to = GetVM(ctx).ResolvePath(resolve_to);
             }
             else
             {
@@ -202,12 +204,12 @@ namespace Duktape
             var module_id = DuktapeAux.duk_require_string(ctx, 0);
             DuktapeDLL.duk_get_prop_string(ctx, 2, "filename");
             var filename = DuktapeAux.duk_require_string(ctx, -1);
+            // Debug.LogFormat("cb_load_module module_id:'{0}', filename:'{1}'\n", module_id, filename);
 
             var source = GetVM(ctx)._fileManager.ReadAllText(filename);
             if (source != null)
             {
                 DuktapeDLL.duk_push_string(ctx, source);
-                // Debug.LogFormat("load_cb: id:'{0}', filename:'{1}'\n", module_id, filename);
             }
             else
             {
@@ -351,17 +353,18 @@ namespace Duktape
         public void EvalMain(string filename)
         {
             var ctx = _ctx.rawValue;
+            var top = DuktapeDLL.duk_get_top(ctx);
             var path = ResolvePath(filename);
             var source = _fileManager.ReadAllText(path);
             DuktapeDLL.duk_push_string(ctx, source);
-            var err = DuktapeDLL.duk_module_node_peval_main(ctx, path);
+            var err = DuktapeDLL.duk_module_node_peval_main(ctx, filename);
             // var err = DuktapeDLL.duk_peval(ctx);
             // var err = DuktapeDLL.duk_peval_string_noresult(ctx, source);
             if (err != 0)
             {
-                Debug.LogErrorFormat("eval main error: {0}\n{1}", DuktapeDLL.duk_safe_to_string(ctx, -1), source);
+                Debug.LogErrorFormat("eval main error: {0}\n{1}", DuktapeDLL.duk_safe_to_string(ctx, -1), filename);
             }
-            DuktapeDLL.duk_pop(ctx);
+            DuktapeDLL.duk_set_top(ctx, top);
         }
 
         public void Destroy()

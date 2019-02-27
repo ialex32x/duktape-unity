@@ -25,6 +25,13 @@ namespace Duktape
             return _runner;
         }
 
+        public static int SetLoop(Action fn)
+        {
+            var id = ++_id;
+            GetRunner().AddLoop(id, fn);
+            return id;
+        }
+
         public static int SetTimeout(DuktapeFunction fn, double ms)
         {
             return SetTimeout(fn, (float)ms);
@@ -76,6 +83,11 @@ namespace Duktape
             _timers[id] = StartCoroutine(_Interval(id, fn, seconds));
         }
 
+        private void AddLoop(int id, Action fn)
+        {
+            _timers[id] = StartCoroutine(_Loop(id, fn));
+        }
+
         private bool RemoveTimer(int id)
         {
             Coroutine coroutine;
@@ -85,6 +97,15 @@ namespace Duktape
                 return _timers.Remove(id);
             }
             return false;
+        }
+
+        private IEnumerator _Loop(int id, Action fn)
+        {
+            while (true)
+            {
+                yield return null;
+                fn();
+            }
         }
 
         private IEnumerator _Timeout(int id, DuktapeFunction fn, float seconds)

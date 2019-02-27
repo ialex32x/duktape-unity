@@ -33,8 +33,12 @@ for (let p in DuktapeJS.Enum) {
 }
 
 let timer1 = setInterval(() => {
-    console.log("interval tick")
+    console.log("interval tick 1")
 }, 1000)
+
+setInterval(() => {
+    console.log("interval tick 2")
+}, 2000)
 
 setTimeout((a, b) => {
     console.log("timeout tick", a, b)

@@ -479,7 +479,7 @@ DUK_LOCAL void duk_unity_wrap_debug_detached_function(duk_context *ctx, void *ud
     }
 }
 
-DUK_EXTERNAL void *duk_unity_attch_debugger(duk_context *ctx, 
+DUK_EXTERNAL void *duk_unity_attach_debugger(duk_context *ctx, 
                                            duk_unity_debug_read_function read_cb, 
                                            duk_unity_debug_write_function write_cb, 
                                            duk_unity_debug_peek_function peek_cb, 
