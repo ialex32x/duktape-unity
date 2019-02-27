@@ -19,11 +19,17 @@
 * socket (tcp/udp)
 * websocket ()
 * 使用 protobufjs
+* enable debugger support (vscode)
 
 # 依赖环境
 使用 typescript 编写脚本时, 需要安装 typescript
 ```shell
 npm install -g typescript
+```
+
+如果重新生成 duktape 源代码, 需要安装 python, pip, 以及 pyyaml
+```shell
+pip install pyyaml
 ```
 
 # Example
@@ -89,3 +95,9 @@ export class A {
 * [slua](https://github.com/pangweiwei/slua)
 * [xLua](https://github.com/Tencent/xLua)
 * [typescript-for-unity](https://github.com/SpiralP/typescript-for-unity)
+
+# 其他
+
+* [vscode-duktape-debug](https://github.com/harold-b/vscode-duktape-debug)
+* [duktape-doc-debugger](https://github.com/svaarala/duktape/blob/master/doc/debugger.rst)
+
