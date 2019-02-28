@@ -21,6 +21,8 @@ namespace Duktape
         public static readonly string OBJ_PROP_EXPORTED_REFID = DuktapeDLL.DUK_HIDDEN_SYMBOL("exported-refid");
         // public static readonly string OBJ_PROP_SPECIAL_REFID = DuktapeDLL.DUK_HIDDEN_SYMBOL("special-refid");
 
+        public const string _DuktapeDelegates = "_DuktapeDelegates";
+
         public const string SPECIAL_ENUM = "Enum";
         public const string SPECIAL_DELEGATE = "Delegate";
 

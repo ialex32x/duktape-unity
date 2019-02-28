@@ -64,7 +64,17 @@ namespace Duktape
     {
     }
 
-    //TODO: generate comments in .d.ts
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    public class JSDelegateAttribute : Attribute
+    {
+        Type target { get; set; }
+
+        public JSDelegateAttribute(Type target)
+        {
+            this.target=target;
+        }
+    }
+
     [AttributeUsage(AttributeTargets.Class
                   | AttributeTargets.Struct
                   | AttributeTargets.Enum

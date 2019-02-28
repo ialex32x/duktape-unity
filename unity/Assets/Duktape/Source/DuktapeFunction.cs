@@ -26,12 +26,15 @@ namespace Duktape
             DuktapeDLL.duk_remove(ctx, -2);
         }
 
-        private void _InnerCall(IntPtr ctx, int nargs)
+        // 函数对象以及nargs数的参数必须由调用者保证已经入栈, 然后才能调用 _InternalCall
+        // 调用完成后栈顶为函数返回值, 或异常对象
+        public void _InternalPCall(IntPtr ctx, int nargs)
         {
             if (_argv != null)
             {
-                nargs = _argv.Length;
-                for (var i = 0; i < nargs; i++)
+                var length = _argv.Length;
+                nargs += length;
+                for (var i = 0; i < length; i++)
                 {
                     _argv[i].Push(ctx);
                 }
@@ -40,9 +43,16 @@ namespace Duktape
             if (ret != DuktapeDLL.DUK_EXEC_SUCCESS)
             {
                 var err = DuktapeAux.duk_to_string(ctx, -1);
-                DuktapeDLL.duk_pop(ctx);
-                throw new Exception(err);
+                // throw new Exception(err); 
+                Debug.LogError(err);
             }
+        }
+
+        public void Invoke()
+        {
+            var ctx = _ctx.rawValue;
+            this.Push(ctx);
+            _InternalPCall(ctx, 0);
             DuktapeDLL.duk_pop(ctx);
         }
 
@@ -52,7 +62,8 @@ namespace Duktape
             var ctx = _ctx.rawValue;
             this.Push(ctx);
             DuktapeBinding.duk_push_var(ctx, arg0);
-            _InnerCall(ctx, 1);
+            _InternalPCall(ctx, 1);
+            DuktapeDLL.duk_pop(ctx);
         }
 
         public void Invoke(object arg0, object arg1)
@@ -61,7 +72,8 @@ namespace Duktape
             this.Push(ctx);
             DuktapeBinding.duk_push_var(ctx, arg0);
             DuktapeBinding.duk_push_var(ctx, arg1);
-            _InnerCall(ctx, 2);
+            _InternalPCall(ctx, 2);
+            DuktapeDLL.duk_pop(ctx);
         }
 
         public void Invoke(object arg0, object arg1, object arg2)
@@ -71,7 +83,8 @@ namespace Duktape
             DuktapeBinding.duk_push_var(ctx, arg0);
             DuktapeBinding.duk_push_var(ctx, arg1);
             DuktapeBinding.duk_push_var(ctx, arg2);
-            _InnerCall(ctx, 3);
+            _InternalPCall(ctx, 3);
+            DuktapeDLL.duk_pop(ctx);
         }
 
         public void Invoke(object arg0, object arg1, object arg2, params object[] args)
@@ -86,14 +99,8 @@ namespace Duktape
             {
                 DuktapeBinding.duk_push_var(ctx, args[i]);
             }
-            _InnerCall(ctx, size + 3);
-        }
-
-        public void Call()
-        {
-            var ctx = _ctx.rawValue;
-            this.Push(ctx);
-            _InnerCall(ctx, 0);
+            _InternalPCall(ctx, size + 3);
+            DuktapeDLL.duk_pop(ctx);
         }
     }
 }

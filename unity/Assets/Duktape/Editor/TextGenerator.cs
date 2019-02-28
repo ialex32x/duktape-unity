@@ -16,6 +16,8 @@ namespace Duktape
         private StringBuilder sb = new StringBuilder();
         private int tabLevel;
 
+        public int size { get { return sb.Length; } }
+
         public TextGenerator(string newline, string tab)
         {
             this.newline = newline;
@@ -48,7 +50,7 @@ namespace Duktape
 
         public void AppendLines(params string[] lines)
         {
-            foreach(var line in lines)
+            foreach (var line in lines)
             {
                 AppendLine(line);
             }

@@ -14,8 +14,15 @@ public enum SampleEnum
 public class SampleClass
 {
     public delegate void DelegateFoo(string a, string b);
+    public delegate void DelegateFoo2(string a, string b);
+    // 暂不支持
+    // public delegate void DelegateFoo3(string a, out string b);
+    public delegate void DelegateFoo4(int a, float b);
 
     public DelegateFoo delegateFoo1;
+    public DelegateFoo2 delegateFoo2;
+    // public DelegateFoo3 delegateFoo3;
+    public DelegateFoo4 delegateFoo4;
 
     private string _name;
     private SampleEnum _sampleEnum;
@@ -210,7 +217,7 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
         var call = Delegate.CreateDelegate(typeof(SampleClass.DelegateFoo), "test", compatible, true);
         call.DynamicInvoke("a", "b");
 
-        // vm.Initialize(new FakeFileSystem(), this);
+        vm.Initialize(new FakeFileSystem(), this);
     }
 
     void OnDestroy()

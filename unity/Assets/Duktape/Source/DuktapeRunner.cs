@@ -112,7 +112,7 @@ namespace Duktape
         {
             yield return new WaitForSeconds(seconds);
             _timers.Remove(id);
-            fn.Call();
+            fn.Invoke();
         }
 
         private IEnumerator _Interval(int id, DuktapeFunction fn, float seconds)
@@ -121,7 +121,7 @@ namespace Duktape
             while (true)
             {
                 yield return wait;
-                fn.Call();
+                fn.Invoke();
             }
         }
 

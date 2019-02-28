@@ -99,13 +99,13 @@ namespace Duktape
             duk_begin_namespace(ctx, "DuktapeJS");
             {
                 duk_begin_special(ctx, DuktapeVM.SPECIAL_ENUM);
-                duk_add_method(ctx, "GetName", Enum_GetName, true);
+                duk_add_method(ctx, "GetName", Enum_GetName, -3);
                 duk_end_special(ctx);
             }
             {
                 duk_begin_special(ctx, DuktapeVM.SPECIAL_DELEGATE);
-                duk_add_method(ctx, "add", DelegateAdder, true);
-                duk_add_method(ctx, "remove", DelegateRemover, true);
+                duk_add_method(ctx, "add", DelegateAdder, -3);
+                duk_add_method(ctx, "remove", DelegateRemover, -3);
                 duk_end_special(ctx);
             }
             duk_end_namespace(ctx);
