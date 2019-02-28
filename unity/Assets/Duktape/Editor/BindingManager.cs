@@ -75,7 +75,14 @@ namespace Duktape
         {
             _csTypeNameMap[type] = name;
             _csTypeNameMapS[type.FullName] = name;
-            _csTypeNameMapS[type.Namespace + "." + type.Name] = name;
+            if (string.IsNullOrEmpty(type.Namespace))
+            {
+                _csTypeNameMapS[type.Name] = name;
+            }
+            else
+            {
+                _csTypeNameMapS[type.Namespace + "." + type.Name] = name;
+            }
         }
 
         public void AddExport(Type type)
