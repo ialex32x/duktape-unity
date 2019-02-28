@@ -67,11 +67,11 @@ namespace Duktape
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class JSDelegateAttribute : Attribute
     {
-        Type target { get; set; }
+        public Type target { get; set; }
 
         public JSDelegateAttribute(Type target)
         {
-            this.target=target;
+            this.target = target;
         }
     }
 

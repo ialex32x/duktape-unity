@@ -1,4 +1,4 @@
-// julio 2019/2/28 23:37:25
+// julio 2019/3/1 4:50:14
 declare class SampleStruct {
     constructor()
     ChangeFieldA(a: number): void

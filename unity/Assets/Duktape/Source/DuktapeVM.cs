@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 
 namespace Duktape
@@ -39,6 +40,8 @@ namespace Duktape
         private Dictionary<uint, Type> _exportedTypes = new Dictionary<uint, Type>(); // 从 refid 反查 Type
 
         private Dictionary<string, DuktapeFunction> _specialTypes = new Dictionary<string, DuktapeFunction>(); // 从 refid 反查 Type
+
+        private Dictionary<Type, MethodInfo> _delegates = new Dictionary<Type, MethodInfo>(); // 委托对应的 duktape 绑定函数
 
         public DuktapeContext context
         {
@@ -83,6 +86,24 @@ namespace Duktape
             var refid = val.rawValue;
             _specialTypes[name] = val;
             return refid;
+        }
+
+        public void AddDelegate(Type type, MethodInfo method)
+        {
+            _delegates[type] = method;
+            // Debug.LogFormat("Add Delegate {0} {1}", type, method);
+        }
+
+        public Delegate CreateDelegate(Type type, DuktapeDelegate fn)
+        {
+            MethodInfo method;
+            if (_delegates.TryGetValue(type, out method))
+            {
+                var target = Delegate.CreateDelegate(type, fn, method, true);
+                fn.target = target;
+                return target;
+            }
+            return null;
         }
 
         public uint AddExported(Type type, DuktapeFunction fn)

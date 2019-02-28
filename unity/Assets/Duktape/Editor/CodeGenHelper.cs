@@ -16,7 +16,6 @@ namespace Duktape
         public TopLevelCodeGen(CodeGenerator cg, TypeBindingInfo type)
         {
             this.cg = cg;
-            this.cg.csharp.AppendLine("// UserName: {0} @ {1}", Environment.UserName, this.cg.bindingManager.dateTime);
             this.cg.csharp.AppendLine("// Assembly: {0}", type.Assembly.GetName());
             this.cg.csharp.AppendLine("// Type: {0}", type.FullName);
             this.cg.csharp.AppendLine("using System;");
@@ -29,7 +28,6 @@ namespace Duktape
         public TopLevelCodeGen(CodeGenerator cg, string name)
         {
             this.cg = cg;
-            this.cg.csharp.AppendLine("// UserName: {0} @ {1}", Environment.UserName, this.cg.bindingManager.dateTime);
             this.cg.csharp.AppendLine("// Special: {0}", name);
             this.cg.csharp.AppendLine("using System;");
             this.cg.csharp.AppendLine("using System.Collections.Generic;");
@@ -38,25 +36,6 @@ namespace Duktape
 
         public void Dispose()
         {
-        }
-    }
-
-    public class DelegateWrapperCodeGen : IDisposable
-    {
-        protected CodeGenerator cg;
-        public DelegateWrapperCodeGen(CodeGenerator cg)
-        {
-            this.cg = cg;
-            this.cg.csharp.AppendLine("[{0}({1})]", typeof(JSBindingAttribute).Name, DuktapeVM.VERSION);
-            this.cg.csharp.AppendLine("[UnityEngine.Scripting.Preserve]");
-            this.cg.csharp.AppendLine("public class {0} : {1} {{", DuktapeVM._DuktapeDelegates, typeof(DuktapeBinding).Name);
-            this.cg.csharp.AddTabLevel();
-        }
-
-        public void Dispose()
-        {
-            this.cg.csharp.DecTabLevel();
-            this.cg.csharp.AppendLine("}");
         }
     }
 

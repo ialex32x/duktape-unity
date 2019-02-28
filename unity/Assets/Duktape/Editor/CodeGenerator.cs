@@ -39,7 +39,7 @@ namespace Duktape
                 {
                     using (new NamespaceCodeGen(this, Prefs.GetPrefs().ns))
                     {
-                        using (new DelegateWrapperCodeGen(this))
+                        using (new DelegateWrapperCodeGen(this, delegateBindingInfos))
                         {
                             for (var i = 0; i < delegateBindingInfos.Length; i++)
                             {
@@ -82,6 +82,19 @@ namespace Duktape
             }
         }
 
+        private void WriteAllText(string path, string contents)
+        {
+            // if (File.Exists(path))
+            // {
+            //     var old = File.ReadAllText(path);
+            //     if (old == contents)
+            //     {
+            //         return;
+            //     }
+            // }
+            File.WriteAllText(path, contents);
+        }
+
         public void WriteTo(string outDir, string filename, string tx)
         {
             try
@@ -91,7 +104,7 @@ namespace Duktape
                     var csName = filename + ".cs" + tx;
                     var csPath = Path.Combine(outDir, csName);
                     this.bindingManager.AddOutputFile(csPath);
-                    File.WriteAllText(csPath, this.csharp.ToString());
+                    WriteAllText(csPath, this.csharp.ToString());
                 }
             }
             catch (Exception exception)
@@ -106,7 +119,7 @@ namespace Duktape
                     var tsName = filename + ".d.ts" + tx;
                     var tsPath = Path.Combine(outDir, tsName);
                     this.bindingManager.AddOutputFile(tsPath);
-                    File.WriteAllText(tsPath, this.typescript.ToString());
+                    WriteAllText(tsPath, this.typescript.ToString());
                 }
             }
             catch (Exception exception)
