@@ -10,6 +10,13 @@ declare namespace DuktapeJS {
         static GetName(type: any, val: number): string
     }
 
+    class Delegate {
+        // not implemented
+        static on<R>(caller: any, fn: () => R): Delegate
+        static on<R, T0>(caller: any, fn: (arg0: T0) => R): Delegate
+        static on<R, T0, T1>(caller: any, fn: (arg0: T0, arg1: T1) => R): Delegate
+    }
+
     /*
     class Handler {
         caller: any
