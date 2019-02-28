@@ -1,5 +1,4 @@
 #if UNITY_STANDALONE_WIN
-// UserName: julio @ 2019/2/28 23:37:25
 // Special: _DuktapeDelegates
 using System;
 using System.Collections.Generic;
@@ -27,6 +26,28 @@ namespace DuktapeJS {
             // fn.Push(ctx);
             // push arguments here...
             // fn._InternalCall(ctx, 2);
+        }
+        [UnityEngine.Scripting.Preserve]
+        public static int reg(IntPtr ctx)
+        {
+            var type = typeof(_DuktapeDelegates);
+            var vm = DuktapeVM.GetVM(ctx);
+            var methods = type.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+            for (int i = 0, size = methods.Length; i < size; i++)
+            {
+                var method = methods[i];
+                var attributes = method.GetCustomAttributes(typeof(JSDelegateAttribute), false);
+                var attributesLength = attributes.Length;
+                if (attributesLength > 0)
+                {
+                    for (var a = 0; a < attributesLength; a++)
+                    {
+                        var attribute = attributes[a] as JSDelegateAttribute;
+                        vm.AddDelegate(attribute.target, method);
+                    }
+                }
+            }
+            return 0;
         }
     }
 }
