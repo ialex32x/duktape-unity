@@ -13,6 +13,17 @@ public enum SampleEnum
 [Duktape.JSType]
 public class SampleClass
 {
+    public delegate void DelegateFoo(string a, string b);
+    public delegate void DelegateFoo2(string a, string b);
+    // 暂不支持
+    // public delegate void DelegateFoo3(string a, out string b);
+    public delegate void DelegateFoo4(int a, float b);
+
+    public DelegateFoo delegateFoo1;
+    public DelegateFoo2 delegateFoo2;
+    // public DelegateFoo3 delegateFoo3;
+    public DelegateFoo4 delegateFoo4;
+
     private string _name;
     private SampleEnum _sampleEnum;
 
@@ -118,9 +129,6 @@ public static class SampleStructExtensions
 
 public class Sample : MonoBehaviour, Duktape.IDuktapeListener
 {
-    public delegate void DelegateFoo();
-    public DelegateFoo delegateFoo;
-
     DuktapeVM vm = new DuktapeVM();
 
     void checking<T>(T o)
@@ -179,15 +187,16 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
 
     public void OnLoaded(DuktapeVM vm)
     {
-        // var buffer = new byte[32];
-        // var handle = System.Runtime.InteropServices.GCHandle.Alloc(buffer);
-        // handle.Free();
-        DuktapeDebugger.CreateDebugger(vm.context.rawValue);
-
+        // DuktapeDebugger.CreateDebugger(vm.context.rawValue);
         vm.AddSearchPath("Assets/Scripts/polyfills");
         vm.AddSearchPath("Assets/Scripts/Generated");
         vm.EvalFile("console-minimal.js");
         vm.EvalMain("main.js");
+    }
+
+    public static void DelegateFooCompatible(string x, string a, string b)
+    {
+        Debug.Log($"{x}, {a}, {b}");
     }
 
     void Awake()
@@ -202,25 +211,18 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
         checking(new int?[] { 1, 2, 3 });
         checking(new List<SampleStruct>());
         checking(new List<SampleStruct?>());
-        checking(delegateFoo);
-        delegateFoo = Awake;
-        checking(delegateFoo);
-        delegateFoo += Awake;
-        checking(delegateFoo);
         // SampleStruct.X("", 1);
         // SampleStruct.X("");
+        var compatible = this.GetType().GetMethod("DelegateFooCompatible");
+        var call = Delegate.CreateDelegate(typeof(SampleClass.DelegateFoo), "test", compatible, true);
+        call.DynamicInvoke("a", "b");
 
-        var ctors = typeof(SampleClass).GetConstructors();
-        foreach (var ctor in ctors)
-        {
-            Debug.Log(ctor);
-        }
         vm.Initialize(new FakeFileSystem(), this);
     }
 
     void OnDestroy()
     {
-        DuktapeDebugger.Shutdown();
+        // DuktapeDebugger.Shutdown();
         vm.Destroy();
         vm = null;
     }

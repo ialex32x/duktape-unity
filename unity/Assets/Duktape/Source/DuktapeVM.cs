@@ -21,7 +21,10 @@ namespace Duktape
         public static readonly string OBJ_PROP_EXPORTED_REFID = DuktapeDLL.DUK_HIDDEN_SYMBOL("exported-refid");
         // public static readonly string OBJ_PROP_SPECIAL_REFID = DuktapeDLL.DUK_HIDDEN_SYMBOL("special-refid");
 
+        public const string _DuktapeDelegates = "_DuktapeDelegates";
+
         public const string SPECIAL_ENUM = "Enum";
+        public const string SPECIAL_DELEGATE = "Delegate";
 
         private DuktapeContext _ctx;
         private IFileSystem _fileManager;
@@ -369,7 +372,11 @@ namespace Duktape
 
         public void Destroy()
         {
-            DuktapeDLL.duk_destroy_heap(_ctx.rawValue);
+            if (_ctx != null)
+            {
+                DuktapeDLL.duk_destroy_heap(_ctx.rawValue);
+                _ctx = null;
+            }
         }
     }
 }

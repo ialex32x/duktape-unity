@@ -1,4 +1,4 @@
-// julio 2019/2/27 6:17:53
+// julio 2019/2/28 23:37:25
 declare enum SampleEnum {
     a = 0,
     b = 1,

@@ -5,6 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Skritt Debugger",
+            "type": "skritt-debugger",
+            "request": "attach",
+            "address": "localhost",
+            "port": 9091,
+            "localRoot": "${workspaceRoot}",
+            "sourceRoot": "${workspaceRoot}",
+            "stopOnEntry": true,
+            "validateVersion": false,
+            "supportsCachedBreakpoints": true,
+            "debugLogLevel": 0,
+            "showDebugVariables": false
+        },
+        {
             "name": "Duk Attach",
             "type": "duk",
             "request": "attach",
@@ -14,7 +28,7 @@
             "localRoot": "${workspaceRoot}",
             "sourceMaps": false,
             "debugLog": true,
-            "outDir": "${workspaceRoot}" // /Assets/Scripts/Generated
+            "outDir": "./Assets/Scripts/Generated" // /Assets/Scripts/Generated
         }
     ]
 }

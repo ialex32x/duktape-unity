@@ -1,5 +1,5 @@
 #if UNITY_STANDALONE_WIN
-// UserName: julio @ 2019/2/27 6:17:53
+// UserName: julio @ 2019/2/28 23:37:25
 // Assembly: Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 // Type: SampleStruct
 using System;
@@ -224,13 +224,13 @@ namespace DuktapeJS {
         {
             duk_begin_namespace(ctx);
             duk_begin_class(ctx, "SampleStruct", typeof(SampleStruct), BindConstructor);
-            duk_add_method(ctx, "ChangeFieldA", Bind_ChangeFieldA, false);
-            duk_add_method(ctx, "StaticMethodWithReturnAndNoOverride", BindStatic_StaticMethodWithReturnAndNoOverride, true);
-            duk_add_property(ctx, "readonly_property_c", BindRead_readonly_property_c, null, false);
-            duk_add_property(ctx, "readwrite_property_d", BindRead_readwrite_property_d, BindWrite_readwrite_property_d, false);
-            duk_add_property(ctx, "static_readwrite_property_d", BindRead_static_readwrite_property_d, BindWrite_static_readwrite_property_d, false);
-            duk_add_field(ctx, "field_a", BindRead_field_a, BindWrite_field_a, false);
-            duk_add_field(ctx, "static_field_b", BindStaticRead_static_field_b, BindStaticWrite_static_field_b, true);
+            duk_add_method(ctx, "ChangeFieldA", Bind_ChangeFieldA, -1);
+            duk_add_method(ctx, "StaticMethodWithReturnAndNoOverride", BindStatic_StaticMethodWithReturnAndNoOverride, -2);
+            duk_add_property(ctx, "readonly_property_c", BindRead_readonly_property_c, null, -1);
+            duk_add_property(ctx, "readwrite_property_d", BindRead_readwrite_property_d, BindWrite_readwrite_property_d, -1);
+            duk_add_property(ctx, "static_readwrite_property_d", BindRead_static_readwrite_property_d, BindWrite_static_readwrite_property_d, -1);
+            duk_add_field(ctx, "field_a", BindRead_field_a, BindWrite_field_a, -1);
+            duk_add_field(ctx, "static_field_b", BindStaticRead_static_field_b, BindStaticWrite_static_field_b, -2);
             duk_end_class(ctx);
             duk_end_namespace(ctx);
             return 0;

@@ -17,6 +17,7 @@ namespace Duktape
         private HashSet<Type> whitelist;
         private List<string> typePrefixBlacklist;
         private Dictionary<Type, TypeBindingInfo> exportedTypes = new Dictionary<Type, TypeBindingInfo>();
+        private Dictionary<Type, DelegateBindingInfo> exportedDelegates = new Dictionary<Type, DelegateBindingInfo>();
         private List<string> outputFiles = new List<string>();
 
         private Dictionary<Type, string> _tsTypeNameMap = new Dictionary<Type, string>();
@@ -51,6 +52,7 @@ namespace Duktape
             _tsTypeNameMap[typeof(bool)] = "boolean";
             _tsTypeNameMap[typeof(string)] = "string";
             _tsTypeNameMap[typeof(char)] = "string";
+            _tsTypeNameMap[typeof(void)] = "void";
 
             AddTypeNameMapCS(typeof(sbyte), "sbyte");
             AddTypeNameMapCS(typeof(byte), "byte");
@@ -66,6 +68,7 @@ namespace Duktape
             AddTypeNameMapCS(typeof(string), "string");
             AddTypeNameMapCS(typeof(char), "char");
             AddTypeNameMapCS(typeof(System.Object), "object");
+            AddTypeNameMapCS(typeof(void), "void");
         }
 
         private void AddTypeNameMapCS(Type type, string name)
@@ -78,6 +81,38 @@ namespace Duktape
         {
             var typeBindingInfo = new TypeBindingInfo(this, type);
             exportedTypes.Add(type, typeBindingInfo);
+        }
+
+        public void CollectDelegate(Type type)
+        {
+            if (type == null || type.BaseType != typeof(MulticastDelegate))
+            {
+                return;
+            }
+            if (!exportedDelegates.ContainsKey(type))
+            {
+                var invoke = type.GetMethod("Invoke");
+                var returnType = invoke.ReturnType;
+                var parameters = invoke.GetParameters();
+                // 是否存在等价 delegate
+                foreach (var kv in exportedDelegates)
+                {
+                    if (kv.Value.Equals(returnType, parameters))
+                    {
+                        log.AppendLine("skip delegate: {0} && {1}", kv.Value, type);
+                        kv.Value.types.Add(type);
+                        return;
+                    }
+                }
+                var delegateBindingInfo = new DelegateBindingInfo(returnType, parameters);
+                delegateBindingInfo.types.Add(type);
+                exportedDelegates.Add(type, delegateBindingInfo);
+                log.AppendLine("add delegate: {0}", type);
+                for (var i = 0; i < parameters.Length; i++)
+                {
+                    CollectDelegate(parameters[i].ParameterType);
+                }
+            }
         }
 
         public bool IsExported(Type type)
@@ -197,15 +232,18 @@ namespace Duktape
 
         public void Collect()
         {
+            // 收集直接类型, 加入 exportedTypes
             Collect(Prefs.GetPrefs().explicitAssemblies, false);
             Collect(Prefs.GetPrefs().implicitAssemblies, true);
+
             log.AppendLine("collecting members");
             log.AddTabLevel();
             foreach (var typeBindingInfoKV in exportedTypes)
             {
-                log.AppendLine("type: {0}", typeBindingInfoKV.Value.type);
+                var typeBindingInfo = typeBindingInfoKV.Value;
+                log.AppendLine("type: {0}", typeBindingInfo.type);
                 log.AddTabLevel();
-                typeBindingInfoKV.Value.Collect();
+                typeBindingInfo.Collect();
                 log.DecTabLevel();
             }
             log.DecTabLevel();
@@ -301,6 +339,7 @@ namespace Duktape
                 var typeBindingInfo = typeKV.Value;
                 try
                 {
+                    cg.Clear();
                     cg.Generate(typeBindingInfo);
                     cg.WriteTo(outDir, typeBindingInfo.GetFileName(), tx);
                 }
@@ -311,9 +350,24 @@ namespace Duktape
                 }
             }
 
+            try
+            {
+                var exportedDelegatesArray = new DelegateBindingInfo[this.exportedDelegates.Count];
+                this.exportedDelegates.Values.CopyTo(exportedDelegatesArray, 0);
+
+                cg.Clear();
+                cg.Generate(exportedDelegatesArray);
+                cg.WriteTo(outDir, DuktapeVM._DuktapeDelegates, tx);
+            }
+            catch (Exception exception)
+            {
+                Error(string.Format("generate failed: {0}", exception.Message));
+                Debug.LogError(exception.StackTrace);
+            }
+
             var logPath = Prefs.GetPrefs().logPath;
             File.WriteAllText(logPath, log.ToString());
-            Debug.LogFormat("generated {0} types", exportedTypes.Count);
+            Debug.LogFormat("generated {0} type(s), {1} delegate(s)", exportedTypes.Count, exportedDelegates.Count);
         }
     }
 }
