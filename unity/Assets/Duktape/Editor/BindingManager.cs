@@ -367,7 +367,9 @@ namespace Duktape
 
             var logPath = Prefs.GetPrefs().logPath;
             File.WriteAllText(logPath, log.ToString());
-            Debug.LogFormat("generated {0} type(s), {1} delegate(s)", exportedTypes.Count, exportedDelegates.Count);
+            var now = DateTime.Now;
+            var ts = now.Subtract(dateTime);
+            Debug.LogFormat("generated {0} type(s), {1} delegate(s) in {2:0.##} seconds.", exportedTypes.Count, exportedDelegates.Count, ts.TotalSeconds);
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Duktape
             this.cg.csharp.AppendLine("using System.Collections.Generic;");
             this.cg.csharp.AppendLine();
 
-            this.cg.typescript.AppendLine("// {0} {1}", Environment.UserName, this.cg.bindingManager.dateTime);
+            // this.cg.typescript.AppendLine("// {0} {1}", Environment.UserName, this.cg.bindingManager.dateTime);
         }
 
         public TopLevelCodeGen(CodeGenerator cg, string name)

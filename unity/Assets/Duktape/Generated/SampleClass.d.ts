@@ -1,4 +1,3 @@
-// julio 2019/3/1 4:50:14
 declare class SampleClass {
     /**
      * 简单构造函数测试
