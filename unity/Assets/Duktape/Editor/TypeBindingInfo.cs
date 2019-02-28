@@ -309,11 +309,11 @@ namespace Duktape
         {
             return methodInfo.IsDefined(typeof(ExtensionAttribute), false);
         }
-
+        
+        // 收集所有 字段,属性,方法
         public void Collect()
         {
             var bindingFlags = BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
-            // 收集所有 字段,属性,方法
             var fields = type.GetFields(bindingFlags);
             foreach (var field in fields)
             {

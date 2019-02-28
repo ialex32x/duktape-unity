@@ -82,12 +82,32 @@ namespace Duktape
             return -1;
         }
 
+        [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+        public static int DelegateAdder(IntPtr ctx)
+        {
+            return 0;
+        }
+
+        [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+        public static int DelegateRemover(IntPtr ctx)
+        {
+            return 0;
+        }
+
         public static void reg(IntPtr ctx)
         {
             duk_begin_namespace(ctx, "DuktapeJS");
-            duk_begin_special(ctx, DuktapeVM.SPECIAL_ENUM);
-            duk_add_method(ctx, "GetName", Enum_GetName, true);
-            duk_end_special(ctx);
+            {
+                duk_begin_special(ctx, DuktapeVM.SPECIAL_ENUM);
+                duk_add_method(ctx, "GetName", Enum_GetName, true);
+                duk_end_special(ctx);
+            }
+            {
+                duk_begin_special(ctx, DuktapeVM.SPECIAL_DELEGATE);
+                duk_add_method(ctx, "add", DelegateAdder, true);
+                duk_add_method(ctx, "remove", DelegateRemover, true);
+                duk_end_special(ctx);
+            }
             duk_end_namespace(ctx);
             duk_add_method(ctx, "setInterval", SetInterval, -1);
             duk_add_method(ctx, "setTimeout", SetTimeout, -1);

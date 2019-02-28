@@ -199,13 +199,15 @@ namespace Duktape
         {
             Collect(Prefs.GetPrefs().explicitAssemblies, false);
             Collect(Prefs.GetPrefs().implicitAssemblies, true);
+            
             log.AppendLine("collecting members");
             log.AddTabLevel();
             foreach (var typeBindingInfoKV in exportedTypes)
             {
-                log.AppendLine("type: {0}", typeBindingInfoKV.Value.type);
+                var typeBindingInfo = typeBindingInfoKV.Value;
+                log.AppendLine("type: {0}", typeBindingInfo.type);
                 log.AddTabLevel();
-                typeBindingInfoKV.Value.Collect();
+                typeBindingInfo.Collect();
                 log.DecTabLevel();
             }
             log.DecTabLevel();
