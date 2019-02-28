@@ -75,6 +75,7 @@ namespace Duktape
         {
             _csTypeNameMap[type] = name;
             _csTypeNameMapS[type.FullName] = name;
+            _csTypeNameMapS[type.Namespace + "." + type.Name] = name;
         }
 
         public void AddExport(Type type)
@@ -149,6 +150,24 @@ namespace Duktape
         public string GetTypeFullNameCS(Type type)
         {
             // Debug.LogFormat("{0} Array {1} ByRef {2} GetElementType {3}", type, type.IsArray, type.IsByRef, type.GetElementType());
+            if (type.IsGenericType)
+            {
+                var @namespace = string.IsNullOrEmpty(type.Namespace) ? "" : (type.Namespace + ".");
+                var purename = @namespace + type.Name.Substring(0, type.Name.Length - 2);
+                var gargs = type.GetGenericArguments();
+                purename += "<";
+                for (var i = 0; i < gargs.Length; i++)
+                {
+                    var garg = gargs[i];
+                    purename += GetTypeFullNameCS(garg);
+                    if (i != gargs.Length - 1)
+                    {
+                        purename += ", ";
+                    }
+                }
+                purename += ">";
+                return purename;
+            }
             if (type.IsArray)
             {
                 return GetTypeFullNameCS(type.GetElementType()) + "[]";

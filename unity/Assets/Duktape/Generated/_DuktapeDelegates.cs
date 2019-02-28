@@ -28,6 +28,24 @@ namespace DuktapeJS {
             // fn._InternalCall(ctx, 2);
         }
         [UnityEngine.Scripting.Preserve]
+        [Duktape.JSDelegateAttribute(typeof(System.Action))]
+        public static void _DuktapeDelegates2(DuktapeFunction fn) {
+            // generate binding code here
+            // var ctx = fn.GetContext().rawValue;
+            // fn.Push(ctx);
+            // push arguments here...
+            // fn._InternalCall(ctx, 0);
+        }
+        [UnityEngine.Scripting.Preserve]
+        [Duktape.JSDelegateAttribute(typeof(System.Action<string>))]
+        public static void _DuktapeDelegates3(DuktapeFunction fn, string obj) {
+            // generate binding code here
+            // var ctx = fn.GetContext().rawValue;
+            // fn.Push(ctx);
+            // push arguments here...
+            // fn._InternalCall(ctx, 1);
+        }
+        [UnityEngine.Scripting.Preserve]
         public static int reg(IntPtr ctx)
         {
             var type = typeof(_DuktapeDelegates);

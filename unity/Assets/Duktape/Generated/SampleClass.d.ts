@@ -14,4 +14,6 @@ declare class SampleClass {
     delegateFoo1: any
     delegateFoo2: any
     delegateFoo4: any
+    action1: any
+    action2: any
 }
