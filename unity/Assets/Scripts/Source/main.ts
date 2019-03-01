@@ -21,7 +21,7 @@ console.log(`ss.field_a = ${ss.field_a}`)
 
 let scxx = new SampleClass("testcase of SampleClass:", "a1", "a2", "a3")
 scxx.SetEnum(SampleEnum.b)
-
+scxx.TestVector3([1, 2, 3])
 scxx.delegateFoo1 = new Delegate2()
 scxx.delegateFoo1.on(scxx, (a, b) => {
     console.log("delegate callback from SampleClass", a, b)
