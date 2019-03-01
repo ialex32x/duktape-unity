@@ -134,6 +134,11 @@ namespace Duktape
             duk_push_any(ctx, (object)o);
         }
 
+        public static void duk_push_delegate(IntPtr ctx, Delegate @delegate)
+        {
+
+        }
+
         // variant push
         public static void duk_push_any(IntPtr ctx, object o)
         {
@@ -153,7 +158,11 @@ namespace Duktape
                 duk_push_any(ctx, (Array)o);
                 return;
             }
-            // if (type.BaseType)
+            if (type.BaseType == typeof(MulticastDelegate))
+            {
+                duk_push_delegate(ctx, (Delegate)o);
+                return;
+            }
             duk_push_object(ctx, (object)o);
         }
 

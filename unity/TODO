@@ -3,7 +3,7 @@
     ✔ nodejs-like module @done(19-02-28 16:06)
     ✔ auto generate C# types binding code @done(19-02-28 16:06)
     ✔ auto generate d.ts for exported C# types @done(19-02-28 16:07)
-    ☐ 处理 delegate @started(19-03-01 08:43)
+    ✔ 处理 delegate @started(19-03-01 08:43) @done(19-03-01 15:12) @lasted(6h29m4s)
     ☐ 处理重载函数
     ☐ 处理 interface
     ☐ 处理泛型 @started(19-03-01 08:44)
@@ -19,4 +19,7 @@
 兼容性: 
     ✔ setInterval/setTimeout @done(19-02-28 16:02)
     ☐ http.GET/POST/FORM
+
+FIXME: 
+    ☐ duk_get_delegate 中缓存的 jsValue 存在gc问题 (js 层 DelegateBase 没有 Finalizer) @started(19-03-01 15:14)
 
