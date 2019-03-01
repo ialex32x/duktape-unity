@@ -360,7 +360,7 @@ namespace Duktape
                 // Debug.LogFormat("check top {0}", DuktapeDLL.duk_get_top(ctx));
                 if (DuktapeDLL.duk_pcall(ctx, 0) != DuktapeDLL.DUK_EXEC_SUCCESS)
                 {
-                    Debug.LogErrorFormat("call error: {0}\n{1}", DuktapeDLL.duk_safe_to_string(ctx, -1), filename);
+                    DuktapeAux.PrintError(ctx, -1, filename);
                 }
                 DuktapeDLL.duk_pop(ctx);
                 // Debug.LogFormat("check top {0}", DuktapeDLL.duk_get_top(ctx));
