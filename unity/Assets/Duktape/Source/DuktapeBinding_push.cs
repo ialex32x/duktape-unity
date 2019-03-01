@@ -134,9 +134,10 @@ namespace Duktape
             duk_push_any(ctx, (object)o);
         }
 
-        public static void duk_push_delegate(IntPtr ctx, Delegate @delegate)
+        public static void duk_push_delegate(IntPtr ctx, Delegate o)
         {
-
+            //TODO: delegate push
+            duk_push_object(ctx, (object)o);
         }
 
         // variant push

@@ -179,7 +179,7 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 var ret = self.delegateFoo1;
-                duk_push_any(ctx, ret);
+                duk_push_delegate(ctx, ret);
                 return 1;
             }
             catch (Exception exception)
@@ -214,7 +214,7 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 var ret = self.delegateFoo2;
-                duk_push_any(ctx, ret);
+                duk_push_delegate(ctx, ret);
                 return 1;
             }
             catch (Exception exception)
@@ -249,7 +249,7 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 var ret = self.delegateFoo4;
-                duk_push_any(ctx, ret);
+                duk_push_delegate(ctx, ret);
                 return 1;
             }
             catch (Exception exception)
@@ -284,7 +284,7 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 var ret = self.action1;
-                duk_push_any(ctx, ret);
+                duk_push_delegate(ctx, ret);
                 return 1;
             }
             catch (Exception exception)
@@ -319,7 +319,7 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 var ret = self.action2;
-                duk_push_any(ctx, ret);
+                duk_push_delegate(ctx, ret);
                 return 1;
             }
             catch (Exception exception)
