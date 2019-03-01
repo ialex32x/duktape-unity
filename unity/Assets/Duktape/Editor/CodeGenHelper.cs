@@ -16,14 +16,22 @@ namespace Duktape
         public TopLevelCodeGen(CodeGenerator cg, TypeBindingInfo type)
         {
             this.cg = cg;
-            this.cg.csharp.AppendLine("// UserName: {0} @ {1}", Environment.UserName, this.cg.bindingManager.dateTime);
             this.cg.csharp.AppendLine("// Assembly: {0}", type.Assembly.GetName());
             this.cg.csharp.AppendLine("// Type: {0}", type.FullName);
             this.cg.csharp.AppendLine("using System;");
             this.cg.csharp.AppendLine("using System.Collections.Generic;");
             this.cg.csharp.AppendLine();
 
-            this.cg.typescript.AppendLine("// {0} {1}", Environment.UserName, this.cg.bindingManager.dateTime);
+            // this.cg.typescript.AppendLine("// {0} {1}", Environment.UserName, this.cg.bindingManager.dateTime);
+        }
+
+        public TopLevelCodeGen(CodeGenerator cg, string name)
+        {
+            this.cg = cg;
+            this.cg.csharp.AppendLine("// Special: {0}", name);
+            this.cg.csharp.AppendLine("using System;");
+            this.cg.csharp.AppendLine("using System.Collections.Generic;");
+            this.cg.csharp.AppendLine();
         }
 
         public void Dispose()
@@ -34,36 +42,50 @@ namespace Duktape
     public class NamespaceCodeGen : IDisposable
     {
         protected CodeGenerator cg;
-        protected string ns;
-        protected TypeBindingInfo type;
+        protected string csNamespace;
+        protected string tsNamespace;
+        protected bool tsNamespaceWrite;
 
-        public NamespaceCodeGen(CodeGenerator cg, string ns, TypeBindingInfo type)
+        public NamespaceCodeGen(CodeGenerator cg, string csNamespace)
         {
             this.cg = cg;
-            this.ns = ns;
-            this.type = type;
-            if (!string.IsNullOrEmpty(ns))
+            this.csNamespace = csNamespace;
+            if (!string.IsNullOrEmpty(csNamespace))
             {
-                this.cg.csharp.AppendLine("namespace {0} {{", ns);
+                this.cg.csharp.AppendLine("namespace {0} {{", csNamespace);
+                this.cg.csharp.AddTabLevel();
+            }
+            this.cg.csharp.AppendLine("using Duktape;");
+        }
+
+        public NamespaceCodeGen(CodeGenerator cg, string csNamespace, string tsNamespace)
+        {
+            this.cg = cg;
+            this.csNamespace = csNamespace;
+            this.tsNamespace = tsNamespace;
+            if (!string.IsNullOrEmpty(csNamespace))
+            {
+                this.cg.csharp.AppendLine("namespace {0} {{", csNamespace);
                 this.cg.csharp.AddTabLevel();
             }
             this.cg.csharp.AppendLine("using Duktape;");
             // cg.csharp.AppendLine("using UnityEngine;");
-            if (!string.IsNullOrEmpty(type.Namespace))
+            if (!string.IsNullOrEmpty(tsNamespace))
             {
-                this.cg.typescript.AppendLine("declare namespace {0} {{", type.Namespace);
+                tsNamespaceWrite = true;
+                this.cg.typescript.AppendLine("declare namespace {0} {{", tsNamespace);
                 this.cg.typescript.AddTabLevel();
             }
         }
 
         public void Dispose()
         {
-            if (!string.IsNullOrEmpty(ns))
+            if (!string.IsNullOrEmpty(csNamespace))
             {
                 this.cg.csharp.DecTabLevel();
                 this.cg.csharp.AppendLine("}");
             }
-            if (!string.IsNullOrEmpty(type.Namespace))
+            if (tsNamespaceWrite)
             {
                 this.cg.typescript.DecTabLevel();
                 this.cg.typescript.AppendLine("}");

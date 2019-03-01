@@ -1,5 +1,4 @@
 #if UNITY_STANDALONE_WIN
-// UserName: julio @ 2019/2/27 6:17:53
 // Assembly: Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 // Type: SampleEnum
 using System;
@@ -15,9 +14,9 @@ namespace DuktapeJS {
         {
             duk_begin_namespace(ctx);
             duk_begin_enum(ctx, "SampleEnum", typeof(SampleEnum));
-            duk_add_const(ctx, "a", 0);
-            duk_add_const(ctx, "b", 1);
-            duk_add_const(ctx, "c", 2);
+            duk_add_const(ctx, "a", 0, -2);
+            duk_add_const(ctx, "b", 1, -2);
+            duk_add_const(ctx, "c", 2, -2);
             duk_end_enum(ctx);
             duk_end_namespace(ctx);
             return 0;

@@ -245,25 +245,11 @@ namespace Duktape
             return methodInfo.GetGenericArguments().Length > 0;
         }
 
-        // //replaced by method.IsSpecialName
-        // public bool IsPropertyMethod(MethodInfo methodInfo)
-        // {
-        //     var name = methodInfo.Name;
-        //     if (name.Length > 4 && (name.StartsWith("set_") || name.StartsWith("get_")))
-        //     {
-        //         PropertyBindingInfo prop;
-        //         if (properties.TryGetValue(name.Substring(4), out prop))
-        //         {
-        //             return prop.propertyInfo.GetMethod == methodInfo || prop.propertyInfo.SetMethod == methodInfo;
-        //         }
-        //     }
-        //     return false;
-        // }
-
         public void AddField(FieldInfo fieldInfo)
         {
             try
             {
+                bindingManager.CollectDelegate(fieldInfo.FieldType);
                 fields.Add(fieldInfo.Name, new FieldBindingInfo(fieldInfo));
                 bindingManager.Info("[AddField] {0}.{1}", type, fieldInfo.Name);
             }
@@ -277,6 +263,7 @@ namespace Duktape
         {
             try
             {
+                bindingManager.CollectDelegate(propInfo.PropertyType);
                 properties.Add(propInfo.Name, new PropertyBindingInfo(propInfo));
                 bindingManager.Info("[AddProperty] {0}.{1}", type, propInfo.Name);
             }
@@ -295,7 +282,12 @@ namespace Duktape
                 overrides = new MethodBindingInfo(methodInfo.IsStatic, TypeBindingInfo.GetNamingAttribute(methodInfo) ?? methodInfo.Name);
                 group.Add(methodInfo.Name, overrides);
             }
+            var parameters = methodInfo.GetParameters();
             overrides.Add(methodInfo);
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                bindingManager.CollectDelegate(parameters[i].ParameterType);
+            }
             bindingManager.Info("[AddMethod] {0}.{1}", type, methodInfo);
         }
 
@@ -310,10 +302,10 @@ namespace Duktape
             return methodInfo.IsDefined(typeof(ExtensionAttribute), false);
         }
 
+        // 收集所有 字段,属性,方法
         public void Collect()
         {
             var bindingFlags = BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
-            // 收集所有 字段,属性,方法
             var fields = type.GetFields(bindingFlags);
             foreach (var field in fields)
             {

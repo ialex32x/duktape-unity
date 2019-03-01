@@ -1,4 +1,3 @@
-// julio 2019/2/27 6:17:53
 declare class SampleClass {
     /**
      * 简单构造函数测试
@@ -12,4 +11,10 @@ declare class SampleClass {
     Sum(all: number[]): number
     readonly name: string
     readonly sampleEnum: SampleEnum
+    delegateFoo1: any
+    delegateFoo2: any
+    delegateFoo4: any
+    action1: any
+    action2: any
+    actions1: any[]
 }

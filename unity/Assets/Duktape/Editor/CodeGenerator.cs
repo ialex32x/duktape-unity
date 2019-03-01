@@ -30,14 +30,40 @@ namespace Duktape
             typescript.Clear();
         }
 
+        // 生成委托绑定
+        public void Generate(DelegateBindingInfo[] delegateBindingInfos)
+        {
+            using (new PlatformCodeGen(this))
+            {
+                using (new TopLevelCodeGen(this, DuktapeVM._DuktapeDelegates))
+                {
+                    using (new NamespaceCodeGen(this, Prefs.GetPrefs().ns))
+                    {
+                        using (new DelegateWrapperCodeGen(this, delegateBindingInfos))
+                        {
+                            for (var i = 0; i < delegateBindingInfos.Length; i++)
+                            {
+                                using (new PreservedCodeGen(this))
+                                {
+                                    using (new DelegateCodeGen(this, delegateBindingInfos[i], i))
+                                    {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 生成类型绑定
         public void Generate(TypeBindingInfo typeBindingInfo)
         {
-            Clear();
             using (new PlatformCodeGen(this))
             {
                 using (new TopLevelCodeGen(this, typeBindingInfo))
                 {
-                    using (new NamespaceCodeGen(this, Prefs.GetPrefs().ns, typeBindingInfo))
+                    using (new NamespaceCodeGen(this, Prefs.GetPrefs().ns, typeBindingInfo.Namespace))
                     {
                         if (typeBindingInfo.IsEnum)
                         {
@@ -56,16 +82,29 @@ namespace Duktape
             }
         }
 
+        private void WriteAllText(string path, string contents)
+        {
+            // if (File.Exists(path))
+            // {
+            //     var old = File.ReadAllText(path);
+            //     if (old == contents)
+            //     {
+            //         return;
+            //     }
+            // }
+            File.WriteAllText(path, contents);
+        }
+
         public void WriteTo(string outDir, string filename, string tx)
         {
             try
             {
-                if (this.csharp.enabled)
+                if (this.csharp.enabled && this.csharp.size > 0)
                 {
                     var csName = filename + ".cs" + tx;
                     var csPath = Path.Combine(outDir, csName);
                     this.bindingManager.AddOutputFile(csPath);
-                    File.WriteAllText(csPath, this.csharp.ToString());
+                    WriteAllText(csPath, this.csharp.ToString());
                 }
             }
             catch (Exception exception)
@@ -75,12 +114,12 @@ namespace Duktape
 
             try
             {
-                if (this.typescript.enabled)
+                if (this.typescript.enabled && this.typescript.size > 0)
                 {
                     var tsName = filename + ".d.ts" + tx;
                     var tsPath = Path.Combine(outDir, tsName);
                     this.bindingManager.AddOutputFile(tsPath);
-                    File.WriteAllText(tsPath, this.typescript.ToString());
+                    WriteAllText(tsPath, this.typescript.ToString());
                 }
             }
             catch (Exception exception)
@@ -122,7 +161,43 @@ namespace Duktape
             {
                 return "duk_get_primitive";
             }
+            if (type.BaseType == typeof(MulticastDelegate))
+            {
+                return "duk_get_delegate";
+            }
             return "duk_get_classvalue";
+        }
+
+        // 生成参数对应的字符串形式参数列表
+        public string GetParametersDeclCS(ParameterInfo[] parameters)
+        {
+            var size = parameters.Length;
+            var arglist = "";
+            if (size == 0)
+            {
+                return arglist;
+            }
+            for (var i = 0; i < size; i++)
+            {
+                var parameter = parameters[i];
+                var typename = bindingManager.GetTypeFullNameCS(parameter.ParameterType);
+                if (parameter.IsOut && parameter.ParameterType.IsByRef)
+                {
+                    arglist += "out ";
+                }
+                else if (parameter.ParameterType.IsByRef)
+                {
+                    arglist += "ref ";
+                }
+                arglist += typename;
+                arglist += " ";
+                arglist += parameter.Name;
+                if (i != size - 1)
+                {
+                    arglist += ", ";
+                }
+            }
+            return arglist;
         }
 
         public void AppendPushValue(Type type, string value)
@@ -173,6 +248,7 @@ namespace Duktape
             return null;
         }
 
+        // parametersByRef: 可修改参数将被加入此列表
         public string AppendGetParameters(string argc, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
         {
             var arglist = "";

@@ -1,5 +1,4 @@
 #if UNITY_STANDALONE_WIN
-// UserName: julio @ 2019/2/27 6:17:53
 // Assembly: Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 // Type: SampleClass
 using System;
@@ -156,16 +155,232 @@ namespace DuktapeJS {
             }
         }
         [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int BindRead_delegateFoo1(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                var ret = self.delegateFoo1;
+                duk_push_any(ctx, ret);
+                return 1;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int BindWrite_delegateFoo1(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                SampleClass.DelegateFoo value;
+                duk_get_delegate(ctx, 0, out value);
+                self.delegateFoo1 = value;
+                return 0;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int BindRead_delegateFoo2(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                var ret = self.delegateFoo2;
+                duk_push_any(ctx, ret);
+                return 1;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int BindWrite_delegateFoo2(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                SampleClass.DelegateFoo2 value;
+                duk_get_delegate(ctx, 0, out value);
+                self.delegateFoo2 = value;
+                return 0;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int BindRead_delegateFoo4(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                var ret = self.delegateFoo4;
+                duk_push_any(ctx, ret);
+                return 1;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int BindWrite_delegateFoo4(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                SampleClass.DelegateFoo4 value;
+                duk_get_delegate(ctx, 0, out value);
+                self.delegateFoo4 = value;
+                return 0;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int BindRead_action1(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                var ret = self.action1;
+                duk_push_any(ctx, ret);
+                return 1;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int BindWrite_action1(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                System.Action value;
+                duk_get_delegate(ctx, 0, out value);
+                self.action1 = value;
+                return 0;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int BindRead_action2(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                var ret = self.action2;
+                duk_push_any(ctx, ret);
+                return 1;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int BindWrite_action2(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                System.Action<string> value;
+                duk_get_delegate(ctx, 0, out value);
+                self.action2 = value;
+                return 0;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int BindRead_actions1(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                var ret = self.actions1;
+                duk_push_any(ctx, ret);
+                return 1;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int BindWrite_actions1(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                System.Action[] value;
+                duk_get_delegate_array(ctx, 0, out value);
+                self.actions1 = value;
+                return 0;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
         public static int reg(IntPtr ctx)
         {
             duk_begin_namespace(ctx);
             duk_begin_class(ctx, "SampleClass", typeof(SampleClass), BindConstructor);
-            duk_add_method(ctx, "SetEnum", Bind_SetEnum, false);
-            duk_add_method(ctx, "CheckingVA", Bind_CheckingVA, false);
-            duk_add_method(ctx, "CheckingVA2", Bind_CheckingVA2, false);
-            duk_add_method(ctx, "Sum", Bind_Sum, false);
-            duk_add_property(ctx, "name", BindRead_name, null, false);
-            duk_add_property(ctx, "sampleEnum", BindRead_sampleEnum, null, false);
+            duk_add_method(ctx, "SetEnum", Bind_SetEnum, -1);
+            duk_add_method(ctx, "CheckingVA", Bind_CheckingVA, -1);
+            duk_add_method(ctx, "CheckingVA2", Bind_CheckingVA2, -1);
+            duk_add_method(ctx, "Sum", Bind_Sum, -1);
+            duk_add_property(ctx, "name", BindRead_name, null, -1);
+            duk_add_property(ctx, "sampleEnum", BindRead_sampleEnum, null, -1);
+            duk_add_field(ctx, "delegateFoo1", BindRead_delegateFoo1, BindWrite_delegateFoo1, -1);
+            duk_add_field(ctx, "delegateFoo2", BindRead_delegateFoo2, BindWrite_delegateFoo2, -1);
+            duk_add_field(ctx, "delegateFoo4", BindRead_delegateFoo4, BindWrite_delegateFoo4, -1);
+            duk_add_field(ctx, "action1", BindRead_action1, BindWrite_action1, -1);
+            duk_add_field(ctx, "action2", BindRead_action2, BindWrite_action2, -1);
+            duk_add_field(ctx, "actions1", BindRead_actions1, BindWrite_actions1, -1);
             duk_end_class(ctx);
             duk_end_namespace(ctx);
             return 0;

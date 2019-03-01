@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 
 namespace Duktape
@@ -21,7 +22,10 @@ namespace Duktape
         public static readonly string OBJ_PROP_EXPORTED_REFID = DuktapeDLL.DUK_HIDDEN_SYMBOL("exported-refid");
         // public static readonly string OBJ_PROP_SPECIAL_REFID = DuktapeDLL.DUK_HIDDEN_SYMBOL("special-refid");
 
+        public const string _DuktapeDelegates = "_DuktapeDelegates";
+
         public const string SPECIAL_ENUM = "Enum";
+        public const string SPECIAL_DELEGATE = "Delegate";
 
         private DuktapeContext _ctx;
         private IFileSystem _fileManager;
@@ -36,6 +40,8 @@ namespace Duktape
         private Dictionary<uint, Type> _exportedTypes = new Dictionary<uint, Type>(); // 从 refid 反查 Type
 
         private Dictionary<string, DuktapeFunction> _specialTypes = new Dictionary<string, DuktapeFunction>(); // 从 refid 反查 Type
+
+        private Dictionary<Type, MethodInfo> _delegates = new Dictionary<Type, MethodInfo>(); // 委托对应的 duktape 绑定函数
 
         public DuktapeContext context
         {
@@ -80,6 +86,24 @@ namespace Duktape
             var refid = val.rawValue;
             _specialTypes[name] = val;
             return refid;
+        }
+
+        public void AddDelegate(Type type, MethodInfo method)
+        {
+            _delegates[type] = method;
+            // Debug.LogFormat("Add Delegate {0} {1}", type, method);
+        }
+
+        public Delegate CreateDelegate(Type type, DuktapeDelegate fn)
+        {
+            MethodInfo method;
+            if (_delegates.TryGetValue(type, out method))
+            {
+                var target = Delegate.CreateDelegate(type, fn, method, true);
+                fn.target = target;
+                return target;
+            }
+            return null;
         }
 
         public uint AddExported(Type type, DuktapeFunction fn)
@@ -369,7 +393,11 @@ namespace Duktape
 
         public void Destroy()
         {
-            DuktapeDLL.duk_destroy_heap(_ctx.rawValue);
+            if (_ctx != null)
+            {
+                DuktapeDLL.duk_destroy_heap(_ctx.rawValue);
+                _ctx = null;
+            }
         }
     }
 }

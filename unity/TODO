@@ -1,4 +1,22 @@
 
-☐ setInterval/setTimeout
-☐ http.GET/POST
+核心功能: 
+    ✔ nodejs-like module @done(19-02-28 16:06)
+    ✔ auto generate C# types binding code @done(19-02-28 16:06)
+    ✔ auto generate d.ts for exported C# types @done(19-02-28 16:07)
+    ☐ 处理 delegate @started(19-03-01 08:43)
+    ☐ 处理重载函数
+    ☐ 处理 interface
+    ☐ 处理泛型 @started(19-03-01 08:44)
+    ☐ 优化 Vector3 等值类型
+    ☐ extends MonoBehaviour
+
+其他功能: 
+    ☐ 支持 debugger @started(19-03-01 08:44)
+    ☐ socket
+    ☐ websocket
+    ☐ protobufjs
+
+兼容性: 
+    ✔ setInterval/setTimeout @done(19-02-28 16:02)
+    ☐ http.GET/POST/FORM
 

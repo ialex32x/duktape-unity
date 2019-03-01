@@ -152,25 +152,25 @@ namespace Duktape
                         {
                             var regName = kv.Value.regName;
                             var funcName = kv.Value.name;
-                            var bStatic = "false";
-                            cg.csharp.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic);
+                            var bStatic = false;
+                            cg.csharp.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? -2 : -1);
                         }
                         foreach (var kv in bindingInfo.staticMethods)
                         {
                             var regName = kv.Value.regName;
                             var funcName = kv.Value.name;
-                            var bStatic = "true";
-                            cg.csharp.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic);
+                            var bStatic = true;
+                            cg.csharp.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? -2 : -1);
                         }
                         foreach (var kv in bindingInfo.properties)
                         {
                             var bindingInfo = kv.Value;
-                            var bStatic = "false";
+                            var bStatic = false;
                             cg.csharp.AppendLine("duk_add_property(ctx, \"{0}\", {1}, {2}, {3});",
                                 bindingInfo.regName,
                                 bindingInfo.getterName != null ? bindingInfo.getterName : "null",
                                 bindingInfo.setterName != null ? bindingInfo.setterName : "null",
-                                bStatic);
+                                bStatic ? -2 : -1);
 
                             var tsPropertyPrefix = bindingInfo.setterName != null ? "" : "readonly ";
                             var tsPropertyType = this.cg.bindingManager.GetTypeFullNameTS(bindingInfo.propertyInfo.PropertyType);
@@ -179,12 +179,12 @@ namespace Duktape
                         foreach (var kv in bindingInfo.fields)
                         {
                             var fieldInfo = kv.Value;
-                            var bStatic = fieldInfo.isStatic ? "true" : "false";
+                            var bStatic = fieldInfo.isStatic;
                             cg.csharp.AppendLine("duk_add_field(ctx, \"{0}\", {1}, {2}, {3});",
                                 fieldInfo.regName,
                                 fieldInfo.getterName != null ? fieldInfo.getterName : "null",
                                 fieldInfo.setterName != null ? fieldInfo.setterName : "null",
-                                bStatic);
+                                bStatic ? -2 : -1);
                             var tsPropertyPrefix = fieldInfo.isStatic ? "static " : "";
                             if (fieldInfo.setterName == null)
                             {

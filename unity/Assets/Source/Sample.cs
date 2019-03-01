@@ -13,6 +13,18 @@ public enum SampleEnum
 [Duktape.JSType]
 public class SampleClass
 {
+    public delegate void DelegateFoo(string a, string b);
+    public delegate void DelegateFoo2(string a, string b);
+    public delegate void DelegateFoo4(int a, float b);
+
+    public DelegateFoo delegateFoo1;
+    public DelegateFoo2 delegateFoo2;
+    public DelegateFoo4 delegateFoo4;
+    
+    public Action action1;
+    public Action<string> action2;
+    public Action[] actions1;
+
     private string _name;
     private SampleEnum _sampleEnum;
 
@@ -118,49 +130,7 @@ public static class SampleStructExtensions
 
 public class Sample : MonoBehaviour, Duktape.IDuktapeListener
 {
-    public delegate void DelegateFoo();
-    public DelegateFoo delegateFoo;
-
     DuktapeVM vm = new DuktapeVM();
-
-    void checking<T>(T o)
-    {
-        var t = typeof(T);
-        var sb = new System.Text.StringBuilder();
-        sb.AppendFormat("# type: {0}\n", t.FullName);
-        sb.AppendFormat("    value: {0}\n", o);
-        sb.AppendFormat("    BaseType: {0}\n", t.BaseType);
-        sb.AppendFormat("    null: {0}\n", o == null);
-        sb.AppendFormat("    IsValueType: {0}\n", t.IsValueType);
-        sb.AppendFormat("    IsPrimitive: {0}\n", t.IsPrimitive);
-        if (t.IsEnum)
-        {
-            sb.AppendFormat("    # Enum\n");
-            sb.AppendFormat("    GetEnumUnderlyingType: {0}\n", t.GetEnumUnderlyingType());
-        }
-        if (t.IsGenericType)
-        {
-            sb.AppendFormat("# generic\n");
-            sb.AppendFormat("    GenericTypeArguments {0}\n", t.GenericTypeArguments);
-        }
-        if (t.IsArray)
-        {
-            sb.AppendFormat("# array\n");
-            sb.AppendFormat("    GetElementType: {0}\n", t.GetElementType());
-        }
-        foreach (var method in t.GetMethods())
-        {
-            if (method.Name == "Foo")
-            {
-                sb.AppendFormat("# method.Foo: {0} {1}\n", method, method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), false) ? "(Extension)" : "");
-                foreach (var parameter in method.GetParameters())
-                {
-                    sb.AppendFormat("    {0} {1}\n", parameter.IsDefined(typeof(ParamArrayAttribute), false) ? "(params)" : "", parameter);
-                }
-            }
-        }
-        Debug.Log(sb.ToString());
-    }
 
     public void OnTypesBinding(DuktapeVM vm)
     {
@@ -179,11 +149,7 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
 
     public void OnLoaded(DuktapeVM vm)
     {
-        // var buffer = new byte[32];
-        // var handle = System.Runtime.InteropServices.GCHandle.Alloc(buffer);
-        // handle.Free();
-        DuktapeDebugger.CreateDebugger(vm.context.rawValue);
-
+        // DuktapeDebugger.CreateDebugger(vm.context.rawValue);
         vm.AddSearchPath("Assets/Scripts/polyfills");
         vm.AddSearchPath("Assets/Scripts/Generated");
         vm.EvalFile("console-minimal.js");
@@ -192,35 +158,12 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
 
     void Awake()
     {
-        checking(1);
-        checking("abc");
-        checking(SampleEnum.a);
-        checking(new SampleStruct());
-        checking((SampleStruct?)null);
-        checking(new Nullable<int>());
-        checking(new int[] { 1, 2, 3 });
-        checking(new int?[] { 1, 2, 3 });
-        checking(new List<SampleStruct>());
-        checking(new List<SampleStruct?>());
-        checking(delegateFoo);
-        delegateFoo = Awake;
-        checking(delegateFoo);
-        delegateFoo += Awake;
-        checking(delegateFoo);
-        // SampleStruct.X("", 1);
-        // SampleStruct.X("");
-
-        var ctors = typeof(SampleClass).GetConstructors();
-        foreach (var ctor in ctors)
-        {
-            Debug.Log(ctor);
-        }
         vm.Initialize(new FakeFileSystem(), this);
     }
 
     void OnDestroy()
     {
-        DuktapeDebugger.Shutdown();
+        // DuktapeDebugger.Shutdown();
         vm.Destroy();
         vm = null;
     }
