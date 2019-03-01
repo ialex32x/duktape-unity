@@ -39,4 +39,7 @@ setTimeout(function (a, b) {
 console.log("JSON?:", JSON);
 console.log("encodeURIComponent?:", encodeURIComponent);
 console.log("decodeURIComponent?:", decodeURIComponent);
+// DuktapeJS.Delegate.on(this, (a: string) => {
+//     console.log(a)
+// })
 //# sourceMappingURL=main.js.map
