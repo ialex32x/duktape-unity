@@ -44,7 +44,7 @@ console.log("decodeURIComponent?:", decodeURIComponent);
 // })
 scxx.delegateFoo1 = new Delegate2();
 scxx.delegateFoo1.on(scxx, function (a, b) {
-    console.log("delegate callback from SampleClass");
+    console.log("delegate callback from SampleClass", a, b);
 });
 scxx.TestDelegate1();
 //# sourceMappingURL=main.js.map
