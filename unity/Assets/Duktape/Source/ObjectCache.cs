@@ -52,7 +52,7 @@ namespace Duktape
             return o != null && _rmap.Remove(o);
         }
 
-        public int Add(object o)
+        public int AddObject(object o)
         {
             if (o != null)
             {
@@ -63,26 +63,47 @@ namespace Duktape
             return 0;
         }
 
-        public bool Remove(int id)
+        public bool RemoveObject(int id)
         {
             object o;
             if (_map.TryGetValue(id, out o))
             {
                 var op1 = _map.Remove(id);
-                var op2 = RemoveJSValue(o);
-                return op1 && op2;
+                RemoveJSValue(o);
+                return op1;
             }
             return false;
         }
 
         // 覆盖已有记录, 无记录返回 false
-        public bool SetValue(int id, object o)
+        public bool ReplaceObject(int id, object o)
         {
-            if (_map.ContainsKey(id))
+            object oldValue;
+            if (_map.TryGetValue(id, out oldValue))
             {
                 _map[id] = o;
+                //TODO: 是否成立?
+                IntPtr heapptr;
+                if (oldValue != null && _rmap.TryGetValue(oldValue, out heapptr))
+                {
+                    _rmap.Remove(oldValue);
+                    _rmap[o] = heapptr;
+                }
                 return true;
             }
+            return false;
+        }
+
+        public bool TryGetValueTyped<T>(int id, out T o)
+        where T : class
+        {
+            object obj;
+            if (_map.TryGetValue(id, out obj))
+            {
+                o = obj as T;
+                return true;
+            }
+            o = null;
             return false;
         }
 

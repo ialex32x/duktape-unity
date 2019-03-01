@@ -48,6 +48,13 @@ public class SampleClass
         Debug.Log($"TestVector3({v})");
     }
 
+    public Type TestType1(Type type)
+    {
+        var ret = type ?? type.BaseType;
+        Debug.Log($"[CS] TestType1({type}): {ret}");
+        return ret;
+    }
+
     public bool SetEnum(SampleEnum sampleEnum)
     {
         _sampleEnum = sampleEnum;

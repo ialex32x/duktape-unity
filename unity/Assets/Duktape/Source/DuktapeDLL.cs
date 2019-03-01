@@ -61,7 +61,7 @@ namespace Duktape
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void duk_decode_char_function(IntPtr udata, duk_codepoint_t codepoint);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate duk_codepoint_t duk_map_char_function(IntPtr udata, duk_codepoint_t codepoint);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate duk_ret_t duk_safe_call_function(IntPtr ctx, IntPtr udata);
-          
+
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate duk_uint_t duk_unity_debug_read_function(duk_int_t udata, IntPtr buffer, duk_uint_t length);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate duk_uint_t duk_unity_debug_write_function(duk_int_t udata, IntPtr buffer, duk_uint_t length);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate duk_uint_t duk_unity_debug_peek_function(duk_int_t udata);
@@ -353,7 +353,7 @@ namespace Duktape
             var DUK_FILE_MACRO = stackFrame.GetFileName();
             var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
             duk_unity_error_raw(ctx, err_code, DUK_FILE_MACRO, DUK_LINE_MACRO, fmt);
-            return 0; 
+            return 0;
         }
 
         public static duk_int_t duk_error(IntPtr ctx, duk_errcode_t err_code, string fmt, params object[] args) // fixme
@@ -362,7 +362,7 @@ namespace Duktape
             var DUK_FILE_MACRO = stackFrame.GetFileName();
             var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
             duk_unity_error_raw(ctx, err_code, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
-            return 0; 
+            return 0;
         }
 
         public static duk_int_t duk_generic_error(IntPtr ctx, string fmt) // fixme
@@ -371,7 +371,7 @@ namespace Duktape
             var DUK_FILE_MACRO = stackFrame.GetFileName();
             var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
             duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, fmt);
-            return 0; 
+            return 0;
         }
 
         public static duk_int_t duk_generic_error(IntPtr ctx, string fmt, object arg0) // fixme
@@ -380,7 +380,7 @@ namespace Duktape
             var DUK_FILE_MACRO = stackFrame.GetFileName();
             var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
             duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, arg0));
-            return 0; 
+            return 0;
         }
 
         public static duk_int_t duk_generic_error(IntPtr ctx, string fmt, object arg0, object arg1) // fixme
@@ -389,7 +389,7 @@ namespace Duktape
             var DUK_FILE_MACRO = stackFrame.GetFileName();
             var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
             duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, arg0, arg1));
-            return 0; 
+            return 0;
         }
 
         public static duk_int_t duk_generic_error(IntPtr ctx, string fmt, params object[] args) // fixme
@@ -398,7 +398,7 @@ namespace Duktape
             var DUK_FILE_MACRO = stackFrame.GetFileName();
             var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
             duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
-            return 0; 
+            return 0;
         }
 
         public static duk_int_t duk_eval_error(IntPtr ctx, string fmt, params object[] args) // fixme
@@ -407,7 +407,7 @@ namespace Duktape
             var DUK_FILE_MACRO = stackFrame.GetFileName();
             var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
             duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_EVAL_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
-            return 0; 
+            return 0;
         }
 
         public static duk_int_t duk_range_error(IntPtr ctx, string fmt, params object[] args) // fixme
@@ -416,7 +416,7 @@ namespace Duktape
             var DUK_FILE_MACRO = stackFrame.GetFileName();
             var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
             duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_RANGE_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
-            return 0; 
+            return 0;
         }
 
         public static duk_int_t duk_reference_error(IntPtr ctx, string fmt, params object[] args) // fixme
@@ -425,7 +425,7 @@ namespace Duktape
             var DUK_FILE_MACRO = stackFrame.GetFileName();
             var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
             duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_REFERENCE_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
-            return 0; 
+            return 0;
         }
 
         public static duk_int_t duk_syntax_error(IntPtr ctx, string fmt, params object[] args) // fixme
@@ -434,7 +434,7 @@ namespace Duktape
             var DUK_FILE_MACRO = stackFrame.GetFileName();
             var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
             duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_SYNTAX_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
-            return 0; 
+            return 0;
         }
 
         public static duk_int_t duk_type_error(IntPtr ctx, string fmt, params object[] args) // fixme
@@ -443,7 +443,7 @@ namespace Duktape
             var DUK_FILE_MACRO = stackFrame.GetFileName();
             var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
             duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_TYPE_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
-            return 0; 
+            return 0;
         }
 
         public static duk_int_t duk_uri_error(IntPtr ctx, string fmt, params object[] args) // fixme
@@ -452,7 +452,7 @@ namespace Duktape
             var DUK_FILE_MACRO = stackFrame.GetFileName();
             var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
             duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_URI_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
-            return 0; 
+            return 0;
         }
 
 
@@ -631,8 +631,14 @@ namespace Duktape
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_uint_t duk_get_uint(IntPtr ctx, duk_idx_t idx);
 
-        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr duk_get_string(IntPtr ctx, duk_idx_t idx);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "duk_get_string")]
+        public static extern IntPtr __duk_get_string(IntPtr ctx, duk_idx_t idx);
+
+        public static string duk_get_string(IntPtr ctx, duk_idx_t idx)
+        {
+            var ptr = __duk_get_string(ctx, idx);
+            return Marshal.PtrToStringAnsi(ptr);
+        }
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr duk_unity_get_lstring(IntPtr ctx, duk_idx_t idx, out duk_uint_t out_len); // fixed
@@ -1672,14 +1678,14 @@ namespace Duktape
 
         /// debugger support
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr duk_unity_attach_debugger(IntPtr ctx, 
-                                                duk_unity_debug_read_function read_cb, 
-                                                duk_unity_debug_write_function write_cb, 
-                                                duk_unity_debug_peek_function peek_cb, 
+        public static extern IntPtr duk_unity_attach_debugger(IntPtr ctx,
+                                                duk_unity_debug_read_function read_cb,
+                                                duk_unity_debug_write_function write_cb,
+                                                duk_unity_debug_peek_function peek_cb,
                                                 duk_unity_debug_read_flush_function read_flush_cb,
                                                 duk_unity_debug_write_flush_function write_flush_cb,
                                                 duk_unity_debug_request_function request_cb,
-                                                duk_unity_debug_detached_function detached_cb, 
+                                                duk_unity_debug_detached_function detached_cb,
                                                 duk_int_t udata);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]

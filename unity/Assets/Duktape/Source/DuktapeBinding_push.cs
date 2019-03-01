@@ -142,12 +142,6 @@ namespace Duktape
             duk_push_any(ctx, (object)o);
         }
 
-        public static void duk_push_delegate(IntPtr ctx, Delegate o)
-        {
-            //TODO: delegate push
-            duk_push_object(ctx, (object)o);
-        }
-
         // variant push
         public static void duk_push_any(IntPtr ctx, object o)
         {
@@ -185,7 +179,7 @@ namespace Duktape
                 DuktapeDLL.duk_push_heapptr(ctx, heapptr);
                 return;
             }
-            var id = cache.Add(o);
+            var id = cache.AddObject(o);
             DuktapeDLL.duk_push_object(ctx);
             DuktapeDLL.duk_unity_set_prop_i(ctx, -1, DuktapeVM.OBJ_PROP_NATIVE, id);
             if (DuktapeVM.GetVM(ctx).PushChainedPrototypeOf(ctx, o.GetType()))

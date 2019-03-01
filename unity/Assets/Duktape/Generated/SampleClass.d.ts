@@ -7,6 +7,7 @@ declare class SampleClass {
     constructor(name: string, ...additional: string[])
     TestDelegate1(): void
     TestVector3(v: any): void
+    TestType1(type: any): any
     SetEnum(sampleEnum: SampleEnum): boolean
     CheckingVA(...args: number[]): number
     CheckingVA2(b: number, ...args: number[]): number

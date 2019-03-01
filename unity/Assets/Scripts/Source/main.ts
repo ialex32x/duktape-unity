@@ -28,6 +28,7 @@ scxx.delegateFoo1.on(scxx, (a, b) => {
     console.log("delegate callback from SampleClass", a, b)
 })
 scxx.TestDelegate1()
+console.log(`[JS] TestType1: ${scxx.TestType1(SampleClass)}`)
 
 console.log(`${scxx.name}.sum = ${scxx.Sum([1, 2, 3, 4, 5])}`)
 console.log(`sampleEnum = ${scxx.sampleEnum}`)

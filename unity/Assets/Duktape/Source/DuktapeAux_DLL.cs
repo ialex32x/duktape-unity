@@ -58,12 +58,6 @@ namespace Duktape
             return null;
         }
 
-        public static string duk_get_string(IntPtr ctx, duk_idx_t idx)
-        {
-            var ptr = DuktapeDLL.duk_get_string(ctx, idx);
-            return Marshal.PtrToStringAnsi(ptr);
-        }
-
         public static string duk_to_string(IntPtr ctx, duk_idx_t idx)
         {
             var ptr = DuktapeDLL.duk_to_string(ctx, idx);

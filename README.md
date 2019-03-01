@@ -11,8 +11,10 @@
 * setTimeout/setInterval/clearTimeout/clearInterval 兼容
 
 # 特性支持 (未实现)
-* delegate 操作接口 (+=, -=, 以及清空)
-* 针对Vector3等常用值类型的绑定优化
+* delegate 操作接口 (+=, -=, 以及清空) (待细化)
+* AddComponent/GetComponent 
+* 具体泛型类支持 (待细化)
+* 针对Vector3等常用值类型的绑定优化 (待细化)
 * 支持在脚本层面扩展 MonoBehaviour
 * 基本的 eventloop 支持
 * Android/iOS 支持 (热更)
@@ -61,9 +63,11 @@ export class A {
 
         let f = new Custom()
         // delegate 操作 (not implemented)
-        f.onload = DuktapeJS.on(this, this.onload)  // 添加监听
-        f.onload = DuktapeJS.off(this, this.onload) // 移除监听
-        f.onload = DuktapeJS.off(this)              // 清空监听
+        f.onload = new Delegate()
+        f.onload.on(this, this.onload)  // 添加this.onload监听
+        f.onload.off(this, this.onload) // 移除this.onload监听
+        f.onload.off(this)              // 清空this监听
+        f.onload.clear()                // 清空所有监听
     }
 
     private onload() {
@@ -73,7 +77,7 @@ export class A {
 
         setTimeout((a, b) => {
             console.log("timeout", a, b)
-            clearInterval(timer1 )
+            clearInterval(timer1)
         }, 5000, "Arg1", 123)
     }
 

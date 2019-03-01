@@ -14,7 +14,7 @@ namespace Duktape
             var argc = DuktapeDLL.duk_get_top(ctx);
             if (argc == 1)
             {
-                var arg1 = DuktapeAux.duk_get_string(ctx, 0);
+                var arg1 = DuktapeDLL.duk_get_string(ctx, 0);
                 o = new UnityEngine.GameObject(arg1);
             }
             else
