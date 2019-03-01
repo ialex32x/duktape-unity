@@ -1,4 +1,3 @@
-// duktape 对 prop_index 的优化貌似导致无法用这种方式进行
 
 let Vector3 = function (x, y, z) {
     this.push(x)

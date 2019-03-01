@@ -1627,11 +1627,11 @@ namespace Duktape
 
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_unity_push2i(IntPtr ctx, duk_int_t v1, duk_int_t v2);
+        public static extern void duk_unity_put2i(IntPtr ctx, duk_int_t v1, duk_int_t v2);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_unity_push3i(IntPtr ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3);
+        public static extern void duk_unity_put3i(IntPtr ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_unity_push4i(IntPtr ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3, duk_int_t v4);
+        public static extern void duk_unity_put4i(IntPtr ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3, duk_int_t v4);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_unity_get2i(IntPtr ctx, duk_idx_t idx, out duk_int_t v1, out duk_int_t v2);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -1640,11 +1640,11 @@ namespace Duktape
         public static extern duk_bool_t duk_unity_get4i(IntPtr ctx, duk_idx_t idx, out duk_int_t v1, out duk_int_t v2, out duk_int_t v3, out duk_int_t v4);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_unity_push2f(IntPtr ctx, float v1, float v2);
+        public static extern void duk_unity_put2f(IntPtr ctx, float v1, float v2);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_unity_push3f(IntPtr ctx, float v1, float v2, float v3);
+        public static extern void duk_unity_put3f(IntPtr ctx, float v1, float v2, float v3);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_unity_push4f(IntPtr ctx, float v1, float v2, float v3, float v4);
+        public static extern void duk_unity_put4f(IntPtr ctx, float v1, float v2, float v3, float v4);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_unity_get2f(IntPtr ctx, duk_idx_t idx, out float v1, out float v2);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
