@@ -161,6 +161,10 @@ namespace Duktape
             {
                 return "duk_get_primitive";
             }
+            if (type.BaseType == typeof(MulticastDelegate))
+            {
+                return "duk_get_delegate";
+            }
             return "duk_get_classvalue";
         }
 

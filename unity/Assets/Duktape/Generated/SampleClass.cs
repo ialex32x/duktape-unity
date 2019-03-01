@@ -180,7 +180,7 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 SampleClass.DelegateFoo value;
-                duk_get_classvalue(ctx, 0, out value);
+                duk_get_delegate(ctx, 0, out value);
                 self.delegateFoo1 = value;
                 return 0;
             }
@@ -215,7 +215,7 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 SampleClass.DelegateFoo2 value;
-                duk_get_classvalue(ctx, 0, out value);
+                duk_get_delegate(ctx, 0, out value);
                 self.delegateFoo2 = value;
                 return 0;
             }
@@ -250,7 +250,7 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 SampleClass.DelegateFoo4 value;
-                duk_get_classvalue(ctx, 0, out value);
+                duk_get_delegate(ctx, 0, out value);
                 self.delegateFoo4 = value;
                 return 0;
             }
@@ -285,7 +285,7 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 System.Action value;
-                duk_get_classvalue(ctx, 0, out value);
+                duk_get_delegate(ctx, 0, out value);
                 self.action1 = value;
                 return 0;
             }
@@ -320,8 +320,43 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 System.Action<string> value;
-                duk_get_classvalue(ctx, 0, out value);
+                duk_get_delegate(ctx, 0, out value);
                 self.action2 = value;
+                return 0;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int BindRead_actions1(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                var ret = self.actions1;
+                duk_push_any(ctx, ret);
+                return 1;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int BindWrite_actions1(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                System.Action[] value;
+                duk_get_delegate_array(ctx, 0, out value);
+                self.actions1 = value;
                 return 0;
             }
             catch (Exception exception)
@@ -345,6 +380,7 @@ namespace DuktapeJS {
             duk_add_field(ctx, "delegateFoo4", BindRead_delegateFoo4, BindWrite_delegateFoo4, -1);
             duk_add_field(ctx, "action1", BindRead_action1, BindWrite_action1, -1);
             duk_add_field(ctx, "action2", BindRead_action2, BindWrite_action2, -1);
+            duk_add_field(ctx, "actions1", BindRead_actions1, BindWrite_actions1, -1);
             duk_end_class(ctx);
             duk_end_namespace(ctx);
             return 0;

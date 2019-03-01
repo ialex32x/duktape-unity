@@ -75,14 +75,7 @@ namespace Duktape
         {
             _csTypeNameMap[type] = name;
             _csTypeNameMapS[type.FullName] = name;
-            if (string.IsNullOrEmpty(type.Namespace))
-            {
-                _csTypeNameMapS[type.Name] = name;
-            }
-            else
-            {
-                _csTypeNameMapS[type.Namespace + "." + type.Name] = name;
-            }
+            _csTypeNameMapS[WithNamespaceCS(type) + type.Name] = name;
         }
 
         public void AddExport(Type type)
@@ -153,14 +146,23 @@ namespace Duktape
             return "any";
         }
 
+        public string WithNamespaceCS(Type type)
+        {
+            return WithNamespaceCS(type.Namespace);
+        }
+
+        public string WithNamespaceCS(string ns)
+        {
+            return string.IsNullOrEmpty(ns) ? "" : (ns + ".");
+        }
+
         // 获取 type 在 绑定代码 中对应类型名
         public string GetTypeFullNameCS(Type type)
         {
             // Debug.LogFormat("{0} Array {1} ByRef {2} GetElementType {3}", type, type.IsArray, type.IsByRef, type.GetElementType());
             if (type.IsGenericType)
             {
-                var @namespace = string.IsNullOrEmpty(type.Namespace) ? "" : (type.Namespace + ".");
-                var purename = @namespace + type.Name.Substring(0, type.Name.Length - 2);
+                var purename = WithNamespaceCS(type) + type.Name.Substring(0, type.Name.Length - 2);
                 var gargs = type.GetGenericArguments();
                 purename += "<";
                 for (var i = 0; i < gargs.Length; i++)

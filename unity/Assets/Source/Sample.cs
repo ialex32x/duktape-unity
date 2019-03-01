@@ -23,6 +23,7 @@ public class SampleClass
     
     public Action action1;
     public Action<string> action2;
+    public Action[] actions1;
 
     private string _name;
     private SampleEnum _sampleEnum;

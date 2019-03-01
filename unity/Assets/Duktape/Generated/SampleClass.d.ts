@@ -16,4 +16,5 @@ declare class SampleClass {
     delegateFoo4: any
     action1: any
     action2: any
+    actions1: any[]
 }
