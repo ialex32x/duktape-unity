@@ -50,6 +50,13 @@ namespace Duktape
             DuktapeDLL.duk_unity_getref(ctx, this._refid);
         }
 
+        public void PushProperty(IntPtr ctx, string property)
+        {
+            this.Push(ctx); // push this
+            DuktapeDLL.duk_get_prop_string(ctx, -1, property);
+            DuktapeDLL.duk_remove(ctx, -2); // remove this
+        }
+
         public override int GetHashCode()
         {
             return base.GetHashCode();

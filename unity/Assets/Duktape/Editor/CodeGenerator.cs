@@ -128,46 +128,6 @@ namespace Duktape
             }
         }
 
-        public string GetDuktapeThisGetter(Type type)
-        {
-            return "duk_get_this";
-        }
-
-        public string GetDuktapeGetter(Type type)
-        {
-            if (type.IsByRef)
-            {
-                return GetDuktapeGetter(type.GetElementType());
-            }
-            if (type.IsArray)
-            {
-                //TODO: 处理数组取参操作函数指定
-                var elementType = type.GetElementType();
-                return GetDuktapeGetter(elementType) + "_array"; //TODO: 嵌套数组的问题
-            }
-            if (type.IsValueType)
-            {
-                if (type.IsPrimitive)
-                {
-                    return "duk_get_primitive";
-                }
-                if (type.IsEnum)
-                {
-                    return "duk_get_enumvalue";
-                }
-                return "duk_get_structvalue";
-            }
-            if (type == typeof(string))
-            {
-                return "duk_get_primitive";
-            }
-            if (type.BaseType == typeof(MulticastDelegate))
-            {
-                return "duk_get_delegate";
-            }
-            return "duk_get_classvalue";
-        }
-
         public void AppendPushValue(Type type, string value)
         {
             //TODO: push 分类需要继续完善
@@ -200,7 +160,7 @@ namespace Duktape
             {
                 caller = "self";
                 this.csharp.AppendLine("{0} {1};", this.bindingManager.GetTypeFullNameCS(declaringType), caller);
-                this.csharp.AppendLine("{0}(ctx, out {1});", this.GetDuktapeThisGetter(declaringType), caller);
+                this.csharp.AppendLine("{0}(ctx, out {1});", this.bindingManager.GetDuktapeThisGetter(declaringType), caller);
             }
             return caller;
         }
@@ -259,7 +219,7 @@ namespace Duktape
                     {
                         // this.csharp.AppendLine("{0} el;", this.bindingManager.GetTypeFullNameCS(parameter.ParameterType.GetElementType()));
                         this.csharp.AppendLine("{0}(ctx, i, out arg{1}[i{2}]);",
-                            this.GetDuktapeGetter(parameter.ParameterType.GetElementType()),
+                            this.bindingManager.GetDuktapeGetter(parameter.ParameterType.GetElementType()),
                             i,
                             i == 0 ? "" : " - " + i);
                         // this.csharp.AppendLine("arg{0}[i] = el;", i);
@@ -270,7 +230,7 @@ namespace Duktape
                 else
                 {
                     this.csharp.AppendLine("{0} arg{1};", this.bindingManager.GetTypeFullNameCS(parameter.ParameterType), i);
-                    this.csharp.AppendLine("{0}(ctx, {1}, out arg{1});", this.GetDuktapeGetter(parameter.ParameterType), i);
+                    this.csharp.AppendLine("{0}(ctx, {1}, out arg{1});", this.bindingManager.GetDuktapeGetter(parameter.ParameterType), i);
                 }
             }
             return arglist;

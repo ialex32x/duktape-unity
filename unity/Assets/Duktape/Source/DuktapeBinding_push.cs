@@ -153,6 +153,7 @@ namespace Duktape
                 duk_push_any(ctx, (Array)o);
                 return;
             }
+            // if (type.BaseType)
             duk_push_object(ctx, (object)o);
         }
 

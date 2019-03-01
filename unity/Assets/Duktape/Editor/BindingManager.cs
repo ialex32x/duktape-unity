@@ -216,6 +216,66 @@ namespace Duktape
             return arglist;
         }
 
+        public string GetDuktapeThisGetter(Type type)
+        {
+            return "duk_get_this";
+        }
+
+        public string GetDuktapeGetter(Type type)
+        {
+            if (type.IsByRef)
+            {
+                return GetDuktapeGetter(type.GetElementType());
+            }
+            if (type.IsArray)
+            {
+                //TODO: 处理数组取参操作函数指定
+                var elementType = type.GetElementType();
+                return GetDuktapeGetter(elementType) + "_array"; //TODO: 嵌套数组的问题
+            }
+            if (type.IsValueType)
+            {
+                if (type.IsPrimitive)
+                {
+                    return "duk_get_primitive";
+                }
+                if (type.IsEnum)
+                {
+                    return "duk_get_enumvalue";
+                }
+                return "duk_get_structvalue";
+            }
+            if (type == typeof(string))
+            {
+                return "duk_get_primitive";
+            }
+            if (type.BaseType == typeof(MulticastDelegate))
+            {
+                return "duk_get_delegate";
+            }
+            return "duk_get_classvalue";
+        }
+
+        public string GetUniqueName(ParameterInfo[] parameters, string prefix)
+        {
+            return GetUniqueName(parameters, prefix, 0);
+        }
+
+        public string GetUniqueName(ParameterInfo[] parameters, string prefix, int index)
+        {
+            var size = parameters.Length;
+            var name = prefix + index;
+            for (var i = 0; i < size; i++)
+            {
+                var parameter = parameters[i];
+                if (parameter.Name == prefix)
+                {
+                    return GetUniqueName(parameters, prefix, index + 1);
+                }
+            }
+            return name;
+        }
+
         // 生成参数对应的字符串形式参数列表 (csharp)
         public string GetArglistDeclCS(ParameterInfo[] parameters)
         {

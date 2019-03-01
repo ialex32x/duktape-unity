@@ -78,7 +78,9 @@ namespace Duktape
         public DelegateCodeGen(CodeGenerator cg, DelegateBindingInfo delegateBindingInfo, int index)
         {
             this.cg = cg;
-            var jswrap = typeof(DuktapeDelegate);
+            var nargs = delegateBindingInfo.parameters.Length;
+            var retName = this.cg.bindingManager.GetUniqueName(delegateBindingInfo.parameters, "ret");
+            var firstArgument = typeof(DuktapeDelegate) + " fn";
             var returnTypeName = this.cg.bindingManager.GetTypeFullNameCS(delegateBindingInfo.returnType);
             var delegateName = DuktapeVM._DuktapeDelegates + index;
             var arglist = this.cg.bindingManager.GetArglistDeclCS(delegateBindingInfo.parameters);
@@ -86,26 +88,33 @@ namespace Duktape
             {
                 this.cg.csharp.AppendLine("[{0}(typeof({1}))]", typeof(JSDelegateAttribute).FullName, this.cg.bindingManager.GetTypeFullNameCS(target));
             }
-            this.cg.csharp.AppendLine("public static {0} {1}({2} fn{3}) {{", returnTypeName, delegateName, jswrap.Name, string.IsNullOrEmpty(arglist) ? "" : ", " + arglist);
+            if (!string.IsNullOrEmpty(arglist))
+            {
+                arglist = ", " + arglist;
+            }
+            this.cg.csharp.AppendLine($"public static {returnTypeName} {delegateName}({firstArgument}{arglist}) {{");
             this.cg.csharp.AddTabLevel();
 
-            this.cg.csharp.AppendLine("// generate binding code here");
-            this.cg.csharp.AppendLine("// var ctx = fn.GetContext().rawValue;");
-            this.cg.csharp.AppendLine("// fn.Push(ctx);");
-            this.cg.csharp.AppendLine("// push arguments here...");
-            this.cg.csharp.AppendLine("// fn._InternalCall(ctx, {0});", delegateBindingInfo.parameters.Length);
-            /*
-            fn.BeginInvoke(ctx);
-            duk_push_any(ctx, a);
-            fn.EndInvoke(ctx);
-            T ret;
-            duk_get_primitive(ctx, -1, out ret)
-            return ret;            
-             */
-
+            this.cg.csharp.AppendLine("var ctx = fn.GetContext().rawValue;");
+            if (nargs > 0)
+            {
+                this.cg.csharp.AppendLine("fn.BeginInvoke(ctx);");
+                for (var i = 0; i < nargs; i++)
+                {
+                    var parameter = delegateBindingInfo.parameters[i];
+                    this.cg.AppendPushValue(parameter.ParameterType, parameter.Name);
+                }
+                this.cg.csharp.AppendLine("fn.EndInvoke(ctx);");
+            }
+            else
+            {
+                this.cg.csharp.AppendLine("fn.Invoke(ctx);");
+            }
             if (delegateBindingInfo.returnType != typeof(void))
             {
-                this.cg.csharp.AppendLine("return ret;");
+                this.cg.csharp.AppendLine($"{this.cg.bindingManager.GetTypeFullNameCS(delegateBindingInfo.returnType)} {retName};");
+                this.cg.csharp.AppendLine($"{this.cg.bindingManager.GetDuktapeGetter(delegateBindingInfo.returnType)}(ctx, -1, out {retName});");
+                this.cg.csharp.AppendLine($"return {retName};");
             }
         }
 

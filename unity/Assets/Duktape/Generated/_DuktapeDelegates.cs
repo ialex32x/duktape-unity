@@ -11,39 +11,38 @@ namespace DuktapeJS {
         [UnityEngine.Scripting.Preserve]
         [Duktape.JSDelegateAttribute(typeof(SampleClass.DelegateFoo))]
         [Duktape.JSDelegateAttribute(typeof(SampleClass.DelegateFoo2))]
-        public static void _DuktapeDelegates0(DuktapeDelegate fn, string a, string b) {
-            // generate binding code here
+        public static void _DuktapeDelegates0(Duktape.DuktapeDelegate fn, string a, string b) {
             var ctx = fn.GetContext().rawValue;
-            // fn.Push(ctx);
-            // push arguments here...
-            // fn._InternalCall(ctx, 2);
+            fn.BeginInvoke(ctx);
+            duk_push_any(ctx, a);
+            duk_push_any(ctx, b);
+            fn.EndInvoke(ctx);
         }
         [UnityEngine.Scripting.Preserve]
         [Duktape.JSDelegateAttribute(typeof(SampleClass.DelegateFoo4))]
-        public static void _DuktapeDelegates1(DuktapeDelegate fn, int a, float b) {
-            // generate binding code here
-            // var ctx = fn.GetContext().rawValue;
-            // fn.Push(ctx);
-            // push arguments here...
-            // fn._InternalCall(ctx, 2);
+        public static double _DuktapeDelegates1(Duktape.DuktapeDelegate fn, int a, float b) {
+            var ctx = fn.GetContext().rawValue;
+            fn.BeginInvoke(ctx);
+            duk_push_any(ctx, a);
+            duk_push_any(ctx, b);
+            fn.EndInvoke(ctx);
+            double ret0;
+            duk_get_primitive(ctx, -1, out ret0);
+            return ret0;
         }
         [UnityEngine.Scripting.Preserve]
         [Duktape.JSDelegateAttribute(typeof(System.Action))]
-        public static void _DuktapeDelegates2(DuktapeDelegate fn) {
-            // generate binding code here
-            // var ctx = fn.GetContext().rawValue;
-            // fn.Push(ctx);
-            // push arguments here...
-            // fn._InternalCall(ctx, 0);
+        public static void _DuktapeDelegates2(Duktape.DuktapeDelegate fn) {
+            var ctx = fn.GetContext().rawValue;
+            fn.Invoke(ctx);
         }
         [UnityEngine.Scripting.Preserve]
         [Duktape.JSDelegateAttribute(typeof(System.Action<string>))]
-        public static void _DuktapeDelegates3(DuktapeDelegate fn, string obj) {
-            // generate binding code here
-            // var ctx = fn.GetContext().rawValue;
-            // fn.Push(ctx);
-            // push arguments here...
-            // fn._InternalCall(ctx, 1);
+        public static void _DuktapeDelegates3(Duktape.DuktapeDelegate fn, string obj) {
+            var ctx = fn.GetContext().rawValue;
+            fn.BeginInvoke(ctx);
+            duk_push_any(ctx, obj);
+            fn.EndInvoke(ctx);
         }
         [UnityEngine.Scripting.Preserve]
         public static int reg(IntPtr ctx)
