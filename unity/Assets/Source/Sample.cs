@@ -11,6 +11,12 @@ public enum SampleEnum
 }
 
 [Duktape.JSType]
+public interface ISampleBase
+{
+    string name { get; }
+}
+
+[Duktape.JSType]
 public class SampleClass
 {
     public delegate void DelegateFoo(string a, string b);
