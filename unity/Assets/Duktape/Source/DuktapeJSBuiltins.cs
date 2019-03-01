@@ -147,6 +147,18 @@ namespace Duktape
             return 1;
         }
 
+        //TODO: (ialex32x, 未完成) 强制关联 Special 
+        [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+        public static int Bind(IntPtr ctx)
+        {
+            // var vm = DuktapeVM.GetVM(ctx);
+            // string name;
+            // duk_get_primitive(ctx, 2, out name);
+            // var special = vm.GetSpecial(name);
+            // ...
+            return 0;
+        }
+
         public static void reg(IntPtr ctx)
         {
             duk_begin_namespace(ctx, "DuktapeJS");
@@ -166,6 +178,7 @@ namespace Duktape
                 duk_add_method(ctx, "CreateList", CreateList, -3);
                 duk_add_method(ctx, "GetType", GetType, -3);
                 duk_add_method(ctx, "IsNull", IsNull, -3);
+                duk_add_method(ctx, "Bind", Bind, -3);
                 duk_end_special(ctx);
             }
             duk_end_namespace(ctx);
