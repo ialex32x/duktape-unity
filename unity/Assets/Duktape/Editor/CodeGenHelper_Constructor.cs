@@ -53,8 +53,8 @@ namespace Duktape
                 var isVararg = parameters[parameters.Length - 1].IsDefined(typeof(ParamArrayAttribute), false);
                 var argc = this.cg.AppendGetArgc(isVararg);
                 var arglist = this.cg.AppendGetParameters(argc, parameters, null);
-
-                this.cg.csharp.AppendLine("var o = new {0}({1});", this.bindingInfo.decalringType.FullName, arglist);
+                var decalringTypeName = this.cg.bindingManager.GetTypeFullNameCS(this.bindingInfo.decalringType);
+                this.cg.csharp.AppendLine($"var o = new {decalringTypeName}({arglist});");
                 this.cg.csharp.AppendLine("DuktapeDLL.duk_push_this(ctx);");
                 this.cg.csharp.AppendLine("duk_bind_native(ctx, -1, o);");
                 this.cg.csharp.AppendLine("DuktapeDLL.duk_pop(ctx);");
@@ -64,7 +64,8 @@ namespace Duktape
         private void WriteDefaultCSConstructor()
         {
             //TODO: 写入默认构造函数 (struct 无参构造)
-            this.cg.csharp.AppendLine("var o = new {0}();", this.bindingInfo.decalringType.FullName);
+            var decalringTypeName = this.cg.bindingManager.GetTypeFullNameCS(this.bindingInfo.decalringType);
+            this.cg.csharp.AppendLine($"var o = new {decalringTypeName}();");
             this.cg.csharp.AppendLine("DuktapeDLL.duk_push_this(ctx);");
             this.cg.csharp.AppendLine("duk_bind_native(ctx, -1, o);");
             this.cg.csharp.AppendLine("DuktapeDLL.duk_pop(ctx);");
@@ -72,7 +73,7 @@ namespace Duktape
 
         private void WriteDefaultTSDeclaration()
         {
-            this.cg.typescript.AppendLine("{0}()", this.bindingInfo.regName);
+            this.cg.typescript.AppendLine($"{this.bindingInfo.regName}()");
         }
 
         private void WriteTSDeclaration(ConstructorInfo constructor)
@@ -81,7 +82,7 @@ namespace Duktape
             //      在 MethodVariant 中创建每个方法对应的TS类型名参数列表, 完全相同的不再输出
             this.cg.AppendJSDoc(constructor);
             var prefix = "";
-            this.cg.typescript.Append("{0}{1}(", prefix, this.bindingInfo.regName);
+            this.cg.typescript.Append($"{prefix}{this.bindingInfo.regName}(");
             var parameters = constructor.GetParameters();
             var returnParameters = new List<ParameterInfo>();
             for (var i = 0; i < parameters.Length; i++)
@@ -92,13 +93,13 @@ namespace Duktape
                 {
                     var elementType = parameter.ParameterType.GetElementType();
                     var elementTS = this.cg.bindingManager.GetTypeFullNameTS(elementType);
-                    this.cg.typescript.AppendL("{0}...{1}: {2}[]", parameter_prefix, parameter.Name, elementTS);
+                    this.cg.typescript.AppendL($"{parameter_prefix}...{parameter.Name}: {elementTS}[]");
                 }
                 else
                 {
                     var parameterType = parameter.ParameterType;
                     var parameterTS = this.cg.bindingManager.GetTypeFullNameTS(parameterType);
-                    this.cg.typescript.AppendL("{0}{1}: {2}", parameter_prefix, parameter.Name, parameterTS);
+                    this.cg.typescript.AppendL($"{parameter_prefix}{parameter.Name}: {parameterTS}");
                 }
                 if (i != parameters.Length - 1)
                 {
