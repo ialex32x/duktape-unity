@@ -80,7 +80,7 @@ namespace Duktape
             this.cg = cg;
             var returnTypeName = this.cg.bindingManager.GetTypeFullNameCS(delegateBindingInfo.returnType);
             var delegateName = DuktapeVM._DuktapeDelegates + index;
-            var arglist = this.cg.GetParametersDeclCS(delegateBindingInfo.parameters);
+            var arglist = this.cg.bindingManager.GetArglistDeclCS(delegateBindingInfo.parameters);
             foreach (var target in delegateBindingInfo.types)
             {
                 this.cg.csharp.AppendLine("[{0}(typeof({1}))]", typeof(JSDelegateAttribute).FullName, this.cg.bindingManager.GetTypeFullNameCS(target));

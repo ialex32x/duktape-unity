@@ -168,38 +168,6 @@ namespace Duktape
             return "duk_get_classvalue";
         }
 
-        // 生成参数对应的字符串形式参数列表
-        public string GetParametersDeclCS(ParameterInfo[] parameters)
-        {
-            var size = parameters.Length;
-            var arglist = "";
-            if (size == 0)
-            {
-                return arglist;
-            }
-            for (var i = 0; i < size; i++)
-            {
-                var parameter = parameters[i];
-                var typename = bindingManager.GetTypeFullNameCS(parameter.ParameterType);
-                if (parameter.IsOut && parameter.ParameterType.IsByRef)
-                {
-                    arglist += "out ";
-                }
-                else if (parameter.ParameterType.IsByRef)
-                {
-                    arglist += "ref ";
-                }
-                arglist += typename;
-                arglist += " ";
-                arglist += parameter.Name;
-                if (i != size - 1)
-                {
-                    arglist += ", ";
-                }
-            }
-            return arglist;
-        }
-
         public void AppendPushValue(Type type, string value)
         {
             //TODO: push 分类需要继续完善

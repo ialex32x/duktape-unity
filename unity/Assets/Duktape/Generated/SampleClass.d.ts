@@ -11,10 +11,10 @@ declare class SampleClass {
     Sum(all: number[]): number
     readonly name: string
     readonly sampleEnum: SampleEnum
-    delegateFoo1: any
-    delegateFoo2: any
-    delegateFoo4: any
-    action1: any
-    action2: any
-    actions1: any[]
+    delegateFoo1: Delegate2<void, string, string>
+    delegateFoo2: Delegate2<void, string, string>
+    delegateFoo4: Delegate2<void, number, number>
+    action1: Delegate0<void>
+    action2: Delegate1<void, string>
+    actions1: Delegate0<void>[]
 }

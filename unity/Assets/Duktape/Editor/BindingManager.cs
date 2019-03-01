@@ -18,6 +18,7 @@ namespace Duktape
         private List<string> typePrefixBlacklist;
         private Dictionary<Type, TypeBindingInfo> exportedTypes = new Dictionary<Type, TypeBindingInfo>();
         private Dictionary<Type, DelegateBindingInfo> exportedDelegates = new Dictionary<Type, DelegateBindingInfo>();
+        private Dictionary<Type, Type> redirectDelegates = new Dictionary<Type, Type>();
         private List<string> outputFiles = new List<string>();
 
         private Dictionary<Type, string> _tsTypeNameMap = new Dictionary<Type, string>();
@@ -84,6 +85,21 @@ namespace Duktape
             exportedTypes.Add(type, typeBindingInfo);
         }
 
+        public DelegateBindingInfo GetDelegateBindingInfo(Type type)
+        {
+            Type target;
+            if (redirectDelegates.TryGetValue(type, out target))
+            {
+                type = target;
+            }
+            DelegateBindingInfo delegateBindingInfo;
+            if (exportedDelegates.TryGetValue(type, out delegateBindingInfo))
+            {
+                return delegateBindingInfo;
+            }
+            return null;
+        }
+
         public void CollectDelegate(Type type)
         {
             if (type == null || type.BaseType != typeof(MulticastDelegate))
@@ -102,6 +118,7 @@ namespace Duktape
                     {
                         log.AppendLine("skip delegate: {0} && {1}", kv.Value, type);
                         kv.Value.types.Add(type);
+                        redirectDelegates[type] = kv.Key;
                         return;
                     }
                 }
@@ -143,6 +160,17 @@ namespace Duktape
             {
                 return info.FullName.Replace('+', '.');
             }
+            if (type.BaseType == typeof(MulticastDelegate))
+            {
+                var delegateBindingInfo = GetDelegateBindingInfo(type);
+                if (delegateBindingInfo != null)
+                {
+                    var nargs = delegateBindingInfo.parameters.Length;
+                    var ret = GetTypeFullNameTS(delegateBindingInfo.returnType);
+                    var arglist = (nargs > 0 ? ", " : "") + GetArglistTypesTS(delegateBindingInfo.parameters);
+                    return $"Delegate{nargs}<{ret}{arglist}>";
+                }
+            }
             return "any";
         }
 
@@ -154,6 +182,70 @@ namespace Duktape
         public string WithNamespaceCS(string ns)
         {
             return string.IsNullOrEmpty(ns) ? "" : (ns + ".");
+        }
+
+        // 生成参数对应的字符串形式参数列表定义 (typescript)
+        public string GetArglistTypesTS(ParameterInfo[] parameters)
+        {
+            var size = parameters.Length;
+            var arglist = "";
+            if (size == 0)
+            {
+                return arglist;
+            }
+            for (var i = 0; i < size; i++)
+            {
+                var parameter = parameters[i];
+                var typename = GetTypeFullNameTS(parameter.ParameterType);
+                // if (parameter.IsOut && parameter.ParameterType.IsByRef)
+                // {
+                //     arglist += "out ";
+                // }
+                // else if (parameter.ParameterType.IsByRef)
+                // {
+                //     arglist += "ref ";
+                // }
+                arglist += typename;
+                // arglist += " ";
+                // arglist += parameter.Name;
+                if (i != size - 1)
+                {
+                    arglist += ", ";
+                }
+            }
+            return arglist;
+        }
+
+        // 生成参数对应的字符串形式参数列表 (csharp)
+        public string GetArglistDeclCS(ParameterInfo[] parameters)
+        {
+            var size = parameters.Length;
+            var arglist = "";
+            if (size == 0)
+            {
+                return arglist;
+            }
+            for (var i = 0; i < size; i++)
+            {
+                var parameter = parameters[i];
+                var typename = GetTypeFullNameCS(parameter.ParameterType);
+                if (parameter.IsOut && parameter.ParameterType.IsByRef)
+                {
+                    arglist += "out ";
+                }
+                else if (parameter.ParameterType.IsByRef)
+                {
+                    arglist += "ref ";
+                }
+                arglist += typename;
+                arglist += " ";
+                arglist += parameter.Name;
+                if (i != size - 1)
+                {
+                    arglist += ", ";
+                }
+            }
+            return arglist;
         }
 
         // 获取 type 在 绑定代码 中对应类型名
