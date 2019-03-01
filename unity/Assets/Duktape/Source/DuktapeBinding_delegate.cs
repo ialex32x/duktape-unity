@@ -9,6 +9,12 @@ namespace Duktape
     // 处理委托的绑定
     public partial class DuktapeBinding
     {
+        public static void duk_push_delegate(IntPtr ctx, Delegate o)
+        {
+            //TODO: delegate push
+            duk_push_object(ctx, (object)o);
+        }
+
         public static bool duk_get_delegate_array<T>(IntPtr ctx, int idx, out T[] o)
         where T : class
         {

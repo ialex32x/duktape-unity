@@ -6,6 +6,7 @@ namespace Duktape
 {
     using UnityEngine;
 
+    // 处理常规值, class, struct
     public partial class DuktapeBinding
     {
         public static bool duk_get_primitive(IntPtr ctx, int idx, out bool o)
@@ -118,7 +119,7 @@ namespace Duktape
 
         public static bool duk_get_primitive(IntPtr ctx, int idx, out string o)
         {
-            o = DuktapeAux.duk_get_string(ctx, idx); // no check
+            o = DuktapeDLL.duk_get_string(ctx, idx); // no check
             return true;
         }
 

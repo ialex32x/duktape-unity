@@ -253,6 +253,10 @@ namespace Duktape
             {
                 return "duk_get_delegate";
             }
+            if (type == typeof(Type))
+            {
+                return "duk_get_type";
+            }
             return "duk_get_classvalue";
         }
 

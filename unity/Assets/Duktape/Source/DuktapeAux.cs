@@ -6,6 +6,16 @@ namespace Duktape
     // 基础环境
     public static partial class DuktapeAux
     {
+        public static Type GetType(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return null;
+            }
+            var type = System.Reflection.Assembly.GetExecutingAssembly().GetType(name);
+            return type;
+        }
+
         public static void PrintError(IntPtr ctx, int idx)
         {
             PrintError(ctx, idx, null);
@@ -24,7 +34,7 @@ namespace Duktape
             {
                 err = DuktapeDLL.duk_safe_to_string(ctx, idx);
             }
-            
+
             if (filename != null)
             {
                 Debug.LogError($"[JSError][{filename}] {err}");
@@ -73,8 +83,8 @@ namespace Duktape
         [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         public static int duk_dostring(IntPtr ctx)
         {
-            var source = DuktapeAux.duk_get_string(ctx, 1);
-            var filename = DuktapeAux.duk_get_string(ctx, 2);
+            var source = DuktapeDLL.duk_get_string(ctx, 1);
+            var filename = DuktapeDLL.duk_get_string(ctx, 2);
             DuktapeVM.GetVM(ctx).EvalSource(source, filename);
             return 0;
         }

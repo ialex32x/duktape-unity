@@ -18,8 +18,11 @@ namespace Duktape
         // duktape-unity 版本, 生成规则发生无法兼容的改变时增加版本号
         public const int VERSION = 0x10001;
         public const string HEAP_STASH_PROPS_REGISTRY = "registry";
-        public static readonly string OBJ_PROP_NATIVE = DuktapeDLL.DUK_HIDDEN_SYMBOL("native");
-        public static readonly string OBJ_PROP_EXPORTED_REFID = DuktapeDLL.DUK_HIDDEN_SYMBOL("exported-refid");
+        // 在jsobject实例上记录关联的本地对象 object cache refid
+        public static readonly string OBJ_PROP_NATIVE = DuktapeDLL.DUK_HIDDEN_SYMBOL("native-cache-id");
+        public static readonly string OBJ_PROP_TYPE = DuktapeDLL.DUK_HIDDEN_SYMBOL("type-refid");
+        // 导出类的js构造函数隐藏属性, 记录在vm中的注册id
+        public static readonly string OBJ_PROP_EXPORTED_REFID = DuktapeDLL.DUK_HIDDEN_SYMBOL("exported-registry-refid");
         // public static readonly string OBJ_PROP_SPECIAL_REFID = DuktapeDLL.DUK_HIDDEN_SYMBOL("special-refid");
 
         public const string _DuktapeDelegates = "_DuktapeDelegates";

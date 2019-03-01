@@ -10,19 +10,19 @@ namespace Duktape
     {
         // 通用析构函数
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
-        static int object_dtor(IntPtr ctx)
+        protected static int object_dtor(IntPtr ctx)
         {
             if (DuktapeDLL.duk_get_prop_string(ctx, 0, DuktapeVM.OBJ_PROP_NATIVE))
             {
                 var id = DuktapeDLL.duk_get_int(ctx, -1);
-                DuktapeVM.GetObjectCache(ctx).Remove(id);
+                DuktapeVM.GetObjectCache(ctx).RemoveObject(id);
             }
             DuktapeDLL.duk_pop(ctx); // pop native 
             return 0;
         }
 
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
-        static int object_private_ctor(IntPtr ctx)
+        protected static int object_private_ctor(IntPtr ctx)
         {
             return DuktapeDLL.duk_generic_error(ctx, "cant call constructor on this type");
         }

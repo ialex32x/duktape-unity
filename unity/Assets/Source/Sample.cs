@@ -11,6 +11,12 @@ public enum SampleEnum
 }
 
 [Duktape.JSType]
+public interface ISampleBase
+{
+    string name { get; }
+}
+
+[Duktape.JSType]
 public class SampleClass
 {
     public delegate void DelegateFoo(string a, string b);
@@ -46,6 +52,13 @@ public class SampleClass
     public void TestVector3(Vector3 v)
     {
         Debug.Log($"TestVector3({v})");
+    }
+
+    public Type TestType1(Type type)
+    {
+        var ret = type ?? type.BaseType;
+        Debug.Log($"[CS] TestType1({type}): {ret}");
+        return ret;
     }
 
     public bool SetEnum(SampleEnum sampleEnum)

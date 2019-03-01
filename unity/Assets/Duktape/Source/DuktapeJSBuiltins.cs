@@ -127,7 +127,9 @@ namespace Duktape
         {
             string name;
             duk_get_primitive(ctx, 1, out name);
-            var type = Assembly.GetExecutingAssembly().GetType(name);
+            //TODO: type 缓存
+            //TODO: 从 jsobject hidden property 中读 refid
+            var type = DuktapeAux.GetType(name);
             duk_push_any(ctx, type);
             return 1;
         }

@@ -6,6 +6,7 @@ namespace Duktape
 {
     using UnityEngine;
 
+    // 处理特殊操作, 关联本地对象等
     public partial class DuktapeBinding
     {
         // 返回当前 this 对应的 native object
@@ -22,7 +23,7 @@ namespace Duktape
         public static void duk_bind_native(IntPtr ctx, int idx, object o)
         {
             var cache = DuktapeVM.GetObjectCache(ctx);
-            var id = cache.Add(o);
+            var id = cache.AddObject(o);
             DuktapeDLL.duk_unity_set_prop_i(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE, id);
             if (!o.GetType().IsValueType)
             {
@@ -49,7 +50,7 @@ namespace Duktape
             {
                 var id = DuktapeDLL.duk_get_int(ctx, -1);
                 DuktapeDLL.duk_pop(ctx); // pop OBJ_PROP_NATIVE
-                return DuktapeVM.GetObjectCache(ctx).SetValue(id, o);
+                return DuktapeVM.GetObjectCache(ctx).ReplaceObject(id, o);
             }
             else
             {
