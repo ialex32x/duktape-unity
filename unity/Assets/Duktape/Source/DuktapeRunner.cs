@@ -7,6 +7,7 @@ namespace Duktape
 {
     using UnityEngine;
 
+    // 利用 coroutine 实现的简易定时运行管理器 (interval/timeout/loop)
     public class DuktapeRunner : MonoBehaviour
     {
         private static DuktapeRunner _runner;

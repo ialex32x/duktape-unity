@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using AOT;
 
 namespace Duktape
@@ -82,16 +84,67 @@ namespace Duktape
             return -1;
         }
 
+        //TODO: (ialex32x, 未完成) delegate 操作封装 (没想好)
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         public static int DelegateAdder(IntPtr ctx)
         {
             return 0;
         }
 
+        //TODO: (ialex32x, 未完成) delegate 操作封装 (没想好)
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         public static int DelegateRemover(IntPtr ctx)
         {
             return 0;
+        }
+
+        //TODO: (ialex32x, 未完成) 传入 Type, 创建对应的 List<T>
+        [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+        public static int CreateList(IntPtr ctx)
+        {
+            Type type;
+            if (duk_get_classvalue(ctx, 1, out type))
+            {
+                var gtype = typeof(List<>).MakeGenericType(type);
+                var ctors = gtype.GetConstructors(BindingFlags.Public);
+                for (var i = 0; i < ctors.Length; i++)
+                {
+                    var ctor = ctors[i];
+                    if (ctor.GetParameters().Length == 0)
+                    {
+                        var instance = ctor.Invoke(Type.EmptyTypes);
+                        duk_push_any(ctx, instance);
+                        return 1;
+                    }
+                }
+            }
+            return 0;
+        }
+
+        [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+        public static int GetType(IntPtr ctx)
+        {
+            string name;
+            duk_get_primitive(ctx, 1, out name);
+            var type = Assembly.GetExecutingAssembly().GetType(name);
+            duk_push_any(ctx, type);
+            return 1;
+        }
+
+        [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+        public static int IsNull(IntPtr ctx)
+        {
+            object o;
+            var res = DuktapeDLL.duk_is_null_or_undefined(ctx, 1);
+            if (!res
+            && duk_get_classvalue(ctx, 1, out o)
+            && o != null
+            && (!(o is UnityEngine.Object) || (o as UnityEngine.Object) != null))
+            {
+                res = false;
+            }
+            DuktapeDLL.duk_push_boolean(ctx, res);
+            return 1;
         }
 
         public static void reg(IntPtr ctx)
@@ -106,6 +159,13 @@ namespace Duktape
                 duk_begin_special(ctx, DuktapeVM.SPECIAL_DELEGATE);
                 duk_add_method(ctx, "add", DelegateAdder, -3);
                 duk_add_method(ctx, "remove", DelegateRemover, -3);
+                duk_end_special(ctx);
+            }
+            {
+                duk_begin_special(ctx, DuktapeVM.SPECIAL_CSHARP);
+                duk_add_method(ctx, "CreateList", CreateList, -3);
+                duk_add_method(ctx, "GetType", GetType, -3);
+                duk_add_method(ctx, "IsNull", IsNull, -3);
                 duk_end_special(ctx);
             }
             duk_end_namespace(ctx);
