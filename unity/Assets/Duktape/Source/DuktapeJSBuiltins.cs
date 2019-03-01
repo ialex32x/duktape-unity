@@ -68,7 +68,7 @@ namespace Duktape
                 fn = null;
                 return 1;
             }
-            var top = DuktapeDLL.duk_get_top_index(ctx);
+            var top = DuktapeDLL.duk_get_top(ctx); // duk_get_top_index??
             DuktapeValue[] argv = null;
             if (top > 1)
             {

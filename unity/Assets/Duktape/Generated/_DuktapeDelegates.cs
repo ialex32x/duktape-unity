@@ -11,16 +11,16 @@ namespace DuktapeJS {
         [UnityEngine.Scripting.Preserve]
         [Duktape.JSDelegateAttribute(typeof(SampleClass.DelegateFoo))]
         [Duktape.JSDelegateAttribute(typeof(SampleClass.DelegateFoo2))]
-        public static void _DuktapeDelegates0(DuktapeFunction fn, string a, string b) {
+        public static void _DuktapeDelegates0(DuktapeDelegate fn, string a, string b) {
             // generate binding code here
-            // var ctx = fn.GetContext().rawValue;
+            var ctx = fn.GetContext().rawValue;
             // fn.Push(ctx);
             // push arguments here...
             // fn._InternalCall(ctx, 2);
         }
         [UnityEngine.Scripting.Preserve]
         [Duktape.JSDelegateAttribute(typeof(SampleClass.DelegateFoo4))]
-        public static void _DuktapeDelegates1(DuktapeFunction fn, int a, float b) {
+        public static void _DuktapeDelegates1(DuktapeDelegate fn, int a, float b) {
             // generate binding code here
             // var ctx = fn.GetContext().rawValue;
             // fn.Push(ctx);
@@ -29,7 +29,7 @@ namespace DuktapeJS {
         }
         [UnityEngine.Scripting.Preserve]
         [Duktape.JSDelegateAttribute(typeof(System.Action))]
-        public static void _DuktapeDelegates2(DuktapeFunction fn) {
+        public static void _DuktapeDelegates2(DuktapeDelegate fn) {
             // generate binding code here
             // var ctx = fn.GetContext().rawValue;
             // fn.Push(ctx);
@@ -38,7 +38,7 @@ namespace DuktapeJS {
         }
         [UnityEngine.Scripting.Preserve]
         [Duktape.JSDelegateAttribute(typeof(System.Action<string>))]
-        public static void _DuktapeDelegates3(DuktapeFunction fn, string obj) {
+        public static void _DuktapeDelegates3(DuktapeDelegate fn, string obj) {
             // generate binding code here
             // var ctx = fn.GetContext().rawValue;
             // fn.Push(ctx);

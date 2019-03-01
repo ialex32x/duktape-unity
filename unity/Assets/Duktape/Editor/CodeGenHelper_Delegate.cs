@@ -78,6 +78,7 @@ namespace Duktape
         public DelegateCodeGen(CodeGenerator cg, DelegateBindingInfo delegateBindingInfo, int index)
         {
             this.cg = cg;
+            var jswrap = typeof(DuktapeDelegate);
             var returnTypeName = this.cg.bindingManager.GetTypeFullNameCS(delegateBindingInfo.returnType);
             var delegateName = DuktapeVM._DuktapeDelegates + index;
             var arglist = this.cg.bindingManager.GetArglistDeclCS(delegateBindingInfo.parameters);
@@ -85,7 +86,7 @@ namespace Duktape
             {
                 this.cg.csharp.AppendLine("[{0}(typeof({1}))]", typeof(JSDelegateAttribute).FullName, this.cg.bindingManager.GetTypeFullNameCS(target));
             }
-            this.cg.csharp.AppendLine("public static {0} {1}(DuktapeFunction fn{2}) {{", returnTypeName, delegateName, string.IsNullOrEmpty(arglist) ? "" : ", " + arglist);
+            this.cg.csharp.AppendLine("public static {0} {1}({2} fn{3}) {{", returnTypeName, delegateName, jswrap.Name, string.IsNullOrEmpty(arglist) ? "" : ", " + arglist);
             this.cg.csharp.AddTabLevel();
 
             this.cg.csharp.AppendLine("// generate binding code here");
@@ -93,6 +94,14 @@ namespace Duktape
             this.cg.csharp.AppendLine("// fn.Push(ctx);");
             this.cg.csharp.AppendLine("// push arguments here...");
             this.cg.csharp.AppendLine("// fn._InternalCall(ctx, {0});", delegateBindingInfo.parameters.Length);
+            /*
+            fn.BeginInvoke(ctx);
+            duk_push_any(ctx, a);
+            fn.EndInvoke(ctx);
+            T ret;
+            duk_get_primitive(ctx, -1, out ret)
+            return ret;            
+             */
 
             if (delegateBindingInfo.returnType != typeof(void))
             {

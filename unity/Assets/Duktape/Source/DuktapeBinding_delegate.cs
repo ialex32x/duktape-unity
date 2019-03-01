@@ -35,7 +35,7 @@ namespace Duktape
         where T : class
         {
             //TODO: 封装委托处理
-            if (DuktapeDLL.duk_is_function(ctx, idx))
+            if (DuktapeDLL.duk_is_object(ctx, idx)/* && check if js delegate type (hidden property) */)
             {
                 // 默认赋值操作
                 DuktapeDLL.duk_dup(ctx, idx);
