@@ -17,6 +17,11 @@ ss.field_a = 12345;
 console.log("ss.field_a = " + ss.field_a);
 var scxx = new SampleClass("testcase of SampleClass:", "a1", "a2", "a3");
 scxx.SetEnum(SampleEnum.b);
+scxx.delegateFoo1 = new Delegate2();
+scxx.delegateFoo1.on(scxx, function (a, b) {
+    console.log("delegate callback from SampleClass", a, b);
+});
+scxx.TestDelegate1();
 console.log(scxx.name + ".sum = " + scxx.Sum([1, 2, 3, 4, 5]));
 console.log("sampleEnum = " + scxx.sampleEnum);
 var res1 = scxx.CheckingVA(1, 2, 3, 4, 5);
@@ -42,9 +47,4 @@ console.log("decodeURIComponent?:", decodeURIComponent);
 // DuktapeJS.Delegate.on(this, (a: string) => {
 //     console.log(a)
 // })
-scxx.delegateFoo1 = new Delegate2();
-scxx.delegateFoo1.on(scxx, function (a, b) {
-    console.log("delegate callback from SampleClass", a, b);
-});
-scxx.TestDelegate1();
 //# sourceMappingURL=main.js.map
