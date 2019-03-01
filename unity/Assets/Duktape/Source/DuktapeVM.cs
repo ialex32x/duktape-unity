@@ -296,6 +296,11 @@ namespace Duktape
             {
                 var type = kv.Key;
                 var baseType = type.BaseType;
+                if (baseType == null)
+                {
+                    // Debug.Log($"baseType is null, for {type}");
+                    continue;
+                }
                 var fn = kv.Value;
                 fn.PushPrototype(ctx);
                 if (PushChainedPrototypeOf(ctx, baseType))

@@ -199,7 +199,7 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 var ret = self.sampleEnum;
-                duk_push_any(ctx, (System.Int32)ret);
+                duk_push_any(ctx, (int)ret);
                 return 1;
             }
             catch (Exception exception)
