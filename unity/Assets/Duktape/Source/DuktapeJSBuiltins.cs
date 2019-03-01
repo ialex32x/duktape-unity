@@ -164,6 +164,11 @@ namespace Duktape
 
         public static void reg(IntPtr ctx)
         {
+            DuktapeDLL.duk_push_global_object(ctx);
+            DuktapeDLL.duk_put_global_string(ctx, "global");
+            DuktapeDLL.duk_push_global_object(ctx);
+            DuktapeDLL.duk_put_global_string(ctx, "window");
+            
             duk_begin_namespace(ctx, "DuktapeJS");
             {
                 duk_begin_special(ctx, DuktapeVM.SPECIAL_ENUM);
