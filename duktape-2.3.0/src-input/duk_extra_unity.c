@@ -154,16 +154,16 @@ DUK_EXTERNAL void *duk_unity_get_buffer_data(duk_context *ctx, duk_idx_t idx, du
 
 // int 
 
-DUK_EXTERNAL void duk_unity_push2i(duk_context *ctx, duk_int_t v1, duk_int_t v2) {
-    duk_push_array(ctx);
+DUK_EXTERNAL void duk_unity_put2i(duk_context *ctx, duk_int_t v1, duk_int_t v2) {
+    // duk_push_array(ctx);
     duk_push_int(ctx, v1);
     duk_put_prop_index(ctx, -2, 0);
     duk_push_int(ctx, v2);
     duk_put_prop_index(ctx, -2, 1);
 }
 
-DUK_EXTERNAL void duk_unity_push3i(duk_context *ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3) {
-    duk_push_array(ctx);
+DUK_EXTERNAL void duk_unity_put3i(duk_context *ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3) {
+    // duk_push_array(ctx);
     duk_push_int(ctx, v1);
     duk_put_prop_index(ctx, -2, 0);
     duk_push_int(ctx, v2);
@@ -172,8 +172,8 @@ DUK_EXTERNAL void duk_unity_push3i(duk_context *ctx, duk_int_t v1, duk_int_t v2,
     duk_put_prop_index(ctx, -2, 2);
 }
 
-DUK_EXTERNAL void duk_unity_push4i(duk_context *ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3, duk_int_t v4) {
-    duk_push_array(ctx);
+DUK_EXTERNAL void duk_unity_put4i(duk_context *ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3, duk_int_t v4) {
+    // duk_push_array(ctx);
     duk_push_int(ctx, v1);
     duk_put_prop_index(ctx, -2, 0);
     duk_push_int(ctx, v2);
@@ -186,16 +186,16 @@ DUK_EXTERNAL void duk_unity_push4i(duk_context *ctx, duk_int_t v1, duk_int_t v2,
 
 // float
 
-DUK_EXTERNAL void duk_unity_push2f(duk_context *ctx, float v1, float v2) {
-    duk_push_array(ctx);
+DUK_EXTERNAL void duk_unity_put2f(duk_context *ctx, float v1, float v2) {
+    // duk_push_array(ctx);
     duk_push_number(ctx, v1);
     duk_put_prop_index(ctx, -2, 0);
     duk_push_number(ctx, v2);
     duk_put_prop_index(ctx, -2, 1);
 }
 
-DUK_EXTERNAL void duk_unity_push3f(duk_context *ctx, float v1, float v2, float v3) {
-    duk_push_array(ctx);
+DUK_EXTERNAL void duk_unity_put3f(duk_context *ctx, float v1, float v2, float v3) {
+    // duk_push_array(ctx);
     duk_push_number(ctx, v1);
     duk_put_prop_index(ctx, -2, 0);
     duk_push_number(ctx, v2);
@@ -204,8 +204,8 @@ DUK_EXTERNAL void duk_unity_push3f(duk_context *ctx, float v1, float v2, float v
     duk_put_prop_index(ctx, -2, 2);
 }
 
-DUK_EXTERNAL void duk_unity_push4f(duk_context *ctx, float v1, float v2, float v3, float v4) {
-    duk_push_array(ctx);
+DUK_EXTERNAL void duk_unity_put4f(duk_context *ctx, float v1, float v2, float v3, float v4) {
+    // duk_push_array(ctx);
     duk_push_number(ctx, v1);
     duk_put_prop_index(ctx, -2, 0);
     duk_push_number(ctx, v2);
@@ -218,12 +218,12 @@ DUK_EXTERNAL void duk_unity_push4f(duk_context *ctx, float v1, float v2, float v
 
 DUK_EXTERNAL duk_bool_t duk_unity_get2f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2) {
     idx = duk_normalize_index(ctx, idx);
-    if (duk_is_array(ctx, idx)) {
+    /*if (duk_is_array(ctx, idx))*/ {
         if (duk_get_prop_index(ctx, idx, 0)) {
-            *v1 = (float)duk_get_number(ctx, -1);
+            *v1 = (float)duk_get_number_default(ctx, -1, 0.0);
         }
         if (duk_get_prop_index(ctx, idx, 1)) {
-            *v2 = (float)duk_get_number(ctx, -1);
+            *v2 = (float)duk_get_number_default(ctx, -1, 0.0);
         }
         duk_pop_2(ctx);
         return 1;
@@ -233,15 +233,15 @@ DUK_EXTERNAL duk_bool_t duk_unity_get2f(duk_context *ctx, duk_idx_t idx, float *
 
 DUK_EXTERNAL duk_bool_t duk_unity_get3f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3) {
     idx = duk_normalize_index(ctx, idx);
-    if (duk_is_array(ctx, idx)) {
+    /*if (duk_is_array(ctx, idx))*/ {
         if (duk_get_prop_index(ctx, idx, 0)) {
-            *v1 = (float)duk_get_number(ctx, -1);
+            *v1 = (float)duk_get_number_default(ctx, -1, 0.0);
         }
         if (duk_get_prop_index(ctx, idx, 1)) {
-            *v2 = (float)duk_get_number(ctx, -1);
+            *v2 = (float)duk_get_number_default(ctx, -1, 0.0);
         }
         if (duk_get_prop_index(ctx, idx, 2)) {
-            *v3 = (float)duk_get_number(ctx, -1);
+            *v3 = (float)duk_get_number_default(ctx, -1, 0.0);
         }
         duk_pop_3(ctx);
         return 1;
@@ -251,18 +251,18 @@ DUK_EXTERNAL duk_bool_t duk_unity_get3f(duk_context *ctx, duk_idx_t idx, float *
 
 DUK_EXTERNAL duk_bool_t duk_unity_get4f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3, float *v4) {
     idx = duk_normalize_index(ctx, idx);
-    if (duk_is_array(ctx, idx)) {
+    /*if (duk_is_array(ctx, idx))*/ {
         if (duk_get_prop_index(ctx, idx, 0)) {
-            *v1 = (float)duk_get_number(ctx, -1);
+            *v1 = (float)duk_get_number_default(ctx, -1, 0.0);
         }
         if (duk_get_prop_index(ctx, idx, 1)) {
-            *v2 = (float)duk_get_number(ctx, -1);
+            *v2 = (float)duk_get_number_default(ctx, -1, 0.0);
         }
         if (duk_get_prop_index(ctx, idx, 2)) {
-            *v3 = (float)duk_get_number(ctx, -1);
+            *v3 = (float)duk_get_number_default(ctx, -1, 0.0);
         }
         if (duk_get_prop_index(ctx, idx, 3)) {
-            *v4 = (float)duk_get_number(ctx, -1);
+            *v4 = (float)duk_get_number_default(ctx, -1, 0.0);
         }
         duk_pop_n(ctx, 4);
         return 1;
@@ -274,12 +274,12 @@ DUK_EXTERNAL duk_bool_t duk_unity_get4f(duk_context *ctx, duk_idx_t idx, float *
 
 DUK_EXTERNAL duk_bool_t duk_unity_get2i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2) {
     idx = duk_normalize_index(ctx, idx);
-    if (duk_is_array(ctx, idx)) {
+    /*if (duk_is_array(ctx, idx))*/ {
         if (duk_get_prop_index(ctx, idx, 0)) {
-            *v1 = duk_get_int(ctx, -1);
+            *v1 = duk_get_int_default(ctx, -1, 0);
         }
         if (duk_get_prop_index(ctx, idx, 1)) {
-            *v2 = duk_get_int(ctx, -1);
+            *v2 = duk_get_int_default(ctx, -1, 0);
         }
         duk_pop_2(ctx);
         return 1;
@@ -289,15 +289,15 @@ DUK_EXTERNAL duk_bool_t duk_unity_get2i(duk_context *ctx, duk_idx_t idx, duk_int
 
 DUK_EXTERNAL duk_bool_t duk_unity_get3i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2, duk_int_t *v3) {
     idx = duk_normalize_index(ctx, idx);
-    if (duk_is_array(ctx, idx)) {
+    /*if (duk_is_array(ctx, idx))*/ {
         if (duk_get_prop_index(ctx, idx, 0)) {
-            *v1 = duk_get_int(ctx, -1);
+            *v1 = duk_get_int_default(ctx, -1, 0);
         }
         if (duk_get_prop_index(ctx, idx, 1)) {
-            *v2 = duk_get_int(ctx, -1);
+            *v2 = duk_get_int_default(ctx, -1, 0);
         }
         if (duk_get_prop_index(ctx, idx, 2)) {
-            *v3 = duk_get_int(ctx, -1);
+            *v3 = duk_get_int_default(ctx, -1, 0);
         }
         duk_pop_3(ctx);
         return 1;
@@ -307,18 +307,18 @@ DUK_EXTERNAL duk_bool_t duk_unity_get3i(duk_context *ctx, duk_idx_t idx, duk_int
 
 DUK_EXTERNAL duk_bool_t duk_unity_get4i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2, duk_int_t *v3, duk_int_t *v4) {
     idx = duk_normalize_index(ctx, idx);
-    if (duk_is_array(ctx, idx)) {
+    /*if (duk_is_array(ctx, idx))*/ {
         if (duk_get_prop_index(ctx, idx, 0)) {
-            *v1 = duk_get_int(ctx, -1);
+            *v1 = duk_get_int_default(ctx, -1, 0);
         }
         if (duk_get_prop_index(ctx, idx, 1)) {
-            *v2 = duk_get_int(ctx, -1);
+            *v2 = duk_get_int_default(ctx, -1, 0);
         }
         if (duk_get_prop_index(ctx, idx, 2)) {
-            *v3 = duk_get_int(ctx, -1);
+            *v3 = duk_get_int_default(ctx, -1, 0);
         }
         if (duk_get_prop_index(ctx, idx, 3)) {
-            *v4 = duk_get_int(ctx, -1);
+            *v4 = duk_get_int_default(ctx, -1, 0);
         }
         duk_pop_n(ctx, 4);
         return 1;

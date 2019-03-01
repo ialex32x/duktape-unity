@@ -52,6 +52,24 @@ namespace DuktapeJS {
         }
         [UnityEngine.Scripting.Preserve]
         [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int Bind_TestVector3(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                UnityEngine.Vector3 arg0;
+                duk_get_structvalue(ctx, 0, out arg0);
+                self.TestVector3(arg0);
+                return 0;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
         public static int Bind_SetEnum(IntPtr ctx)
         {
             try
@@ -179,7 +197,7 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 var ret = self.delegateFoo1;
-                duk_push_any(ctx, ret);
+                duk_push_delegate(ctx, ret);
                 return 1;
             }
             catch (Exception exception)
@@ -214,7 +232,7 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 var ret = self.delegateFoo2;
-                duk_push_any(ctx, ret);
+                duk_push_delegate(ctx, ret);
                 return 1;
             }
             catch (Exception exception)
@@ -249,7 +267,7 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 var ret = self.delegateFoo4;
-                duk_push_any(ctx, ret);
+                duk_push_delegate(ctx, ret);
                 return 1;
             }
             catch (Exception exception)
@@ -284,7 +302,7 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 var ret = self.action1;
-                duk_push_any(ctx, ret);
+                duk_push_delegate(ctx, ret);
                 return 1;
             }
             catch (Exception exception)
@@ -319,7 +337,7 @@ namespace DuktapeJS {
                 SampleClass self;
                 duk_get_this(ctx, out self);
                 var ret = self.action2;
-                duk_push_any(ctx, ret);
+                duk_push_delegate(ctx, ret);
                 return 1;
             }
             catch (Exception exception)
@@ -386,6 +404,7 @@ namespace DuktapeJS {
             duk_begin_namespace(ctx);
             duk_begin_class(ctx, "SampleClass", typeof(SampleClass), BindConstructor);
             duk_add_method(ctx, "TestDelegate1", Bind_TestDelegate1, -1);
+            duk_add_method(ctx, "TestVector3", Bind_TestVector3, -1);
             duk_add_method(ctx, "SetEnum", Bind_SetEnum, -1);
             duk_add_method(ctx, "CheckingVA", Bind_CheckingVA, -1);
             duk_add_method(ctx, "CheckingVA2", Bind_CheckingVA2, -1);

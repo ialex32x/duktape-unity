@@ -256,6 +256,16 @@ namespace Duktape
             return "duk_get_classvalue";
         }
 
+        public string GetDuktapePusher(Type type)
+        {
+            if (type.BaseType == typeof(MulticastDelegate))
+            {
+                return "duk_push_delegate";
+            }
+            return "duk_push_any";
+        }
+
+        // 保证生成一个以 prefix 为前缀, 与参数列表中所有参数名不同的名字
         public string GetUniqueName(ParameterInfo[] parameters, string prefix)
         {
             return GetUniqueName(parameters, prefix, 0);

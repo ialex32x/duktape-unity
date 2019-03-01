@@ -133,10 +133,11 @@ namespace Duktape
             //TODO: push 分类需要继续完善
             if (type.IsEnum)
             {
-                this.csharp.AppendLine("duk_push_any(ctx, ({0}){1});", type.GetEnumUnderlyingType().FullName, value);
+                var eType = type.GetEnumUnderlyingType();
+                this.csharp.AppendLine($"{this.bindingManager.GetDuktapePusher(eType)}(ctx, ({eType.FullName}){value});");
                 return;
             }
-            this.csharp.AppendLine("duk_push_any(ctx, {0});", value);
+            this.csharp.AppendLine($"{this.bindingManager.GetDuktapePusher(type)}(ctx, {value});");
         }
 
         public string AppendGetThisCS(FieldBindingInfo bindingInfo)

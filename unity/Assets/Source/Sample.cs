@@ -43,6 +43,11 @@ public class SampleClass
         }
     }
 
+    public void TestVector3(Vector3 v)
+    {
+        Debug.Log($"TestVector3({v})");
+    }
+
     public bool SetEnum(SampleEnum sampleEnum)
     {
         _sampleEnum = sampleEnum;

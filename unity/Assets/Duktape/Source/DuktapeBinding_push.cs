@@ -80,42 +80,50 @@ namespace Duktape
 
         public static void duk_push_any(IntPtr ctx, Color o)
         {
-            DuktapeDLL.duk_unity_push4f(ctx, o.r, o.g, o.b, o.a);
+            DuktapeDLL.duk_push_array(ctx);
+            DuktapeDLL.duk_unity_put4f(ctx, o.r, o.g, o.b, o.a);
         }
 
         public static void duk_push_any(IntPtr ctx, Color32 o)
         {
-            DuktapeDLL.duk_unity_push4i(ctx, o.r, o.g, o.b, o.a);
+            DuktapeDLL.duk_push_array(ctx);
+            DuktapeDLL.duk_unity_put4i(ctx, o.r, o.g, o.b, o.a);
         }
 
         public static void duk_push_any(IntPtr ctx, Vector2 o)
         {
-            DuktapeDLL.duk_unity_push2f(ctx, o.x, o.y);
+            DuktapeDLL.duk_push_array(ctx);
+            DuktapeDLL.duk_unity_put2f(ctx, o.x, o.y);
         }
 
         public static void duk_push_any(IntPtr ctx, Vector2Int o)
         {
-            DuktapeDLL.duk_unity_push2i(ctx, o.x, o.y);
+            DuktapeDLL.duk_push_array(ctx);
+            DuktapeDLL.duk_unity_put2i(ctx, o.x, o.y);
         }
 
         public static void duk_push_any(IntPtr ctx, Vector3 o)
         {
-            DuktapeDLL.duk_unity_push3f(ctx, o.x, o.y, o.z);
+            DuktapeDLL.duk_push_array(ctx);
+            DuktapeDLL.duk_unity_put3f(ctx, o.x, o.y, o.z);
         }
 
         public static void duk_push_any(IntPtr ctx, Vector3Int o)
         {
-            DuktapeDLL.duk_unity_push3i(ctx, o.x, o.y, o.z);
+            DuktapeDLL.duk_push_array(ctx);
+            DuktapeDLL.duk_unity_put3i(ctx, o.x, o.y, o.z);
         }
 
         public static void duk_push_any(IntPtr ctx, Vector4 o)
         {
-            DuktapeDLL.duk_unity_push4f(ctx, o.x, o.y, o.z, o.w);
+            DuktapeDLL.duk_push_array(ctx);
+            DuktapeDLL.duk_unity_put4f(ctx, o.x, o.y, o.z, o.w);
         }
 
         public static void duk_push_any(IntPtr ctx, Quaternion o)
         {
-            DuktapeDLL.duk_unity_push4f(ctx, o.x, o.y, o.z, o.w);
+            DuktapeDLL.duk_push_array(ctx);
+            DuktapeDLL.duk_unity_put4f(ctx, o.x, o.y, o.z, o.w);
         }
 
         // variant push
@@ -132,6 +140,12 @@ namespace Duktape
         public static void duk_push_any(IntPtr ctx, Array o)
         {
             duk_push_any(ctx, (object)o);
+        }
+
+        public static void duk_push_delegate(IntPtr ctx, Delegate o)
+        {
+            //TODO: delegate push
+            duk_push_object(ctx, (object)o);
         }
 
         // variant push
@@ -153,7 +167,11 @@ namespace Duktape
                 duk_push_any(ctx, (Array)o);
                 return;
             }
-            // if (type.BaseType)
+            if (type.BaseType == typeof(MulticastDelegate))
+            {
+                duk_push_delegate(ctx, (Delegate)o);
+                return;
+            }
             duk_push_object(ctx, (object)o);
         }
 

@@ -17,6 +17,7 @@ ss.field_a = 12345;
 console.log("ss.field_a = " + ss.field_a);
 var scxx = new SampleClass("testcase of SampleClass:", "a1", "a2", "a3");
 scxx.SetEnum(SampleEnum.b);
+scxx.TestVector3([1, 2, 3]);
 scxx.delegateFoo1 = new Delegate2();
 scxx.delegateFoo1.on(scxx, function (a, b) {
     console.log("delegate callback from SampleClass", a, b);
@@ -34,9 +35,9 @@ for (var p in DuktapeJS.Enum) {
 var timer1 = setInterval(function () {
     console.log("interval tick 1");
 }, 1000);
-setInterval(function () {
-    console.log("interval tick 2");
-}, 2000);
+// setInterval(() => {
+//     console.log("interval tick 2")
+// }, 2000)
 setTimeout(function (a, b) {
     console.log("timeout tick", a, b);
     clearInterval(timer1);
@@ -47,4 +48,49 @@ console.log("decodeURIComponent?:", decodeURIComponent);
 // DuktapeJS.Delegate.on(this, (a: string) => {
 //     console.log(a)
 // })
+var Vector3 = function (x, y, z) {
+    this.push(x);
+    this.push(y);
+    this.push(z);
+};
+Vector3.prototype = Object.setPrototypeOf({}, Array).prototype;
+Vector3.prototype.toString = function () {
+    return "test";
+};
+Object.defineProperties(Vector3.prototype, {
+    "normalized": {
+        get: function () {
+            var rlen = 1 / Math.sqrt(this[0] * this[0] + this[1] * this[1] + this[2] * this[2]);
+            return new Vector3(this[0] * rlen, this[1] * rlen, this[2] * rlen);
+        }
+    },
+    "x": {
+        get: function () {
+            return this[0];
+        },
+        set: function (v) {
+            this[0] = v;
+        }
+    },
+    "y": {
+        get: function () {
+            return this[1];
+        },
+        set: function (v) {
+            this[1] = v;
+        }
+    },
+    "z": {
+        get: function () {
+            return this[2];
+        },
+        set: function (v) {
+            this[2] = v;
+        }
+    }
+});
+var scyy = new SampleClass("scyy");
+var v3 = new Vector3(1, 2, 3);
+scyy.TestVector3(v3);
+console.log(v3.x, v3.y, v3.z);
 //# sourceMappingURL=main.js.map
