@@ -46,7 +46,7 @@ namespace Duktape
             var declaringType = fieldInfo.DeclaringType;
 
             this.cg.csharp.AppendLine("{0} value;", this.cg.bindingManager.GetTypeFullNameCS(fieldInfo.FieldType));
-            this.cg.csharp.AppendLine("{0}(ctx, 0, out value);", this.cg.GetDuktapeGetter(fieldInfo.FieldType));
+            this.cg.csharp.AppendLine("{0}(ctx, 0, out value);", this.cg.bindingManager.GetDuktapeGetter(fieldInfo.FieldType));
             this.cg.csharp.AppendLine("{0}.{1} = value;", caller, fieldInfo.Name);
             if (declaringType.IsValueType && !fieldInfo.IsStatic)
             {

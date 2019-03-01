@@ -35,13 +35,19 @@ namespace Duktape
         where T : class
         {
             //TODO: 封装委托处理
-            if (DuktapeDLL.duk_is_function(ctx, idx))
+            if (DuktapeDLL.duk_is_object(ctx, idx)/* && check if js delegate type (hidden property) */)
             {
                 // 默认赋值操作
                 DuktapeDLL.duk_dup(ctx, idx);
+                var heapptr = DuktapeDLL.duk_get_heapptr(ctx, idx);
                 var fn = new DuktapeDelegate(ctx, DuktapeDLL.duk_unity_ref(ctx));
                 var vm = DuktapeVM.GetVM(ctx);
                 o = vm.CreateDelegate(typeof(T), fn) as T;
+
+                //TODO: 临时处理, (另外 push 时是否写重载)
+                var cache = DuktapeVM.GetObjectCache(ctx);
+                //TODO: js delegate object 释放时需要 RemoveJSValue (用 C# 实现 DelagateBase)
+                cache.AddJSValue(o, heapptr);
                 return true;
             }
             else

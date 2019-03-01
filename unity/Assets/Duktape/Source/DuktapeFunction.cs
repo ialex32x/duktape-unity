@@ -44,7 +44,8 @@ namespace Duktape
             {
                 var err = DuktapeAux.duk_to_string(ctx, -1);
                 // throw new Exception(err); 
-                Debug.LogError(err);
+                var stackFrame = new System.Diagnostics.StackFrame(1, true);
+                Debug.LogError($"{stackFrame.GetFileName()}: {stackFrame.GetFileLineNumber()}\n{err}");
             }
         }
 

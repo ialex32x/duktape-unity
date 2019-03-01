@@ -26,6 +26,7 @@ namespace Duktape
 
         public const string SPECIAL_ENUM = "Enum";
         public const string SPECIAL_DELEGATE = "Delegate";
+        public const string SPECIAL_CSHARP = "CSharp";
 
         private DuktapeContext _ctx;
         private IFileSystem _fileManager;

@@ -15,12 +15,12 @@ public class SampleClass
 {
     public delegate void DelegateFoo(string a, string b);
     public delegate void DelegateFoo2(string a, string b);
-    public delegate void DelegateFoo4(int a, float b);
+    public delegate double DelegateFoo4(int a, float b);
 
     public DelegateFoo delegateFoo1;
     public DelegateFoo2 delegateFoo2;
     public DelegateFoo4 delegateFoo4;
-    
+
     public Action action1;
     public Action<string> action2;
     public Action[] actions1;
@@ -34,6 +34,14 @@ public class SampleClass
     }
 
     public SampleEnum sampleEnum { get { return _sampleEnum; } }
+
+    public void TestDelegate1()
+    {
+        if (delegateFoo1 != null)
+        {
+            delegateFoo1("hello", "delegate");
+        }
+    }
 
     public bool SetEnum(SampleEnum sampleEnum)
     {
@@ -153,6 +161,7 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
         vm.AddSearchPath("Assets/Scripts/polyfills");
         vm.AddSearchPath("Assets/Scripts/Generated");
         vm.EvalFile("console-minimal.js");
+        vm.EvalFile("scratch.js");
         vm.EvalMain("main.js");
     }
 

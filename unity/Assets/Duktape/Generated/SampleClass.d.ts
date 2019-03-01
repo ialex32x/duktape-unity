@@ -5,16 +5,17 @@ declare class SampleClass {
      * @param additional 测试可变参数
      */
     constructor(name: string, ...additional: string[])
+    TestDelegate1(): void
     SetEnum(sampleEnum: SampleEnum): boolean
     CheckingVA(...args: number[]): number
     CheckingVA2(b: number, ...args: number[]): number
     Sum(all: number[]): number
     readonly name: string
     readonly sampleEnum: SampleEnum
-    delegateFoo1: any
-    delegateFoo2: any
-    delegateFoo4: any
-    action1: any
-    action2: any
-    actions1: any[]
+    delegateFoo1: Delegate2<void, string, string>
+    delegateFoo2: Delegate2<void, string, string>
+    delegateFoo4: Delegate2<number, number, number>
+    action1: Delegate0<void>
+    action2: Delegate1<void, string>
+    actions1: Delegate0<void>[]
 }

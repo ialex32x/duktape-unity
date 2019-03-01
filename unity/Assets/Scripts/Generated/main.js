@@ -15,12 +15,17 @@ console.log("go.activeSelf", go.activeSelf);
 var ss = new SampleStruct();
 ss.field_a = 12345;
 console.log("ss.field_a = " + ss.field_a);
-var sc = new SampleClass("testcase of SampleClass:", "a1", "a2", "a3");
-sc.SetEnum(SampleEnum.b);
-console.log(sc.name + ".sum = " + sc.Sum([1, 2, 3, 4, 5]));
-console.log("sampleEnum = " + sc.sampleEnum);
-var res1 = sc.CheckingVA(1, 2, 3, 4, 5);
-var res2 = sc.CheckingVA2(1, 2, 3, 4, 5);
+var scxx = new SampleClass("testcase of SampleClass:", "a1", "a2", "a3");
+scxx.SetEnum(SampleEnum.b);
+scxx.delegateFoo1 = new Delegate2();
+scxx.delegateFoo1.on(scxx, function (a, b) {
+    console.log("delegate callback from SampleClass", a, b);
+});
+scxx.TestDelegate1();
+console.log(scxx.name + ".sum = " + scxx.Sum([1, 2, 3, 4, 5]));
+console.log("sampleEnum = " + scxx.sampleEnum);
+var res1 = scxx.CheckingVA(1, 2, 3, 4, 5);
+var res2 = scxx.CheckingVA2(1, 2, 3, 4, 5);
 console.log("res1 = " + res1);
 console.log("res2 = " + res2);
 for (var p in DuktapeJS.Enum) {
@@ -39,4 +44,7 @@ setTimeout(function (a, b) {
 console.log("JSON?:", JSON);
 console.log("encodeURIComponent?:", encodeURIComponent);
 console.log("decodeURIComponent?:", decodeURIComponent);
+// DuktapeJS.Delegate.on(this, (a: string) => {
+//     console.log(a)
+// })
 //# sourceMappingURL=main.js.map
