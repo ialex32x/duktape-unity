@@ -6,6 +6,35 @@ namespace Duktape
     // 基础环境
     public static partial class DuktapeAux
     {
+        public static void PrintError(IntPtr ctx, int idx)
+        {
+            PrintError(ctx, idx, null);
+        }
+
+        public static void PrintError(IntPtr ctx, int idx, string filename)
+        {
+            string err;
+            if (DuktapeDLL.duk_is_error(ctx, idx))
+            {
+                DuktapeDLL.duk_get_prop_string(ctx, idx, "stack");
+                err = DuktapeDLL.duk_safe_to_string(ctx, -1);
+                DuktapeDLL.duk_pop(ctx);
+            }
+            else
+            {
+                err = DuktapeDLL.duk_safe_to_string(ctx, idx);
+            }
+            
+            if (filename != null)
+            {
+                Debug.LogError($"[JSError][{filename}] {err}");
+            }
+            else
+            {
+                Debug.LogError($"[JSError] {err}");
+            }
+        }
+
         public static void duk_open(IntPtr ctx)
         {
             DuktapeDLL.duk_push_global_object(ctx);

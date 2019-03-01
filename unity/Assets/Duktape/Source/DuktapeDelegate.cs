@@ -44,9 +44,8 @@ namespace Duktape
             var ret = DuktapeDLL.duk_pcall_method(ctx, nargs);
             if (ret != DuktapeDLL.DUK_EXEC_SUCCESS)
             {
-                var err = DuktapeAux.duk_to_string(ctx, -1);
+                DuktapeAux.PrintError(ctx, -1);
                 // throw new Exception(err); 
-                Debug.LogError(err);
             }
         }
     }

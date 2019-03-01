@@ -42,10 +42,8 @@ namespace Duktape
             var ret = DuktapeDLL.duk_pcall(ctx, nargs);
             if (ret != DuktapeDLL.DUK_EXEC_SUCCESS)
             {
-                var err = DuktapeAux.duk_to_string(ctx, -1);
+                DuktapeAux.PrintError(ctx, -1);
                 // throw new Exception(err); 
-                var stackFrame = new System.Diagnostics.StackFrame(1, true);
-                Debug.LogError($"{stackFrame.GetFileName()}: {stackFrame.GetFileLineNumber()}\n{err}");
             }
         }
 
