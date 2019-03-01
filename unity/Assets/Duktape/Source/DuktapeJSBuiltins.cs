@@ -68,12 +68,13 @@ namespace Duktape
                 fn = null;
                 return 1;
             }
-            var top = DuktapeDLL.duk_get_top(ctx); // duk_get_top_index??
+            var top_index = DuktapeDLL.duk_get_top_index(ctx); 
+            // Debug.Log($"_GetTimerFunction {top} ?? {DuktapeDLL.duk_get_top(ctx)}");
             DuktapeValue[] argv = null;
-            if (top > 1)
+            if (top_index > 1)
             {
-                argv = new DuktapeValue[top - 1];
-                for (var i = 2; i <= top; i++)
+                argv = new DuktapeValue[top_index - 1];
+                for (var i = 2; i <= top_index; i++)
                 {
                     DuktapeDLL.duk_dup(ctx, i);
                     argv[i - 2] = new DuktapeValue(ctx, DuktapeDLL.duk_unity_ref(ctx));

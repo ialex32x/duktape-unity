@@ -130,43 +130,43 @@ class Delegate2<R, T1, T2> extends DelegateBase {
     }
 }
 
-class Sample {
-    onload: Delegate1<void, string>
+// class Sample {
+//     onload: Delegate1<void, string>
 
-    constructor() {
-        this.onload = new Delegate1()
-    }
-}
+//     constructor() {
+//         this.onload = new Delegate1()
+//     }
+// }
 
-let caller1 = {}
-let caller2 = {}
-let sample = new Sample()
-let fn1 = arg => {
-    console.log("caller1.callback 1", arg)
-}
-sample.onload.on(caller1, fn1)
-sample.onload.on(caller1, arg => {
-    console.log("caller1.callback 2", arg)
-})
-sample.onload.once(caller1, arg => {
-    console.log("caller1.callback 3 (once)", arg)
-})
-sample.onload.on(caller2, arg => {
-    console.log("caller2.callback 4", arg)
-})
+// let caller1 = {}
+// let caller2 = {}
+// let sample = new Sample()
+// let fn1 = arg => {
+//     console.log("caller1.callback 1", arg)
+// }
+// sample.onload.on(caller1, fn1)
+// sample.onload.on(caller1, arg => {
+//     console.log("caller1.callback 2", arg)
+// })
+// sample.onload.once(caller1, arg => {
+//     console.log("caller1.callback 3 (once)", arg)
+// })
+// sample.onload.on(caller2, arg => {
+//     console.log("caller2.callback 4", arg)
+// })
 
-console.log("#1")
-sample.onload.dispatch("testing")
-sample.onload.off(caller1, fn1)
-console.log("#2")
-sample.onload.dispatch("testing")
-console.log("#3")
-sample.onload.dispatch("testing")
-sample.onload.off(caller1)
-console.log("#4")
-sample.onload.dispatch("testing")
-sample.onload.clear()
-console.log("#5")
-sample.onload.dispatch("testing")
+// console.log("#1")
+// sample.onload.dispatch("testing")
+// sample.onload.off(caller1, fn1)
+// console.log("#2")
+// sample.onload.dispatch("testing")
+// console.log("#3")
+// sample.onload.dispatch("testing")
+// sample.onload.off(caller1)
+// console.log("#4")
+// sample.onload.dispatch("testing")
+// sample.onload.clear()
+// console.log("#5")
+// sample.onload.dispatch("testing")
 
 

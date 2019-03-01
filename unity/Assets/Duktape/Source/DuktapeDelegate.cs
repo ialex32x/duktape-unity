@@ -25,8 +25,7 @@ namespace Duktape
         // 记录栈状态
         public void BeginInvoke(IntPtr ctx)
         {
-            _savedState = DuktapeDLL.duk_get_top(ctx);
-            //TODO: 改成 push invoke 属性
+            // Debug.Log($"BeginInvoke: {_savedState}");
             if (_jsInvoker == null)
             {
                 this.PushProperty(ctx, "dispatch");
@@ -34,12 +33,14 @@ namespace Duktape
             }
             _jsInvoker.Push(ctx); // push function
             this.Push(ctx); // push this
+            _savedState = DuktapeDLL.duk_get_top(ctx);
         }
 
         // 根据当前栈参数数量调用函数
         public void EndInvoke(IntPtr ctx)
         {
             var nargs = DuktapeDLL.duk_get_top(ctx) - _savedState;
+            // Debug.Log($"EndInvoke: {nargs}");
             var ret = DuktapeDLL.duk_pcall_method(ctx, nargs);
             if (ret != DuktapeDLL.DUK_EXEC_SUCCESS)
             {
