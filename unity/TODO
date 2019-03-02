@@ -19,6 +19,9 @@
 兼容性: 
     ✔ setInterval/setTimeout @done(19-02-28 16:02)
     ☐ http.GET/POST/FORM
+    
+TODO: 
+    ☐ 为导出类型链末端 constructor 增加额外一层继承, 以便在 d.ts 中对 Type 做出具体类型约束
 
 FIXME: 
     ☐ duk_get_delegate 中缓存的 jsValue 存在gc问题 (js 层 DelegateBase 没有 Finalizer) @started(19-03-01 15:14)
