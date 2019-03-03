@@ -3,10 +3,18 @@ project(duktape)
 
 set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/)
 set(DUKTAPE_DIR ${TOP_DIR}/duktape-2.3.0)
+set(LIBRWS_DIR ${TOP_DIR}/librws)
 set(DUKTAPE_SRC_DIR ${DUKTAPE_DIR}/src-custom)
 
 include_directories(${DUKTAPE_SRC_DIR})
+include_directories(${LIBRWS_DIR})
 aux_source_directory(${DUKTAPE_SRC_DIR} DUKTAPE_SRCS)
+
+IF(CMAKE_CL_64)
+    link_directories(${TOP_DIR}/build/librws/x64/Release)
+ELSE()
+    link_directories(${TOP_DIR}/build/librws/x86/Release)
+ENDIF()
 
 if (APPLE) 
     if (IOS)
@@ -22,3 +30,5 @@ if (APPLE)
 else ()
     add_library(duktape SHARED ${DUKTAPE_SRCS})
 endif ()
+
+target_link_libraries(duktape librws_static.lib)
