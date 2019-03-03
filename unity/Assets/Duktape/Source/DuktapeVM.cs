@@ -395,7 +395,8 @@ namespace Duktape
             // var err = DuktapeDLL.duk_peval_string_noresult(ctx, source);
             if (err != 0)
             {
-                Debug.LogErrorFormat("eval main error: {0}\n{1}", DuktapeDLL.duk_safe_to_string(ctx, -1), filename);
+                DuktapeAux.PrintError(ctx, -1, filename);
+                // Debug.LogErrorFormat("eval main error: {0}\n{1}", DuktapeDLL.duk_safe_to_string(ctx, -1), filename);
             }
             DuktapeDLL.duk_set_top(ctx, top);
         }
