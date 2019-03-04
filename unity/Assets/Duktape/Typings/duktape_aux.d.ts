@@ -6,6 +6,9 @@ declare namespace DuktapeJS {
     const COMPLETE: string
     const ERROR: string
 
+    /**
+     * 监听者
+     */
     class Handler {
         constructor(caller: any, fn: Function, once: boolean)
         /**
@@ -15,7 +18,13 @@ declare namespace DuktapeJS {
         invoke(...args: any[]): any
     }
 
+    /**
+     * 监听者列表
+     * 注意: 当前 off 只是对 handlers 数组进行删除标记, 下次 on 时将复用, 所以并不能严格遵守 on 的顺序
+     */
     class Dispatcher {
+        readonly handlers: Array<Handler>
+        
         constructor()
 
         /**
@@ -38,13 +47,12 @@ declare namespace DuktapeJS {
          */
         dispatch(...args: any[]): any
 
-        // 不要在 dispatch 过程中调用
-        compact(): void
-
         clear(): void
     }
 
     class EventDispatcher {
+        readonly events: { [type: string]: Dispatcher }
+
         constructor()
         /**
          * 添加监听
@@ -65,8 +73,6 @@ declare namespace DuktapeJS {
          * 触发事件
          */
         dispatch(type: string, ...args: any[]): any
-
-        compact(): void
 
         clear(type: string): void
     }
