@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 	duk_push_c_function(ctx, native_change, DUK_VARARGS);
 	duk_put_global_string(ctx, "change");
 
-	FILE *fp = fopen("main.js", "r");
+	FILE *fp = fopen("../../../scratch/scripts/main.js", "r");
 	if (fp) {
 		fseek(fp, 0, SEEK_END);
 		long length = ftell(fp);
