@@ -54,4 +54,33 @@ var scyy = new SampleClass("scyy");
 var v3 = new vector3_1.Vector3(1, 2, 3);
 scyy.TestVector3(v3);
 console.log(v3.x, v3.y, v3.z);
+var ev = new DuktapeJS.EventDispatcher();
+var JSO = /** @class */ (function () {
+    function JSO(name) {
+        this.name = name;
+    }
+    JSO.prototype.foo1 = function (phase) {
+        console.log(phase, this.name, "foo1");
+    };
+    JSO.prototype.foo2 = function (phase) {
+        console.log(phase, this.name, "foo2");
+    };
+    return JSO;
+}());
+var jso1 = new JSO("A");
+var jso2 = new JSO("B");
+ev.on("test", jso1, jso1.foo1);
+ev.on("test", jso1, jso1.foo2);
+ev.on("test", jso2, jso2.foo1);
+ev.on("test", jso2, jso2.foo2);
+ev.dispatch("test", "FIRST");
+ev.off("test", jso1, jso1.foo1);
+console.log(ev.events["test"].handlers);
+ev.dispatch("test", "SECOND");
+ev.off("test", jso2);
+ev.dispatch("test", "THIRD");
+// ev.dispatch("test A", 1, 2, 3)
+// ev.off("test A", jso2)
+// ev.dispatch("test A", 1, 2, 3)
+// ev.dispatch("test B", 4, 5, 6)
 //# sourceMappingURL=main.js.map

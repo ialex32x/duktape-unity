@@ -66,3 +66,39 @@ let scyy = new SampleClass("scyy")
 let v3 = new Vector3(1, 2, 3)
 scyy.TestVector3(v3)
 console.log(v3.x, v3.y, v3.z)
+
+var ev = new DuktapeJS.EventDispatcher()
+
+class JSO {
+    name: string
+    constructor(name: string) {
+        this.name = name
+    }
+    foo1(phase) {
+        console.log(phase, this.name, "foo1")
+    }
+    foo2(phase) {
+        console.log(phase, this.name, "foo2")
+    }
+}
+let jso1 = new JSO("A")
+let jso2 = new JSO("B")
+
+ev.on("test", jso1, jso1.foo1)
+ev.on("test", jso1, jso1.foo2)
+
+ev.on("test", jso2, jso2.foo1)
+ev.on("test", jso2, jso2.foo2)
+
+ev.dispatch("test", "FIRST")
+ev.off("test", jso1, jso1.foo1)
+console.log(ev.events["test"].handlers)
+ev.dispatch("test", "SECOND")
+ev.off("test", jso2)
+ev.dispatch("test", "THIRD")
+
+// ev.dispatch("test A", 1, 2, 3)
+// ev.off("test A", jso2)
+// ev.dispatch("test A", 1, 2, 3)
+// ev.dispatch("test B", 4, 5, 6)
+
