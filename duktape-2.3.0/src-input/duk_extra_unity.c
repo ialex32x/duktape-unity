@@ -707,10 +707,10 @@ DUK_LOCAL duk_ret_t duk_events_dispatcher_on(duk_context *ctx) {
 DUK_LOCAL duk_ret_t duk_events_dispatcher_off(duk_context *ctx) {
     duk_idx_t nargs = duk_get_top(ctx);
     duk_push_this(ctx);
-    duk_get_prop_string(ctx, -1, "handlers"); // this, handlers
+    duk_get_prop_string(ctx, -1, "handlers"); // [argN], this, handlers
     duk_size_t length = duk_get_length(ctx, -1);
     for (duk_size_t i = 1; i < length; i++) {
-        duk_get_prop_index(ctx, -1, (duk_uarridx_t)i); // this, handlers, el
+        duk_get_prop_index(ctx, -1, (duk_uarridx_t)i); // [argN], this, handlers, el
         if (!duk_is_number(ctx, -1)) {
             duk_push_string(ctx, "equals");
             duk_dup(ctx, 0);
@@ -722,25 +722,25 @@ DUK_LOCAL duk_ret_t duk_events_dispatcher_off(duk_context *ctx) {
             if (duk_pcall_prop(ctx, -4, 2) != DUK_EXEC_SUCCESS) {
                 return duk_throw(ctx);
             }
-            if (duk_get_top(ctx) != 6) {
-                return duk_generic_error(ctx, "aaa, nargs: %d top: %d", nargs, duk_get_top(ctx));
-            }
-            // this, handlers, el, el.ret
+            // if (duk_get_top(ctx) != 4 + nargs) {
+            //     return duk_generic_error(ctx, "aaa, nargs: %d top: %d", nargs, duk_get_top(ctx));
+            // }
+            // [argN], this, handlers, el, el.ret
             duk_bool_t eq = duk_get_boolean_default(ctx, -1, 0);
             duk_pop(ctx); // pop el.ret
-            // this, handlers, el
+            // [argN], this, handlers, el
             if (eq) {
                 // this._handlers[i] = this._handlers[0]
                 // this._handlers[0] = i
-                duk_unity_array_assign(ctx, -1, (duk_uarridx_t)i, 0);
-                duk_push_uint(ctx, (duk_uint_t)i); // this, handlers, el, i
+                duk_unity_array_assign(ctx, -2, (duk_uarridx_t)i, 0);
+                duk_push_uint(ctx, (duk_uint_t)i); // [argN], this, handlers, el, i
                 duk_put_prop_index(ctx, -3, 0);
             }
-            duk_pop(ctx); // pop el
-            if (duk_get_top(ctx) != 4) {
-                return duk_generic_error(ctx, "aaa, nargs: %d top: %d", nargs, duk_get_top(ctx));
-            }
         }
+        duk_pop(ctx); // pop el
+        // if (duk_get_top(ctx) != 2 + nargs) {
+        //     return duk_generic_error(ctx, "aaa, nargs: %d top: %d", nargs, duk_get_top(ctx));
+        // }
     }
     duk_pop_2(ctx); // .
     return 0;
