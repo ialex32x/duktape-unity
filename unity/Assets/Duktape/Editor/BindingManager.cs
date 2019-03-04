@@ -400,6 +400,14 @@ namespace Duktape
             {
                 return true;
             }
+            if (type.IsDefined(typeof(ObsoleteAttribute), false)) 
+            {
+                return true;
+            }
+            if (type.BaseType == typeof(Attribute)) 
+            {
+                return true;
+            }
             for (int i = 0, size = typePrefixBlacklist.Count; i < size; i++)
             {
                 if (type.FullName.StartsWith(typePrefixBlacklist[i]))

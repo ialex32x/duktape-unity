@@ -102,6 +102,7 @@ namespace Duktape
                     {
                         var json = System.IO.File.ReadAllText(PATH);
                         _prefs = JsonUtility.FromJson<Prefs>(json);
+                        Debug.Log($"load prefs: {json}");
                     }
                 }
                 catch (Exception exception)

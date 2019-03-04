@@ -236,7 +236,7 @@ namespace Duktape
         // 将类型名转换成简单字符串 (比如用于文件名)
         public string GetFileName()
         {
-            var filename = type.FullName.Replace(".", "_");
+            var filename = type.FullName.Replace(".", "_").Replace("<", "_").Replace(">", "_").Replace("`", "_");
             return filename;
         }
 
@@ -324,6 +324,11 @@ namespace Duktape
             foreach (var property in properties)
             {
                 if (property.IsSpecialName)
+                {
+                    continue;
+                }
+                //TODO: 索引访问
+                if (property.Name == "Item")
                 {
                     continue;
                 }

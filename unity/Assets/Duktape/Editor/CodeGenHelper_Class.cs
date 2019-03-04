@@ -151,7 +151,10 @@ namespace Duktape
                         {
                             cg.typescript.AppendLine("private constructor()");
                         }
-                        cg.csharp.AppendLine("duk_begin_class(ctx, \"{0}\", typeof({1}), {2});", bindingInfo.regName, bindingInfo.FullName, constructor);
+                        cg.csharp.AppendLine("duk_begin_class(ctx, \"{0}\", typeof({1}), {2});", 
+                            bindingInfo.regName, 
+                            this.cg.bindingManager.GetTypeFullNameCS(bindingInfo.type), 
+                            constructor);
                         foreach (var kv in bindingInfo.methods)
                         {
                             var regName = kv.Value.regName;
