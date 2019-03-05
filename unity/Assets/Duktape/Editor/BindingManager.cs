@@ -555,7 +555,7 @@ namespace Duktape
                 }
                 catch (Exception exception)
                 {
-                    Error(string.Format("generate failed {0}: {1}", typeBindingInfo.type.Name, exception.Message));
+                    Error($"generate failed {typeBindingInfo.type.FullName}: {exception.Message}");
                     Debug.LogError(exception.StackTrace);
                 }
             }
@@ -571,7 +571,7 @@ namespace Duktape
             }
             catch (Exception exception)
             {
-                Error(string.Format("generate failed: {0}", exception.Message));
+                    Error($"generate delegates failed: {exception.Message}");
                 Debug.LogError(exception.StackTrace);
             }
 
