@@ -185,19 +185,8 @@ namespace Duktape
                 DuktapeDLL.duk_push_heapptr(ctx, heapptr);
                 return;
             }
-            var id = cache.AddObject(o);
             DuktapeDLL.duk_push_object(ctx);
-            DuktapeDLL.duk_unity_set_prop_i(ctx, -1, DuktapeVM.OBJ_PROP_NATIVE, id);
-            if (DuktapeVM.GetVM(ctx).PushChainedPrototypeOf(ctx, o.GetType()))
-            {
-                DuktapeDLL.duk_set_prototype(ctx, -2);
-            }
-            if (!o.GetType().IsValueType)
-            {
-                heapptr = DuktapeDLL.duk_get_heapptr(ctx, -1);
-                cache.AddJSValue(o, heapptr);
-            }
-            DuktapeDLL.duk_pop(ctx);
+            duk_bind_native(ctx, -1, o);
         }
 
         // 自动判断类型

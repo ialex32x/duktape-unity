@@ -186,7 +186,7 @@ namespace Duktape
             var returnType = GetReturnType(method);
             if (returnType != null)
             {
-                var returnTypeTS = this.cg.bindingManager.GetTypeFullNameTS(returnType);
+                var returnTypeTS = this.cg.bindingManager.GetTSTypeFullName(returnType);
                 if (returnParameters != null && returnParameters.Count > 0)
                 {
                     this.cg.typescript.AppendL(": {");
@@ -197,7 +197,7 @@ namespace Duktape
                     {
                         var parameter = returnParameters[i];
                         var parameterType = parameter.ParameterType;
-                        var parameterTypeTS = this.cg.bindingManager.GetTypeFullNameTS(parameterType);
+                        var parameterTypeTS = this.cg.bindingManager.GetTSTypeFullName(parameterType);
                         this.cg.typescript.AppendLine($"{BindingManager.GetTSVariable(parameter.Name)}: {parameterTypeTS}, ");
                     }
                     this.cg.typescript.DecTabLevel();
@@ -292,6 +292,13 @@ namespace Duktape
         //TODO: 考虑将 ref/out 参数以额外增加一个参数的形式返回
         protected List<ParameterInfo> WriteTSDeclaration(T method, MethodBaseBindingInfo<T> bindingInfo)
         {
+            var refParameters = new List<ParameterInfo>();
+            string tsMethodDeclaration;
+            if (this.cg.bindingManager.GetTSMethodDeclaration(method, out tsMethodDeclaration))
+            {
+                this.cg.typescript.AppendLine(tsMethodDeclaration);
+                return refParameters;
+            }
             //TODO: 需要处理参数类型归并问题, 因为如果类型没有导入 ts 中, 可能会在声明中出现相同参数列表的定义
             //      在 MethodVariant 中创建每个方法对应的TS类型名参数列表, 完全相同的不再输出
             this.cg.AppendJSDoc(method);
@@ -302,7 +309,6 @@ namespace Duktape
             }
             this.cg.typescript.Append($"{prefix}{bindingInfo.regName}(");
             var parameters = method.GetParameters();
-            var refParameters = new List<ParameterInfo>();
             for (var i = 0; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
@@ -320,14 +326,14 @@ namespace Duktape
                 if (parameter.IsDefined(typeof(ParamArrayAttribute), false) && i == parameters.Length - 1)
                 {
                     var elementType = parameter.ParameterType.GetElementType();
-                    var elementTS = this.cg.bindingManager.GetTypeFullNameTS(elementType);
+                    var elementTS = this.cg.bindingManager.GetTSTypeFullName(elementType);
                     var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
                     this.cg.typescript.AppendL($"{parameter_prefix}...{parameterVarName}: {elementTS}[]");
                 }
                 else
                 {
                     var parameterType = parameter.ParameterType;
-                    var parameterTS = this.cg.bindingManager.GetTypeFullNameTS(parameterType);
+                    var parameterTS = this.cg.bindingManager.GetTSTypeFullName(parameterType);
                     var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
                     this.cg.typescript.AppendL($"{parameter_prefix}{parameterVarName}: {parameterTS}");
                 }

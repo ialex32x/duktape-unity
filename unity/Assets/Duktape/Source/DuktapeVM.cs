@@ -305,7 +305,7 @@ namespace Duktape
                 fn.PushPrototype(ctx);
                 if (PushChainedPrototypeOf(ctx, baseType))
                 {
-                    // Debug.LogFormat("duktapeVM set {0} super {1}", type, baseType);
+                    // Debug.LogFormat("set {0} super {1}", type, baseType);
                     DuktapeDLL.duk_set_prototype(ctx, -2);
                 }
                 DuktapeDLL.duk_pop(ctx);

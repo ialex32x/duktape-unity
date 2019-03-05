@@ -21,15 +21,18 @@ namespace Duktape
         private Dictionary<Type, DelegateBindingInfo> exportedDelegates = new Dictionary<Type, DelegateBindingInfo>();
         private Dictionary<Type, Type> redirectDelegates = new Dictionary<Type, Type>();
         private List<string> outputFiles = new List<string>();
+        private List<string> removedFiles = new List<string>();
 
         private Dictionary<Type, string> _tsTypeNameMap = new Dictionary<Type, string>();
         private Dictionary<Type, string> _csTypeNameMap = new Dictionary<Type, string>();
         private Dictionary<string, string> _csTypeNameMapS = new Dictionary<string, string>();
         private static HashSet<string> _tsKeywords = new HashSet<string>();
 
+        // 针对特定方法的 ts 声明优化
+        private Dictionary<MethodBase, string> _tsMethodDeclarations = new Dictionary<MethodBase, string>();
+
         static BindingManager()
         {
-
             AddTSKeywords(
                 "function",
                 "interface",
@@ -91,6 +94,39 @@ namespace Duktape
             {
             });
 
+            AddTSMethodDeclaration("AddComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
+                typeof(GameObject), "AddComponent", typeof(Type));
+
+            AddTSMethodDeclaration("GetComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
+                typeof(GameObject), "GetComponent", typeof(Type));
+
+            AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T", 
+                typeof(GameObject), "GetComponentInChildren", typeof(Type), typeof(bool));
+
+            AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }): T", 
+                typeof(GameObject), "GetComponentInChildren", typeof(Type));
+
+            AddTSMethodDeclaration("GetComponentInParent<T extends UnityEngine.Component>(type: { new(): T }): T", 
+                typeof(GameObject), "GetComponentInParent", typeof(Type));
+
+            // AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }, results: any): void", 
+            //     typeof(GameObject), "GetComponents", typeof(Type));
+
+            AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): T[]", 
+                typeof(GameObject), "GetComponents", typeof(Type));
+
+            AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T[]", 
+                typeof(GameObject), "GetComponentsInChildren", typeof(Type), typeof(bool));
+
+            AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): T[]", 
+                typeof(GameObject), "GetComponentsInChildren", typeof(Type));
+
+            AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T[]", 
+                typeof(GameObject), "GetComponentsInParent", typeof(Type), typeof(bool));
+
+            AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): T[]", 
+                typeof(GameObject), "GetComponentsInParent", typeof(Type));
+
             _tsTypeNameMap[typeof(sbyte)] = "number";
             _tsTypeNameMap[typeof(byte)] = "number";
             _tsTypeNameMap[typeof(int)] = "number";
@@ -105,15 +141,15 @@ namespace Duktape
             _tsTypeNameMap[typeof(string)] = "string";
             _tsTypeNameMap[typeof(char)] = "string";
             _tsTypeNameMap[typeof(void)] = "void";
-            _tsTypeNameMap[typeof(LayerMask)] = "UnityEngine.LayerMask | number";
-            _tsTypeNameMap[typeof(Color)] = "UnityEngine.Color | Array<number>";
-            _tsTypeNameMap[typeof(Color32)] = "UnityEngine.Color32 | Array<number>";
-            _tsTypeNameMap[typeof(Vector2)] = "UnityEngine.Vector2 | Array<number>";
-            _tsTypeNameMap[typeof(Vector2Int)] = "UnityEngine.Vector2Int | Array<number>";
-            _tsTypeNameMap[typeof(Vector3)] = "UnityEngine.Vector3 | Array<number>";
-            _tsTypeNameMap[typeof(Vector3Int)] = "UnityEngine.Vector3Int | Array<number>";
-            _tsTypeNameMap[typeof(Vector4)] = "UnityEngine.Vector4 | Array<number>";
-            _tsTypeNameMap[typeof(Quaternion)] = "UnityEngine.Quaternion | Array<number>";
+            _tsTypeNameMap[typeof(LayerMask)] = "(UnityEngine.LayerMask | number)";
+            _tsTypeNameMap[typeof(Color)] = "(UnityEngine.Color | Array<number>)";
+            _tsTypeNameMap[typeof(Color32)] = "(UnityEngine.Color32 | Array<number>)";
+            _tsTypeNameMap[typeof(Vector2)] = "(UnityEngine.Vector2 | Array<number>)";
+            _tsTypeNameMap[typeof(Vector2Int)] = "(UnityEngine.Vector2Int | Array<number>)";
+            _tsTypeNameMap[typeof(Vector3)] = "(UnityEngine.Vector3 | Array<number>)";
+            _tsTypeNameMap[typeof(Vector3Int)] = "(UnityEngine.Vector3Int | Array<number>)";
+            _tsTypeNameMap[typeof(Vector4)] = "(UnityEngine.Vector4 | Array<number>)";
+            _tsTypeNameMap[typeof(Quaternion)] = "(UnityEngine.Quaternion | Array<number>)";
 
             AddTypeNameMapCS(typeof(sbyte), "sbyte");
             AddTypeNameMapCS(typeof(byte), "byte");
@@ -132,12 +168,26 @@ namespace Duktape
             AddTypeNameMapCS(typeof(void), "void");
         }
 
+        public void AddTSMethodDeclaration(string spec, Type type, string name, params Type[] parameters)
+        {
+            var method = type.GetMethod(name, parameters);
+            if (method != null)
+            {
+                _tsMethodDeclarations[method] = spec;
+            }
+        }
+
         private static void AddTSKeywords(params string[] keywords)
         {
             foreach (var keyword in keywords)
             {
                 _tsKeywords.Add(keyword);
             }
+        }
+
+        public bool GetTSMethodDeclaration(MethodBase method, out string code)
+        {
+            return _tsMethodDeclarations.TryGetValue(method, out code);
         }
 
         private void AddTypeNameMapCS(Type type, string name)
@@ -232,7 +282,7 @@ namespace Duktape
         }
 
         // 获取 type 在 typescript 中对应类型名
-        public string GetTypeFullNameTS(Type type)
+        public string GetTSTypeFullName(Type type)
         {
             if (type == null || type == typeof(void))
             {
@@ -246,7 +296,7 @@ namespace Duktape
             if (type.IsArray)
             {
                 var elementType = type.GetElementType();
-                return GetTypeFullNameTS(elementType) + "[]";
+                return GetTSTypeFullName(elementType) + "[]";
             }
             var info = GetExportedType(type);
             if (info != null)
@@ -259,7 +309,7 @@ namespace Duktape
                 if (delegateBindingInfo != null)
                 {
                     var nargs = delegateBindingInfo.parameters.Length;
-                    var ret = GetTypeFullNameTS(delegateBindingInfo.returnType);
+                    var ret = GetTSTypeFullName(delegateBindingInfo.returnType);
                     var arglist = (nargs > 0 ? ", " : "") + GetArglistTypesTS(delegateBindingInfo.parameters);
                     return $"Delegate{nargs}<{ret}{arglist}>";
                 }
@@ -289,7 +339,7 @@ namespace Duktape
             for (var i = 0; i < size; i++)
             {
                 var parameter = parameters[i];
-                var typename = GetTypeFullNameTS(parameter.ParameterType);
+                var typename = GetTSTypeFullName(parameter.ParameterType);
                 // if (parameter.IsOut && parameter.ParameterType.IsByRef)
                 // {
                 //     arglist += "out ";
@@ -405,7 +455,7 @@ namespace Duktape
                 var superBindingInfo = GetExportedType(super);
                 if (superBindingInfo != null)
                 {
-                    return superBindingInfo.regName;
+                    return GetTSTypeFullName(superBindingInfo.type);
                 }
                 super = super.BaseType;
             }
@@ -630,6 +680,7 @@ namespace Duktape
             log.AddTabLevel();
             Cleanup(prefs.outDir, outputFiles, file =>
             {
+                removedFiles.Add(file);
                 log.AppendLine("remove unused file {0}", file);
             });
             log.DecTabLevel();
@@ -671,11 +722,24 @@ namespace Duktape
             {
                 Directory.CreateDirectory(outDir);
             }
+            var cancel = false;
+            var current = 0;
+            var total = exportedTypes.Count;
             foreach (var typeKV in exportedTypes)
             {
                 var typeBindingInfo = typeKV.Value;
                 try
                 {
+                    current++;
+                    cancel = EditorUtility.DisplayCancelableProgressBar(
+                        "Generating",
+                        $"{current}/{total}: {typeBindingInfo.FullName}",
+                        (float)current / total);
+                    if (cancel)
+                    {
+                        Warn("operation canceled");
+                        break;
+                    }
                     cg.Clear();
                     cg.Generate(typeBindingInfo);
                     cg.WriteTo(outDir, typeBindingInfo.GetFileName(), tx);
@@ -687,26 +751,38 @@ namespace Duktape
                 }
             }
 
-            try
+            if (!cancel)
             {
-                var exportedDelegatesArray = new DelegateBindingInfo[this.exportedDelegates.Count];
-                this.exportedDelegates.Values.CopyTo(exportedDelegatesArray, 0);
+                try
+                {
+                    var exportedDelegatesArray = new DelegateBindingInfo[this.exportedDelegates.Count];
+                    this.exportedDelegates.Values.CopyTo(exportedDelegatesArray, 0);
 
-                cg.Clear();
-                cg.Generate(exportedDelegatesArray);
-                cg.WriteTo(outDir, DuktapeVM._DuktapeDelegates, tx);
-            }
-            catch (Exception exception)
-            {
-                Error($"generate delegates failed: {exception.Message}");
-                Debug.LogError(exception.StackTrace);
+                    cg.Clear();
+                    cg.Generate(exportedDelegatesArray);
+                    cg.WriteTo(outDir, DuktapeVM._DuktapeDelegates, tx);
+                }
+                catch (Exception exception)
+                {
+                    Error($"generate delegates failed: {exception.Message}");
+                    Debug.LogError(exception.StackTrace);
+                }
             }
 
             var logPath = prefs.logPath;
             File.WriteAllText(logPath, log.ToString());
+            EditorUtility.ClearProgressBar();
+        }
+
+        public void Report()
+        {
             var now = DateTime.Now;
             var ts = now.Subtract(dateTime);
-            Debug.LogFormat("generated {0} type(s), {1} delegate(s) in {2:0.##} seconds.", exportedTypes.Count, exportedDelegates.Count, ts.TotalSeconds);
+            Debug.LogFormat("generated {0} type(s), {1} delegate(s), {2} deletion(s) in {3:0.##} seconds.",
+                exportedTypes.Count,
+                exportedDelegates.Count,
+                removedFiles.Count,
+                ts.TotalSeconds);
         }
     }
 }
