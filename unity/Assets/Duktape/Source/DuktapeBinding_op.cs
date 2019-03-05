@@ -20,6 +20,19 @@ namespace Duktape
             return ret;
         }
 
+        public static void duk_bind_native(IntPtr ctx, object o)
+        {
+            DuktapeDLL.duk_push_this(ctx);
+            duk_bind_native(ctx, -1, o);
+            DuktapeDLL.duk_pop(ctx);
+        }
+
+        public static void duk_bind_native_pop(IntPtr ctx, int idx, object o)
+        {
+            duk_bind_native(ctx, -1, o);
+            DuktapeDLL.duk_pop(ctx);
+        }
+
         public static void duk_bind_native(IntPtr ctx, int idx, object o)
         {
             var cache = DuktapeVM.GetObjectCache(ctx);
@@ -38,6 +51,21 @@ namespace Duktape
             var ret = duk_rebind_native(ctx, -1, o);
             DuktapeDLL.duk_pop(ctx);
             return ret;
+        }
+
+        public static bool duk_get_native_refid(IntPtr ctx, int idx, out int id)
+        {
+            if (!DuktapeDLL.duk_is_null_or_undefined(ctx, idx))
+            {
+                if (DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE))
+                {
+                    id = DuktapeDLL.duk_get_int(ctx, -1);
+                    return true;
+                }
+                DuktapeDLL.duk_pop(ctx); // pop OBJ_PROP_NATIVE
+            }
+            id = 0;
+            return false;
         }
 
         public static bool duk_rebind_native(IntPtr ctx, int idx, object o)

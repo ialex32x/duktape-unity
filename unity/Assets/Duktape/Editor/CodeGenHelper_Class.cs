@@ -21,7 +21,7 @@ namespace Duktape
 
             // 生成函数体
             // 构造函数
-            if (type.constructors.hasValid)
+            if (type.constructors.available)
             {
                 using (new PInvokeGuardCodeGen(cg))
                 {
@@ -74,14 +74,18 @@ namespace Duktape
             foreach (var kv in type.properties)
             {
                 var bindingInfo = kv.Value;
-                using (new PInvokeGuardCodeGen(cg))
+                // 可读属性
+                if (bindingInfo.getterName != null)
                 {
-                    using (new BindingFuncDeclareCodeGen(cg, bindingInfo.getterName))
+                    using (new PInvokeGuardCodeGen(cg))
                     {
-                        using (new TryCatchGuradCodeGen(cg))
+                        using (new BindingFuncDeclareCodeGen(cg, bindingInfo.getterName))
                         {
-                            using (new PropertyGetterCodeGen(cg, bindingInfo))
+                            using (new TryCatchGuradCodeGen(cg))
                             {
+                                using (new PropertyGetterCodeGen(cg, bindingInfo))
+                                {
+                                }
                             }
                         }
                     }
@@ -146,12 +150,15 @@ namespace Duktape
                 {
                     using (new RegFuncNamespaceCodeGen(cg, bindingInfo))
                     {
-                        var constructor = bindingInfo.constructors.hasValid ? bindingInfo.constructors.name : "object_private_ctor";
-                        if (!bindingInfo.constructors.hasValid)
+                        var constructor = bindingInfo.constructors.available ? bindingInfo.constructors.name : "object_private_ctor";
+                        if (!bindingInfo.constructors.available)
                         {
                             cg.typescript.AppendLine("private constructor()");
                         }
-                        cg.csharp.AppendLine("duk_begin_class(ctx, \"{0}\", typeof({1}), {2});", bindingInfo.regName, bindingInfo.FullName, constructor);
+                        cg.csharp.AppendLine("duk_begin_class(ctx, \"{0}\", typeof({1}), {2});",
+                            bindingInfo.regName,
+                            this.cg.bindingManager.GetTypeFullNameCS(bindingInfo.type),
+                            constructor);
                         foreach (var kv in bindingInfo.methods)
                         {
                             var regName = kv.Value.regName;

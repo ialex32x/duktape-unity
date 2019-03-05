@@ -41,6 +41,39 @@ namespace Duktape
         DUK_ERR_URI_ERROR = 7,    /* URIError */
     }
 
+    public enum duk_type_t : System.UInt32
+    {
+        DUK_TYPE_MIN = 0U,
+        DUK_TYPE_NONE = 0U,    /* no value, e.g. invalid index */
+        DUK_TYPE_UNDEFINED = 1U,    /* ECMAScript undefined */
+        DUK_TYPE_NULL = 2U,    /* ECMAScript null */
+        DUK_TYPE_BOOLEAN = 3U,    /* ECMAScript boolean: 0 or 1 */
+        DUK_TYPE_NUMBER = 4U,    /* ECMAScript number: double */
+        DUK_TYPE_STRING = 5U,    /* ECMAScript string: CESU-8 / extended UTF-8 encoded */
+        DUK_TYPE_OBJECT = 6U,    /* ECMAScript object: includes objects, arrays, functions, threads */
+        DUK_TYPE_BUFFER = 7U,    /* fixed or dynamic, garbage collected byte buffer */
+        DUK_TYPE_POINTER = 8U,    /* raw void pointer */
+        DUK_TYPE_LIGHTFUNC = 9U,    /* lightweight function pointer */
+        DUK_TYPE_MAX = 9U,
+    }
+
+    [Flags]
+    public enum duk_typemask_t : System.UInt32
+    {
+        DUK_TYPE_MASK_NONE = (1U << (int)duk_type_t.DUK_TYPE_NONE),
+        DUK_TYPE_MASK_UNDEFINED = (1U << (int)duk_type_t.DUK_TYPE_UNDEFINED),
+        DUK_TYPE_MASK_NULL = (1U << (int)duk_type_t.DUK_TYPE_NULL),
+        DUK_TYPE_MASK_BOOLEAN = (1U << (int)duk_type_t.DUK_TYPE_BOOLEAN),
+        DUK_TYPE_MASK_NUMBER = (1U << (int)duk_type_t.DUK_TYPE_NUMBER),
+        DUK_TYPE_MASK_STRING = (1U << (int)duk_type_t.DUK_TYPE_STRING),
+        DUK_TYPE_MASK_OBJECT = (1U << (int)duk_type_t.DUK_TYPE_OBJECT),
+        DUK_TYPE_MASK_BUFFER = (1U << (int)duk_type_t.DUK_TYPE_BUFFER),
+        DUK_TYPE_MASK_POINTER = (1U << (int)duk_type_t.DUK_TYPE_POINTER),
+        DUK_TYPE_MASK_LIGHTFUNC = (1U << (int)duk_type_t.DUK_TYPE_LIGHTFUNC),
+        DUK_TYPE_MASK_THROW = (1U << 10),  /* internal flag value: throw if mask doesn't match */
+        DUK_TYPE_MASK_PROMOTE = (1U << 11),  /* internal flag value: promote to object if mask matches */
+    }
+
     public class DuktapeDLL
     {
         public static readonly duk_int_t DUK_LINE_MACRO = 0;
@@ -135,32 +168,32 @@ namespace Duktape
         public static readonly duk_uint_t DUK_COMPILE_NOFILENAME = 1U << 11;
 
         /* Value types, used by e.g. duk_get_type() */
-        public static readonly duk_uint_t DUK_TYPE_MIN = 0U;
-        public static readonly duk_uint_t DUK_TYPE_NONE = 0U;    /* no value, e.g. invalid index */
-        public static readonly duk_uint_t DUK_TYPE_UNDEFINED = 1U;    /* ECMAScript undefined */
-        public static readonly duk_uint_t DUK_TYPE_NULL = 2U;    /* ECMAScript null */
-        public static readonly duk_uint_t DUK_TYPE_BOOLEAN = 3U;    /* ECMAScript boolean: 0 or 1 */
-        public static readonly duk_uint_t DUK_TYPE_NUMBER = 4U;    /* ECMAScript number: double */
-        public static readonly duk_uint_t DUK_TYPE_STRING = 5U;    /* ECMAScript string: CESU-8 / extended UTF-8 encoded */
-        public static readonly duk_uint_t DUK_TYPE_OBJECT = 6U;    /* ECMAScript object: includes objects, arrays, functions, threads */
-        public static readonly duk_uint_t DUK_TYPE_BUFFER = 7U;    /* fixed or dynamic, garbage collected byte buffer */
-        public static readonly duk_uint_t DUK_TYPE_POINTER = 8U;    /* raw void pointer */
-        public static readonly duk_uint_t DUK_TYPE_LIGHTFUNC = 9U;    /* lightweight function pointer */
-        public static readonly duk_uint_t DUK_TYPE_MAX = 9U;
+        // public static readonly duk_uint_t DUK_TYPE_MIN = 0U;
+        // public static readonly duk_uint_t DUK_TYPE_NONE = 0U;    /* no value, e.g. invalid index */
+        // public static readonly duk_uint_t DUK_TYPE_UNDEFINED = 1U;    /* ECMAScript undefined */
+        // public static readonly duk_uint_t DUK_TYPE_NULL = 2U;    /* ECMAScript null */
+        // public static readonly duk_uint_t DUK_TYPE_BOOLEAN = 3U;    /* ECMAScript boolean: 0 or 1 */
+        // public static readonly duk_uint_t DUK_TYPE_NUMBER = 4U;    /* ECMAScript number: double */
+        // public static readonly duk_uint_t DUK_TYPE_STRING = 5U;    /* ECMAScript string: CESU-8 / extended UTF-8 encoded */
+        // public static readonly duk_uint_t DUK_TYPE_OBJECT = 6U;    /* ECMAScript object: includes objects, arrays, functions, threads */
+        // public static readonly duk_uint_t DUK_TYPE_BUFFER = 7U;    /* fixed or dynamic, garbage collected byte buffer */
+        // public static readonly duk_uint_t DUK_TYPE_POINTER = 8U;    /* raw void pointer */
+        // public static readonly duk_uint_t DUK_TYPE_LIGHTFUNC = 9U;    /* lightweight function pointer */
+        // public static readonly duk_uint_t DUK_TYPE_MAX = 9U;
 
         /* Value mask types, used by e.g. duk_get_type_mask() */
-        public static readonly duk_uint_t DUK_TYPE_MASK_NONE = (1U << (int)DUK_TYPE_NONE);
-        public static readonly duk_uint_t DUK_TYPE_MASK_UNDEFINED = (1U << (int)DUK_TYPE_UNDEFINED);
-        public static readonly duk_uint_t DUK_TYPE_MASK_NULL = (1U << (int)DUK_TYPE_NULL);
-        public static readonly duk_uint_t DUK_TYPE_MASK_BOOLEAN = (1U << (int)DUK_TYPE_BOOLEAN);
-        public static readonly duk_uint_t DUK_TYPE_MASK_NUMBER = (1U << (int)DUK_TYPE_NUMBER);
-        public static readonly duk_uint_t DUK_TYPE_MASK_STRING = (1U << (int)DUK_TYPE_STRING);
-        public static readonly duk_uint_t DUK_TYPE_MASK_OBJECT = (1U << (int)DUK_TYPE_OBJECT);
-        public static readonly duk_uint_t DUK_TYPE_MASK_BUFFER = (1U << (int)DUK_TYPE_BUFFER);
-        public static readonly duk_uint_t DUK_TYPE_MASK_POINTER = (1U << (int)DUK_TYPE_POINTER);
-        public static readonly duk_uint_t DUK_TYPE_MASK_LIGHTFUNC = (1U << (int)DUK_TYPE_LIGHTFUNC);
-        public static readonly duk_uint_t DUK_TYPE_MASK_THROW = (1U << 10);  /* internal flag value: throw if mask doesn't match */
-        public static readonly duk_uint_t DUK_TYPE_MASK_PROMOTE = (1U << 11);  /* internal flag value: promote to object if mask matches */
+        // public static readonly duk_uint_t DUK_TYPE_MASK_NONE = (1U << (int)DUK_TYPE_NONE);
+        // public static readonly duk_uint_t DUK_TYPE_MASK_UNDEFINED = (1U << (int)DUK_TYPE_UNDEFINED);
+        // public static readonly duk_uint_t DUK_TYPE_MASK_NULL = (1U << (int)DUK_TYPE_NULL);
+        // public static readonly duk_uint_t DUK_TYPE_MASK_BOOLEAN = (1U << (int)DUK_TYPE_BOOLEAN);
+        // public static readonly duk_uint_t DUK_TYPE_MASK_NUMBER = (1U << (int)DUK_TYPE_NUMBER);
+        // public static readonly duk_uint_t DUK_TYPE_MASK_STRING = (1U << (int)DUK_TYPE_STRING);
+        // public static readonly duk_uint_t DUK_TYPE_MASK_OBJECT = (1U << (int)DUK_TYPE_OBJECT);
+        // public static readonly duk_uint_t DUK_TYPE_MASK_BUFFER = (1U << (int)DUK_TYPE_BUFFER);
+        // public static readonly duk_uint_t DUK_TYPE_MASK_POINTER = (1U << (int)DUK_TYPE_POINTER);
+        // public static readonly duk_uint_t DUK_TYPE_MASK_LIGHTFUNC = (1U << (int)DUK_TYPE_LIGHTFUNC);
+        // public static readonly duk_uint_t DUK_TYPE_MASK_THROW = (1U << 10);  /* internal flag value: throw if mask doesn't match */
+        // public static readonly duk_uint_t DUK_TYPE_MASK_PROMOTE = (1U << 11);  /* internal flag value: promote to object if mask matches */
 
         /* Flags for duk_push_thread_raw() */
         public static readonly duk_uint_t DUK_THREAD_NEW_GLOBAL_ENV = (1U << 0);    /* create a new global environment */
@@ -480,13 +513,13 @@ namespace Duktape
         */
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern duk_int_t duk_get_type(IntPtr ctx, duk_idx_t idx);
+        public static extern duk_type_t duk_get_type(IntPtr ctx, duk_idx_t idx);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern duk_bool_t duk_check_type(IntPtr ctx, duk_idx_t idx, duk_int_t type);
+        public static extern duk_bool_t duk_check_type(IntPtr ctx, duk_idx_t idx, duk_type_t type);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern duk_uint_t duk_get_type_mask(IntPtr ctx, duk_idx_t idx);
+        public static extern duk_typemask_t duk_get_type_mask(IntPtr ctx, duk_idx_t idx);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern duk_bool_t duk_check_type_mask(IntPtr ctx, duk_idx_t idx, duk_uint_t mask);
+        public static extern duk_bool_t duk_check_type_mask(IntPtr ctx, duk_idx_t idx, duk_typemask_t mask);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_is_undefined(IntPtr ctx, duk_idx_t idx);
@@ -495,7 +528,7 @@ namespace Duktape
 
         public static duk_bool_t duk_is_null_or_undefined(IntPtr ctx, duk_idx_t idx)
         {
-            return (duk_get_type_mask(ctx, idx) & (DUK_TYPE_MASK_NULL | DUK_TYPE_MASK_UNDEFINED)) != 0;
+            return (duk_get_type_mask(ctx, idx) & (duk_typemask_t.DUK_TYPE_MASK_NULL | duk_typemask_t.DUK_TYPE_MASK_UNDEFINED)) != 0;
         }
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -553,24 +586,24 @@ namespace Duktape
          */
         public static duk_bool_t duk_is_primitive(IntPtr ctx, duk_idx_t idx)
         {
-            return duk_check_type_mask(ctx, idx, DUK_TYPE_MASK_UNDEFINED |
-                                          DUK_TYPE_MASK_NULL |
-                                          DUK_TYPE_MASK_BOOLEAN |
-                                          DUK_TYPE_MASK_NUMBER |
-                                          DUK_TYPE_MASK_STRING |
-                                          DUK_TYPE_MASK_POINTER);
+            return duk_check_type_mask(ctx, idx, duk_typemask_t.DUK_TYPE_MASK_UNDEFINED |
+                                          duk_typemask_t.DUK_TYPE_MASK_NULL |
+                                          duk_typemask_t.DUK_TYPE_MASK_BOOLEAN |
+                                          duk_typemask_t.DUK_TYPE_MASK_NUMBER |
+                                          duk_typemask_t.DUK_TYPE_MASK_STRING |
+                                          duk_typemask_t.DUK_TYPE_MASK_POINTER);
         }
 
         /* Symbols are object coercible, covered by DUK_TYPE_MASK_STRING. */
         public static duk_bool_t duk_is_object_coercible(IntPtr ctx, duk_idx_t idx)
         {
-            return duk_check_type_mask(ctx, idx, DUK_TYPE_MASK_BOOLEAN |
-                                          DUK_TYPE_MASK_NUMBER |
-                                          DUK_TYPE_MASK_STRING |
-                                          DUK_TYPE_MASK_OBJECT |
-                                          DUK_TYPE_MASK_BUFFER |
-                                          DUK_TYPE_MASK_POINTER |
-                                          DUK_TYPE_MASK_LIGHTFUNC);
+            return duk_check_type_mask(ctx, idx, duk_typemask_t.DUK_TYPE_MASK_BOOLEAN |
+                                          duk_typemask_t.DUK_TYPE_MASK_NUMBER |
+                                          duk_typemask_t.DUK_TYPE_MASK_STRING |
+                                          duk_typemask_t.DUK_TYPE_MASK_OBJECT |
+                                          duk_typemask_t.DUK_TYPE_MASK_BUFFER |
+                                          duk_typemask_t.DUK_TYPE_MASK_POINTER |
+                                          duk_typemask_t.DUK_TYPE_MASK_LIGHTFUNC);
         }
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -976,9 +1009,9 @@ namespace Duktape
         *  is incorrect.  No defaulting.
         */
 
-        public static void duk_require_type_mask(IntPtr ctx, duk_idx_t idx, duk_uint_t mask)
+        public static void duk_require_type_mask(IntPtr ctx, duk_idx_t idx, duk_typemask_t mask)
         {
-            duk_check_type_mask((ctx), (idx), (mask) | DUK_TYPE_MASK_THROW);
+            duk_check_type_mask((ctx), (idx), (mask) | duk_typemask_t.DUK_TYPE_MASK_THROW);
         }
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -1025,14 +1058,14 @@ namespace Duktape
         /* Symbols are object coercible and covered by DUK_TYPE_MASK_STRING. */
         public static void duk_require_object_coercible(IntPtr ctx, duk_idx_t idx)
         {
-            duk_check_type_mask((ctx), (idx), DUK_TYPE_MASK_BOOLEAN |
-                                                DUK_TYPE_MASK_NUMBER |
-                                                DUK_TYPE_MASK_STRING |
-                                                DUK_TYPE_MASK_OBJECT |
-                                                DUK_TYPE_MASK_BUFFER |
-                                                DUK_TYPE_MASK_POINTER |
-                                                DUK_TYPE_MASK_LIGHTFUNC |
-                                                DUK_TYPE_MASK_THROW);
+            duk_check_type_mask((ctx), (idx), duk_typemask_t.DUK_TYPE_MASK_BOOLEAN |
+                                                duk_typemask_t.DUK_TYPE_MASK_NUMBER |
+                                                duk_typemask_t.DUK_TYPE_MASK_STRING |
+                                                duk_typemask_t.DUK_TYPE_MASK_OBJECT |
+                                                duk_typemask_t.DUK_TYPE_MASK_BUFFER |
+                                                duk_typemask_t.DUK_TYPE_MASK_POINTER |
+                                                duk_typemask_t.DUK_TYPE_MASK_LIGHTFUNC |
+                                                duk_typemask_t.DUK_TYPE_MASK_THROW);
         }
 
         /*

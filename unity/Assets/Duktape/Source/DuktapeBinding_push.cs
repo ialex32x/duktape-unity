@@ -126,6 +126,12 @@ namespace Duktape
             DuktapeDLL.duk_unity_put4f(ctx, o.x, o.y, o.z, o.w);
         }
 
+        // public static void duk_push_any(IntPtr ctx, Matrix4x4 o)
+        // {
+        //     DuktapeDLL.duk_push_array(ctx);
+        //     DuktapeDLL.duk_unity_put16f(ctx, ...);
+        // }
+
         // variant push
         public static void duk_push_any(IntPtr ctx, UnityEngine.Object o)
         {

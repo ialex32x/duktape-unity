@@ -17,10 +17,6 @@ namespace Duktape
             {
                 UnityHelper.GenerateBindings();
             }
-            if (GUILayout.Button("Reload from disk"))
-            {
-                Prefs.Reload();
-            }
             if(GUILayout.Button("Clear"))
             {
                 UnityHelper.ClearBindings();

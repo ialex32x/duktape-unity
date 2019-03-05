@@ -13,6 +13,7 @@ namespace Duktape
     {
         public DateTime dateTime;
         public TextGenerator log;
+        public Prefs prefs;
         private HashSet<Type> blacklist;
         private HashSet<Type> whitelist;
         private List<string> typePrefixBlacklist;
@@ -25,12 +26,13 @@ namespace Duktape
         private Dictionary<Type, string> _csTypeNameMap = new Dictionary<Type, string>();
         private Dictionary<string, string> _csTypeNameMapS = new Dictionary<string, string>();
 
-        public BindingManager()
+        public BindingManager(Prefs prefs)
         {
+            this.prefs = prefs;
             this.dateTime = DateTime.Now;
-            var tab = Prefs.GetPrefs().tab;
-            var newline = Prefs.GetPrefs().newline;
-            typePrefixBlacklist = Prefs.GetPrefs().typePrefixBlacklist;
+            var tab = prefs.tab;
+            var newline = prefs.newline;
+            typePrefixBlacklist = prefs.typePrefixBlacklist;
             log = new TextGenerator(newline, tab);
             blacklist = new HashSet<Type>(new Type[]
             {
@@ -100,6 +102,26 @@ namespace Duktape
             return null;
         }
 
+        public static bool ContainsPointer(MethodBase method)
+        {
+            var parameters = method.GetParameters();
+            for (int i = 0, size = parameters.Length; i < size; i++)
+            {
+                var parameterType = parameters[i].ParameterType;
+                if (parameterType.IsPointer)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static bool IsGenericMethod(MethodBase method)
+        {
+            return method.GetGenericArguments().Length > 0;
+        }
+
+        // 收集所有 delegate 类型
         public void CollectDelegate(Type type)
         {
             if (type == null || type.BaseType != typeof(MulticastDelegate))
@@ -111,6 +133,11 @@ namespace Duktape
                 var invoke = type.GetMethod("Invoke");
                 var returnType = invoke.ReturnType;
                 var parameters = invoke.GetParameters();
+                if (ContainsPointer(invoke))
+                {
+                    log.AppendLine("skip unsafe (pointer) delegate: [{0}] {1}", type, invoke);
+                    return;
+                }
                 // 是否存在等价 delegate
                 foreach (var kv in exportedDelegates)
                 {
@@ -214,6 +241,11 @@ namespace Duktape
                 }
             }
             return arglist;
+        }
+
+        public string GetDuktapeGenericError(string err)
+        {
+            return $"DuktapeDLL.duk_generic_error(ctx, \"{err}\");";
         }
 
         public string GetDuktapeThisGetter(Type type)
@@ -400,6 +432,27 @@ namespace Duktape
             {
                 return true;
             }
+            if (type.BaseType == typeof(Attribute))
+            {
+                return true;
+            }
+            if (type.BaseType == typeof(MulticastDelegate))
+            {
+                return true;
+            }
+            if (type.IsPointer)
+            {
+                return true;
+            }
+            var encloser = type;
+            while (encloser != null)
+            {
+                if (encloser.IsDefined(typeof(ObsoleteAttribute), false))
+                {
+                    return true;
+                }
+                encloser = encloser.DeclaringType;
+            }
             for (int i = 0, size = typePrefixBlacklist.Count; i < size; i++)
             {
                 if (type.FullName.StartsWith(typePrefixBlacklist[i]))
@@ -427,8 +480,8 @@ namespace Duktape
         public void Collect()
         {
             // 收集直接类型, 加入 exportedTypes
-            Collect(Prefs.GetPrefs().explicitAssemblies, false);
-            Collect(Prefs.GetPrefs().implicitAssemblies, true);
+            Collect(prefs.explicitAssemblies, false);
+            Collect(prefs.implicitAssemblies, true);
 
             log.AppendLine("collecting members");
             log.AddTabLevel();
@@ -485,7 +538,7 @@ namespace Duktape
         {
             log.AppendLine("cleanup");
             log.AddTabLevel();
-            Cleanup(Prefs.GetPrefs().outDir, outputFiles, file =>
+            Cleanup(prefs.outDir, outputFiles, file =>
             {
                 log.AppendLine("remove unused file {0}", file);
             });
@@ -521,8 +574,8 @@ namespace Duktape
         public void Generate()
         {
             var cg = new CodeGenerator(this);
-            var outDir = Prefs.GetPrefs().outDir;
-            var tx = Prefs.GetPrefs().extraExt;
+            var outDir = prefs.outDir;
+            var tx = prefs.extraExt;
             // var tx = "";
             if (!Directory.Exists(outDir))
             {
@@ -539,7 +592,7 @@ namespace Duktape
                 }
                 catch (Exception exception)
                 {
-                    Error(string.Format("generate failed {0}: {1}", typeBindingInfo.type.Name, exception.Message));
+                    Error($"generate failed {typeBindingInfo.type.FullName}: {exception.Message}");
                     Debug.LogError(exception.StackTrace);
                 }
             }
@@ -555,11 +608,11 @@ namespace Duktape
             }
             catch (Exception exception)
             {
-                Error(string.Format("generate failed: {0}", exception.Message));
+                Error($"generate delegates failed: {exception.Message}");
                 Debug.LogError(exception.StackTrace);
             }
 
-            var logPath = Prefs.GetPrefs().logPath;
+            var logPath = prefs.logPath;
             File.WriteAllText(logPath, log.ToString());
             var now = DateTime.Now;
             var ts = now.Subtract(dateTime);

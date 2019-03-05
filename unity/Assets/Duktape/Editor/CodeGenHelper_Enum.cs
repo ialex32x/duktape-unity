@@ -28,11 +28,18 @@ namespace Duktape
                 {
                     using (new RegFuncNamespaceCodeGen(cg, bindingInfo))
                     {
-                        this.cg.csharp.AppendLine("duk_begin_enum(ctx, \"{0}\", typeof({1}));", bindingInfo.regName, bindingInfo.FullName);
+                        this.cg.csharp.AppendLine("duk_begin_enum(ctx, \"{0}\", typeof({1}));",
+                            bindingInfo.regName,
+                            this.cg.bindingManager.GetTypeFullNameCS(bindingInfo.type));
+                        var values = new Dictionary<string, int>();
                         foreach (var ev in Enum.GetValues(bindingInfo.type))
                         {
-                            var value = Convert.ToInt32(ev);
-                            var name = ev.ToString();
+                            values[Enum.GetName(bindingInfo.type, ev)] = Convert.ToInt32(ev);
+                        }
+                        foreach (var kv in values)
+                        {
+                            var name = kv.Key;
+                            var value = kv.Value;
                             this.cg.csharp.AppendLine("duk_add_const(ctx, \"{0}\", {1}, {2});", name, value, -2);
                             this.cg.typescript.AppendLine("{0} = {1},", name, value);
                         }

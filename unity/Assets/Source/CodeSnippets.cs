@@ -103,8 +103,42 @@ public class CodeSnippets : MonoBehaviour
         Debug.Log(purename);
     }
 
+    void testEmptyArray()
+    {
+        var a = new int[0];
+        var b = new int[0];
+        Debug.Log($"{a == b}");
+    }
+
+    void testVarargs(object o)
+    {
+    }
+
+    void testVarargs(params int[] n)
+    {
+    }
+
+    class InnerType
+    { }
+
+    void testInnerType(Type type)
+    {
+        Debug.Log($"{type.DeclaringType}");
+    }
+
+    void testPointer(Type type)
+    {
+        Debug.Log($"type {type} .IsPointer: {type.IsPointer}");
+    }
+
     void Awake()
     {
+        testPointer(typeof(long*));
+        testPointer(typeof(IntPtr));
+        testInnerType(typeof(InnerType));
+        testVarargs(null);
+        testEmptyArray();
+        testTypes();
         testDelegates();
         testGenericTypes();
     }
