@@ -46,7 +46,7 @@ namespace Duktape
             var declaringType = propertyInfo.DeclaringType;
 
             var caller = this.cg.AppendGetThisCS(method);
-            this.cg.csharp.AppendLine("{0} value;", this.cg.bindingManager.GetTypeFullNameCS(propertyInfo.PropertyType));
+            this.cg.csharp.AppendLine("{0} value;", this.cg.bindingManager.GetCSTypeFullName(propertyInfo.PropertyType));
             this.cg.csharp.AppendLine("{0}(ctx, 0, out value);", this.cg.bindingManager.GetDuktapeGetter(propertyInfo.PropertyType));
             this.cg.csharp.AppendLine("{0}.{1} = value;", caller, propertyInfo.Name);
             if (declaringType.IsValueType && !method.IsStatic)

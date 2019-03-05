@@ -278,18 +278,24 @@ namespace Duktape
                 overrides = new MethodBindingInfo(methodInfo.IsStatic, methodName);
                 group.Add(methodName, overrides);
             }
-            var parameters = methodInfo.GetParameters();
             overrides.Add(methodInfo);
+            CollectDelegate(methodInfo);
+            bindingManager.Info("[AddMethod] {0}.{1}", type, methodInfo);
+        }
+
+        private void CollectDelegate(MethodBase method)
+        {
+            var parameters = method.GetParameters();
             for (var i = 0; i < parameters.Length; i++)
             {
                 bindingManager.CollectDelegate(parameters[i].ParameterType);
             }
-            bindingManager.Info("[AddMethod] {0}.{1}", type, methodInfo);
         }
 
         public void AddConstructor(ConstructorInfo constructorInfo)
         {
             constructors.Add(constructorInfo);
+            CollectDelegate(constructorInfo);
             this.bindingManager.Info("[AddConstructor] {0}.{1}", type, constructorInfo);
         }
 

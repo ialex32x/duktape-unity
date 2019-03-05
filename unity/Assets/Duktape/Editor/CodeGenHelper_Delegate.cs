@@ -81,14 +81,14 @@ namespace Duktape
             var nargs = delegateBindingInfo.parameters.Length;
             var retName = this.cg.bindingManager.GetUniqueName(delegateBindingInfo.parameters, "ret");
             var firstArgument = typeof(DuktapeDelegate) + " fn";
-            var returnTypeName = this.cg.bindingManager.GetTypeFullNameCS(delegateBindingInfo.returnType);
+            var returnTypeName = this.cg.bindingManager.GetCSTypeFullName(delegateBindingInfo.returnType);
             var delegateName = DuktapeVM._DuktapeDelegates + index;
-            var arglist = this.cg.bindingManager.GetArglistDeclCS(delegateBindingInfo.parameters);
+            var arglist = this.cg.bindingManager.GetCSArglistDecl(delegateBindingInfo.parameters);
             foreach (var target in delegateBindingInfo.types)
             {
                 this.cg.csharp.AppendLine("[{0}(typeof({1}))]", 
-                    this.cg.bindingManager.GetTypeFullNameCS(typeof(JSDelegateAttribute)), 
-                    this.cg.bindingManager.GetTypeFullNameCS(target));
+                    this.cg.bindingManager.GetCSTypeFullName(typeof(JSDelegateAttribute)), 
+                    this.cg.bindingManager.GetCSTypeFullName(target));
             }
             if (!string.IsNullOrEmpty(arglist))
             {
@@ -114,7 +114,7 @@ namespace Duktape
             }
             if (delegateBindingInfo.returnType != typeof(void))
             {
-                this.cg.csharp.AppendLine($"{this.cg.bindingManager.GetTypeFullNameCS(delegateBindingInfo.returnType)} {retName};");
+                this.cg.csharp.AppendLine($"{this.cg.bindingManager.GetCSTypeFullName(delegateBindingInfo.returnType)} {retName};");
                 this.cg.csharp.AppendLine($"{this.cg.bindingManager.GetDuktapeGetter(delegateBindingInfo.returnType)}(ctx, -1, out {retName});");
                 this.cg.csharp.AppendLine($"return {retName};");
             }

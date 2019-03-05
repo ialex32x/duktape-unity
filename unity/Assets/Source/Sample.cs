@@ -74,7 +74,7 @@ public class SampleClass
         )]
     public SampleClass(string name, params string[] additional)
     {
-        this._name = name + String.Join("+", additional);
+        this._name = name + (additional != null ? String.Join("+", additional) : "");
     }
 
     public int CheckingVA(params int[] args)
@@ -109,7 +109,7 @@ public class SampleClass
 
     public void MethodOverride2(int x)
     {
-        
+
     }
 
     [JSNaming("MethodOverride2F")]

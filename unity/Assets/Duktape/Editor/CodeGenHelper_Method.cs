@@ -31,23 +31,23 @@ namespace Duktape
         {
         }
 
-        public string GenParamArrayMatchType(T method)
+        public string GetParamArrayMatchType(T method)
         {
             var parameters = method.GetParameters();
             var parameter = parameters[parameters.Length - 1];
-            var typename = this.cg.bindingManager.GetTypeFullNameCS(parameter.ParameterType.GetElementType());
+            var typename = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType.GetElementType());
             return $"typeof({typename})";
         }
 
         // 生成定参部分 type 列表
-        public string GenFixedMatchTypes(T method)
+        public string GetFixedMatchTypes(T method)
         {
             var snippet = "";
             var parameters = method.GetParameters();
             for (int i = 0, length = parameters.Length; i < length; i++)
             {
                 var parameter = parameters[i];
-                var typename = this.cg.bindingManager.GetTypeFullNameCS(parameter.ParameterType);
+                var typename = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType);
                 snippet += $"typeof({typename})";
                 if (parameter.IsDefined(typeof(ParamArrayAttribute), false))
                 {
@@ -92,11 +92,11 @@ namespace Duktape
                 {
                     arglist += ", ";
                 }
-                var argType = this.cg.bindingManager.GetTypeFullNameCS(parameter.ParameterType);
+                var argType = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType);
                 if (hasParams && i == parameters.Length - 1)
                 {
                     // 处理数组
-                    var argElementType = this.cg.bindingManager.GetTypeFullNameCS(parameter.ParameterType.GetElementType());
+                    var argElementType = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType.GetElementType());
                     var argElementIndex = i == 0 ? nargs : nargs + " - " + i;
                     this.cg.csharp.AppendLine($"{argType} arg{i} = null;");
                     this.cg.csharp.AppendLine($"if ({argElementIndex} > 0)");
@@ -151,11 +151,13 @@ namespace Duktape
                     if (variant.isVararg)
                     {
                         var method = variant.varargMethods[0];
+                        // Debug.Log($"varargMethods {method}");
                         WriteCSMethodBinding(method, argc, true);
                     }
                     else
                     {
                         var method = variant.plainMethods[0];
+                        // Debug.Log($"plainMethods {method}");
                         WriteCSMethodBinding(method, argc, false);
                     }
                 }
@@ -196,7 +198,7 @@ namespace Duktape
                         var parameter = returnParameters[i];
                         var parameterType = parameter.ParameterType;
                         var parameterTypeTS = this.cg.bindingManager.GetTypeFullNameTS(parameterType);
-                        this.cg.typescript.AppendLine($"{parameter.Name}: {parameterTypeTS}, ");
+                        this.cg.typescript.AppendLine($"{BindingManager.GetTSVariable(parameter.Name)}: {parameterTypeTS}, ");
                     }
                     this.cg.typescript.DecTabLevel();
                     this.cg.typescript.AppendLine("}");
@@ -242,7 +244,7 @@ namespace Duktape
                         {
                             foreach (var method in variant.plainMethods)
                             {
-                                cg.csharp.AppendLine($"if (duk_match_types(ctx, argc, {GenFixedMatchTypes(method)}))");
+                                cg.csharp.AppendLine($"if (duk_match_types(ctx, argc, {GetFixedMatchTypes(method)}))");
                                 cg.csharp.AppendLine("{");
                                 cg.csharp.AddTabLevel();
                                 this.WriteCSMethodBinding(method, argc, false);
@@ -265,8 +267,8 @@ namespace Duktape
                     {
                         foreach (var method in variant.varargMethods)
                         {
-                            cg.csharp.AppendLine($"if (duk_match_types(ctx, argc, {GenFixedMatchTypes(method)})");
-                            cg.csharp.AppendLine($" && duk_match_param_types(ctx, {args}, argc, {GenParamArrayMatchType(method)}))");
+                            cg.csharp.AppendLine($"if (duk_match_types(ctx, argc, {GetFixedMatchTypes(method)})");
+                            cg.csharp.AppendLine($" && duk_match_param_types(ctx, {args}, argc, {GetParamArrayMatchType(method)}))");
                             cg.csharp.AppendLine("{");
                             cg.csharp.AddTabLevel();
                             this.WriteCSMethodBinding(method, argc, true);
@@ -319,13 +321,15 @@ namespace Duktape
                 {
                     var elementType = parameter.ParameterType.GetElementType();
                     var elementTS = this.cg.bindingManager.GetTypeFullNameTS(elementType);
-                    this.cg.typescript.AppendL($"{parameter_prefix}...{parameter.Name}: {elementTS}[]");
+                    var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
+                    this.cg.typescript.AppendL($"{parameter_prefix}...{parameterVarName}: {elementTS}[]");
                 }
                 else
                 {
                     var parameterType = parameter.ParameterType;
                     var parameterTS = this.cg.bindingManager.GetTypeFullNameTS(parameterType);
-                    this.cg.typescript.AppendL($"{parameter_prefix}{parameter.Name}: {parameterTS}");
+                    var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
+                    this.cg.typescript.AppendL($"{parameter_prefix}{parameterVarName}: {parameterTS}");
                 }
                 if (i != parameters.Length - 1)
                 {
@@ -414,8 +418,8 @@ namespace Duktape
 
         protected override string GetInvokeBinding(string caller, ConstructorInfo method, string arglist)
         {
-            var decalringTypeName = this.cg.bindingManager.GetTypeFullNameCS(this.bindingInfo.decalringType);
-            return $"var o = new {decalringTypeName}({arglist});";
+            var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.bindingInfo.decalringType);
+            return $"var o = new {decalringTypeName}({arglist})";
         }
 
         protected override void EndInvokeBinding()
@@ -440,7 +444,7 @@ namespace Duktape
         // 写入默认构造函数 (struct 无参构造)
         private void WriteDefaultConstructorBinding()
         {
-            var decalringTypeName = this.cg.bindingManager.GetTypeFullNameCS(this.bindingInfo.decalringType);
+            var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.bindingInfo.decalringType);
             this.cg.csharp.AppendLine($"var o = new {decalringTypeName}();");
             this.cg.csharp.AppendLine("duk_bind_native(ctx, o);");
             this.cg.csharp.AppendLine("return 0;");

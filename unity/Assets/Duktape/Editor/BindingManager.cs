@@ -25,6 +25,55 @@ namespace Duktape
         private Dictionary<Type, string> _tsTypeNameMap = new Dictionary<Type, string>();
         private Dictionary<Type, string> _csTypeNameMap = new Dictionary<Type, string>();
         private Dictionary<string, string> _csTypeNameMapS = new Dictionary<string, string>();
+        private static HashSet<string> _tsKeywords = new HashSet<string>();
+
+        static BindingManager()
+        {
+
+            AddTSKeywords(
+                "function",
+                "interface",
+                "class",
+                "let",
+                "break",
+                "as",
+                "any",
+                "switch",
+                "case",
+                "if",
+                "throw",
+                "else",
+                "var",
+                "number",
+                "string",
+                "get",
+                "module",
+                // "type",
+                "instanceof",
+                "typeof",
+                "public",
+                "private",
+                "enum",
+                "export",
+                "finally",
+                "for",
+                "while",
+                "void",
+                "null",
+                "super",
+                "this",
+                "new",
+                "in",
+                "extends",
+                "static",
+                "package",
+                "implements",
+                "interface",
+                "continue",
+                "yield",
+                "const"
+            );
+        }
 
         public BindingManager(Prefs prefs)
         {
@@ -56,6 +105,15 @@ namespace Duktape
             _tsTypeNameMap[typeof(string)] = "string";
             _tsTypeNameMap[typeof(char)] = "string";
             _tsTypeNameMap[typeof(void)] = "void";
+            _tsTypeNameMap[typeof(LayerMask)] = "UnityEngine.LayerMask | number";
+            _tsTypeNameMap[typeof(Color)] = "UnityEngine.Color | Array<number>";
+            _tsTypeNameMap[typeof(Color32)] = "UnityEngine.Color32 | Array<number>";
+            _tsTypeNameMap[typeof(Vector2)] = "UnityEngine.Vector2 | Array<number>";
+            _tsTypeNameMap[typeof(Vector2Int)] = "UnityEngine.Vector2Int | Array<number>";
+            _tsTypeNameMap[typeof(Vector3)] = "UnityEngine.Vector3 | Array<number>";
+            _tsTypeNameMap[typeof(Vector3Int)] = "UnityEngine.Vector3Int | Array<number>";
+            _tsTypeNameMap[typeof(Vector4)] = "UnityEngine.Vector4 | Array<number>";
+            _tsTypeNameMap[typeof(Quaternion)] = "UnityEngine.Quaternion | Array<number>";
 
             AddTypeNameMapCS(typeof(sbyte), "sbyte");
             AddTypeNameMapCS(typeof(byte), "byte");
@@ -74,11 +132,19 @@ namespace Duktape
             AddTypeNameMapCS(typeof(void), "void");
         }
 
+        private static void AddTSKeywords(params string[] keywords)
+        {
+            foreach (var keyword in keywords)
+            {
+                _tsKeywords.Add(keyword);
+            }
+        }
+
         private void AddTypeNameMapCS(Type type, string name)
         {
             _csTypeNameMap[type] = name;
             _csTypeNameMapS[type.FullName] = name;
-            _csTypeNameMapS[WithNamespaceCS(type) + type.Name] = name;
+            _csTypeNameMapS[GetCSNamespace(type) + type.Name] = name;
         }
 
         public void AddExport(Type type)
@@ -201,12 +267,12 @@ namespace Duktape
             return "any";
         }
 
-        public string WithNamespaceCS(Type type)
+        public string GetCSNamespace(Type type)
         {
-            return WithNamespaceCS(type.Namespace);
+            return GetCSNamespace(type.Namespace);
         }
 
-        public string WithNamespaceCS(string ns)
+        public string GetCSNamespace(string ns)
         {
             return string.IsNullOrEmpty(ns) ? "" : (ns + ".");
         }
@@ -301,6 +367,15 @@ namespace Duktape
             return "duk_push_any";
         }
 
+        public static string GetTSVariable(string name)
+        {
+            if (_tsKeywords.Contains(name))
+            {
+                return name + "_";
+            }
+            return name;
+        }
+
         // 保证生成一个以 prefix 为前缀, 与参数列表中所有参数名不同的名字
         public string GetUniqueName(ParameterInfo[] parameters, string prefix)
         {
@@ -323,7 +398,7 @@ namespace Duktape
         }
 
         // 生成参数对应的字符串形式参数列表 (csharp)
-        public string GetArglistDeclCS(ParameterInfo[] parameters)
+        public string GetCSArglistDecl(ParameterInfo[] parameters)
         {
             var size = parameters.Length;
             var arglist = "";
@@ -334,7 +409,7 @@ namespace Duktape
             for (var i = 0; i < size; i++)
             {
                 var parameter = parameters[i];
-                var typename = GetTypeFullNameCS(parameter.ParameterType);
+                var typename = GetCSTypeFullName(parameter.ParameterType);
                 if (parameter.IsOut && parameter.ParameterType.IsByRef)
                 {
                     arglist += "out ";
@@ -355,18 +430,18 @@ namespace Duktape
         }
 
         // 获取 type 在 绑定代码 中对应类型名
-        public string GetTypeFullNameCS(Type type)
+        public string GetCSTypeFullName(Type type)
         {
             // Debug.LogFormat("{0} Array {1} ByRef {2} GetElementType {3}", type, type.IsArray, type.IsByRef, type.GetElementType());
             if (type.IsGenericType)
             {
-                var purename = WithNamespaceCS(type) + type.Name.Substring(0, type.Name.Length - 2);
+                var purename = GetCSNamespace(type) + type.Name.Substring(0, type.Name.Length - 2);
                 var gargs = type.GetGenericArguments();
                 purename += "<";
                 for (var i = 0; i < gargs.Length; i++)
                 {
                     var garg = gargs[i];
-                    purename += GetTypeFullNameCS(garg);
+                    purename += GetCSTypeFullName(garg);
                     if (i != gargs.Length - 1)
                     {
                         purename += ", ";
@@ -377,11 +452,11 @@ namespace Duktape
             }
             if (type.IsArray)
             {
-                return GetTypeFullNameCS(type.GetElementType()) + "[]";
+                return GetCSTypeFullName(type.GetElementType()) + "[]";
             }
             if (type.IsByRef)
             {
-                return GetTypeFullNameCS(type.GetElementType());
+                return GetCSTypeFullName(type.GetElementType());
             }
             string name;
             if (_csTypeNameMap.TryGetValue(type, out name))

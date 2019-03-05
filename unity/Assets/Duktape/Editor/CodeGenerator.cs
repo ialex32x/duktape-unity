@@ -134,7 +134,7 @@ namespace Duktape
             if (type.IsEnum)
             {
                 var eType = type.GetEnumUnderlyingType();
-                var eTypeName = this.bindingManager.GetTypeFullNameCS(eType);
+                var eTypeName = this.bindingManager.GetCSTypeFullName(eType);
                 this.csharp.AppendLine($"{this.bindingManager.GetDuktapePusher(eType)}(ctx, ({eTypeName}){value});");
                 return;
             }
@@ -148,6 +148,10 @@ namespace Duktape
 
         public string AppendGetThisCS(MethodBase method)
         {
+            if (method.IsConstructor)
+            {
+                return null;
+            }
             return AppendGetThisCS(method.IsStatic, method.DeclaringType);
         }
 
@@ -156,12 +160,12 @@ namespace Duktape
             var caller = "";
             if (isStatic)
             {
-                caller = this.bindingManager.GetTypeFullNameCS(declaringType);
+                caller = this.bindingManager.GetCSTypeFullName(declaringType);
             }
             else
             {
                 caller = "self";
-                this.csharp.AppendLine("{0} {1};", this.bindingManager.GetTypeFullNameCS(declaringType), caller);
+                this.csharp.AppendLine("{0} {1};", this.bindingManager.GetCSTypeFullName(declaringType), caller);
                 this.csharp.AppendLine("{0}(ctx, out {1});", this.bindingManager.GetDuktapeThisGetter(declaringType), caller);
             }
             return caller;

@@ -26,7 +26,7 @@ namespace Duktape
                     var refid = DuktapeDLL.duk_get_uint(ctx, -1);
                     DuktapeDLL.duk_pop(ctx);
                     o = vm.GetExportedType(refid);
-                    Debug.Log($"get type from exported registry {o}:{refid}");
+                    // Debug.Log($"get type from exported registry {o}:{refid}");
                     return true;
                 }
                 else if (DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE))
@@ -35,7 +35,7 @@ namespace Duktape
                     var refid = DuktapeDLL.duk_get_int(ctx, -1);
                     DuktapeDLL.duk_pop(ctx);
                     cache.TryGetValueTyped(refid, out o);
-                    Debug.Log($"get type from objectcache registry {o}:{refid}");
+                    // Debug.Log($"get type from objectcache registry {o}:{refid}");
                     return true;
                 }
             }
