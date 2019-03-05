@@ -7,7 +7,7 @@
 
 # 特性支持 (已实现)
 * 支持 nodejs 风格的模块
-* 生成 C# to js 静态绑定, 自动生成对应 d.ts 声明 (复杂类型/泛型/函数重载/delegate相关部分未完成)
+* 生成 C# to js 静态绑定, 自动生成对应 d.ts 声明 
 * setTimeout/setInterval/clearTimeout/clearInterval 兼容
 
 # 特性支持 (未实现)
