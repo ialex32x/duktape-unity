@@ -272,6 +272,7 @@ namespace Duktape
                             cg.csharp.AddTabLevel();
                         }
                         // 处理定参
+                        if (variant.plainMethods.Count > 0)
                         {
                             cg.csharp.AppendLine("if (argc == {0})", args);
                             cg.csharp.AppendLine("{");
@@ -299,6 +300,7 @@ namespace Duktape
                             cg.csharp.AppendLine("}");
                         }
                         // 处理变参
+                        if (variant.varargMethods.Count > 0)
                         {
                             foreach (var method in variant.varargMethods)
                             {
