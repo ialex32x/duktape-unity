@@ -154,26 +154,67 @@ namespace Duktape
 
         public FieldInfo fieldInfo;
 
+        public string constantValue;
+
         public bool isStatic { get { return fieldInfo.IsStatic; } }
 
         public FieldBindingInfo(FieldInfo fieldInfo)
         {
-            if (fieldInfo.IsStatic)
+            do
             {
-                this.getterName = "BindStaticRead_" + fieldInfo.Name;
-                if (!fieldInfo.IsInitOnly && !fieldInfo.IsLiteral)
+                if (fieldInfo.IsLiteral)
                 {
-                    this.setterName = "BindStaticWrite_" + fieldInfo.Name;
+                    try
+                    {
+                        var cv = fieldInfo.GetRawConstantValue();
+                        var cvType = cv.GetType();
+                        if (cvType == typeof(string))
+                        {
+                            constantValue = $"\"{cv}\"";
+                            break;
+                        }
+                        if (cvType == typeof(int) || cvType == typeof(uint))
+                        {
+                            constantValue = $"{cv}";
+                            break;
+                        }
+                        if (cvType == typeof(float))
+                        {
+                            var fcv = (float)cv;
+                            if (!float.IsInfinity(fcv)
+                            && !float.IsNaN(fcv))
+                            {
+                                constantValue = $"{cv}";
+                                break;
+                            }
+                        }
+                        // if (cvType.IsPrimitive && cvType.IsValueType)
+                        // {
+                        //     constantValue = $"{cv}";
+                        //     break;
+                        // }
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
-            }
-            else
-            {
-                this.getterName = "BindRead_" + fieldInfo.Name;
-                if (!fieldInfo.IsInitOnly && !fieldInfo.IsLiteral)
+                if (fieldInfo.IsStatic)
                 {
-                    this.setterName = "BindWrite_" + fieldInfo.Name;
+                    this.getterName = "BindStaticRead_" + fieldInfo.Name;
+                    if (!fieldInfo.IsInitOnly && !fieldInfo.IsLiteral)
+                    {
+                        this.setterName = "BindStaticWrite_" + fieldInfo.Name;
+                    }
                 }
-            }
+                else
+                {
+                    this.getterName = "BindRead_" + fieldInfo.Name;
+                    if (!fieldInfo.IsInitOnly && !fieldInfo.IsLiteral)
+                    {
+                        this.setterName = "BindWrite_" + fieldInfo.Name;
+                    }
+                }
+            } while (false);
             this.regName = TypeBindingInfo.GetNamingAttribute(fieldInfo);
             this.fieldInfo = fieldInfo;
         }

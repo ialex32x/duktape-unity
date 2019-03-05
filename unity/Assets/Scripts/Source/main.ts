@@ -1,4 +1,5 @@
 
+console.log(UnityEngine.Mathf.PI)
 // UnityEngine.Debug.Log("greeting")
 let go = new UnityEngine.GameObject("testing")
 let hello = go.AddComponent(SampleNamespace.Hello)
@@ -16,9 +17,6 @@ setTimeout(() => {
     UnityEngine.Object.Destroy(go)
 }, 30000)
 // 
-
-// let invalid_test = "23"
-// UnityEngine.Object.Destroy(invalid_test)
 
 // let ss = new SampleStruct()
 // let SampleClass = SampleNamespace.SampleClass

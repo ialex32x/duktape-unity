@@ -40,8 +40,8 @@ namespace Duktape
                         {
                             var name = kv.Key;
                             var value = kv.Value;
-                            this.cg.csharp.AppendLine("duk_add_const(ctx, \"{0}\", {1}, {2});", name, value, -2);
-                            this.cg.typescript.AppendLine("{0} = {1},", name, value);
+                            this.cg.csharp.AppendLine($"duk_add_const(ctx, \"{name}\", {value}, {-2});");
+                            this.cg.typescript.AppendLine($"{name} = {value},");
                         }
                         this.cg.csharp.AppendLine("duk_end_enum(ctx);");
                     }
