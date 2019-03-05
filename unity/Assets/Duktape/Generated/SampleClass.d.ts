@@ -16,6 +16,12 @@ declare class SampleClass {
     MethodOverride(): void
     MethodOverride2(x: number): void
     MethodOverride2F(x: number): void
+    MethodOverride3(x: number, y: number, z: number, args: any): void
+    MethodOverride3(x: number, y: number, z: number): void
+    MethodOverride3(x: number, y: number, z: number, ...args: number[]): void
+    MethodOverride3(x: number, y: number): void
+    MethodOverride3(x: number, y: number, ...args: number[]): void
+    MethodOverride3(x: number): void
     Sum(all: number[]): number
     readonly name: string
     readonly sampleEnum: SampleEnum

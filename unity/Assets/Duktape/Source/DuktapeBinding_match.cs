@@ -79,33 +79,54 @@ namespace Duktape
             }
         }
 
+        // 检查变参参数
+        // offset: 从偏移处开始为变参
+        protected static bool duk_match_param_types(IntPtr ctx, int offset, int nargs, Type type)
+        {
+            for (var i = offset; i < nargs; i++)
+            {
+                if (!duk_match_type(ctx, i, type))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         protected static bool duk_match_types(IntPtr ctx, int nargs, Type t0)
         {
-            return true;
+            return duk_match_type(ctx, 0, t0);
         }
 
         protected static bool duk_match_types(IntPtr ctx, int nargs, Type t0, Type t1)
         {
-            return true;
+            return duk_match_type(ctx, 0, t0) && duk_match_type(ctx, 1, t1);
         }
 
         protected static bool duk_match_types(IntPtr ctx, int nargs, Type t0, Type t1, Type t2)
         {
-            return true;
+            return duk_match_type(ctx, 0, t0) && duk_match_type(ctx, 1, t1) && duk_match_type(ctx, 2, t2);
         }
 
         protected static bool duk_match_types(IntPtr ctx, int nargs, Type t0, Type t1, Type t2, Type t3)
         {
-            return true;
+            return duk_match_type(ctx, 0, t0) && duk_match_type(ctx, 1, t1) && duk_match_type(ctx, 2, t2) && duk_match_type(ctx, 3, t3);
         }
 
         protected static bool duk_match_types(IntPtr ctx, int nargs, Type t0, Type t1, Type t2, Type t3, Type t4)
         {
-            return true;
+            return duk_match_type(ctx, 0, t0) && duk_match_type(ctx, 1, t1) && duk_match_type(ctx, 2, t2) && duk_match_type(ctx, 3, t3) && duk_match_type(ctx, 4, t4);
         }
 
         protected static bool duk_match_types(IntPtr ctx, int nargs, params Type[] types)
         {
+            for (int i = 0, size = types.Length; i < size; i++)
+            {
+                if (!duk_match_type(ctx, i, types[i]))
+                {
+                    return false;
+                }
+            }
             return true;
         }
     }

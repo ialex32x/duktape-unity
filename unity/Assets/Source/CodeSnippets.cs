@@ -103,8 +103,25 @@ public class CodeSnippets : MonoBehaviour
         Debug.Log(purename);
     }
 
+    void testEmptyArray()
+    {
+        var a = new int[0];
+        var b = new int[0];
+        Debug.Log($"{a == b}");
+    }
+
+    void testVarargs(object o)
+    {
+    }
+
+    void testVarargs(params int[] n)
+    {
+    }
+
     void Awake()
     {
+        testVarargs(null);
+        testEmptyArray();
         testTypes();
         testDelegates();
         testGenericTypes();

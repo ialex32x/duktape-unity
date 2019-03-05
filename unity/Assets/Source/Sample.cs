@@ -115,7 +115,30 @@ public class SampleClass
     [JSNaming("MethodOverride2F")]
     public void MethodOverride2(float x)
     {
-        
+    }
+
+    public void MethodOverride3(float x)
+    {
+    }
+
+    public void MethodOverride3(float x, float y)
+    {
+    }
+
+    public void MethodOverride3(float x, float y, float z)
+    {
+    }
+
+    public void MethodOverride3(float x, float y, float z, params int[] args)
+    {
+    }
+
+    public void MethodOverride3(float x, float y, float z, object args)
+    {
+    }
+
+    public void MethodOverride3(float x, float y, params int[] args)
+    {
     }
 
     public int Sum(int[] all)

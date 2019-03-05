@@ -30,7 +30,16 @@ namespace Duktape
         {
         }
 
-        public string GenMatchTypes(MethodBase method)
+        public string GenParamArrayMatchType(MethodBase method)
+        {
+            var parameters = method.GetParameters();
+            var parameter = parameters[parameters.Length - 1];
+            var typename = this.cg.bindingManager.GetTypeFullNameCS(parameter.ParameterType.GetElementType());
+            return $"typeof({typename})";
+        }
+
+        // 生成定参部分 type 列表
+        public string GenFixedMatchTypes(MethodBase method)
         {
             var snippet = "";
             var parameters = method.GetParameters();
@@ -39,6 +48,10 @@ namespace Duktape
                 var parameter = parameters[i];
                 var typename = this.cg.bindingManager.GetTypeFullNameCS(parameter.ParameterType);
                 snippet += $"typeof({typename})";
+                if (parameter.IsDefined(typeof(ParamArrayAttribute), false))
+                {
+                    break;
+                }
                 if (i != length - 1)
                 {
                     snippet += ", ";
@@ -84,14 +97,22 @@ namespace Duktape
                     // 处理数组
                     var argElementType = this.cg.bindingManager.GetTypeFullNameCS(parameter.ParameterType.GetElementType());
                     var argElementIndex = i == 0 ? nargs : nargs + " - " + i;
-                    this.cg.csharp.AppendLine($"{argType} arg{i} = new {argElementType}[{argElementIndex}];");
-                    this.cg.csharp.AppendLine($"for (var i = {i}; i < {nargs}; i++)");
+                    this.cg.csharp.AppendLine($"{argType} arg{i} = null;");
+                    this.cg.csharp.AppendLine($"if ({argElementIndex} > 0)");
                     this.cg.csharp.AppendLine("{");
                     this.cg.csharp.AddTabLevel();
                     {
-                        var argElementGetterOp = this.cg.bindingManager.GetDuktapeGetter(parameter.ParameterType.GetElementType());
-                        var argElementOffset = i == 0 ? "" : " - " + i;
-                        this.cg.csharp.AppendLine($"{argElementGetterOp}(ctx, i, out arg{i}[i{argElementOffset}]);");
+                        this.cg.csharp.AppendLine($"arg{i} = new {argElementType}[{argElementIndex}];");
+                        this.cg.csharp.AppendLine($"for (var i = {i}; i < {nargs}; i++)");
+                        this.cg.csharp.AppendLine("{");
+                        this.cg.csharp.AddTabLevel();
+                        {
+                            var argElementGetterOp = this.cg.bindingManager.GetDuktapeGetter(parameter.ParameterType.GetElementType());
+                            var argElementOffset = i == 0 ? "" : " - " + i;
+                            this.cg.csharp.AppendLine($"{argElementGetterOp}(ctx, i, out arg{i}[i{argElementOffset}]);");
+                        }
+                        this.cg.csharp.DecTabLevel();
+                        this.cg.csharp.AppendLine("}");
                     }
                     this.cg.csharp.DecTabLevel();
                     this.cg.csharp.AppendLine("}");
@@ -246,7 +267,6 @@ namespace Duktape
                         var gecheck = args > 0 && variant.isVararg; // 最后一组分支且存在变参时才需要判断 >= 
                         if (gecheck)
                         {
-                            cg.csharp.AppendLine($"// {args} {variant.count} {variant.varargMethods.Count}");
                             cg.csharp.AppendLine("if (argc >= {0})", args);
                             cg.csharp.AppendLine("{");
                             cg.csharp.AddTabLevel();
@@ -260,10 +280,10 @@ namespace Duktape
                             {
                                 foreach (var method in variant.plainMethods)
                                 {
-                                    cg.csharp.AppendLine($"if (duk_match_types(ctx, argc, {GenMatchTypes(method)}))");
+                                    cg.csharp.AppendLine($"if (duk_match_types(ctx, argc, {GenFixedMatchTypes(method)}))");
                                     cg.csharp.AppendLine("{");
                                     cg.csharp.AddTabLevel();
-                                    cg.csharp.AppendLine("// {0}", method);
+                                    this.WriteCSMethodBinding(method, method.ReturnType, argc, false);
                                     cg.csharp.DecTabLevel();
                                     cg.csharp.AppendLine("}");
                                 }
@@ -282,7 +302,13 @@ namespace Duktape
                         {
                             foreach (var method in variant.varargMethods)
                             {
-                                cg.csharp.AppendLine("// [if match] {0}", method);
+                                cg.csharp.AppendLine($"if (duk_match_types(ctx, argc, {GenFixedMatchTypes(method)})");
+                                cg.csharp.AppendLine($" && duk_match_param_types(ctx, {args}, argc, {GenParamArrayMatchType(method)}))");
+                                cg.csharp.AppendLine("{");
+                                cg.csharp.AddTabLevel();
+                                this.WriteCSMethodBinding(method, method.ReturnType, argc, true);
+                                cg.csharp.DecTabLevel();
+                                cg.csharp.AppendLine("}");
                             }
                         }
                         if (gecheck)
@@ -310,7 +336,6 @@ namespace Duktape
                     {
                         var method = variant.varargMethods[0];
                         WriteCSMethodBinding(method, method.ReturnType, argc, true);
-
                     }
                     else
                     {

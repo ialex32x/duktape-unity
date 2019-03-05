@@ -18,10 +18,14 @@ namespace DuktapeJS {
                 var argc = DuktapeDLL.duk_get_top(ctx);
                 string arg0;
                 duk_get_primitive(ctx, 0, out arg0);
-                string[] arg1 = new string[argc - 1];
-                for (var i = 1; i < argc; i++)
+                string[] arg1 = null;
+                if (argc - 1 > 0)
                 {
-                    duk_get_primitive(ctx, i, out arg1[i - 1]);
+                    arg1 = new string[argc - 1];
+                    for (var i = 1; i < argc; i++)
+                    {
+                        duk_get_primitive(ctx, i, out arg1[i - 1]);
+                    }
                 }
                 var o = new SampleClass(arg0, arg1);
                 DuktapeDLL.duk_push_this(ctx);
@@ -115,10 +119,14 @@ namespace DuktapeJS {
                 var argc = DuktapeDLL.duk_get_top(ctx);
                 SampleClass self;
                 duk_get_this(ctx, out self);
-                int[] arg0 = new int[argc];
-                for (var i = 0; i < argc; i++)
+                int[] arg0 = null;
+                if (argc > 0)
                 {
-                    duk_get_primitive(ctx, i, out arg0[i]);
+                    arg0 = new int[argc];
+                    for (var i = 0; i < argc; i++)
+                    {
+                        duk_get_primitive(ctx, i, out arg0[i]);
+                    }
                 }
                 var ret = self.CheckingVA(arg0);
                 duk_push_any(ctx, ret);
@@ -140,10 +148,14 @@ namespace DuktapeJS {
                 duk_get_this(ctx, out self);
                 int arg0;
                 duk_get_primitive(ctx, 0, out arg0);
-                int[] arg1 = new int[argc - 1];
-                for (var i = 1; i < argc; i++)
+                int[] arg1 = null;
+                if (argc - 1 > 0)
                 {
-                    duk_get_primitive(ctx, i, out arg1[i - 1]);
+                    arg1 = new int[argc - 1];
+                    for (var i = 1; i < argc; i++)
+                    {
+                        duk_get_primitive(ctx, i, out arg1[i - 1]);
+                    }
                 }
                 var ret = self.CheckingVA2(arg0, arg1);
                 duk_push_any(ctx, ret);
@@ -178,11 +190,21 @@ namespace DuktapeJS {
                     {
                         if (duk_match_types(ctx, argc, typeof(int)))
                         {
-                            // Void MethodOverride(Int32)
+                            SampleClass self;
+                            duk_get_this(ctx, out self);
+                            int arg0;
+                            duk_get_primitive(ctx, 0, out arg0);
+                            self.MethodOverride(arg0);
+                            return 0;
                         }
                         if (duk_match_types(ctx, argc, typeof(string)))
                         {
-                            // Void MethodOverride(System.String)
+                            SampleClass self;
+                            duk_get_this(ctx, out self);
+                            string arg0;
+                            duk_get_primitive(ctx, 0, out arg0);
+                            self.MethodOverride(arg0);
+                            return 0;
                         }
                         break;
                     }
@@ -231,6 +253,121 @@ namespace DuktapeJS {
                 duk_get_primitive(ctx, 0, out arg0);
                 self.MethodOverride2(arg0);
                 return 0;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int Bind_MethodOverride3(IntPtr ctx)
+        {
+            try
+            {
+                var argc = DuktapeDLL.duk_get_top(ctx);
+                do
+                {
+                    if (argc == 4)
+                    {
+                        SampleClass self;
+                        duk_get_this(ctx, out self);
+                        float arg0;
+                        duk_get_primitive(ctx, 0, out arg0);
+                        float arg1;
+                        duk_get_primitive(ctx, 1, out arg1);
+                        float arg2;
+                        duk_get_primitive(ctx, 2, out arg2);
+                        object arg3;
+                        duk_get_classvalue(ctx, 3, out arg3);
+                        self.MethodOverride3(arg0, arg1, arg2, arg3);
+                        return 0;
+                    }
+                    if (argc >= 3)
+                    {
+                        if (argc == 3)
+                        {
+                            SampleClass self;
+                            duk_get_this(ctx, out self);
+                            float arg0;
+                            duk_get_primitive(ctx, 0, out arg0);
+                            float arg1;
+                            duk_get_primitive(ctx, 1, out arg1);
+                            float arg2;
+                            duk_get_primitive(ctx, 2, out arg2);
+                            self.MethodOverride3(arg0, arg1, arg2);
+                            return 0;
+                        }
+                        if (duk_match_types(ctx, argc, typeof(float), typeof(float), typeof(float), typeof(int[]))
+                         && duk_match_param_types(ctx, 3, argc, typeof(int)))
+                        {
+                            SampleClass self;
+                            duk_get_this(ctx, out self);
+                            float arg0;
+                            duk_get_primitive(ctx, 0, out arg0);
+                            float arg1;
+                            duk_get_primitive(ctx, 1, out arg1);
+                            float arg2;
+                            duk_get_primitive(ctx, 2, out arg2);
+                            int[] arg3 = null;
+                            if (argc - 3 > 0)
+                            {
+                                arg3 = new int[argc - 3];
+                                for (var i = 3; i < argc; i++)
+                                {
+                                    duk_get_primitive(ctx, i, out arg3[i - 3]);
+                                }
+                            }
+                            self.MethodOverride3(arg0, arg1, arg2, arg3);
+                            return 0;
+                        }
+                    }
+                    if (argc >= 2)
+                    {
+                        if (argc == 2)
+                        {
+                            SampleClass self;
+                            duk_get_this(ctx, out self);
+                            float arg0;
+                            duk_get_primitive(ctx, 0, out arg0);
+                            float arg1;
+                            duk_get_primitive(ctx, 1, out arg1);
+                            self.MethodOverride3(arg0, arg1);
+                            return 0;
+                        }
+                        if (duk_match_types(ctx, argc, typeof(float), typeof(float), typeof(int[]))
+                         && duk_match_param_types(ctx, 2, argc, typeof(int)))
+                        {
+                            SampleClass self;
+                            duk_get_this(ctx, out self);
+                            float arg0;
+                            duk_get_primitive(ctx, 0, out arg0);
+                            float arg1;
+                            duk_get_primitive(ctx, 1, out arg1);
+                            int[] arg2 = null;
+                            if (argc - 2 > 0)
+                            {
+                                arg2 = new int[argc - 2];
+                                for (var i = 2; i < argc; i++)
+                                {
+                                    duk_get_primitive(ctx, i, out arg2[i - 2]);
+                                }
+                            }
+                            self.MethodOverride3(arg0, arg1, arg2);
+                            return 0;
+                        }
+                    }
+                    if (argc == 1)
+                    {
+                        SampleClass self;
+                        duk_get_this(ctx, out self);
+                        float arg0;
+                        duk_get_primitive(ctx, 0, out arg0);
+                        self.MethodOverride3(arg0);
+                        return 0;
+                    }
+                } while(false);
+                return DuktapeDLL.duk_generic_error(ctx, "no matched method variant");
             }
             catch (Exception exception)
             {
@@ -514,6 +651,7 @@ namespace DuktapeJS {
             duk_add_method(ctx, "MethodOverride", Bind_MethodOverride, -1);
             duk_add_method(ctx, "MethodOverride2", Bind_MethodOverride2, -1);
             duk_add_method(ctx, "MethodOverride2F", Bind_MethodOverride2F, -1);
+            duk_add_method(ctx, "MethodOverride3", Bind_MethodOverride3, -1);
             duk_add_method(ctx, "Sum", Bind_Sum, -1);
             duk_add_property(ctx, "name", BindRead_name, null, -1);
             duk_add_property(ctx, "sampleEnum", BindRead_sampleEnum, null, -1);
