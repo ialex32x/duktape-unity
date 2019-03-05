@@ -74,14 +74,18 @@ namespace Duktape
             foreach (var kv in type.properties)
             {
                 var bindingInfo = kv.Value;
-                using (new PInvokeGuardCodeGen(cg))
+                // 可读属性
+                if (bindingInfo.getterName != null)
                 {
-                    using (new BindingFuncDeclareCodeGen(cg, bindingInfo.getterName))
+                    using (new PInvokeGuardCodeGen(cg))
                     {
-                        using (new TryCatchGuradCodeGen(cg))
+                        using (new BindingFuncDeclareCodeGen(cg, bindingInfo.getterName))
                         {
-                            using (new PropertyGetterCodeGen(cg, bindingInfo))
+                            using (new TryCatchGuradCodeGen(cg))
                             {
+                                using (new PropertyGetterCodeGen(cg, bindingInfo))
+                                {
+                                }
                             }
                         }
                     }
@@ -151,9 +155,9 @@ namespace Duktape
                         {
                             cg.typescript.AppendLine("private constructor()");
                         }
-                        cg.csharp.AppendLine("duk_begin_class(ctx, \"{0}\", typeof({1}), {2});", 
-                            bindingInfo.regName, 
-                            this.cg.bindingManager.GetTypeFullNameCS(bindingInfo.type), 
+                        cg.csharp.AppendLine("duk_begin_class(ctx, \"{0}\", typeof({1}), {2});",
+                            bindingInfo.regName,
+                            this.cg.bindingManager.GetTypeFullNameCS(bindingInfo.type),
                             constructor);
                         foreach (var kv in bindingInfo.methods)
                         {
