@@ -553,6 +553,14 @@ namespace Duktape
                 o = null;
                 return true;
             }
+            var jstype = DuktapeDLL.duk_get_type(ctx, idx);
+            switch (jstype)
+            {
+                case duk_type_t.DUK_TYPE_STRING:
+                    o = DuktapeDLL.duk_get_string(ctx, idx);
+                    return true;
+                default: break;
+            }
             if (DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE))
             {
                 var id = DuktapeDLL.duk_get_int(ctx, -1);
