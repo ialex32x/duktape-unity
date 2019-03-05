@@ -71,7 +71,7 @@ namespace Duktape
                 var parameter = parameters[i];
                 //TODO: 需要处理 ref/out 参数在 js 中的返回方式问题
                 //      可能的处理方式是将这些参数合并函数返回值转化为一个 object 作为最终返回值
-                if (parameter.IsOut)
+                if (parameter.IsOut && parameter.ParameterType.IsByRef)
                 {
                     arglist += "out ";
                     if (parametersByRef != null)
@@ -344,7 +344,7 @@ namespace Duktape
         protected abstract string GetInvokeBinding(string caller, T method, string arglist);
 
         protected virtual void BeginInvokeBinding() { }
-        
+
         protected virtual void EndInvokeBinding() { }
 
         // 写入绑定代码
