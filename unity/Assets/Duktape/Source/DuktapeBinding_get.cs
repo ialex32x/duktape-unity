@@ -9,6 +9,14 @@ namespace Duktape
     // 处理常规值, class, struct
     public partial class DuktapeBinding
     {
+        public static bool duk_get_primitive(IntPtr ctx, int idx, out IntPtr o)
+        {
+            object o_t;
+            var ret = duk_get_object(ctx, idx, out o_t);
+            o = (IntPtr)o_t;
+            return ret;
+        }
+
         public static bool duk_get_primitive(IntPtr ctx, int idx, out bool o)
         {
             o = DuktapeDLL.duk_get_boolean(ctx, idx); // no check
