@@ -21,6 +21,7 @@ namespace Duktape
         private Dictionary<Type, DelegateBindingInfo> exportedDelegates = new Dictionary<Type, DelegateBindingInfo>();
         private Dictionary<Type, Type> redirectDelegates = new Dictionary<Type, Type>();
         private List<string> outputFiles = new List<string>();
+        private List<string> removedFiles = new List<string>();
 
         private Dictionary<Type, string> _tsTypeNameMap = new Dictionary<Type, string>();
         private Dictionary<Type, string> _csTypeNameMap = new Dictionary<Type, string>();
@@ -630,6 +631,7 @@ namespace Duktape
             log.AddTabLevel();
             Cleanup(prefs.outDir, outputFiles, file =>
             {
+                removedFiles.Add(file);
                 log.AppendLine("remove unused file {0}", file);
             });
             log.DecTabLevel();
@@ -671,11 +673,24 @@ namespace Duktape
             {
                 Directory.CreateDirectory(outDir);
             }
+            var cancel = false;
+            var current = 0;
+            var total = exportedTypes.Count;
             foreach (var typeKV in exportedTypes)
             {
                 var typeBindingInfo = typeKV.Value;
                 try
                 {
+                    current++;
+                    cancel = EditorUtility.DisplayCancelableProgressBar(
+                        "Generating",
+                        $"{current}/{total}: {typeBindingInfo.FullName}",
+                        (float)current / total);
+                    if (cancel)
+                    {
+                        Warn("operation canceled");
+                        break;
+                    }
                     cg.Clear();
                     cg.Generate(typeBindingInfo);
                     cg.WriteTo(outDir, typeBindingInfo.GetFileName(), tx);
@@ -687,26 +702,38 @@ namespace Duktape
                 }
             }
 
-            try
+            if (!cancel)
             {
-                var exportedDelegatesArray = new DelegateBindingInfo[this.exportedDelegates.Count];
-                this.exportedDelegates.Values.CopyTo(exportedDelegatesArray, 0);
+                try
+                {
+                    var exportedDelegatesArray = new DelegateBindingInfo[this.exportedDelegates.Count];
+                    this.exportedDelegates.Values.CopyTo(exportedDelegatesArray, 0);
 
-                cg.Clear();
-                cg.Generate(exportedDelegatesArray);
-                cg.WriteTo(outDir, DuktapeVM._DuktapeDelegates, tx);
-            }
-            catch (Exception exception)
-            {
-                Error($"generate delegates failed: {exception.Message}");
-                Debug.LogError(exception.StackTrace);
+                    cg.Clear();
+                    cg.Generate(exportedDelegatesArray);
+                    cg.WriteTo(outDir, DuktapeVM._DuktapeDelegates, tx);
+                }
+                catch (Exception exception)
+                {
+                    Error($"generate delegates failed: {exception.Message}");
+                    Debug.LogError(exception.StackTrace);
+                }
             }
 
             var logPath = prefs.logPath;
             File.WriteAllText(logPath, log.ToString());
+            EditorUtility.ClearProgressBar();
+        }
+
+        public void Report()
+        {
             var now = DateTime.Now;
             var ts = now.Subtract(dateTime);
-            Debug.LogFormat("generated {0} type(s), {1} delegate(s) in {2:0.##} seconds.", exportedTypes.Count, exportedDelegates.Count, ts.TotalSeconds);
+            Debug.LogFormat("generated {0} type(s), {1} delegate(s), {2} deletion(s) in {3:0.##} seconds.",
+                exportedTypes.Count,
+                exportedDelegates.Count,
+                removedFiles.Count,
+                ts.TotalSeconds);
         }
     }
 }

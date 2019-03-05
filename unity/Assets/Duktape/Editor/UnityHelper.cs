@@ -19,6 +19,7 @@ namespace Duktape
             // bm.AddExport(typeof(Transform));
             bm.Generate();
             bm.Cleanup();
+            bm.Report();
             AssetDatabase.Refresh();
         }
 
