@@ -18,8 +18,8 @@ namespace Duktape
         public CodeGenerator(BindingManager bindingManager)
         {
             this.bindingManager = bindingManager;
-            var tab = Prefs.GetPrefs().tab;
-            var newline = Prefs.GetPrefs().newline;
+            var tab = this.bindingManager.prefs.tab;
+            var newline = this.bindingManager.prefs.newline;
             csharp = new TextGenerator(newline, tab);
             typescript = new TextGenerator(newline, tab);
         }
@@ -37,7 +37,7 @@ namespace Duktape
             {
                 using (new TopLevelCodeGen(this, DuktapeVM._DuktapeDelegates))
                 {
-                    using (new NamespaceCodeGen(this, Prefs.GetPrefs().ns))
+                    using (new NamespaceCodeGen(this, this.bindingManager.prefs.ns))
                     {
                         using (new DelegateWrapperCodeGen(this, delegateBindingInfos))
                         {
@@ -63,7 +63,7 @@ namespace Duktape
             {
                 using (new TopLevelCodeGen(this, typeBindingInfo))
                 {
-                    using (new NamespaceCodeGen(this, Prefs.GetPrefs().ns, typeBindingInfo.Namespace))
+                    using (new NamespaceCodeGen(this, this.bindingManager.prefs.ns, typeBindingInfo.Namespace))
                     {
                         if (typeBindingInfo.IsEnum)
                         {

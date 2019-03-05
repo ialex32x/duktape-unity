@@ -13,6 +13,7 @@ namespace Duktape
     {
         public DateTime dateTime;
         public TextGenerator log;
+        public Prefs prefs;
         private HashSet<Type> blacklist;
         private HashSet<Type> whitelist;
         private List<string> typePrefixBlacklist;
@@ -25,12 +26,13 @@ namespace Duktape
         private Dictionary<Type, string> _csTypeNameMap = new Dictionary<Type, string>();
         private Dictionary<string, string> _csTypeNameMapS = new Dictionary<string, string>();
 
-        public BindingManager()
+        public BindingManager(Prefs prefs)
         {
+            this.prefs = prefs;
             this.dateTime = DateTime.Now;
-            var tab = Prefs.GetPrefs().tab;
-            var newline = Prefs.GetPrefs().newline;
-            typePrefixBlacklist = Prefs.GetPrefs().typePrefixBlacklist;
+            var tab = prefs.tab;
+            var newline = prefs.newline;
+            typePrefixBlacklist = prefs.typePrefixBlacklist;
             log = new TextGenerator(newline, tab);
             blacklist = new HashSet<Type>(new Type[]
             {
@@ -406,11 +408,11 @@ namespace Duktape
             {
                 return true;
             }
-            if (type.IsDefined(typeof(ObsoleteAttribute), false)) 
+            if (type.IsDefined(typeof(ObsoleteAttribute), false))
             {
                 return true;
             }
-            if (type.BaseType == typeof(Attribute)) 
+            if (type.BaseType == typeof(Attribute))
             {
                 return true;
             }
@@ -441,8 +443,8 @@ namespace Duktape
         public void Collect()
         {
             // 收集直接类型, 加入 exportedTypes
-            Collect(Prefs.GetPrefs().explicitAssemblies, false);
-            Collect(Prefs.GetPrefs().implicitAssemblies, true);
+            Collect(prefs.explicitAssemblies, false);
+            Collect(prefs.implicitAssemblies, true);
 
             log.AppendLine("collecting members");
             log.AddTabLevel();
@@ -499,7 +501,7 @@ namespace Duktape
         {
             log.AppendLine("cleanup");
             log.AddTabLevel();
-            Cleanup(Prefs.GetPrefs().outDir, outputFiles, file =>
+            Cleanup(prefs.outDir, outputFiles, file =>
             {
                 log.AppendLine("remove unused file {0}", file);
             });
@@ -535,8 +537,8 @@ namespace Duktape
         public void Generate()
         {
             var cg = new CodeGenerator(this);
-            var outDir = Prefs.GetPrefs().outDir;
-            var tx = Prefs.GetPrefs().extraExt;
+            var outDir = prefs.outDir;
+            var tx = prefs.extraExt;
             // var tx = "";
             if (!Directory.Exists(outDir))
             {
@@ -573,7 +575,7 @@ namespace Duktape
                 Debug.LogError(exception.StackTrace);
             }
 
-            var logPath = Prefs.GetPrefs().logPath;
+            var logPath = prefs.logPath;
             File.WriteAllText(logPath, log.ToString());
             var now = DateTime.Now;
             var ts = now.Subtract(dateTime);
