@@ -19,7 +19,6 @@ namespace Duktape
         }
     }
 
-
     public class ObjectCache
     {
         private int _index = 0;
@@ -110,6 +109,21 @@ namespace Duktape
         public bool TryGetValue(int id, out object o)
         {
             return _map.TryGetValue(id, out o);
+        }
+
+        public bool MatchType(int id, Type type)
+        {
+            object o;
+            if (_map.TryGetValue(id, out o))
+            {
+                if (o != null)
+                {
+                    var otype = o.GetType();
+                    return otype == type || otype.IsSubclassOf(type) || type.IsAssignableFrom(otype);
+                }
+                return true;
+            }
+            return false;
         }
     }
 }

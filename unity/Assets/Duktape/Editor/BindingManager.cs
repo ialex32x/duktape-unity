@@ -100,6 +100,7 @@ namespace Duktape
             return null;
         }
 
+        // 收集所有 delegate 类型
         public void CollectDelegate(Type type)
         {
             if (type == null || type.BaseType != typeof(MulticastDelegate))

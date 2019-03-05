@@ -161,25 +161,37 @@ namespace DuktapeJS {
             try
             {
                 var argc = DuktapeDLL.duk_get_top(ctx);
-                do {
-                    if (argc >= 2) {
-                        if (argc == 2) {
-                            SampleClass self;
-                            duk_get_this(ctx, out self);
-                            float arg0;
-                            duk_get_primitive(ctx, 0, out arg0);
-                            float arg1;
-                            duk_get_primitive(ctx, 1, out arg1);
-                            self.MethodOverride(arg0, arg1);
-                            return 0;
-                        }
+                do
+                {
+                    if (argc == 2)
+                    {
+                        SampleClass self;
+                        duk_get_this(ctx, out self);
+                        float arg0;
+                        duk_get_primitive(ctx, 0, out arg0);
+                        float arg1;
+                        duk_get_primitive(ctx, 1, out arg1);
+                        self.MethodOverride(arg0, arg1);
+                        return 0;
                     }
-                    if (argc >= 1) {
-                        if (argc == 1) {
+                    if (argc == 1)
+                    {
+                        if (duk_match_types(ctx, argc, typeof(int)))
+                        {
                             // Void MethodOverride(Int32)
-                            // Void MethodOverride(System.String)
-                            break;
                         }
+                        if (duk_match_types(ctx, argc, typeof(string)))
+                        {
+                            // Void MethodOverride(System.String)
+                        }
+                        break;
+                    }
+                    if (argc == 0)
+                    {
+                        SampleClass self;
+                        duk_get_this(ctx, out self);
+                        self.MethodOverride();
+                        return 0;
                     }
                 } while(false);
                 return DuktapeDLL.duk_generic_error(ctx, "no matched method variant");

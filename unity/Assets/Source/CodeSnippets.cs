@@ -105,6 +105,7 @@ public class CodeSnippets : MonoBehaviour
 
     void Awake()
     {
+        testTypes();
         testDelegates();
         testGenericTypes();
     }

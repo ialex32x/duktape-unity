@@ -30,6 +30,23 @@ namespace Duktape
         {
         }
 
+        public string GenMatchTypes(MethodBase method)
+        {
+            var snippet = "";
+            var parameters = method.GetParameters();
+            for (int i = 0, length = parameters.Length; i < length; i++)
+            {
+                var parameter = parameters[i];
+                var typename = this.cg.bindingManager.GetTypeFullNameCS(parameter.ParameterType);
+                snippet += $"typeof({typename})";
+                if (i != length - 1)
+                {
+                    snippet += ", ";
+                }
+            }
+            return snippet;
+        }
+
         // parametersByRef: 可修改参数将被加入此列表
         // hasParams: 是否包含变参 (最后一个参数将按数组处理)
         public string AppendGetParameters(bool hasParams, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
@@ -217,31 +234,45 @@ namespace Duktape
             {
                 // 需要处理重载
                 var argc = cg.AppendGetArgCount(true);
-                cg.csharp.AppendLine("do {");
+                cg.csharp.AppendLine("do");
+                cg.csharp.AppendLine("{");
                 cg.csharp.AddTabLevel();
                 {
                     foreach (var variantKV in this.bindingInfo.variants)
                     {
                         var args = variantKV.Key;
                         var variant = variantKV.Value;
-                        cg.csharp.AppendLine("if (argc >= {0}) {{", args);
-                        cg.csharp.AddTabLevel();
+                        //variant.count > 1
+                        var gecheck = args > 0 && variant.isVararg; // 最后一组分支且存在变参时才需要判断 >= 
+                        if (gecheck)
+                        {
+                            cg.csharp.AppendLine($"// {args} {variant.count} {variant.varargMethods.Count}");
+                            cg.csharp.AppendLine("if (argc >= {0})", args);
+                            cg.csharp.AppendLine("{");
+                            cg.csharp.AddTabLevel();
+                        }
                         // 处理定参
                         {
-                            cg.csharp.AppendLine("if (argc == {0}) {{", args);
+                            cg.csharp.AppendLine("if (argc == {0})", args);
+                            cg.csharp.AppendLine("{");
                             cg.csharp.AddTabLevel();
                             if (variant.plainMethods.Count > 1)
                             {
                                 foreach (var method in variant.plainMethods)
                                 {
+                                    cg.csharp.AppendLine($"if (duk_match_types(ctx, argc, {GenMatchTypes(method)}))");
+                                    cg.csharp.AppendLine("{");
+                                    cg.csharp.AddTabLevel();
                                     cg.csharp.AppendLine("// {0}", method);
+                                    cg.csharp.DecTabLevel();
+                                    cg.csharp.AppendLine("}");
                                 }
                                 cg.csharp.AppendLine("break;");
                             }
                             else
                             {
+                                // 只有一个定参方法时, 不再判定类型匹配
                                 var method = variant.plainMethods[0];
-                                // cg.csharp.AppendLine("// [if match] {0}", method);
                                 this.WriteCSMethodBinding(method, method.ReturnType, argc, false);
                             }
                             cg.csharp.DecTabLevel();
@@ -254,8 +285,11 @@ namespace Duktape
                                 cg.csharp.AppendLine("// [if match] {0}", method);
                             }
                         }
-                        cg.csharp.DecTabLevel();
-                        cg.csharp.AppendLine("}");
+                        if (gecheck)
+                        {
+                            cg.csharp.DecTabLevel();
+                            cg.csharp.AppendLine("}");
+                        }
                     }
                 }
                 cg.csharp.DecTabLevel();

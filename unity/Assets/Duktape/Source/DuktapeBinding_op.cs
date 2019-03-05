@@ -40,6 +40,21 @@ namespace Duktape
             return ret;
         }
 
+        public static bool duk_get_native_refid(IntPtr ctx, int idx, out int id)
+        {
+            if (!DuktapeDLL.duk_is_null_or_undefined(ctx, idx))
+            {
+                if (DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE))
+                {
+                    id = DuktapeDLL.duk_get_int(ctx, -1);
+                    return true;
+                }
+                DuktapeDLL.duk_pop(ctx); // pop OBJ_PROP_NATIVE
+            }
+            id = 0;
+            return false;
+        }
+
         public static bool duk_rebind_native(IntPtr ctx, int idx, object o)
         {
             if (DuktapeDLL.duk_is_null_or_undefined(ctx, idx)) // or check for object?

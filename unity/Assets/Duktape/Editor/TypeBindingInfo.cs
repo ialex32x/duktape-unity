@@ -358,15 +358,17 @@ namespace Duktape
                 var name = method.Name;
                 if (IsGenericMethod(method))
                 {
+                    bindingManager.Info("skip generic method: {0}", method);
                     continue;
                 }
                 if (method.IsSpecialName)
                 {
+                    bindingManager.Info("skip special method: {0}", method);
                     continue;
                 }
                 if (method.IsDefined(typeof(ObsoleteAttribute), false))
                 {
-                    bindingManager.Info("skip obsolete method: {0}", method.Name);
+                    bindingManager.Info("skip obsolete method: {0}", method);
                     continue;
                 }
                 // if (IsPropertyMethod(method))

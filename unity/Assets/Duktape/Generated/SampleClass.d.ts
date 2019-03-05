@@ -13,6 +13,7 @@ declare class SampleClass {
     MethodOverride(x: number, y: number): void
     MethodOverride(x: number): void
     MethodOverride(x: string): void
+    MethodOverride(): void
     MethodOverride2(x: number): void
     MethodOverride2F(x: number): void
     Sum(all: number[]): number

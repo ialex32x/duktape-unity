@@ -87,6 +87,11 @@ public class SampleClass
         return Sum(args) + b;
     }
 
+    public void MethodOverride()
+    {
+
+    }
+
     public void MethodOverride(int x)
     {
 

@@ -430,6 +430,13 @@ namespace Duktape
             return ret;
         }
 
+        // public static bool duk_get_structvalue(IntPtr ctx, int idx, out Matrix4x4 o)
+        // {
+        //     var ret = DuktapeDLL.duk_unity_get16f(ctx, idx, ...);
+        //     o = new Matrix4x4(...);
+        //     return ret;
+        // }
+
         // fallthrough
         public static bool duk_get_structvalue<T>(IntPtr ctx, int idx, out T o)
         where T : struct
