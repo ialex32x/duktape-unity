@@ -118,14 +118,17 @@ namespace Duktape
             foreach (var kv in this.bindingInfo.fields)
             {
                 var fieldBindingInfo = kv.Value;
-                using (new PInvokeGuardCodeGen(cg))
+                if (fieldBindingInfo.getterName != null)
                 {
-                    using (new BindingFuncDeclareCodeGen(cg, fieldBindingInfo.getterName))
+                    using (new PInvokeGuardCodeGen(cg))
                     {
-                        using (new TryCatchGuradCodeGen(cg))
+                        using (new BindingFuncDeclareCodeGen(cg, fieldBindingInfo.getterName))
                         {
-                            using (new FieldGetterCodeGen(cg, fieldBindingInfo))
+                            using (new TryCatchGuradCodeGen(cg))
                             {
+                                using (new FieldGetterCodeGen(cg, fieldBindingInfo))
+                                {
+                                }
                             }
                         }
                     }
@@ -200,11 +203,19 @@ namespace Duktape
                             var bindingInfo = kv.Value;
                             var bStatic = bindingInfo.isStatic;
                             var tsFieldVar = BindingManager.GetTSVariable(bindingInfo.regName);
-                            cg.csharp.AppendLine("duk_add_field(ctx, \"{0}\", {1}, {2}, {3});",
-                                tsFieldVar,
-                                bindingInfo.getterName != null ? bindingInfo.getterName : "null",
-                                bindingInfo.setterName != null ? bindingInfo.setterName : "null",
-                                bStatic ? -2 : -1);
+                            if (bindingInfo.constantValue != null)
+                            {
+                                var cv = bindingInfo.constantValue;
+                                cg.csharp.AppendLine($"duk_add_const(ctx, \"{tsFieldVar}\", {cv}, {-2});");
+                            }
+                            else
+                            {
+                                cg.csharp.AppendLine("duk_add_field(ctx, \"{0}\", {1}, {2}, {3});",
+                                    tsFieldVar,
+                                    bindingInfo.getterName != null ? bindingInfo.getterName : "null",
+                                    bindingInfo.setterName != null ? bindingInfo.setterName : "null",
+                                    bStatic ? -2 : -1);
+                            }
                             var tsFieldPrefix = bindingInfo.isStatic ? "static " : "";
                             if (bindingInfo.setterName == null)
                             {

@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -131,8 +132,23 @@ public class CodeSnippets : MonoBehaviour
         Debug.Log($"type {type} .IsPointer: {type.IsPointer}");
     }
 
+    public const string constant = "test";
+    public const int constantInt = 123;
+    public readonly float constantSingle = 123.45f;
+    void testConstant(FieldInfo field)
+    {
+        Debug.Log($"IsLiteral: {field.IsLiteral}");
+        if (field.IsLiteral)
+        {
+            Debug.Log($"GetRawConstantValue: {field.GetRawConstantValue()}");
+        }
+    }
+
     void Awake()
     {
+        testConstant(GetType().GetField("constant"));
+        testConstant(GetType().GetField("constantInt"));
+        testConstant(GetType().GetField("constantSingle"));
         testPointer(typeof(long*));
         testPointer(typeof(IntPtr));
         testInnerType(typeof(InnerType));
