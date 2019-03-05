@@ -31,6 +31,12 @@ namespace Duktape
             {
                 return true;
             }
+            if (type == typeof(Type))
+            {
+                Type otype;
+                duk_get_type(ctx, idx, out otype);
+                return otype == type;
+            }
             var jstype = DuktapeDLL.duk_get_type(ctx, idx);
             switch (jstype)
             {
