@@ -10,11 +10,12 @@ namespace Duktape
     using UnityEditor;
 
     // 所有具有相同参数数量的方法变体 (最少参数的情况下)
-    public class MethodVariant
+    public class MethodBaseVariant<T>
+    where T : MethodBase
     {
         public int argc; // 最少参数数要求
-        public List<MethodInfo> plainMethods = new List<MethodInfo>();
-        public List<MethodInfo> varargMethods = new List<MethodInfo>();
+        public List<T> plainMethods = new List<T>();
+        public List<T> varargMethods = new List<T>();
 
         // 是否包含变参方法
         public bool isVararg
@@ -27,12 +28,12 @@ namespace Duktape
             get { return plainMethods.Count + varargMethods.Count; }
         }
 
-        public MethodVariant(int argc)
+        public MethodBaseVariant(int argc)
         {
             this.argc = argc;
         }
 
-        public void Add(MethodInfo methodInfo, bool isVararg)
+        public void Add(T methodInfo, bool isVararg)
         {
             if (isVararg)
             {
@@ -53,29 +54,21 @@ namespace Duktape
         }
     }
 
-    public abstract class MethodBaseBindingInfo
+    public abstract class MethodBaseBindingInfo<T>
+    where T : MethodBase
     {
         public string name { get; set; }    // 绑定代码名
         public string regName { get; set; } // 导出名
-    }
 
-    public class MethodBindingInfo : MethodBaseBindingInfo
-    {
         private int _count = 0;
 
         // 按照参数数逆序排序所有变体
         // 有相同参数数量要求的方法记录在同一个 Variant 中 (变参方法按最少参数数计算, 不计变参参数数)
-        public SortedDictionary<int, MethodVariant> variants = new SortedDictionary<int, MethodVariant>(new MethodVariantComparer());
+        public SortedDictionary<int, MethodBaseVariant<T>> variants = new SortedDictionary<int, MethodBaseVariant<T>>(new MethodVariantComparer());
 
         public int count
         {
             get { return _count; }
-        }
-
-        public MethodBindingInfo(bool bStatic, string regName)
-        {
-            this.name = (bStatic ? "BindStatic_" : "Bind_") + regName;
-            this.regName = regName;
         }
 
         public static bool IsVarargMethod(ParameterInfo[] parameters)
@@ -83,36 +76,45 @@ namespace Duktape
             return parameters.Length > 0 && parameters[parameters.Length - 1].IsDefined(typeof(ParamArrayAttribute), false);
         }
 
-        public void Add(MethodInfo methodInfo)
+        public void Add(T method)
         {
-            var parameters = methodInfo.GetParameters();
+            var parameters = method.GetParameters();
             var nargs = parameters.Length;
             var isVararg = IsVarargMethod(parameters);
-            MethodVariant variants;
+            MethodBaseVariant<T> variants;
             if (isVararg)
             {
                 nargs--;
             }
             if (!this.variants.TryGetValue(nargs, out variants))
             {
-                variants = new MethodVariant(nargs);
+                variants = new MethodBaseVariant<T>(nargs);
                 this.variants.Add(nargs, variants);
             }
             _count++;
-            variants.Add(methodInfo, isVararg);
+            variants.Add(method, isVararg);
         }
     }
 
-    public class ConstructorBindingInfo : MethodBaseBindingInfo
+    public class MethodBindingInfo : MethodBaseBindingInfo<MethodInfo>
+    {
+        public MethodBindingInfo(bool bStatic, string regName)
+        {
+            this.name = (bStatic ? "BindStatic_" : "Bind_") + regName;
+            this.regName = regName;
+        }
+    }
+
+    public class ConstructorBindingInfo : MethodBaseBindingInfo<ConstructorInfo>
     {
         public Type decalringType;
-        public List<ConstructorInfo> variants = new List<ConstructorInfo>();
 
-        public bool hasValid
+        // public 构造是否可用
+        public bool available
         {
             get
             {
-                if (decalringType.IsValueType && !decalringType.IsPrimitive)
+                if (decalringType.IsValueType && !decalringType.IsPrimitive && !decalringType.IsAbstract)
                 {
                     return true; // default constructor for struct
                 }
@@ -126,11 +128,6 @@ namespace Duktape
             this.name = "BindConstructor";
             this.regName = "constructor";
         }
-
-        public void Add(ConstructorInfo constructorInfo)
-        {
-            this.variants.Add(constructorInfo);
-        }
     }
 
     public class PropertyBindingInfo
@@ -143,8 +140,8 @@ namespace Duktape
         public PropertyBindingInfo(PropertyInfo propertyInfo)
         {
             this.propertyInfo = propertyInfo;
-            this.getterName = propertyInfo.CanRead ? "BindRead_" + propertyInfo.Name : null;
-            this.setterName = propertyInfo.CanWrite ? "BindWrite_" + propertyInfo.Name : null;
+            this.getterName = (propertyInfo.CanRead && propertyInfo.GetMethod != null && propertyInfo.GetMethod.IsPublic) ? "BindRead_" + propertyInfo.Name : null;
+            this.setterName = (propertyInfo.CanWrite && propertyInfo.SetMethod != null && propertyInfo.SetMethod.IsPublic) ? "BindWrite_" + propertyInfo.Name : null;
             this.regName = TypeBindingInfo.GetNamingAttribute(propertyInfo);
         }
     }
@@ -243,11 +240,6 @@ namespace Duktape
             return filename;
         }
 
-        public bool IsGenericMethod(MethodInfo methodInfo)
-        {
-            return methodInfo.GetGenericArguments().Length > 0;
-        }
-
         public void AddField(FieldInfo fieldInfo)
         {
             try
@@ -317,6 +309,10 @@ namespace Duktape
                 {
                     continue;
                 }
+                if (field.FieldType.IsPointer)
+                {
+                    continue;
+                }
                 if (field.IsDefined(typeof(ObsoleteAttribute), false))
                 {
                     bindingManager.Info("skip obsolete field: {0}", field.Name);
@@ -328,6 +324,10 @@ namespace Duktape
             foreach (var property in properties)
             {
                 if (property.IsSpecialName)
+                {
+                    continue;
+                }
+                if (property.PropertyType.IsPointer)
                 {
                     continue;
                 }
@@ -343,22 +343,30 @@ namespace Duktape
                 }
                 AddProperty(property);
             }
-            var constructors = type.GetConstructors();
-            foreach (var constructor in constructors)
+            if (!type.IsAbstract)
             {
-                if (constructor.IsDefined(typeof(ObsoleteAttribute), false))
+                var constructors = type.GetConstructors();
+                foreach (var constructor in constructors)
                 {
-                    continue;
+                    if (constructor.IsDefined(typeof(ObsoleteAttribute), false))
+                    {
+                        continue;
+                    }
+                    AddConstructor(constructor);
                 }
-                AddConstructor(constructor);
             }
             var methods = type.GetMethods(bindingFlags);
             foreach (var method in methods)
             {
                 var name = method.Name;
-                if (IsGenericMethod(method))
+                if (BindingManager.IsGenericMethod(method))
                 {
                     bindingManager.Info("skip generic method: {0}", method);
+                    continue;
+                }
+                if (BindingManager.ContainsPointer(method))
+                {
+                    bindingManager.Info("skip unsafe (pointer) method: {0}", method);
                     continue;
                 }
                 if (method.IsSpecialName)

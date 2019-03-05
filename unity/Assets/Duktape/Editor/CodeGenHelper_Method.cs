@@ -9,12 +9,13 @@ namespace Duktape
     using UnityEngine;
     using UnityEditor;
 
-    public abstract class MethodBaseCodeGen : IDisposable
+    public abstract class MethodBaseCodeGen<T> : IDisposable
+    where T : MethodBase
     {
         protected CodeGenerator cg;
 
         // 方法参数数比较, 用于列表排序
-        public static int MethodComparer(MethodBase a, MethodBase b)
+        public static int MethodComparer(T a, T b)
         {
             var va = a.GetParameters().Length;
             var vb = b.GetParameters().Length;
@@ -30,7 +31,7 @@ namespace Duktape
         {
         }
 
-        public string GenParamArrayMatchType(MethodBase method)
+        public string GenParamArrayMatchType(T method)
         {
             var parameters = method.GetParameters();
             var parameter = parameters[parameters.Length - 1];
@@ -39,7 +40,7 @@ namespace Duktape
         }
 
         // 生成定参部分 type 列表
-        public string GenFixedMatchTypes(MethodBase method)
+        public string GenFixedMatchTypes(T method)
         {
             var snippet = "";
             var parameters = method.GetParameters();
@@ -127,8 +128,167 @@ namespace Duktape
             return arglist;
         }
 
+        // 输出所有变体绑定
+        // hasOverrides: 是否需要处理重载
+        protected void WriteAllVariants(MethodBaseBindingInfo<T> bindingInfo) // SortedDictionary<int, MethodBaseVariant<T>> variants)
+        {
+            var variants = bindingInfo.variants;
+            var hasOverrides = bindingInfo.count > 1;
+            if (hasOverrides)
+            {
+                // 需要处理重载
+                GenMethodVariants(variants);
+            }
+            else
+            {
+                // 没有重载的情况 (variants.Count == 1)
+                foreach (var variantKV in variants)
+                {
+                    var args = variantKV.Key;
+                    var variant = variantKV.Value;
+                    var argc = cg.AppendGetArgCount(variant.isVararg);
+
+                    if (variant.isVararg)
+                    {
+                        var method = variant.varargMethods[0];
+                        WriteCSMethodBinding(method, argc, true);
+                    }
+                    else
+                    {
+                        var method = variant.plainMethods[0];
+                        WriteCSMethodBinding(method, argc, false);
+                    }
+                }
+            }
+
+            //TODO: 如果产生了无法在 typescript 中声明的方法, 则作标记, 并输出一条万能声明 
+            //      [key: string]: any
+            foreach (var variantKV in variants)
+            {
+                foreach (var method in variantKV.Value.plainMethods)
+                {
+                    WriteTSDeclaration(method, bindingInfo);
+                }
+                foreach (var method in variantKV.Value.varargMethods)
+                {
+                    WriteTSDeclaration(method, bindingInfo);
+                }
+            }
+        }
+
+        // 写入返回类型声明
+        protected virtual void WriteTSReturn(T method, List<ParameterInfo> returnParameters)
+        {
+            //TODO: 如果存在 ref/out 参数， 则返回值改写为带定义的 object
+            //      例如 foo(/*out*/ b: string): { b: string, ret: original_return_type }
+            var returnType = GetReturnType(method);
+            if (returnType != null)
+            {
+                var returnTypeTS = this.cg.bindingManager.GetTypeFullNameTS(returnType);
+                if (returnParameters != null && returnParameters.Count > 0)
+                {
+                    this.cg.typescript.AppendL(": {");
+                    this.cg.typescript.AppendLine();
+                    this.cg.typescript.AddTabLevel();
+                    this.cg.typescript.AppendLine($"ret: {returnTypeTS}, ");
+                    for (var i = 0; i < returnParameters.Count; i++)
+                    {
+                        var parameter = returnParameters[i];
+                        var parameterType = parameter.ParameterType;
+                        var parameterTypeTS = this.cg.bindingManager.GetTypeFullNameTS(parameterType);
+                        this.cg.typescript.AppendLine($"{parameter.Name}: {parameterTypeTS}, ");
+                    }
+                    this.cg.typescript.DecTabLevel();
+                    this.cg.typescript.AppendLine("}");
+                }
+                else
+                {
+                    this.cg.typescript.AppendL($": {returnTypeTS}");
+                    this.cg.typescript.AppendLine();
+                }
+            }
+            else
+            {
+                this.cg.typescript.AppendLine();
+            }
+        }
+
+        protected void GenMethodVariants(SortedDictionary<int, MethodBaseVariant<T>> variants)
+        {
+            var argc = cg.AppendGetArgCount(true);
+            cg.csharp.AppendLine("do");
+            cg.csharp.AppendLine("{");
+            cg.csharp.AddTabLevel();
+            {
+                foreach (var variantKV in variants)
+                {
+                    var args = variantKV.Key;
+                    var variant = variantKV.Value;
+                    //variant.count > 1
+                    var gecheck = args > 0 && variant.isVararg; // 最后一组分支且存在变参时才需要判断 >= 
+                    if (gecheck)
+                    {
+                        cg.csharp.AppendLine("if (argc >= {0})", args);
+                        cg.csharp.AppendLine("{");
+                        cg.csharp.AddTabLevel();
+                    }
+                    // 处理定参
+                    if (variant.plainMethods.Count > 0)
+                    {
+                        cg.csharp.AppendLine("if (argc == {0})", args);
+                        cg.csharp.AppendLine("{");
+                        cg.csharp.AddTabLevel();
+                        if (variant.plainMethods.Count > 1)
+                        {
+                            foreach (var method in variant.plainMethods)
+                            {
+                                cg.csharp.AppendLine($"if (duk_match_types(ctx, argc, {GenFixedMatchTypes(method)}))");
+                                cg.csharp.AppendLine("{");
+                                cg.csharp.AddTabLevel();
+                                this.WriteCSMethodBinding(method, argc, false);
+                                cg.csharp.DecTabLevel();
+                                cg.csharp.AppendLine("}");
+                            }
+                            cg.csharp.AppendLine("break;");
+                        }
+                        else
+                        {
+                            // 只有一个定参方法时, 不再判定类型匹配
+                            var method = variant.plainMethods[0];
+                            this.WriteCSMethodBinding(method, argc, false);
+                        }
+                        cg.csharp.DecTabLevel();
+                        cg.csharp.AppendLine("}");
+                    }
+                    // 处理变参
+                    if (variant.varargMethods.Count > 0)
+                    {
+                        foreach (var method in variant.varargMethods)
+                        {
+                            cg.csharp.AppendLine($"if (duk_match_types(ctx, argc, {GenFixedMatchTypes(method)})");
+                            cg.csharp.AppendLine($" && duk_match_param_types(ctx, {args}, argc, {GenParamArrayMatchType(method)}))");
+                            cg.csharp.AppendLine("{");
+                            cg.csharp.AddTabLevel();
+                            this.WriteCSMethodBinding(method, argc, true);
+                            cg.csharp.DecTabLevel();
+                            cg.csharp.AppendLine("}");
+                        }
+                    }
+                    if (gecheck)
+                    {
+                        cg.csharp.DecTabLevel();
+                        cg.csharp.AppendLine("}");
+                    }
+                }
+            }
+            cg.csharp.DecTabLevel();
+            cg.csharp.AppendLine("} while(false);");
+            var error = this.cg.bindingManager.GetDuktapeGenericError("no matched method variant");
+            cg.csharp.AppendLine($"return {error}");
+        }
+
         //TODO: 考虑将 ref/out 参数以额外增加一个参数的形式返回
-        protected List<ParameterInfo> WriteTSDeclaration(MethodBase method, MethodBaseBindingInfo bindingInfo)
+        protected List<ParameterInfo> WriteTSDeclaration(T method, MethodBaseBindingInfo<T> bindingInfo)
         {
             //TODO: 需要处理参数类型归并问题, 因为如果类型没有导入 ts 中, 可能会在声明中出现相同参数列表的定义
             //      在 MethodVariant 中创建每个方法对应的TS类型名参数列表, 完全相同的不再输出
@@ -172,209 +332,37 @@ namespace Duktape
                     this.cg.typescript.AppendL(", ");
                 }
             }
-            this.cg.typescript.AppendL(")");
+            this.cg.typescript.AppendL($")");
+            WriteTSReturn(method, refParameters);
             return refParameters;
         }
-    }
 
-    public class ConstructorCodeGen : MethodBaseCodeGen
-    {
-        private ConstructorBindingInfo bindingInfo;
+        // 获取返回值类型
+        protected abstract Type GetReturnType(T method);
 
-        public ConstructorCodeGen(CodeGenerator cg, ConstructorBindingInfo bindingInfo)
-        : base(cg)
-        {
-            this.bindingInfo = bindingInfo;
+        // 获取方法调用
+        protected abstract string GetInvokeBinding(string caller, T method, string arglist);
 
-            if (this.bindingInfo.variants.Count > 0)
-            {
-                foreach (var constructor in this.bindingInfo.variants)
-                {
-                    WriteCSConstructor(constructor);
-                    WriteTSDeclaration(constructor, bindingInfo);
-                }
-            }
-            else
-            {
-                WriteCSDefaultConstructor();
-                WriteTSDefaultConsturctorDeclaration();
-            }
-        }
-
-        private void WriteCSConstructor(ConstructorInfo constructor)
-        {
-            //TODO: 写入构造函数
-            var parameters = constructor.GetParameters();
-            if (parameters.Length == 0)
-            {
-                WriteCSDefaultConstructor();
-            }
-            else
-            {
-                var isVararg = parameters[parameters.Length - 1].IsDefined(typeof(ParamArrayAttribute), false);
-                var argc = this.cg.AppendGetArgCount(isVararg);
-                var arglist = this.AppendGetParameters(isVararg, argc, parameters, null);
-                var decalringTypeName = this.cg.bindingManager.GetTypeFullNameCS(this.bindingInfo.decalringType);
-                this.cg.csharp.AppendLine($"var o = new {decalringTypeName}({arglist});");
-                this.cg.csharp.AppendLine("DuktapeDLL.duk_push_this(ctx);");
-                this.cg.csharp.AppendLine("duk_bind_native(ctx, -1, o);");
-                this.cg.csharp.AppendLine("DuktapeDLL.duk_pop(ctx);");
-                this.cg.csharp.AppendLine("return 0;");
-            }
-        }
-
-        private void WriteCSDefaultConstructor()
-        {
-            //TODO: 写入默认构造函数 (struct 无参构造)
-            var decalringTypeName = this.cg.bindingManager.GetTypeFullNameCS(this.bindingInfo.decalringType);
-            this.cg.csharp.AppendLine($"var o = new {decalringTypeName}();");
-            this.cg.csharp.AppendLine("DuktapeDLL.duk_push_this(ctx);");
-            this.cg.csharp.AppendLine("duk_bind_native(ctx, -1, o);");
-            this.cg.csharp.AppendLine("DuktapeDLL.duk_pop(ctx);");
-            this.cg.csharp.AppendLine("return 0;");
-        }
-
-        private void WriteTSDefaultConsturctorDeclaration()
-        {
-            this.cg.typescript.AppendLine($"{this.bindingInfo.regName}()");
-        }
-    }
-
-    // 生成成员方法绑定代码
-    public class MethodCodeGen : MethodBaseCodeGen
-    {
-        protected MethodBindingInfo bindingInfo;
-
-        public MethodCodeGen(CodeGenerator cg, MethodBindingInfo bindingInfo)
-        : base(cg)
-        {
-            this.cg = cg;
-            this.bindingInfo = bindingInfo;
-
-            if (this.bindingInfo.count > 1)
-            {
-                // 需要处理重载
-                var argc = cg.AppendGetArgCount(true);
-                cg.csharp.AppendLine("do");
-                cg.csharp.AppendLine("{");
-                cg.csharp.AddTabLevel();
-                {
-                    foreach (var variantKV in this.bindingInfo.variants)
-                    {
-                        var args = variantKV.Key;
-                        var variant = variantKV.Value;
-                        //variant.count > 1
-                        var gecheck = args > 0 && variant.isVararg; // 最后一组分支且存在变参时才需要判断 >= 
-                        if (gecheck)
-                        {
-                            cg.csharp.AppendLine("if (argc >= {0})", args);
-                            cg.csharp.AppendLine("{");
-                            cg.csharp.AddTabLevel();
-                        }
-                        // 处理定参
-                        if (variant.plainMethods.Count > 0)
-                        {
-                            cg.csharp.AppendLine("if (argc == {0})", args);
-                            cg.csharp.AppendLine("{");
-                            cg.csharp.AddTabLevel();
-                            if (variant.plainMethods.Count > 1)
-                            {
-                                foreach (var method in variant.plainMethods)
-                                {
-                                    cg.csharp.AppendLine($"if (duk_match_types(ctx, argc, {GenFixedMatchTypes(method)}))");
-                                    cg.csharp.AppendLine("{");
-                                    cg.csharp.AddTabLevel();
-                                    this.WriteCSMethodBinding(method, method.ReturnType, argc, false);
-                                    cg.csharp.DecTabLevel();
-                                    cg.csharp.AppendLine("}");
-                                }
-                                cg.csharp.AppendLine("break;");
-                            }
-                            else
-                            {
-                                // 只有一个定参方法时, 不再判定类型匹配
-                                var method = variant.plainMethods[0];
-                                this.WriteCSMethodBinding(method, method.ReturnType, argc, false);
-                            }
-                            cg.csharp.DecTabLevel();
-                            cg.csharp.AppendLine("}");
-                        }
-                        // 处理变参
-                        if (variant.varargMethods.Count > 0)
-                        {
-                            foreach (var method in variant.varargMethods)
-                            {
-                                cg.csharp.AppendLine($"if (duk_match_types(ctx, argc, {GenFixedMatchTypes(method)})");
-                                cg.csharp.AppendLine($" && duk_match_param_types(ctx, {args}, argc, {GenParamArrayMatchType(method)}))");
-                                cg.csharp.AppendLine("{");
-                                cg.csharp.AddTabLevel();
-                                this.WriteCSMethodBinding(method, method.ReturnType, argc, true);
-                                cg.csharp.DecTabLevel();
-                                cg.csharp.AppendLine("}");
-                            }
-                        }
-                        if (gecheck)
-                        {
-                            cg.csharp.DecTabLevel();
-                            cg.csharp.AppendLine("}");
-                        }
-                    }
-                }
-                cg.csharp.DecTabLevel();
-                cg.csharp.AppendLine("} while(false);");
-                var error = this.cg.bindingManager.GetDuktapeGenericError("no matched method variant");
-                cg.csharp.AppendLine($"return {error}");
-            }
-            else
-            {
-                // 没有重载的情况 (this.bindingInfo.variants.Count == 1)
-                foreach (var variantKV in this.bindingInfo.variants)
-                {
-                    var args = variantKV.Key;
-                    var variant = variantKV.Value;
-                    var argc = cg.AppendGetArgCount(variant.isVararg);
-
-                    if (variant.isVararg)
-                    {
-                        var method = variant.varargMethods[0];
-                        WriteCSMethodBinding(method, method.ReturnType, argc, true);
-                    }
-                    else
-                    {
-                        var method = variant.plainMethods[0];
-                        WriteCSMethodBinding(method, method.ReturnType, argc, false);
-                    }
-                }
-            }
-
-            //TODO: 如果产生了无法在 typescript 中声明的方法, 则作标记, 并输出一条万能声明 
-            //      [key: string]: any
-            foreach (var variantKV in this.bindingInfo.variants)
-            {
-                foreach (var method in variantKV.Value.plainMethods)
-                {
-                    _WriteTSReturn(method.ReturnType, WriteTSDeclaration(method, this.bindingInfo));
-                }
-                foreach (var method in variantKV.Value.varargMethods)
-                {
-                    _WriteTSReturn(method.ReturnType, WriteTSDeclaration(method, this.bindingInfo));
-                }
-            }
-        }
+        protected virtual void BeginInvokeBinding() { }
+        
+        protected virtual void EndInvokeBinding() { }
 
         // 写入绑定代码
         //TODO: 如果是扩展方法且第一参数不是本类型, 则是因为目标类没有导出而降级的普通静态方法, 按普通静态方法处理
-        private void WriteCSMethodBinding(MethodBase method, Type returnType, string argc, bool isVararg)
+        protected void WriteCSMethodBinding(T method, string argc, bool isVararg)
         {
             var parameters = method.GetParameters();
             var returnParameters = new List<ParameterInfo>();
             var caller = this.cg.AppendGetThisCS(method);
             var arglist = this.AppendGetParameters(isVararg, argc, parameters, returnParameters);
+            var returnType = GetReturnType(method);
 
-            if (returnType == typeof(void))
+            if (returnType == null || returnType == typeof(void))
             {
                 // 方法本身没有返回值
-                cg.csharp.AppendLine($"{caller}.{method.Name}({arglist});");
+                this.BeginInvokeBinding();
+                cg.csharp.AppendLine($"{this.GetInvokeBinding(caller, method, arglist)};");
+                this.EndInvokeBinding();
                 if (returnParameters.Count > 0)
                 {
                     cg.csharp.AppendLine("DuktapeDLL.duk_push_object(ctx);");
@@ -397,7 +385,9 @@ namespace Duktape
             else
             {
                 // 方法本身有返回值
-                cg.csharp.AppendLine($"var ret = {caller}.{method.Name}({arglist});");
+                this.BeginInvokeBinding();
+                cg.csharp.AppendLine($"var ret = {this.GetInvokeBinding(caller, method, arglist)};");
+                this.EndInvokeBinding();
                 if (returnParameters.Count > 0)
                 {
                     cg.csharp.AppendLine("DuktapeDLL.duk_push_object(ctx);");
@@ -411,37 +401,74 @@ namespace Duktape
                 cg.csharp.AppendLine("return 1;");
             }
         }
+    }
 
-        // 写入返回类型声明
-        private void _WriteTSReturn(Type returnType, List<ParameterInfo> returnParameters)
+    public class ConstructorCodeGen : MethodBaseCodeGen<ConstructorInfo>
+    {
+        private ConstructorBindingInfo bindingInfo;
+
+        protected override Type GetReturnType(ConstructorInfo method)
         {
-            //TODO: 如果存在 ref/out 参数， 则返回值改写为带定义的 object
-            //      例如 foo(/*out*/ b: string): { b: string, ret: original_return_type }
-            if (returnType != null)
+            return null;
+        }
+
+        protected override string GetInvokeBinding(string caller, ConstructorInfo method, string arglist)
+        {
+            var decalringTypeName = this.cg.bindingManager.GetTypeFullNameCS(this.bindingInfo.decalringType);
+            return $"var o = new {decalringTypeName}({arglist});";
+        }
+
+        protected override void EndInvokeBinding()
+        {
+            this.cg.csharp.AppendLine("duk_bind_native(ctx, o);");
+        }
+
+        public ConstructorCodeGen(CodeGenerator cg, ConstructorBindingInfo bindingInfo)
+        : base(cg)
+        {
+            this.bindingInfo = bindingInfo;
+            if (this.bindingInfo.count > 0)
             {
-                var returnTypeTS = this.cg.bindingManager.GetTypeFullNameTS(returnType);
-                if (returnParameters != null && returnParameters.Count > 0)
-                {
-                    this.cg.typescript.AppendL(": {");
-                    this.cg.typescript.AppendLine();
-                    this.cg.typescript.AddTabLevel();
-                    this.cg.typescript.AppendLine($"ret: {returnTypeTS}, ");
-                    for (var i = 0; i < returnParameters.Count; i++)
-                    {
-                        var parameter = returnParameters[i];
-                        var parameterType = parameter.ParameterType;
-                        var parameterTypeTS = this.cg.bindingManager.GetTypeFullNameTS(parameterType);
-                        this.cg.typescript.AppendLine($"{parameter.Name}: {parameterTypeTS}, ");
-                    }
-                    this.cg.typescript.DecTabLevel();
-                    this.cg.typescript.AppendLine("}");
-                }
-                else
-                {
-                    this.cg.typescript.AppendL($": {returnTypeTS}");
-                    this.cg.typescript.AppendLine();
-                }
+                WriteAllVariants(this.bindingInfo);
             }
+            else
+            {
+                WriteDefaultConstructorBinding();
+            }
+        }
+
+        // 写入默认构造函数 (struct 无参构造)
+        private void WriteDefaultConstructorBinding()
+        {
+            var decalringTypeName = this.cg.bindingManager.GetTypeFullNameCS(this.bindingInfo.decalringType);
+            this.cg.csharp.AppendLine($"var o = new {decalringTypeName}();");
+            this.cg.csharp.AppendLine("duk_bind_native(ctx, o);");
+            this.cg.csharp.AppendLine("return 0;");
+
+            this.cg.typescript.AppendLine($"{this.bindingInfo.regName}()");
+        }
+    }
+
+    // 生成成员方法绑定代码
+    public class MethodCodeGen : MethodBaseCodeGen<MethodInfo>
+    {
+        protected MethodBindingInfo bindingInfo;
+
+        protected override Type GetReturnType(MethodInfo method)
+        {
+            return method.ReturnType;
+        }
+
+        protected override string GetInvokeBinding(string caller, MethodInfo method, string arglist)
+        {
+            return $"{caller}.{method.Name}({arglist})";
+        }
+
+        public MethodCodeGen(CodeGenerator cg, MethodBindingInfo bindingInfo)
+        : base(cg)
+        {
+            this.bindingInfo = bindingInfo;
+            WriteAllVariants(this.bindingInfo);
         }
     }
 }

@@ -20,6 +20,19 @@ namespace Duktape
             return ret;
         }
 
+        public static void duk_bind_native(IntPtr ctx, object o)
+        {
+            DuktapeDLL.duk_push_this(ctx);
+            duk_bind_native(ctx, -1, o);
+            DuktapeDLL.duk_pop(ctx);
+        }
+
+        public static void duk_bind_native_pop(IntPtr ctx, int idx, object o)
+        {
+            duk_bind_native(ctx, -1, o);
+            DuktapeDLL.duk_pop(ctx);
+        }
+
         public static void duk_bind_native(IntPtr ctx, int idx, object o)
         {
             var cache = DuktapeVM.GetObjectCache(ctx);

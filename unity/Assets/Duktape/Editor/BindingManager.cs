@@ -102,6 +102,25 @@ namespace Duktape
             return null;
         }
 
+        public static bool ContainsPointer(MethodBase method)
+        {
+            var parameters = method.GetParameters();
+            for (int i = 0, size = parameters.Length; i < size; i++)
+            {
+                var parameterType = parameters[i].ParameterType;
+                if (parameterType.IsPointer)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static bool IsGenericMethod(MethodBase method)
+        {
+            return method.GetGenericArguments().Length > 0;
+        }
+
         // 收集所有 delegate 类型
         public void CollectDelegate(Type type)
         {
@@ -114,6 +133,11 @@ namespace Duktape
                 var invoke = type.GetMethod("Invoke");
                 var returnType = invoke.ReturnType;
                 var parameters = invoke.GetParameters();
+                if (ContainsPointer(invoke))
+                {
+                    log.AppendLine("skip unsafe (pointer) delegate: [{0}] {1}", type, invoke);
+                    return;
+                }
                 // 是否存在等价 delegate
                 foreach (var kv in exportedDelegates)
                 {
@@ -408,13 +432,26 @@ namespace Duktape
             {
                 return true;
             }
-            if (type.IsDefined(typeof(ObsoleteAttribute), false))
-            {
-                return true;
-            }
             if (type.BaseType == typeof(Attribute))
             {
                 return true;
+            }
+            if (type.BaseType == typeof(MulticastDelegate))
+            {
+                return true;
+            }
+            if (type.IsPointer)
+            {
+                return true;
+            }
+            var encloser = type;
+            while (encloser != null)
+            {
+                if (encloser.IsDefined(typeof(ObsoleteAttribute), false))
+                {
+                    return true;
+                }
+                encloser = encloser.DeclaringType;
             }
             for (int i = 0, size = typePrefixBlacklist.Count; i < size; i++)
             {
@@ -571,7 +608,7 @@ namespace Duktape
             }
             catch (Exception exception)
             {
-                    Error($"generate delegates failed: {exception.Message}");
+                Error($"generate delegates failed: {exception.Message}");
                 Debug.LogError(exception.StackTrace);
             }
 

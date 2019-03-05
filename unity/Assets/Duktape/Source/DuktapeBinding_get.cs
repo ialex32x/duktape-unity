@@ -17,6 +17,27 @@ namespace Duktape
             return ret;
         }
 
+        public static bool duk_get_primitive_array(IntPtr ctx, int idx, out IntPtr[] o)
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                var nidx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                o = new IntPtr[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    IntPtr e;
+                    duk_get_primitive(ctx, -1, out e);
+                    o[i] = e;
+                    DuktapeDLL.duk_pop(ctx);
+                }
+                return true;
+            }
+            duk_get_classvalue<IntPtr[]>(ctx, idx, out o);
+            return true;
+        }
+
         public static bool duk_get_primitive(IntPtr ctx, int idx, out bool o)
         {
             o = DuktapeDLL.duk_get_boolean(ctx, idx); // no check
@@ -576,6 +597,28 @@ namespace Duktape
             var ret = duk_get_primitive(ctx, idx, out v);
             o = (T)Enum.ToObject(typeof(T), v);
             return ret;
+        }
+
+        public static bool duk_get_enumvalue_array<T>(IntPtr ctx, int idx, out T[] o)
+        where T : Enum
+        {
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
+                var nidx = DuktapeDLL.duk_normalize_index(ctx, idx);
+                o = new T[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    DuktapeDLL.duk_get_prop_index(ctx, idx, i);
+                    T e;
+                    duk_get_enumvalue(ctx, -1, out e);
+                    o[i] = e;
+                    DuktapeDLL.duk_pop(ctx);
+                }
+                return true;
+            }
+            duk_get_classvalue<T[]>(ctx, idx, out o);
+            return true;
         }
     }
 }

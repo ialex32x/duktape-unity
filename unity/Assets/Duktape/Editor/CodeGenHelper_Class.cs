@@ -21,7 +21,7 @@ namespace Duktape
 
             // 生成函数体
             // 构造函数
-            if (type.constructors.hasValid)
+            if (type.constructors.available)
             {
                 using (new PInvokeGuardCodeGen(cg))
                 {
@@ -150,8 +150,8 @@ namespace Duktape
                 {
                     using (new RegFuncNamespaceCodeGen(cg, bindingInfo))
                     {
-                        var constructor = bindingInfo.constructors.hasValid ? bindingInfo.constructors.name : "object_private_ctor";
-                        if (!bindingInfo.constructors.hasValid)
+                        var constructor = bindingInfo.constructors.available ? bindingInfo.constructors.name : "object_private_ctor";
+                        if (!bindingInfo.constructors.available)
                         {
                             cg.typescript.AppendLine("private constructor()");
                         }

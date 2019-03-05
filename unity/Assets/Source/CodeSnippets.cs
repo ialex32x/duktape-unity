@@ -118,8 +118,24 @@ public class CodeSnippets : MonoBehaviour
     {
     }
 
+    class InnerType
+    { }
+
+    void testInnerType(Type type)
+    {
+        Debug.Log($"{type.DeclaringType}");
+    }
+
+    void testPointer(Type type)
+    {
+        Debug.Log($"type {type} .IsPointer: {type.IsPointer}");
+    }
+
     void Awake()
     {
+        testPointer(typeof(long*));
+        testPointer(typeof(IntPtr));
+        testInnerType(typeof(InnerType));
         testVarargs(null);
         testEmptyArray();
         testTypes();
