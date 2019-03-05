@@ -87,6 +87,7 @@ namespace Duktape
             "UnityEditorInternal.",
             "UnityEngineInternal.",
             "UnityEditor.Experimental.",
+            "UnityEngine.Experimental.",
             "Unity.IO.LowLevel.",
             "Unity.Burst.",
         });
