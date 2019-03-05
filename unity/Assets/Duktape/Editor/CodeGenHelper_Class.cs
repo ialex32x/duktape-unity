@@ -18,7 +18,12 @@ namespace Duktape
             var prefix = this.bindingInfo.Namespace != null ? "" : "declare ";
             var super = this.cg.bindingManager.GetTSSuperName(this.bindingInfo);
             var extends = string.IsNullOrEmpty(super) ? "" : $" extends {super}";
-            this.cg.typescript.AppendLine($"{prefix}class {this.bindingInfo.regName}{extends} {{");
+            var regName = this.bindingInfo.regName;
+            if (bindingInfo.type.IsAbstract)
+            {
+                prefix += "abstract ";
+            }
+            this.cg.typescript.AppendLine($"{prefix}class {regName}{extends} {{");
             this.cg.typescript.AddTabLevel();
 
             // 生成函数体
@@ -153,9 +158,9 @@ namespace Duktape
                     using (new RegFuncNamespaceCodeGen(cg, bindingInfo))
                     {
                         var constructor = bindingInfo.constructors.available ? bindingInfo.constructors.name : "object_private_ctor";
-                        if (!bindingInfo.constructors.available)
+                        if (!bindingInfo.constructors.available && !bindingInfo.type.IsAbstract)
                         {
-                            cg.typescript.AppendLine("private constructor()");
+                            cg.typescript.AppendLine("protected constructor()");
                         }
                         cg.csharp.AppendLine("duk_begin_class(ctx, \"{0}\", typeof({1}), {2});",
                             bindingInfo.regName,
@@ -187,7 +192,7 @@ namespace Duktape
                                 bStatic ? -2 : -1);
 
                             var tsPropertyPrefix = bindingInfo.setterName != null ? "" : "readonly ";
-                            var tsPropertyType = this.cg.bindingManager.GetTypeFullNameTS(bindingInfo.propertyInfo.PropertyType);
+                            var tsPropertyType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.propertyInfo.PropertyType);
                             cg.typescript.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                         }
                         foreach (var kv in bindingInfo.fields)
@@ -205,7 +210,7 @@ namespace Duktape
                             {
                                 tsFieldPrefix += "readonly ";
                             }
-                            var tsFieldType = this.cg.bindingManager.GetTypeFullNameTS(bindingInfo.fieldInfo.FieldType);
+                            var tsFieldType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.fieldInfo.FieldType);
                             cg.typescript.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
                         }
                         cg.csharp.AppendLine("duk_end_class(ctx);");

@@ -2,7 +2,9 @@
     "outDir": "Assets/Duktape/Generated",
     "extraExt": "",
     "newLineStyle": 0,
-    "implicitAssemblies": [], 
+    "implicitAssemblies": [
+        "UnityEngine.CoreModule"
+    ], 
     "explicitAssemblies": [
         "Assembly-CSharp"
     ],

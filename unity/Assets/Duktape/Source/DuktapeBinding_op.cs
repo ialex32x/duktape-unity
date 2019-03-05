@@ -38,6 +38,14 @@ namespace Duktape
             var cache = DuktapeVM.GetObjectCache(ctx);
             var id = cache.AddObject(o);
             DuktapeDLL.duk_unity_set_prop_i(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE, id);
+            if (DuktapeVM.GetVM(ctx).PushChainedPrototypeOf(ctx, o.GetType()))
+            {
+                DuktapeDLL.duk_set_prototype(ctx, -2);
+            }
+            else 
+            {
+                Debug.LogWarning($"no prototype found for {o.GetType()}");
+            }
             if (!o.GetType().IsValueType)
             {
                 var heapptr = DuktapeDLL.duk_get_heapptr(ctx, idx);

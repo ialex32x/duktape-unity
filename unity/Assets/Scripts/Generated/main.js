@@ -1,41 +1,42 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var foo_1 = require("./mm/foo");
-var foo = new foo_1.Foo(12);
-foo.greet();
 // UnityEngine.Debug.Log("greeting")
 var go = new UnityEngine.GameObject("testing");
+var hello = go.AddComponent(SampleNamespace.Hello);
+console.log("hello.name = ", hello.gameObject.name);
 // let go2 = new UnityEngine.GameObject("testing2")
 console.log("go.activeSelf", go.activeSelf);
-go.SetActive(false);
 console.log("go.activeSelf", go.activeSelf);
 setTimeout(function () {
+    go.SetActive(false);
+}, 15000);
+setTimeout(function () {
     UnityEngine.Object.Destroy(go);
-}, 3000);
+}, 30000);
 // 
-var ss = new SampleStruct();
-var SampleClass = SampleNamespace.SampleClass;
-ss.field_a = 12345;
-console.log("ss.field_a = " + ss.field_a);
-new SampleClass.SampleInnerClass().Foo();
-var scxx = new SampleClass("testcase of SampleClass:", "a1", "a2", "a3");
-scxx.SetEnum(SampleEnum.b);
-scxx.TestVector3([1, 2, 3]);
-scxx.delegateFoo1 = new Delegate2();
-scxx.delegateFoo1.on(scxx, function (a, b) {
-    console.log("delegate callback from SampleClass", a, b);
-});
-scxx.TestDelegate1();
-console.log("[JS] TestType1: " + scxx.TestType1(SampleClass));
-console.log(scxx.name + ".sum = " + scxx.Sum([1, 2, 3, 4, 5]));
-console.log("sampleEnum = " + scxx.sampleEnum);
-var res1 = scxx.CheckingVA(1, 2, 3, 4, 5);
-var res2 = scxx.CheckingVA2(1, 2, 3, 4, 5);
-console.log("res1 = " + res1);
-console.log("res2 = " + res2);
-for (var p in DuktapeJS.Enum) {
-    console.log(p);
-}
+// let invalid_test = "23"
+// UnityEngine.Object.Destroy(invalid_test)
+// let ss = new SampleStruct()
+// let SampleClass = SampleNamespace.SampleClass
+// ss.field_a = 12345
+// console.log(`ss.field_a = ${ss.field_a}`)
+// new SampleClass.SampleInnerClass().Foo()
+// let scxx = new SampleClass("testcase of SampleClass:", "a1", "a2", "a3")
+// scxx.SetEnum(SampleEnum.b)
+// scxx.TestVector3([1, 2, 3])
+// scxx.delegateFoo1 = new Delegate2()
+// scxx.delegateFoo1.on(scxx, (a, b) => {
+//     console.log("delegate callback from SampleClass", a, b)
+// })
+// scxx.TestDelegate1()
+// console.log(`[JS] TestType1: ${scxx.TestType1(SampleClass)}`)
+// console.log(`${scxx.name}.sum = ${scxx.Sum([1, 2, 3, 4, 5])}`)
+// console.log(`sampleEnum = ${scxx.sampleEnum}`)
+// let res1 = scxx.CheckingVA(1, 2, 3, 4, 5)
+// let res2 = scxx.CheckingVA2(1, 2, 3, 4, 5)
+// console.log(`res1 = ${res1}`)
+// console.log(`res2 = ${res2}`)
+// for (let p in DuktapeJS.Enum) {
+//     console.log(p)
+// }
 // let timer1 = setInterval(() => {
 //     console.log("interval tick 1")
 // }, 1000)
