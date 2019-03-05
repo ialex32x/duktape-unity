@@ -186,6 +186,8 @@ namespace Duktape
 
         public string name; // 绑定代码名
 
+        public string Namespace; // js 命名空间
+
         public string regName; // js注册名
 
         public Dictionary<string, MethodBindingInfo> methods = new Dictionary<string, MethodBindingInfo>();
@@ -197,11 +199,6 @@ namespace Duktape
         public Assembly Assembly
         {
             get { return type.Assembly; }
-        }
-
-        public string Namespace
-        {
-            get { return type.Namespace; }
         }
 
         public string FullName
@@ -228,6 +225,14 @@ namespace Duktape
         {
             this.bindingManager = bindingManager;
             this.type = type;
+            if (type.DeclaringType != null)
+            {
+                this.Namespace = $"{type.Namespace}.{type.DeclaringType.Name}";
+            }
+            else
+            {
+                this.Namespace = type.Namespace;
+            }
             this.name = "DuktapeJS_" + type.FullName.Replace('.', '_').Replace('+', '_');
             this.regName = GetNamingAttribute(type);
             this.constructors = new ConstructorBindingInfo(type);

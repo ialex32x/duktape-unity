@@ -80,7 +80,7 @@ public class CodeSnippets : MonoBehaviour
         // SampleStruct.X("", 1);
         // SampleStruct.X("");
         var compatible = this.GetType().GetMethod("DelegateFooCompatible");
-        var call = Delegate.CreateDelegate(typeof(SampleClass.DelegateFoo), "test", compatible, true);
+        var call = Delegate.CreateDelegate(typeof(SampleNamespace.SampleClass.DelegateFoo), "test", compatible, true);
         call.DynamicInvoke("a", "b");
     }
 
