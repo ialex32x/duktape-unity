@@ -6,12 +6,15 @@ let foo = new Foo(12)
 foo.greet()
 
 // UnityEngine.Debug.Log("greeting")
-// let go = new UnityEngine.GameObject("testing")
+let go = new UnityEngine.GameObject("testing")
 // let go2 = new UnityEngine.GameObject("testing2")
-// console.log("go.activeSelf", go.activeSelf)
-// go.SetActive(false)
-// console.log("go.activeSelf", go.activeSelf)
-// UnityEngine.Object.Destroy(go)
+console.log("go.activeSelf", go.activeSelf)
+go.SetActive(false)
+console.log("go.activeSelf", go.activeSelf)
+setTimeout(() => {
+    UnityEngine.Object.Destroy(go)
+}, 3000)
+// 
 
 let ss = new SampleStruct()
 let SampleClass = SampleNamespace.SampleClass

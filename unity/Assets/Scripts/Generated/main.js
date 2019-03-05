@@ -4,12 +4,15 @@ var foo_1 = require("./mm/foo");
 var foo = new foo_1.Foo(12);
 foo.greet();
 // UnityEngine.Debug.Log("greeting")
-// let go = new UnityEngine.GameObject("testing")
+var go = new UnityEngine.GameObject("testing");
 // let go2 = new UnityEngine.GameObject("testing2")
-// console.log("go.activeSelf", go.activeSelf)
-// go.SetActive(false)
-// console.log("go.activeSelf", go.activeSelf)
-// UnityEngine.Object.Destroy(go)
+console.log("go.activeSelf", go.activeSelf);
+go.SetActive(false);
+console.log("go.activeSelf", go.activeSelf);
+setTimeout(function () {
+    UnityEngine.Object.Destroy(go);
+}, 3000);
+// 
 var ss = new SampleStruct();
 var SampleClass = SampleNamespace.SampleClass;
 ss.field_a = 12345;

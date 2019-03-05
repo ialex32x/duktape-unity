@@ -183,6 +183,7 @@ namespace Duktape
     {
         public BindingManager bindingManager;
         public Type type;
+        public Type super { get { return type.BaseType; } } // 父类类型
 
         public string name; // 绑定代码名
 
