@@ -11,25 +11,27 @@ namespace Duktape
 
     public class ClassCodeGen : TypeCodeGen
     {
-        public ClassCodeGen(CodeGenerator cg, TypeBindingInfo type)
-        : base(cg, type)
+        public ClassCodeGen(CodeGenerator cg, TypeBindingInfo bindingInfo)
+        : base(cg, bindingInfo)
         {
-            this.cg.AppendJSDoc(type.type);
-            var prefix = bindingInfo.Namespace != null ? "" : "declare ";
-            this.cg.typescript.AppendLine("{0}class {1} {{", prefix, bindingInfo.regName);
+            this.cg.AppendJSDoc(this.bindingInfo.type);
+            var prefix = this.bindingInfo.Namespace != null ? "" : "declare ";
+            var super = this.cg.bindingManager.GetTSSuperName(this.bindingInfo);
+            var extends = string.IsNullOrEmpty(super) ? "" : $" extends {super}";
+            this.cg.typescript.AppendLine($"{prefix}class {this.bindingInfo.regName}{extends} {{");
             this.cg.typescript.AddTabLevel();
 
             // 生成函数体
             // 构造函数
-            if (type.constructors.available)
+            if (this.bindingInfo.constructors.available)
             {
                 using (new PInvokeGuardCodeGen(cg))
                 {
-                    using (new BindingFuncDeclareCodeGen(cg, type.constructors.name))
+                    using (new BindingFuncDeclareCodeGen(cg, this.bindingInfo.constructors.name))
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {
-                            using (new ConstructorCodeGen(cg, type.constructors))
+                            using (new ConstructorCodeGen(cg, this.bindingInfo.constructors))
                             {
                             }
                         }
@@ -37,16 +39,16 @@ namespace Duktape
                 }
             }
             // 非静态成员方法
-            foreach (var kv in type.methods)
+            foreach (var kv in this.bindingInfo.methods)
             {
-                var bindingInfo = kv.Value;
+                var methodBindingInfo = kv.Value;
                 using (new PInvokeGuardCodeGen(cg))
                 {
-                    using (new BindingFuncDeclareCodeGen(cg, bindingInfo.name))
+                    using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.name))
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {
-                            using (new MethodCodeGen(cg, bindingInfo))
+                            using (new MethodCodeGen(cg, methodBindingInfo))
                             {
                             }
                         }
@@ -54,16 +56,16 @@ namespace Duktape
                 }
             }
             // 静态成员方法
-            foreach (var kv in type.staticMethods)
+            foreach (var kv in this.bindingInfo.staticMethods)
             {
-                var bindingInfo = kv.Value;
+                var propertyBindingInfo = kv.Value;
                 using (new PInvokeGuardCodeGen(cg))
                 {
-                    using (new BindingFuncDeclareCodeGen(cg, bindingInfo.name))
+                    using (new BindingFuncDeclareCodeGen(cg, propertyBindingInfo.name))
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {
-                            using (new MethodCodeGen(cg, bindingInfo))
+                            using (new MethodCodeGen(cg, propertyBindingInfo))
                             {
                             }
                         }
@@ -71,19 +73,19 @@ namespace Duktape
                 }
             }
             // 所有属性
-            foreach (var kv in type.properties)
+            foreach (var kv in this.bindingInfo.properties)
             {
-                var bindingInfo = kv.Value;
+                var propertyBindingInfo = kv.Value;
                 // 可读属性
-                if (bindingInfo.getterName != null)
+                if (propertyBindingInfo.getterName != null)
                 {
                     using (new PInvokeGuardCodeGen(cg))
                     {
-                        using (new BindingFuncDeclareCodeGen(cg, bindingInfo.getterName))
+                        using (new BindingFuncDeclareCodeGen(cg, propertyBindingInfo.getterName))
                         {
                             using (new TryCatchGuradCodeGen(cg))
                             {
-                                using (new PropertyGetterCodeGen(cg, bindingInfo))
+                                using (new PropertyGetterCodeGen(cg, propertyBindingInfo))
                                 {
                                 }
                             }
@@ -91,15 +93,15 @@ namespace Duktape
                     }
                 }
                 // 可写属性
-                if (bindingInfo.setterName != null)
+                if (propertyBindingInfo.setterName != null)
                 {
                     using (new PInvokeGuardCodeGen(cg))
                     {
-                        using (new BindingFuncDeclareCodeGen(cg, bindingInfo.setterName))
+                        using (new BindingFuncDeclareCodeGen(cg, propertyBindingInfo.setterName))
                         {
                             using (new TryCatchGuradCodeGen(cg))
                             {
-                                using (new PropertySetterCodeGen(cg, bindingInfo))
+                                using (new PropertySetterCodeGen(cg, propertyBindingInfo))
                                 {
                                 }
                             }
@@ -108,31 +110,31 @@ namespace Duktape
                 }
             }
             // 所有字段
-            foreach (var kv in type.fields)
+            foreach (var kv in this.bindingInfo.fields)
             {
-                var bindingInfo = kv.Value;
+                var fieldBindingInfo = kv.Value;
                 using (new PInvokeGuardCodeGen(cg))
                 {
-                    using (new BindingFuncDeclareCodeGen(cg, bindingInfo.getterName))
+                    using (new BindingFuncDeclareCodeGen(cg, fieldBindingInfo.getterName))
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {
-                            using (new FieldGetterCodeGen(cg, bindingInfo))
+                            using (new FieldGetterCodeGen(cg, fieldBindingInfo))
                             {
                             }
                         }
                     }
                 }
                 // 可写字段 
-                if (bindingInfo.setterName != null)
+                if (fieldBindingInfo.setterName != null)
                 {
                     using (new PInvokeGuardCodeGen(cg))
                     {
-                        using (new BindingFuncDeclareCodeGen(cg, bindingInfo.setterName))
+                        using (new BindingFuncDeclareCodeGen(cg, fieldBindingInfo.setterName))
                         {
                             using (new TryCatchGuradCodeGen(cg))
                             {
-                                using (new FieldSetterCodeGen(cg, bindingInfo))
+                                using (new FieldSetterCodeGen(cg, fieldBindingInfo))
                                 {
                                 }
                             }

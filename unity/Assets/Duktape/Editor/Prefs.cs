@@ -62,7 +62,7 @@ namespace Duktape
         {
             //TODO: codegen 完善后再默认开启
             // "UnityEngine",
-            // "UnityEngine.CoreModule",
+            "UnityEngine.CoreModule",
             // "UnityEngine.UIModule",
             // "UnityEngine.TextRenderingModule",
             // "UnityEngine.TextRenderingModule",

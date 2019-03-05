@@ -397,6 +397,21 @@ namespace Duktape
             return name;
         }
 
+        public string GetTSSuperName(TypeBindingInfo typeBindingInfo)
+        {
+            var super = typeBindingInfo.super;
+            while (super != null)
+            {
+                var superBindingInfo = GetExportedType(super);
+                if (superBindingInfo != null)
+                {
+                    return superBindingInfo.regName;
+                }
+                super = super.BaseType;
+            }
+            return "";
+        }
+
         // 生成参数对应的字符串形式参数列表 (csharp)
         public string GetCSArglistDecl(ParameterInfo[] parameters)
         {
