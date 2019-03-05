@@ -53,16 +53,19 @@ namespace Duktape
         }
     }
 
-    public class MethodBindingInfo
+    public abstract class MethodBaseBindingInfo
+    {
+        public string name { get; set; }    // 绑定代码名
+        public string regName { get; set; } // 导出名
+    }
+
+    public class MethodBindingInfo : MethodBaseBindingInfo
     {
         private int _count = 0;
 
         // 按照参数数逆序排序所有变体
+        // 有相同参数数量要求的方法记录在同一个 Variant 中 (变参方法按最少参数数计算, 不计变参参数数)
         public SortedDictionary<int, MethodVariant> variants = new SortedDictionary<int, MethodVariant>(new MethodVariantComparer());
-
-        public string name; // 绑定代码名
-
-        public string regName; // 导出名
 
         public int count
         {
@@ -83,20 +86,50 @@ namespace Duktape
         public void Add(MethodInfo methodInfo)
         {
             var parameters = methodInfo.GetParameters();
-            var args = parameters.Length;
+            var nargs = parameters.Length;
             var isVararg = IsVarargMethod(parameters);
             MethodVariant variants;
             if (isVararg)
             {
-                args--;
+                nargs--;
             }
-            if (!this.variants.TryGetValue(args, out variants))
+            if (!this.variants.TryGetValue(nargs, out variants))
             {
-                variants = new MethodVariant(args);
-                this.variants.Add(args, variants);
+                variants = new MethodVariant(nargs);
+                this.variants.Add(nargs, variants);
             }
             _count++;
             variants.Add(methodInfo, isVararg);
+        }
+    }
+
+    public class ConstructorBindingInfo : MethodBaseBindingInfo
+    {
+        public Type decalringType;
+        public List<ConstructorInfo> variants = new List<ConstructorInfo>();
+
+        public bool hasValid
+        {
+            get
+            {
+                if (decalringType.IsValueType && !decalringType.IsPrimitive)
+                {
+                    return true; // default constructor for struct
+                }
+                return variants.Count > 0;
+            }
+        }
+
+        public ConstructorBindingInfo(Type decalringType)
+        {
+            this.decalringType = decalringType;
+            this.name = "BindConstructor";
+            this.regName = "constructor";
+        }
+
+        public void Add(ConstructorInfo constructorInfo)
+        {
+            this.variants.Add(constructorInfo);
         }
     }
 
@@ -112,7 +145,7 @@ namespace Duktape
             this.propertyInfo = propertyInfo;
             this.getterName = propertyInfo.CanRead ? "BindRead_" + propertyInfo.Name : null;
             this.setterName = propertyInfo.CanWrite ? "BindWrite_" + propertyInfo.Name : null;
-            this.regName = TypeBindingInfo.GetNamingAttribute(propertyInfo) ?? propertyInfo.Name;
+            this.regName = TypeBindingInfo.GetNamingAttribute(propertyInfo);
         }
     }
 
@@ -144,38 +177,8 @@ namespace Duktape
                     this.setterName = "BindWrite_" + fieldInfo.Name;
                 }
             }
-            this.regName = TypeBindingInfo.GetNamingAttribute(fieldInfo) ?? fieldInfo.Name;
+            this.regName = TypeBindingInfo.GetNamingAttribute(fieldInfo);
             this.fieldInfo = fieldInfo;
-        }
-    }
-
-    public class ConstructorBindingInfo
-    {
-        public string name = "BindConstructor";
-        public string regName = "constructor";
-        public Type decalringType;
-        public List<ConstructorInfo> variants = new List<ConstructorInfo>();
-
-        public bool hasValid
-        {
-            get
-            {
-                if (decalringType.IsValueType && !decalringType.IsPrimitive)
-                {
-                    return true; // default constructor for struct
-                }
-                return variants.Count > 0;
-            }
-        }
-
-        public ConstructorBindingInfo(Type decalringType)
-        {
-            this.decalringType = decalringType;
-        }
-
-        public void Add(ConstructorInfo constructorInfo)
-        {
-            this.variants.Add(constructorInfo);
         }
     }
 
@@ -221,7 +224,7 @@ namespace Duktape
             {
                 return naming.name;
             }
-            return null;
+            return info.Name;
         }
 
         public TypeBindingInfo(BindingManager bindingManager, Type type)
@@ -229,7 +232,7 @@ namespace Duktape
             this.bindingManager = bindingManager;
             this.type = type;
             this.name = "DuktapeJS_" + type.FullName.Replace('.', '_').Replace('+', '_');
-            this.regName = GetNamingAttribute(type) ?? type.Name;
+            this.regName = GetNamingAttribute(type);
             this.constructors = new ConstructorBindingInfo(type);
         }
 
@@ -277,10 +280,11 @@ namespace Duktape
         {
             var group = methodInfo.IsStatic ? staticMethods : methods;
             MethodBindingInfo overrides;
-            if (!group.TryGetValue(methodInfo.Name, out overrides))
+            var methodName = TypeBindingInfo.GetNamingAttribute(methodInfo);
+            if (!group.TryGetValue(methodName, out overrides))
             {
-                overrides = new MethodBindingInfo(methodInfo.IsStatic, TypeBindingInfo.GetNamingAttribute(methodInfo) ?? methodInfo.Name);
-                group.Add(methodInfo.Name, overrides);
+                overrides = new MethodBindingInfo(methodInfo.IsStatic, methodName);
+                group.Add(methodName, overrides);
             }
             var parameters = methodInfo.GetParameters();
             overrides.Add(methodInfo);

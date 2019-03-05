@@ -156,6 +156,77 @@ namespace DuktapeJS {
         }
         [UnityEngine.Scripting.Preserve]
         [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int Bind_MethodOverride(IntPtr ctx)
+        {
+            try
+            {
+                var argc = DuktapeDLL.duk_get_top(ctx);
+                do {
+                    if (argc >= 2) {
+                        if (argc == 2) {
+                            SampleClass self;
+                            duk_get_this(ctx, out self);
+                            float arg0;
+                            duk_get_primitive(ctx, 0, out arg0);
+                            float arg1;
+                            duk_get_primitive(ctx, 1, out arg1);
+                            self.MethodOverride(arg0, arg1);
+                            return 0;
+                        }
+                    }
+                    if (argc >= 1) {
+                        if (argc == 1) {
+                            // Void MethodOverride(Int32)
+                            // Void MethodOverride(System.String)
+                            break;
+                        }
+                    }
+                } while(false);
+                return DuktapeDLL.duk_generic_error(ctx, "no matched method variant");
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int Bind_MethodOverride2(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                int arg0;
+                duk_get_primitive(ctx, 0, out arg0);
+                self.MethodOverride2(arg0);
+                return 0;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
+        public static int Bind_MethodOverride2F(IntPtr ctx)
+        {
+            try
+            {
+                SampleClass self;
+                duk_get_this(ctx, out self);
+                float arg0;
+                duk_get_primitive(ctx, 0, out arg0);
+                self.MethodOverride2(arg0);
+                return 0;
+            }
+            catch (Exception exception)
+            {
+                return DuktapeDLL.duk_generic_error(ctx, exception.ToString());
+            }
+        }
+        [UnityEngine.Scripting.Preserve]
+        [AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]
         public static int Bind_Sum(IntPtr ctx)
         {
             try
@@ -428,6 +499,9 @@ namespace DuktapeJS {
             duk_add_method(ctx, "SetEnum", Bind_SetEnum, -1);
             duk_add_method(ctx, "CheckingVA", Bind_CheckingVA, -1);
             duk_add_method(ctx, "CheckingVA2", Bind_CheckingVA2, -1);
+            duk_add_method(ctx, "MethodOverride", Bind_MethodOverride, -1);
+            duk_add_method(ctx, "MethodOverride2", Bind_MethodOverride2, -1);
+            duk_add_method(ctx, "MethodOverride2F", Bind_MethodOverride2F, -1);
             duk_add_method(ctx, "Sum", Bind_Sum, -1);
             duk_add_property(ctx, "name", BindRead_name, null, -1);
             duk_add_property(ctx, "sampleEnum", BindRead_sampleEnum, null, -1);

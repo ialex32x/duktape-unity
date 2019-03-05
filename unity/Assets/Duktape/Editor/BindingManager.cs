@@ -216,6 +216,11 @@ namespace Duktape
             return arglist;
         }
 
+        public string GetDuktapeGenericError(string err)
+        {
+            return $"DuktapeDLL.duk_generic_error(ctx, \"{err}\");";
+        }
+
         public string GetDuktapeThisGetter(Type type)
         {
             return "duk_get_this";

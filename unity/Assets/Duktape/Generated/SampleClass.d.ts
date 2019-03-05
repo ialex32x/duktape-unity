@@ -4,13 +4,17 @@ declare class SampleClass {
      * @param name 测试字符串
      * @param additional 测试可变参数
      */
-    constructor(name: string, ...additional: string[])
-    TestDelegate1(): void
+    constructor(name: string, ...additional: string[])    TestDelegate1(): void
     TestVector3(v: any): void
     TestType1(type: any): any
     SetEnum(sampleEnum: SampleEnum): boolean
     CheckingVA(...args: number[]): number
     CheckingVA2(b: number, ...args: number[]): number
+    MethodOverride(x: number, y: number): void
+    MethodOverride(x: number): void
+    MethodOverride(x: string): void
+    MethodOverride2(x: number): void
+    MethodOverride2F(x: number): void
     Sum(all: number[]): number
     readonly name: string
     readonly sampleEnum: SampleEnum

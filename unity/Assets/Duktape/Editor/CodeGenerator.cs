@@ -146,7 +146,7 @@ namespace Duktape
             return AppendGetThisCS(bindingInfo.isStatic, bindingInfo.fieldInfo.DeclaringType);
         }
 
-        public string AppendGetThisCS(MethodInfo method)
+        public string AppendGetThisCS(MethodBase method)
         {
             return AppendGetThisCS(method.IsStatic, method.DeclaringType);
         }
@@ -167,7 +167,7 @@ namespace Duktape
             return caller;
         }
 
-        public string AppendGetArgc(bool isVararg)
+        public string AppendGetArgCount(bool isVararg)
         {
             if (isVararg)
             {
@@ -176,66 +176,6 @@ namespace Duktape
                 return varName;
             }
             return null;
-        }
-
-        // parametersByRef: 可修改参数将被加入此列表
-        public string AppendGetParameters(string argc, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
-        {
-            var arglist = "";
-            for (var i = 0; i < parameters.Length; i++)
-            {
-                var parameter = parameters[i];
-                //TODO: 需要处理 ref/out 参数在 js 中的返回方式问题
-                //      可能的处理方式是将这些参数合并函数返回值转化为一个 object 作为最终返回值
-                if (parameter.IsOut)
-                {
-                    arglist += "out ";
-                    if (parametersByRef != null)
-                    {
-                        parametersByRef.Add(parameter);
-                    }
-                }
-                else if (parameter.ParameterType.IsByRef)
-                {
-                    arglist += "ref ";
-                    if (parametersByRef != null)
-                    {
-                        parametersByRef.Add(parameter);
-                    }
-                }
-                arglist += "arg" + i;
-                if (i != parameters.Length - 1)
-                {
-                    arglist += ", ";
-                }
-                if (argc != null && i == parameters.Length - 1)
-                {
-                    this.csharp.AppendLine("{0} arg{1} = new {2}[{3}];",
-                        this.bindingManager.GetTypeFullNameCS(parameter.ParameterType),
-                        i,
-                        this.bindingManager.GetTypeFullNameCS(parameter.ParameterType.GetElementType()),
-                        i == 0 ? argc : argc + " - " + i);
-                    this.csharp.AppendLine("for (var i = {0}; i < {1}; i++)", i, argc);
-                    this.csharp.AppendLine("{");
-                    this.csharp.AddTabLevel();
-                    {
-                        // this.csharp.AppendLine("{0} el;", this.bindingManager.GetTypeFullNameCS(parameter.ParameterType.GetElementType()));
-                        this.csharp.AppendLine("{0}(ctx, i, out arg{1}[i{2}]);",
-                            this.bindingManager.GetDuktapeGetter(parameter.ParameterType.GetElementType()),
-                            i,
-                            i == 0 ? "" : " - " + i);
-                        // this.csharp.AppendLine("arg{0}[i] = el;", i);
-                    }
-                    this.csharp.DecTabLevel();
-                    this.csharp.AppendLine("}");
-                }
-                else
-                {
-                    this.csharp.AppendLine("{0} arg{1};", this.bindingManager.GetTypeFullNameCS(parameter.ParameterType), i);
-                    this.csharp.AppendLine("{0}(ctx, {1}, out arg{1});", this.bindingManager.GetDuktapeGetter(parameter.ParameterType), i);
-                }
-            }
-            return arglist;
         }
 
         public void AppendJSDoc(MemberInfo info)

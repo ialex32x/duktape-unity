@@ -87,6 +87,32 @@ public class SampleClass
         return Sum(args) + b;
     }
 
+    public void MethodOverride(int x)
+    {
+
+    }
+
+    public void MethodOverride(string x)
+    {
+
+    }
+
+    public void MethodOverride(float x, float y)
+    {
+
+    }
+
+    public void MethodOverride2(int x)
+    {
+        
+    }
+
+    [JSNaming("MethodOverride2F")]
+    public void MethodOverride2(float x)
+    {
+        
+    }
+
     public int Sum(int[] all)
     {
         var sum = 0;
