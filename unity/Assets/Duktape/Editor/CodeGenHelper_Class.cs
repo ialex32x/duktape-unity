@@ -157,7 +157,7 @@ namespace Duktape
                         }
                         cg.csharp.AppendLine("duk_begin_class(ctx, \"{0}\", typeof({1}), {2});",
                             bindingInfo.regName,
-                            this.cg.bindingManager.GetTypeFullNameCS(bindingInfo.type),
+                            this.cg.bindingManager.GetCSTypeFullName(bindingInfo.type),
                             constructor);
                         foreach (var kv in bindingInfo.methods)
                         {
@@ -177,32 +177,34 @@ namespace Duktape
                         {
                             var bindingInfo = kv.Value;
                             var bStatic = false;
+                            var tsPropertyVar = BindingManager.GetTSVariable(bindingInfo.regName);
                             cg.csharp.AppendLine("duk_add_property(ctx, \"{0}\", {1}, {2}, {3});",
-                                bindingInfo.regName,
+                                tsPropertyVar,
                                 bindingInfo.getterName != null ? bindingInfo.getterName : "null",
                                 bindingInfo.setterName != null ? bindingInfo.setterName : "null",
                                 bStatic ? -2 : -1);
 
                             var tsPropertyPrefix = bindingInfo.setterName != null ? "" : "readonly ";
                             var tsPropertyType = this.cg.bindingManager.GetTypeFullNameTS(bindingInfo.propertyInfo.PropertyType);
-                            cg.typescript.AppendLine("{0}{1}: {2}", tsPropertyPrefix, bindingInfo.propertyInfo.Name, tsPropertyType);
+                            cg.typescript.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                         }
                         foreach (var kv in bindingInfo.fields)
                         {
-                            var fieldInfo = kv.Value;
-                            var bStatic = fieldInfo.isStatic;
+                            var bindingInfo = kv.Value;
+                            var bStatic = bindingInfo.isStatic;
+                            var tsFieldVar = BindingManager.GetTSVariable(bindingInfo.regName);
                             cg.csharp.AppendLine("duk_add_field(ctx, \"{0}\", {1}, {2}, {3});",
-                                fieldInfo.regName,
-                                fieldInfo.getterName != null ? fieldInfo.getterName : "null",
-                                fieldInfo.setterName != null ? fieldInfo.setterName : "null",
+                                tsFieldVar,
+                                bindingInfo.getterName != null ? bindingInfo.getterName : "null",
+                                bindingInfo.setterName != null ? bindingInfo.setterName : "null",
                                 bStatic ? -2 : -1);
-                            var tsPropertyPrefix = fieldInfo.isStatic ? "static " : "";
-                            if (fieldInfo.setterName == null)
+                            var tsFieldPrefix = bindingInfo.isStatic ? "static " : "";
+                            if (bindingInfo.setterName == null)
                             {
-                                tsPropertyPrefix += "readonly ";
+                                tsFieldPrefix += "readonly ";
                             }
-                            var tsPropertyType = this.cg.bindingManager.GetTypeFullNameTS(fieldInfo.fieldInfo.FieldType);
-                            cg.typescript.AppendLine("{0}{1}: {2}", tsPropertyPrefix, fieldInfo.regName, tsPropertyType);
+                            var tsFieldType = this.cg.bindingManager.GetTypeFullNameTS(bindingInfo.fieldInfo.FieldType);
+                            cg.typescript.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
                         }
                         cg.csharp.AppendLine("duk_end_class(ctx);");
                     }

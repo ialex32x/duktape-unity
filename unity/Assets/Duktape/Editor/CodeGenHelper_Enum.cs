@@ -30,7 +30,7 @@ namespace Duktape
                     {
                         this.cg.csharp.AppendLine("duk_begin_enum(ctx, \"{0}\", typeof({1}));",
                             bindingInfo.regName,
-                            this.cg.bindingManager.GetTypeFullNameCS(bindingInfo.type));
+                            this.cg.bindingManager.GetCSTypeFullName(bindingInfo.type));
                         var values = new Dictionary<string, int>();
                         foreach (var ev in Enum.GetValues(bindingInfo.type))
                         {
