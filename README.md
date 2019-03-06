@@ -7,13 +7,11 @@
 
 # 特性支持 (已实现)
 * 支持 nodejs 风格的模块
-* 生成 C# to js 静态绑定, 自动生成对应 d.ts 声明 (复杂类型/泛型/函数重载/delegate相关部分未完成)
+* 生成 C# to js 静态绑定, 自动生成对应 d.ts 声明 
 * setTimeout/setInterval/clearTimeout/clearInterval 兼容
 
 # 特性支持 (未实现)
 * delegate 操作接口 (+=, -=, 以及清空) (待细化)
-* AddComponent/GetComponent 
-* 具体泛型类支持 (待细化)
 * 针对Vector3等常用值类型的绑定优化 (待细化)
 * 支持在脚本层面扩展 MonoBehaviour
 * 基本的 eventloop 支持
@@ -59,10 +57,10 @@ export class A {
     constructor () {
         this.go = new GameObject("test go")
         this.go.transform.localPosition = new Vector3(1, 2, 3) // (not implemented)
-        this.go.AddComponent(MyPlayer) // (not implemented)
+        this.go.AddComponent(MyPlayer) 
 
         let f = new Custom()
-        // delegate 操作 (not implemented)
+        // delegate 操作 
         f.onload = new Delegate()
         f.onload.on(this, this.onload)  // 添加this.onload监听
         f.onload.off(this, this.onload) // 移除this.onload监听

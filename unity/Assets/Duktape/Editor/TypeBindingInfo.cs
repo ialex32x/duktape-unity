@@ -173,7 +173,13 @@ namespace Duktape
                             constantValue = $"\"{cv}\"";
                             break;
                         }
-                        if (cvType == typeof(int) || cvType == typeof(uint))
+                        if (cvType == typeof(int)
+                         || cvType == typeof(uint)
+                         || cvType == typeof(byte)
+                         || cvType == typeof(sbyte)
+                         || cvType == typeof(short)
+                         || cvType == typeof(ushort)
+                         || cvType == typeof(bool))
                         {
                             constantValue = $"{cv}";
                             break;

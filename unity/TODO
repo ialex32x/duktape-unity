@@ -6,12 +6,14 @@
     ✔ 处理 delegate @started(19-03-01 08:43) @done(19-03-01 15:12) @lasted(6h29m4s)
     ✔ !!! 处理重载函数 @done(19-03-05 17:31)
     ✔ 处理 interface @done(19-03-05 17:31)
-    ☐ 处理泛型 @started(19-03-01 08:44)
     ☐ 优化 Vector3 等值类型
     ☐ extends MonoBehaviour
-
+    
 其他功能: 
+    ✔ 处理泛型 @started(19-03-01 08:44) @done(19-03-06 06:09) @lasted(4d21h25m8s)
+    ✔ AddComponent/GetComponent @done(19-03-06 06:09)
     ☐ 支持 debugger @started(19-03-01 08:44)
+    ☐ 具体泛型类支持 (待细化)
     ☐ socket
     ☐ websocket
     ☐ protobufjs
@@ -26,4 +28,5 @@ TODO:
 FIXME: 
     ☐ duk_get_delegate 中缓存的 jsValue 存在gc问题 (js 层 DelegateBase 没有 Finalizer) @started(19-03-01 15:14)
     ✔ 剔除重复的枚举值 @done(19-03-05 17:31)
+    ✔ 嵌套类型 ts 定义修正 @done(19-03-06 06:12)
 
