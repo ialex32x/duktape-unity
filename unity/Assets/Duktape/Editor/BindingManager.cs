@@ -28,6 +28,9 @@ namespace Duktape
         private Dictionary<string, string> _csTypeNameMapS = new Dictionary<string, string>();
         private static HashSet<string> _tsKeywords = new HashSet<string>();
 
+        // 自定义的处理流程
+        private List<IBindingProcess> _bindingProcess = new List<IBindingProcess>();
+
         // 针对特定方法的 ts 声明优化
         private Dictionary<MethodBase, string> _tsMethodDeclarations = new Dictionary<MethodBase, string>();
 
@@ -100,31 +103,31 @@ namespace Duktape
             AddTSMethodDeclaration("GetComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
                 typeof(GameObject), "GetComponent", typeof(Type));
 
-            AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T", 
+            AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T",
                 typeof(GameObject), "GetComponentInChildren", typeof(Type), typeof(bool));
 
-            AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }): T", 
+            AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }): T",
                 typeof(GameObject), "GetComponentInChildren", typeof(Type));
 
-            AddTSMethodDeclaration("GetComponentInParent<T extends UnityEngine.Component>(type: { new(): T }): T", 
+            AddTSMethodDeclaration("GetComponentInParent<T extends UnityEngine.Component>(type: { new(): T }): T",
                 typeof(GameObject), "GetComponentInParent", typeof(Type));
 
             // AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }, results: any): void", 
             //     typeof(GameObject), "GetComponents", typeof(Type));
 
-            AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): T[]", 
+            AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): T[]",
                 typeof(GameObject), "GetComponents", typeof(Type));
 
-            AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T[]", 
+            AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T[]",
                 typeof(GameObject), "GetComponentsInChildren", typeof(Type), typeof(bool));
 
-            AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): T[]", 
+            AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): T[]",
                 typeof(GameObject), "GetComponentsInChildren", typeof(Type));
 
-            AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T[]", 
+            AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T[]",
                 typeof(GameObject), "GetComponentsInParent", typeof(Type), typeof(bool));
 
-            AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): T[]", 
+            AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): T[]",
                 typeof(GameObject), "GetComponentsInParent", typeof(Type));
 
             _tsTypeNameMap[typeof(sbyte)] = "number";
@@ -151,23 +154,62 @@ namespace Duktape
             _tsTypeNameMap[typeof(Vector4)] = "(UnityEngine.Vector4 | Array<number>)";
             _tsTypeNameMap[typeof(Quaternion)] = "(UnityEngine.Quaternion | Array<number>)";
 
-            AddTypeNameMapCS(typeof(sbyte), "sbyte");
-            AddTypeNameMapCS(typeof(byte), "byte");
-            AddTypeNameMapCS(typeof(int), "int");
-            AddTypeNameMapCS(typeof(uint), "uint");
-            AddTypeNameMapCS(typeof(short), "short");
-            AddTypeNameMapCS(typeof(ushort), "ushort");
-            AddTypeNameMapCS(typeof(long), "long");
-            AddTypeNameMapCS(typeof(ulong), "ulong");
-            AddTypeNameMapCS(typeof(float), "float");
-            AddTypeNameMapCS(typeof(double), "double");
-            AddTypeNameMapCS(typeof(bool), "bool");
-            AddTypeNameMapCS(typeof(string), "string");
-            AddTypeNameMapCS(typeof(char), "char");
-            AddTypeNameMapCS(typeof(System.Object), "object");
-            AddTypeNameMapCS(typeof(void), "void");
+            AddCSTypeNameMap(typeof(sbyte), "sbyte");
+            AddCSTypeNameMap(typeof(byte), "byte");
+            AddCSTypeNameMap(typeof(int), "int");
+            AddCSTypeNameMap(typeof(uint), "uint");
+            AddCSTypeNameMap(typeof(short), "short");
+            AddCSTypeNameMap(typeof(ushort), "ushort");
+            AddCSTypeNameMap(typeof(long), "long");
+            AddCSTypeNameMap(typeof(ulong), "ulong");
+            AddCSTypeNameMap(typeof(float), "float");
+            AddCSTypeNameMap(typeof(double), "double");
+            AddCSTypeNameMap(typeof(bool), "bool");
+            AddCSTypeNameMap(typeof(string), "string");
+            AddCSTypeNameMap(typeof(char), "char");
+            AddCSTypeNameMap(typeof(System.Object), "object");
+            AddCSTypeNameMap(typeof(void), "void");
+
+            Initialize();
         }
 
+        private static bool _FindFilterBindingProcess(Type type, object l)
+        {
+            return type == typeof(IBindingProcess);
+        }
+
+        private void Initialize()
+        {
+            var assembly = Assembly.Load("Assembly-CSharp-Editor");
+            var types = assembly.GetExportedTypes();
+            for (int i = 0, size = types.Length; i < size; i++)
+            {
+                var type = types[i];
+                if (type.IsAbstract)
+                {
+                    continue;
+                }
+                try
+                {
+                    var interfaces = type.FindInterfaces(_FindFilterBindingProcess, null);
+                    if (interfaces != null && interfaces.Length > 0)
+                    {
+                        var ctor = type.GetConstructor(Type.EmptyTypes);
+                        var inst = ctor.Invoke(null) as IBindingProcess;
+                        inst.OnInitialize(this);
+                        _bindingProcess.Add(inst);
+                        Debug.Log($"add binding process: {type}");
+                        // _bindingProcess.Add
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"failed to add binding process: {type}\n{exception}");
+                }
+            }
+        }
+
+        // TS: 为指定类型的匹配方法添加声明映射 (仅用于优化代码提示体验)
         public void AddTSMethodDeclaration(string spec, Type type, string name, params Type[] parameters)
         {
             var method = type.GetMethod(name, parameters);
@@ -177,7 +219,8 @@ namespace Duktape
             }
         }
 
-        private static void AddTSKeywords(params string[] keywords)
+        // TS: 添加保留字, CS中相关变量名等会自动重命名注册到js中
+        public static void AddTSKeywords(params string[] keywords)
         {
             foreach (var keyword in keywords)
             {
@@ -190,13 +233,15 @@ namespace Duktape
             return _tsMethodDeclarations.TryGetValue(method, out code);
         }
 
-        private void AddTypeNameMapCS(Type type, string name)
+        // CS, 添加类型名称映射, 用于简化导出时的常用类型名
+        public void AddCSTypeNameMap(Type type, string name)
         {
             _csTypeNameMap[type] = name;
             _csTypeNameMapS[type.FullName] = name;
             _csTypeNameMapS[GetCSNamespace(type) + type.Name] = name;
         }
 
+        // 增加导出类型 (需要在 Collect 阶段进行)
         public void AddExport(Type type)
         {
             var typeBindingInfo = new TypeBindingInfo(this, type);
@@ -617,6 +662,120 @@ namespace Duktape
             return false;
         }
 
+        private void OnPreCollect()
+        {
+            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            {
+                var bp = _bindingProcess[i];
+                try
+                {
+                    bp.OnPreCollect(this);
+                }
+                catch (Exception exception)
+                {
+                    this.Error($"process failed [{bp}][OnPreCollect]: {exception}");
+                }
+            }
+        }
+
+        private void OnPostCollect()
+        {
+            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            {
+                var bp = _bindingProcess[i];
+                try
+                {
+                    bp.OnPostCollect(this);
+                }
+                catch (Exception exception)
+                {
+                    this.Error($"process failed [{bp}][OnPostCollect]: {exception}");
+                }
+            }
+        }
+
+        private void OnPreGenerateType(TypeBindingInfo bindingInfo)
+        {
+            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            {
+                var bp = _bindingProcess[i];
+                try
+                {
+                    bp.OnPreGenerateType(this, bindingInfo);
+                }
+                catch (Exception exception)
+                {
+                    this.Error($"process failed [{bp}][OnPreGenerateType]: {exception}");
+                }
+            }
+        }
+
+        private void OnPostGenerateType(TypeBindingInfo bindingInfo)
+        {
+            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            {
+                var bp = _bindingProcess[i];
+                try
+                {
+                    bp.OnPostGenerateType(this, bindingInfo);
+                }
+                catch (Exception exception)
+                {
+                    this.Error($"process failed [{bp}][OnPostGenerateType]: {exception}");
+                }
+            }
+        }
+
+        public void OnPreGenerateDelegate(DelegateBindingInfo bindingInfo)
+        {
+            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            {
+                var bp = _bindingProcess[i];
+                try
+                {
+                    bp.OnPreGenerateDelegate(this, bindingInfo);
+                }
+                catch (Exception exception)
+                {
+                    this.Error($"process failed [{bp}][OnPreGenerateDelegate]: {exception}");
+                }
+            }
+        }
+
+        public void OnPostGenerateDelegate(DelegateBindingInfo bindingInfo)
+        {
+            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            {
+                var bp = _bindingProcess[i];
+                try
+                {
+                    bp.OnPostGenerateDelegate(this, bindingInfo);
+                }
+                catch (Exception exception)
+                {
+                    this.Error($"process failed [{bp}][OnPostGenerateDelegate]: {exception}");
+                }
+            }
+        }
+
+        private void OnCleanup()
+        {
+            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            {
+                var bp = _bindingProcess[i];
+                try
+                {
+                    bp.OnCleanup(this);
+                }
+                catch (Exception exception)
+                {
+                    this.Error($"process failed [{bp}][OnCleanup]: {exception}");
+                }
+            }
+        }
+
+
+
         public void Collect()
         {
             // 收集直接类型, 加入 exportedTypes
@@ -625,6 +784,7 @@ namespace Duktape
 
             log.AppendLine("collecting members");
             log.AddTabLevel();
+            OnPreCollect();
             foreach (var typeBindingInfoKV in exportedTypes)
             {
                 var typeBindingInfo = typeBindingInfoKV.Value;
@@ -633,6 +793,7 @@ namespace Duktape
                 typeBindingInfo.Collect();
                 log.DecTabLevel();
             }
+            OnPostCollect();
             log.DecTabLevel();
         }
 
@@ -683,6 +844,7 @@ namespace Duktape
                 removedFiles.Add(file);
                 log.AppendLine("remove unused file {0}", file);
             });
+            OnCleanup();
             log.DecTabLevel();
         }
 
@@ -741,7 +903,9 @@ namespace Duktape
                         break;
                     }
                     cg.Clear();
+                    OnPreGenerateType(typeBindingInfo);
                     cg.Generate(typeBindingInfo);
+                    OnPostGenerateType(typeBindingInfo);
                     cg.WriteTo(outDir, typeBindingInfo.GetFileName(), tx);
                 }
                 catch (Exception exception)

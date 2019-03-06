@@ -43,12 +43,15 @@ namespace Duktape
                         {
                             for (var i = 0; i < delegateBindingInfos.Length; i++)
                             {
+                                var bindingInfo = delegateBindingInfos[i];
+                                this.bindingManager.OnPreGenerateDelegate(bindingInfo);
                                 using (new PreservedCodeGen(this))
                                 {
-                                    using (new DelegateCodeGen(this, delegateBindingInfos[i], i))
+                                    using (new DelegateCodeGen(this, bindingInfo, i))
                                     {
                                     }
                                 }
+                                this.bindingManager.OnPostGenerateDelegate(bindingInfo);
                             }
                         }
                     }
