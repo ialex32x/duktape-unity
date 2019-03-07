@@ -39,12 +39,17 @@ namespace Duktape
             GC.SuppressFinalize(this);
         }
 
+        private static void duk_unity_unref(IntPtr ctx, uint refid, object target)
+        {
+            DuktapeDLL.duk_unity_unref(ctx, refid);
+        }
+
         protected virtual void Dispose(bool bManaged)
         {
             if (this._refid != 0 && this._ctx != null)
             {
                 var vm = DuktapeContext.GetVM(this._ctx);
-                vm.GC(this._refid, DuktapeDLL.duk_unity_unref);
+                vm.GC(this._refid, null, duk_unity_unref);
                 this._refid = 0;
             }
         }

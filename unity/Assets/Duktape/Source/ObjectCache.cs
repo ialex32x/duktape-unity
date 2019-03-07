@@ -51,6 +51,11 @@ namespace Duktape
             return o != null && _rmap.Remove(o);
         }
 
+        public int AddWeakObject(object o)
+        {
+            return AddObject(new WeakReference(o));
+        }
+
         public int AddObject(object o)
         {
             if (o != null)

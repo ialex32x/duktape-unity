@@ -133,7 +133,6 @@ namespace Duktape
 
         public void AppendPushValue(Type type, string value)
         {
-            //TODO: push 分类需要继续完善
             if (type.IsEnum)
             {
                 var eType = type.GetEnumUnderlyingType();

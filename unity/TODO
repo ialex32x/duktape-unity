@@ -17,6 +17,8 @@
     ☐ socket
     ☐ websocket
     ☐ protobufjs
+    ☐ !!! 索引访问
+    ☐ !!! 扩展方法
 
 兼容性: 
     ✔ setInterval/setTimeout @done(19-02-28 16:02)
