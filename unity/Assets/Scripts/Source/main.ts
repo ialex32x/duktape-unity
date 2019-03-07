@@ -1,4 +1,25 @@
 
+(function () {
+    console.log("### System.Array")
+    let nativeArray = System.Array.CreateInstance(System.Int32, 10)
+    let s = new SampleNamespace.SampleClass("test")
+    console.log(nativeArray)
+    console.log(nativeArray.ToString())
+    console.log(s.GetPositions(nativeArray))
+    s.TestDuktapeArray([1, 2, 3])
+})();
+
+(function () {
+    SampleNamespace.SampleClass.TestDelegate(function () {
+        console.log(this, "TestDelegate")
+    })
+    let d = new DuktapeJS.Dispatcher()
+    d.on("this", function () {
+        console.log(this, "TestDelegate")
+    })
+    SampleNamespace.SampleClass.TestDelegate(d)
+})();
+
 console.log(UnityEngine.Mathf.PI)
 // UnityEngine.Debug.Log("greeting")
 let go = new UnityEngine.GameObject("testing")
@@ -16,7 +37,7 @@ setTimeout(() => {
 setTimeout(() => {
     UnityEngine.Object.Destroy(go)
 }, 30000)
-// 
+//
 
 // let ss = new SampleStruct()
 // let SampleClass = SampleNamespace.SampleClass

@@ -357,6 +357,20 @@ namespace Duktape
             return methodInfo.IsDefined(typeof(ExtensionAttribute), false);
         }
 
+        public bool IsPointer(MethodBase method)
+        {
+            var parameters = method.GetParameters();
+            for (int i = 0, size = parameters.Length; i < size; i++)
+            {
+                var parameter = parameters[i];
+                if (parameter.ParameterType.IsPointer)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         // 收集所有 字段,属性,方法
         public void Collect()
         {
@@ -366,15 +380,22 @@ namespace Duktape
             {
                 if (field.IsSpecialName)
                 {
+                    bindingManager.Info("skip special field: {0}", field.Name);
                     continue;
                 }
                 if (field.FieldType.IsPointer)
                 {
+                    bindingManager.Info("skip pointer field: {0}", field.Name);
                     continue;
                 }
                 if (field.IsDefined(typeof(ObsoleteAttribute), false))
                 {
                     bindingManager.Info("skip obsolete field: {0}", field.Name);
+                    continue;
+                }
+                if (bindingManager.IsTypeMemberBlocked(type, field.Name))
+                {
+                    bindingManager.Info("skip blocked field: {0}", field.Name);
                     continue;
                 }
                 AddField(field);
@@ -384,20 +405,28 @@ namespace Duktape
             {
                 if (property.IsSpecialName)
                 {
+                    bindingManager.Info("skip special property: {0}", property.Name);
                     continue;
                 }
                 if (property.PropertyType.IsPointer)
                 {
+                    bindingManager.Info("skip pointer property: {0}", property.Name);
                     continue;
                 }
                 //TODO: 索引访问
                 if (property.Name == "Item")
                 {
+                    bindingManager.Info("skip indexer property: {0}", property.Name);
                     continue;
                 }
                 if (property.IsDefined(typeof(ObsoleteAttribute), false))
                 {
                     bindingManager.Info("skip obsolete property: {0}", property.Name);
+                    continue;
+                }
+                if (bindingManager.IsTypeMemberBlocked(type, property.Name))
+                {
+                    bindingManager.Info("skip blocked property: {0}", property.Name);
                     continue;
                 }
                 AddProperty(property);
@@ -409,6 +438,12 @@ namespace Duktape
                 {
                     if (constructor.IsDefined(typeof(ObsoleteAttribute), false))
                     {
+                        bindingManager.Info("skip obsolete constructor: {0}", constructor);
+                        continue;
+                    }
+                    if (IsPointer(constructor))
+                    {
+                        bindingManager.Info("skip pointer constructor: {0}", constructor);
                         continue;
                     }
                     AddConstructor(constructor);
@@ -436,6 +471,16 @@ namespace Duktape
                 if (method.IsDefined(typeof(ObsoleteAttribute), false))
                 {
                     bindingManager.Info("skip obsolete method: {0}", method);
+                    continue;
+                }
+                if (IsPointer(method))
+                {
+                    bindingManager.Info("skip pointer method: {0}", method);
+                    continue;
+                }
+                if (bindingManager.IsTypeMemberBlocked(type, method.Name))
+                {
+                    bindingManager.Info("skip blocked method: {0}", method.Name);
                     continue;
                 }
                 // if (IsPropertyMethod(method))

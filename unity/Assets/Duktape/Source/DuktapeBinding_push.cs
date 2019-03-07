@@ -162,11 +162,11 @@ namespace Duktape
                 duk_push_any(ctx, Convert.ToInt32(o));
                 return;
             }
-            if (type.IsArray)
-            {
-                duk_push_any(ctx, (Array)o);
-                return;
-            }
+            // if (type.IsArray)
+            // {
+            //     duk_push_any(ctx, (Array)o);
+            //     return;
+            // }
             if (type.BaseType == typeof(MulticastDelegate))
             {
                 duk_push_delegate(ctx, (Delegate)o);

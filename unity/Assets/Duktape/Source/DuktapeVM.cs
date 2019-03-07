@@ -115,6 +115,7 @@ namespace Duktape
             var refid = fn.rawValue;
             _exported.Add(type, fn);
             _exportedTypes[refid] = type;
+            // Debug.Log($"add export: {type}");
             return refid;
         }
 
@@ -305,8 +306,12 @@ namespace Duktape
                 fn.PushPrototype(ctx);
                 if (PushChainedPrototypeOf(ctx, baseType))
                 {
-                    // Debug.LogFormat("set {0} super {1}", type, baseType);
+                    // Debug.LogFormat($"set {type} super {baseType}");
                     DuktapeDLL.duk_set_prototype(ctx, -2);
+                }
+                else
+                {
+                    Debug.LogWarning($"fail to push prototype, for {type}: {baseType}");
                 }
                 DuktapeDLL.duk_pop(ctx);
             }
@@ -322,6 +327,11 @@ namespace Duktape
         // 没有对应的基类 prototype 时, 不压栈
         public bool PushChainedPrototypeOf(IntPtr ctx, Type baseType)
         {
+            if (baseType == null)
+            {
+                // Debug.LogFormat("super terminated {0}", baseType);
+                return false;
+            }
             if (baseType == typeof(Enum))
             {
                 DuktapeFunction val;
@@ -330,11 +340,6 @@ namespace Duktape
                     val.PushPrototype(ctx);
                     return true;
                 }
-            }
-            if (baseType == typeof(object) || baseType == typeof(ValueType))
-            {
-                // Debug.LogFormat("super terminated {0}", baseType);
-                return false;
             }
             DuktapeFunction fn;
             if (_exported.TryGetValue(baseType, out fn))

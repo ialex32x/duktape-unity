@@ -12,7 +12,7 @@ namespace MyProject
     
     public class MyCustomBinding : AbstractBindingProcess
     {
-        public override void OnPreCollect(BindingManager bindingManager)
+        public override void OnPreCollectTypes(BindingManager bindingManager)
         {
             // 添加导出
             // bindingManager.AddExport(typeof(MyCustomClass));

@@ -3,6 +3,8 @@ using UnityEngine;
 
 namespace Duktape
 {
+    // 包装了一个 js function/eventdispatcher
+    // 对于 function 调用时传入的 this 为 function 自身
     public class DuktapeDelegate : DuktapeValue
     {
         // cache the delegate object
@@ -28,7 +30,12 @@ namespace Duktape
             // Debug.Log($"BeginInvoke: {_savedState}");
             if (_jsInvoker == null)
             {
-                this.PushProperty(ctx, "dispatch");
+                this.Push(ctx); // push this
+                if (!DuktapeDLL.duk_is_function(ctx, -1)) 
+                {
+                    DuktapeDLL.duk_get_prop_string(ctx, -1, "dispatch");
+                    DuktapeDLL.duk_remove(ctx, -2); // remove this
+                }
                 _jsInvoker = new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx));
             }
             _jsInvoker.Push(ctx); // push function

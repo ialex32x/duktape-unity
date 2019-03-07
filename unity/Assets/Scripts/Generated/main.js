@@ -1,3 +1,22 @@
+(function () {
+    console.log("### System.Array");
+    var nativeArray = System.Array.CreateInstance(System.Int32, 10);
+    var s = new SampleNamespace.SampleClass("test");
+    console.log(nativeArray);
+    console.log(nativeArray.ToString());
+    console.log(s.GetPositions(nativeArray));
+    s.TestDuktapeArray([1, 2, 3]);
+})();
+(function () {
+    SampleNamespace.SampleClass.TestDelegate(function () {
+        console.log(this, "TestDelegate");
+    });
+    var d = new DuktapeJS.Dispatcher();
+    d.on("this", function () {
+        console.log(this, "TestDelegate");
+    });
+    SampleNamespace.SampleClass.TestDelegate(d);
+})();
 console.log(UnityEngine.Mathf.PI);
 // UnityEngine.Debug.Log("greeting")
 var go = new UnityEngine.GameObject("testing");
@@ -12,7 +31,7 @@ setTimeout(function () {
 setTimeout(function () {
     UnityEngine.Object.Destroy(go);
 }, 30000);
-// 
+//
 // let ss = new SampleStruct()
 // let SampleClass = SampleNamespace.SampleClass
 // ss.field_a = 12345

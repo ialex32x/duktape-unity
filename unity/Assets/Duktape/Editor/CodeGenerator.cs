@@ -163,7 +163,7 @@ namespace Duktape
             var caller = "";
             if (isStatic)
             {
-                caller = this.bindingManager.GetCSTypeFullName(declaringType);
+                caller = this.bindingManager.GetCSTypeFullName(declaringType, false);
             }
             else
             {

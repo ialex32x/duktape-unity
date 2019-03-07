@@ -14,7 +14,12 @@ namespace Duktape
         public DateTime dateTime;
         public TextGenerator log;
         public Prefs prefs;
+
+        private List<string> _implicitAssemblies = new List<string>(); // 默认导出所有类型
+        private List<string> _explicitAssemblies = new List<string>(); // 仅导出指定需要导出的类型
+
         private HashSet<Type> blacklist;
+        private Dictionary<Type, HashSet<string>> _csTypeMemberBlacklist = new Dictionary<Type, HashSet<string>>();
         private HashSet<Type> whitelist;
         private List<string> typePrefixBlacklist;
         private Dictionary<Type, TypeBindingInfo> exportedTypes = new Dictionary<Type, TypeBindingInfo>();
@@ -23,7 +28,7 @@ namespace Duktape
         private List<string> outputFiles = new List<string>();
         private List<string> removedFiles = new List<string>();
 
-        private Dictionary<Type, string> _tsTypeNameMap = new Dictionary<Type, string>();
+        private Dictionary<Type, List<string>> _tsTypeNameMap = new Dictionary<Type, List<string>>();
         private Dictionary<Type, string> _csTypeNameMap = new Dictionary<Type, string>();
         private Dictionary<string, string> _csTypeNameMapS = new Dictionary<string, string>();
         private static HashSet<string> _tsKeywords = new HashSet<string>();
@@ -130,29 +135,30 @@ namespace Duktape
             AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): T[]",
                 typeof(GameObject), "GetComponentsInParent", typeof(Type));
 
-            _tsTypeNameMap[typeof(sbyte)] = "number";
-            _tsTypeNameMap[typeof(byte)] = "number";
-            _tsTypeNameMap[typeof(int)] = "number";
-            _tsTypeNameMap[typeof(uint)] = "number";
-            _tsTypeNameMap[typeof(short)] = "number";
-            _tsTypeNameMap[typeof(ushort)] = "number";
-            _tsTypeNameMap[typeof(long)] = "number";
-            _tsTypeNameMap[typeof(ulong)] = "number";
-            _tsTypeNameMap[typeof(float)] = "number";
-            _tsTypeNameMap[typeof(double)] = "number";
-            _tsTypeNameMap[typeof(bool)] = "boolean";
-            _tsTypeNameMap[typeof(string)] = "string";
-            _tsTypeNameMap[typeof(char)] = "string";
-            _tsTypeNameMap[typeof(void)] = "void";
-            _tsTypeNameMap[typeof(LayerMask)] = "(UnityEngine.LayerMask | number)";
-            _tsTypeNameMap[typeof(Color)] = "(UnityEngine.Color | Array<number>)";
-            _tsTypeNameMap[typeof(Color32)] = "(UnityEngine.Color32 | Array<number>)";
-            _tsTypeNameMap[typeof(Vector2)] = "(UnityEngine.Vector2 | Array<number>)";
-            _tsTypeNameMap[typeof(Vector2Int)] = "(UnityEngine.Vector2Int | Array<number>)";
-            _tsTypeNameMap[typeof(Vector3)] = "(UnityEngine.Vector3 | Array<number>)";
-            _tsTypeNameMap[typeof(Vector3Int)] = "(UnityEngine.Vector3Int | Array<number>)";
-            _tsTypeNameMap[typeof(Vector4)] = "(UnityEngine.Vector4 | Array<number>)";
-            _tsTypeNameMap[typeof(Quaternion)] = "(UnityEngine.Quaternion | Array<number>)";
+            AddTSTypeNameMap(typeof(sbyte), "number");
+            AddTSTypeNameMap(typeof(byte), "number");
+            AddTSTypeNameMap(typeof(int), "number");
+            AddTSTypeNameMap(typeof(uint), "number");
+            AddTSTypeNameMap(typeof(short), "number");
+            AddTSTypeNameMap(typeof(ushort), "number");
+            AddTSTypeNameMap(typeof(long), "number");
+            AddTSTypeNameMap(typeof(ulong), "number");
+            AddTSTypeNameMap(typeof(float), "number");
+            AddTSTypeNameMap(typeof(double), "number");
+            AddTSTypeNameMap(typeof(bool), "boolean");
+            AddTSTypeNameMap(typeof(string), "string");
+            AddTSTypeNameMap(typeof(char), "string");
+            AddTSTypeNameMap(typeof(void), "void");
+            AddTSTypeNameMap(typeof(LayerMask), "UnityEngine.LayerMask", "number");
+            AddTSTypeNameMap(typeof(Color), "UnityEngine.Color", "number[]");
+            AddTSTypeNameMap(typeof(Color32), "UnityEngine.Color32", "number[]");
+            AddTSTypeNameMap(typeof(Vector2), "UnityEngine.Vector2", "number[]");
+            AddTSTypeNameMap(typeof(Vector2Int), "UnityEngine.Vector2Int", "number[]");
+            AddTSTypeNameMap(typeof(Vector3), "UnityEngine.Vector3", "number[]");
+            AddTSTypeNameMap(typeof(Vector3Int), "UnityEngine.Vector3Int", "number[]");
+            AddTSTypeNameMap(typeof(Vector4), "UnityEngine.Vector4", "number[]");
+            AddTSTypeNameMap(typeof(Quaternion), "UnityEngine.Quaternion", "number[]");
+            AddTSTypeNameMap(typeof(DuktapeArray), "any[]");
 
             AddCSTypeNameMap(typeof(sbyte), "sbyte");
             AddCSTypeNameMap(typeof(byte), "byte");
@@ -169,6 +175,10 @@ namespace Duktape
             AddCSTypeNameMap(typeof(char), "char");
             AddCSTypeNameMap(typeof(System.Object), "object");
             AddCSTypeNameMap(typeof(void), "void");
+
+            BlockCSTypeMember(typeof(double), "IsFinite");
+            BlockCSTypeMember(typeof(float), "IsFinite");
+            BlockCSTypeMember(typeof(string), "Chars");
 
             Initialize();
         }
@@ -209,6 +219,22 @@ namespace Duktape
             }
         }
 
+        public bool IsTypeMemberBlocked(Type type, string memeberName)
+        {
+            HashSet<string> blacklist;
+            return _csTypeMemberBlacklist.TryGetValue(type, out blacklist) && blacklist.Contains(memeberName);
+        }
+
+        public void BlockCSTypeMember(Type type, string memberName)
+        {
+            HashSet<string> blacklist;
+            if (!_csTypeMemberBlacklist.TryGetValue(type, out blacklist))
+            {
+                _csTypeMemberBlacklist[type] = blacklist = new HashSet<string>();
+            }
+            blacklist.Add(memberName);
+        }
+
         // TS: 为指定类型的匹配方法添加声明映射 (仅用于优化代码提示体验)
         public void AddTSMethodDeclaration(string spec, Type type, string name, params Type[] parameters)
         {
@@ -233,6 +259,16 @@ namespace Duktape
             return _tsMethodDeclarations.TryGetValue(method, out code);
         }
 
+        public void AddTSTypeNameMap(Type type, params string[] names)
+        {
+            List<string> list;
+            if (!_tsTypeNameMap.TryGetValue(type, out list))
+            {
+                _tsTypeNameMap[type] = list = new List<string>();
+            }
+            list.AddRange(names);
+        }
+
         // CS, 添加类型名称映射, 用于简化导出时的常用类型名
         public void AddCSTypeNameMap(Type type, string name)
         {
@@ -242,10 +278,20 @@ namespace Duktape
         }
 
         // 增加导出类型 (需要在 Collect 阶段进行)
-        public void AddExport(Type type)
+        public bool AddExportedType(Type type)
         {
-            var typeBindingInfo = new TypeBindingInfo(this, type);
-            exportedTypes.Add(type, typeBindingInfo);
+            if (!exportedTypes.ContainsKey(type))
+            {
+                var typeBindingInfo = new TypeBindingInfo(this, type);
+                exportedTypes.Add(type, typeBindingInfo);
+                return true;
+            }
+            return false;
+        }
+
+        public bool RemoveExportedType(Type type)
+        {
+            return exportedTypes.Remove(type);
         }
 
         public DelegateBindingInfo GetDelegateBindingInfo(Type type)
@@ -333,10 +379,10 @@ namespace Duktape
             {
                 return "void";
             }
-            string name;
-            if (_tsTypeNameMap.TryGetValue(type, out name))
+            List<string> names;
+            if (_tsTypeNameMap.TryGetValue(type, out names))
             {
-                return name;
+                return names.Count > 1 ? $"({String.Join(" | ", names)})" : names[0];
             }
             if (type.IsArray)
             {
@@ -355,8 +401,9 @@ namespace Duktape
                 {
                     var nargs = delegateBindingInfo.parameters.Length;
                     var ret = GetTSTypeFullName(delegateBindingInfo.returnType);
-                    var arglist = (nargs > 0 ? ", " : "") + GetArglistTypesTS(delegateBindingInfo.parameters);
-                    return $"Delegate{nargs}<{ret}{arglist}>";
+                    var t_arglist = (nargs > 0 ? ", " : "") + GetTSArglistTypes(delegateBindingInfo.parameters, false);
+                    var v_arglist = GetTSArglistTypes(delegateBindingInfo.parameters, true);
+                    return $"Delegate{nargs}<{ret}{t_arglist}> | (({v_arglist}) => {ret})";
                 }
             }
             return "any";
@@ -373,7 +420,7 @@ namespace Duktape
         }
 
         // 生成参数对应的字符串形式参数列表定义 (typescript)
-        public string GetArglistTypesTS(ParameterInfo[] parameters)
+        public string GetTSArglistTypes(ParameterInfo[] parameters, bool withVarName)
         {
             var size = parameters.Length;
             var arglist = "";
@@ -393,6 +440,10 @@ namespace Duktape
                 // {
                 //     arglist += "ref ";
                 // }
+                if (withVarName)
+                {
+                    arglist += GetTSVariable(parameter.Name) + ": ";
+                }
                 arglist += typename;
                 // arglist += " ";
                 // arglist += parameter.Name;
@@ -542,6 +593,11 @@ namespace Duktape
         // 获取 type 在 绑定代码 中对应类型名
         public string GetCSTypeFullName(Type type)
         {
+            return GetCSTypeFullName(type, true);
+        }
+
+        public string GetCSTypeFullName(Type type, bool shortName)
+        {
             // Debug.LogFormat("{0} Array {1} ByRef {2} GetElementType {3}", type, type.IsArray, type.IsByRef, type.GetElementType());
             if (type.IsGenericType)
             {
@@ -551,7 +607,7 @@ namespace Duktape
                 for (var i = 0; i < gargs.Length; i++)
                 {
                     var garg = gargs[i];
-                    purename += GetCSTypeFullName(garg);
+                    purename += GetCSTypeFullName(garg, shortName);
                     if (i != gargs.Length - 1)
                     {
                         purename += ", ";
@@ -562,16 +618,19 @@ namespace Duktape
             }
             if (type.IsArray)
             {
-                return GetCSTypeFullName(type.GetElementType()) + "[]";
+                return GetCSTypeFullName(type.GetElementType(), shortName) + "[]";
             }
             if (type.IsByRef)
             {
-                return GetCSTypeFullName(type.GetElementType());
+                return GetCSTypeFullName(type.GetElementType(), shortName);
             }
             string name;
-            if (_csTypeNameMap.TryGetValue(type, out name))
+            if (shortName)
             {
-                return name;
+                if (_csTypeNameMap.TryGetValue(type, out name))
+                {
+                    return name;
+                }
             }
             var fullname = type.FullName.Replace('+', '.');
             if (fullname.Contains("`"))
@@ -662,14 +721,14 @@ namespace Duktape
             return false;
         }
 
-        private void OnPreCollect()
+        private void OnPreCollectAssemblies()
         {
             for (int i = 0, size = _bindingProcess.Count; i < size; i++)
             {
                 var bp = _bindingProcess[i];
                 try
                 {
-                    bp.OnPreCollect(this);
+                    bp.OnPreCollectAssemblies(this);
                 }
                 catch (Exception exception)
                 {
@@ -678,14 +737,46 @@ namespace Duktape
             }
         }
 
-        private void OnPostCollect()
+        private void OnPostCollectAssemblies()
         {
             for (int i = 0, size = _bindingProcess.Count; i < size; i++)
             {
                 var bp = _bindingProcess[i];
                 try
                 {
-                    bp.OnPostCollect(this);
+                    bp.OnPostCollectAssemblies(this);
+                }
+                catch (Exception exception)
+                {
+                    this.Error($"process failed [{bp}][OnPostCollect]: {exception}");
+                }
+            }
+        }
+
+        private void OnPreCollectTypes()
+        {
+            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            {
+                var bp = _bindingProcess[i];
+                try
+                {
+                    bp.OnPreCollectTypes(this);
+                }
+                catch (Exception exception)
+                {
+                    this.Error($"process failed [{bp}][OnPreCollect]: {exception}");
+                }
+            }
+        }
+
+        private void OnPostCollectTypes()
+        {
+            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            {
+                var bp = _bindingProcess[i];
+                try
+                {
+                    bp.OnPostCollectTypes(this);
                 }
                 catch (Exception exception)
                 {
@@ -779,12 +870,18 @@ namespace Duktape
         public void Collect()
         {
             // 收集直接类型, 加入 exportedTypes
-            Collect(prefs.explicitAssemblies, false);
-            Collect(prefs.implicitAssemblies, true);
+            OnPreCollectAssemblies();
+            AddAssemblies(false, prefs.explicitAssemblies.ToArray());
+            AddAssemblies(true, prefs.implicitAssemblies.ToArray());
+            OnPostCollectAssemblies();
+
+            ExportAssemblies(_explicitAssemblies, false);
+            ExportAssemblies(_implicitAssemblies, true);
+            ExportBuiltins();
 
             log.AppendLine("collecting members");
             log.AddTabLevel();
-            OnPreCollect();
+            OnPreCollectTypes();
             foreach (var typeBindingInfoKV in exportedTypes)
             {
                 var typeBindingInfo = typeBindingInfoKV.Value;
@@ -793,12 +890,51 @@ namespace Duktape
                 typeBindingInfo.Collect();
                 log.DecTabLevel();
             }
-            OnPostCollect();
+            OnPostCollectTypes();
             log.DecTabLevel();
         }
 
+        public void AddAssemblies(bool implicitExport, params string[] assemblyNames)
+        {
+            if (implicitExport)
+            {
+                _implicitAssemblies.AddRange(assemblyNames);
+            }
+            else
+            {
+                _explicitAssemblies.AddRange(assemblyNames);
+            }
+        }
+
+        public void RemoveAssemblies(params string[] assemblyNames)
+        {
+            foreach (var name in assemblyNames)
+            {
+                _implicitAssemblies.Remove(name);
+                _explicitAssemblies.Remove(name);
+            }
+        }
+
+        // 导出一些必要的基本类型 (预实现的辅助功能需要用到, DuktapeJS)
+        private void ExportBuiltins()
+        {
+            AddExportedType(typeof(byte));
+            AddExportedType(typeof(sbyte));
+            AddExportedType(typeof(float));
+            AddExportedType(typeof(double));
+            AddExportedType(typeof(string));
+            AddExportedType(typeof(int));
+            AddExportedType(typeof(uint));
+            AddExportedType(typeof(short));
+            AddExportedType(typeof(ushort));
+            AddExportedType(typeof(object));
+            AddExportedType(typeof(Array));
+            AddExportedType(typeof(Object));
+            AddExportedType(typeof(Vector3));
+        }
+
         // implicitExport: 默认进行导出(黑名单例外), 否则根据导出标记或手工添加
-        private void Collect(List<string> assemblyNames, bool implicitExport)
+        private void ExportAssemblies(List<string> assemblyNames, bool implicitExport)
         {
             foreach (var assemblyName in assemblyNames)
             {
@@ -820,7 +956,7 @@ namespace Duktape
                         if (implicitExport || IsExportingExplicit(type))
                         {
                             log.AppendLine("export: {0}", type.FullName);
-                            this.AddExport(type);
+                            this.AddExportedType(type);
                             continue;
                         }
                         log.AppendLine("skip: {0}", type.FullName);
