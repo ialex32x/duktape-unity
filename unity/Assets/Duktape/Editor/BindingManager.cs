@@ -473,7 +473,6 @@ namespace Duktape
             }
             if (type.IsArray)
             {
-                //TODO: 处理数组取参操作函数指定
                 var elementType = type.GetElementType();
                 return GetDuktapeGetter(elementType) + "_array"; //TODO: 嵌套数组的问题
             }
@@ -636,7 +635,6 @@ namespace Duktape
             if (fullname.Contains("`"))
             {
                 fullname = new Regex(@"`\d", RegexOptions.None).Replace(fullname, "");
-                //TODO: maybe conflict?
                 fullname = fullname.Replace("[", "<");
                 fullname = fullname.Replace("]", ">");
             }
