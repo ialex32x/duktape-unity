@@ -546,6 +546,44 @@ namespace Duktape
             return ret;
         }
 
+        public static bool duk_get_classvalue(IntPtr ctx, int idx, out DuktapeArray o)
+        {
+            object obj;
+            if (duk_get_cached_object(ctx, idx, out obj))
+            {
+                if (obj is DuktapeArray)
+                {
+                    o = (DuktapeArray)obj;
+                    return true;
+                }
+            }
+            if (DuktapeDLL.duk_is_array(ctx, idx))
+            {
+                DuktapeDLL.duk_dup(ctx, idx);
+                var refid = DuktapeDLL.duk_unity_ref(ctx);
+                o = new DuktapeArray(ctx, refid);
+                return true;
+            }
+            o = null;
+            return false;
+        }
+
+        public static bool duk_get_cached_object(IntPtr ctx, int idx, out object o)
+        {
+            if (DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE))
+            {
+                var id = DuktapeDLL.duk_get_int(ctx, -1);
+                DuktapeDLL.duk_pop(ctx);
+                return DuktapeVM.GetObjectCache(ctx).TryGetValue(id, out o);
+            }
+            else
+            {
+                DuktapeDLL.duk_pop(ctx);
+            }
+            o = null;
+            return false;
+        }
+
         public static bool duk_get_object(IntPtr ctx, int idx, out object o)
         {
             if (DuktapeDLL.duk_is_null_or_undefined(ctx, idx)) // or check for object?
@@ -561,18 +599,7 @@ namespace Duktape
                     return true;
                 default: break;
             }
-            if (DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE))
-            {
-                var id = DuktapeDLL.duk_get_int(ctx, -1);
-                DuktapeDLL.duk_pop(ctx);
-                return DuktapeVM.GetObjectCache(ctx).TryGetValue(id, out o);
-            }
-            else
-            {
-                DuktapeDLL.duk_pop(ctx);
-            }
-            o = null;
-            return false;
+            return duk_get_cached_object(ctx, idx, out o);
         }
 
         public static bool duk_get_classvalue_array<T>(IntPtr ctx, int idx, out T[] o)

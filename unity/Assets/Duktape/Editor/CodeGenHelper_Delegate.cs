@@ -97,7 +97,7 @@ namespace Duktape
             this.cg.csharp.AppendLine($"public static {returnTypeName} {delegateName}({firstArgument}{arglist}) {{");
             this.cg.csharp.AddTabLevel();
 
-            this.cg.csharp.AppendLine("var ctx = fn.GetContext().rawValue;");
+            this.cg.csharp.AppendLine("var ctx = fn.ctx;");
             if (nargs > 0)
             {
                 this.cg.csharp.AppendLine("fn.BeginInvoke(ctx);");

@@ -150,14 +150,15 @@ namespace Duktape
             AddTSTypeNameMap(typeof(char), "string");
             AddTSTypeNameMap(typeof(void), "void");
             AddTSTypeNameMap(typeof(LayerMask), "UnityEngine.LayerMask", "number");
-            AddTSTypeNameMap(typeof(Color), "UnityEngine.Color", "Array<number>");
-            AddTSTypeNameMap(typeof(Color32), "UnityEngine.Color32", "Array<number>");
-            AddTSTypeNameMap(typeof(Vector2), "UnityEngine.Vector2", "Array<number>");
-            AddTSTypeNameMap(typeof(Vector2Int), "UnityEngine.Vector2Int", "Array<number>");
-            AddTSTypeNameMap(typeof(Vector3), "UnityEngine.Vector3", "Array<number>");
-            AddTSTypeNameMap(typeof(Vector3Int), "UnityEngine.Vector3Int", "Array<number>");
-            AddTSTypeNameMap(typeof(Vector4), "UnityEngine.Vector4", "Array<number>");
-            AddTSTypeNameMap(typeof(Quaternion), "UnityEngine.Quaternion", "Array<number>");
+            AddTSTypeNameMap(typeof(Color), "UnityEngine.Color", "number[]");
+            AddTSTypeNameMap(typeof(Color32), "UnityEngine.Color32", "number[]");
+            AddTSTypeNameMap(typeof(Vector2), "UnityEngine.Vector2", "number[]");
+            AddTSTypeNameMap(typeof(Vector2Int), "UnityEngine.Vector2Int", "number[]");
+            AddTSTypeNameMap(typeof(Vector3), "UnityEngine.Vector3", "number[]");
+            AddTSTypeNameMap(typeof(Vector3Int), "UnityEngine.Vector3Int", "number[]");
+            AddTSTypeNameMap(typeof(Vector4), "UnityEngine.Vector4", "number[]");
+            AddTSTypeNameMap(typeof(Quaternion), "UnityEngine.Quaternion", "number[]");
+            AddTSTypeNameMap(typeof(DuktapeArray), "any[]");
 
             AddCSTypeNameMap(typeof(sbyte), "sbyte");
             AddCSTypeNameMap(typeof(byte), "byte");

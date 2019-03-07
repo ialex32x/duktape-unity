@@ -7,21 +7,24 @@ namespace Duktape
     /// 持有脚本对象的引用
     public class DuktapeValue : IDisposable, IContextualValue
     {
-        protected DuktapeContext _ctx;
+        protected IntPtr _ctx;
         protected uint _refid;
 
         public bool isValid { get { return _refid > 0; } }
 
         public uint rawValue { get { return _refid; } }
 
-        public DuktapeContext GetContext()
+        public IntPtr ctx
         {
-            return _ctx;
+            get
+            {
+                return _ctx;
+            }
         }
 
         public DuktapeValue(IntPtr ctx, uint refid)
         {
-            this._ctx = DuktapeContext.GetContext(ctx);
+            this._ctx = ctx;
             this._refid = refid;
         }
 
@@ -38,9 +41,10 @@ namespace Duktape
 
         protected virtual void Dispose(bool bManaged)
         {
-            if (this._refid != 0)
+            if (this._refid != 0 && this._ctx != null)
             {
-                this._ctx.vm.GC(this._refid, DuktapeDLL.duk_unity_unref);
+                var vm = DuktapeContext.GetVM(this._ctx);
+                vm.GC(this._refid, DuktapeDLL.duk_unity_unref);
                 this._refid = 0;
             }
         }
@@ -54,6 +58,13 @@ namespace Duktape
         {
             this.Push(ctx); // push this
             DuktapeDLL.duk_get_prop_string(ctx, -1, property);
+            DuktapeDLL.duk_remove(ctx, -2); // remove this
+        }
+
+        public void PushProperty(IntPtr ctx, uint index)
+        {
+            this.Push(ctx); // push this
+            DuktapeDLL.duk_get_prop_index(ctx, -1, index);
             DuktapeDLL.duk_remove(ctx, -2); // remove this
         }
 
@@ -87,7 +98,7 @@ namespace Duktape
 
         private static bool Equals(DuktapeValue x, DuktapeValue y)
         {
-            var ctx = x._ctx.rawValue;
+            var ctx = x._ctx;
             x.Push(ctx);
             y.Push(ctx);
             var eq = DuktapeDLL.duk_equals(ctx, -1, -2);

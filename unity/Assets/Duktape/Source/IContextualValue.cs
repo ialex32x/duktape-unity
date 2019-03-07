@@ -1,8 +1,9 @@
+using System;
 
-namespace Duktape 
+namespace Duktape
 {
     public interface IContextualValue
     {
-        DuktapeContext GetContext();
+        IntPtr ctx { get; }
     }
 }

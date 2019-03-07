@@ -49,7 +49,7 @@ namespace Duktape
 
         public void Invoke()
         {
-            var ctx = _ctx.rawValue;
+            var ctx = _ctx;
             this.Push(ctx);
             _InternalPCall(ctx, 0);
             DuktapeDLL.duk_pop(ctx);
@@ -58,7 +58,7 @@ namespace Duktape
         // 传参调用, 如果此函数已携带js参数, js参数排在invoke参数后
         public void Invoke(object arg0)
         {
-            var ctx = _ctx.rawValue;
+            var ctx = _ctx;
             this.Push(ctx);
             DuktapeBinding.duk_push_var(ctx, arg0);
             _InternalPCall(ctx, 1);
@@ -67,7 +67,7 @@ namespace Duktape
 
         public void Invoke(object arg0, object arg1)
         {
-            var ctx = _ctx.rawValue;
+            var ctx = _ctx;
             this.Push(ctx);
             DuktapeBinding.duk_push_var(ctx, arg0);
             DuktapeBinding.duk_push_var(ctx, arg1);
@@ -77,7 +77,7 @@ namespace Duktape
 
         public void Invoke(object arg0, object arg1, object arg2)
         {
-            var ctx = _ctx.rawValue;
+            var ctx = _ctx;
             this.Push(ctx);
             DuktapeBinding.duk_push_var(ctx, arg0);
             DuktapeBinding.duk_push_var(ctx, arg1);
@@ -88,7 +88,7 @@ namespace Duktape
 
         public void Invoke(object arg0, object arg1, object arg2, params object[] args)
         {
-            var ctx = _ctx.rawValue;
+            var ctx = _ctx;
             this.Push(ctx);
             DuktapeBinding.duk_push_var(ctx, arg0);
             DuktapeBinding.duk_push_var(ctx, arg1);
