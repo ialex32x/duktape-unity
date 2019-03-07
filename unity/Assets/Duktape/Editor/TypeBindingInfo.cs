@@ -98,9 +98,11 @@ namespace Duktape
 
     public class MethodBindingInfo : MethodBaseBindingInfo<MethodInfo>
     {
-        public MethodBindingInfo(bool bStatic, string regName)
+        public bool isIndexer;
+        public MethodBindingInfo(bool isIndexer, bool bStatic, string bindName, string regName)
         {
-            this.name = (bStatic ? "BindStatic_" : "Bind_") + regName;
+            this.isIndexer = isIndexer;
+            this.name = (bStatic ? "BindStatic_" : "Bind_") + bindName;
             this.regName = regName;
         }
     }
@@ -323,12 +325,17 @@ namespace Duktape
 
         public void AddMethod(MethodInfo methodInfo)
         {
+            AddMethod(methodInfo, false, null);
+        }
+
+        public void AddMethod(MethodInfo methodInfo, bool isIndexer, string renameRegName)
+        {
             var group = methodInfo.IsStatic ? staticMethods : methods;
             MethodBindingInfo overrides;
             var methodName = TypeBindingInfo.GetNamingAttribute(methodInfo);
             if (!group.TryGetValue(methodName, out overrides))
             {
-                overrides = new MethodBindingInfo(methodInfo.IsStatic, methodName);
+                overrides = new MethodBindingInfo(isIndexer, methodInfo.IsStatic, methodName, renameRegName ?? methodName);
                 group.Add(methodName, overrides);
             }
             overrides.Add(methodInfo);
@@ -355,20 +362,6 @@ namespace Duktape
         public bool IsExtensionMethod(MethodInfo methodInfo)
         {
             return methodInfo.IsDefined(typeof(ExtensionAttribute), false);
-        }
-
-        public bool IsPointer(MethodBase method)
-        {
-            var parameters = method.GetParameters();
-            for (int i = 0, size = parameters.Length; i < size; i++)
-            {
-                var parameter = parameters[i];
-                if (parameter.ParameterType.IsPointer)
-                {
-                    return true;
-                }
-            }
-            return false;
         }
 
         // 收集所有 字段,属性,方法
@@ -413,12 +406,6 @@ namespace Duktape
                     bindingManager.Info("skip pointer property: {0}", property.Name);
                     continue;
                 }
-                //TODO: 索引访问
-                if (property.Name == "Item")
-                {
-                    bindingManager.Info("skip indexer property: {0}", property.Name);
-                    continue;
-                }
                 if (property.IsDefined(typeof(ObsoleteAttribute), false))
                 {
                     bindingManager.Info("skip obsolete property: {0}", property.Name);
@@ -427,6 +414,30 @@ namespace Duktape
                 if (bindingManager.IsTypeMemberBlocked(type, property.Name))
                 {
                     bindingManager.Info("skip blocked property: {0}", property.Name);
+                    continue;
+                }
+                //TODO: 索引访问
+                if (property.Name == "Item")
+                {
+                    if (property.CanRead && property.GetMethod != null)
+                    {
+                        if (BindingManager.IsUnsupported(property.GetMethod))
+                        {
+                            bindingManager.Info("skip unsupported get-method: {0}", property.GetMethod);
+                            continue;
+                        }
+                        AddMethod(property.GetMethod, true, "$GetValue");
+                    }
+                    if (property.CanWrite && property.SetMethod != null)
+                    {
+                        if (BindingManager.IsUnsupported(property.SetMethod))
+                        {
+                            bindingManager.Info("skip unsupported set-method: {0}", property.SetMethod);
+                            continue;
+                        }
+                        AddMethod(property.SetMethod, true, "$SetValue");
+                    }
+                    // bindingManager.Info("skip indexer property: {0}", property.Name);
                     continue;
                 }
                 AddProperty(property);
@@ -441,7 +452,7 @@ namespace Duktape
                         bindingManager.Info("skip obsolete constructor: {0}", constructor);
                         continue;
                     }
-                    if (IsPointer(constructor))
+                    if (BindingManager.ContainsPointer(constructor))
                     {
                         bindingManager.Info("skip pointer constructor: {0}", constructor);
                         continue;
@@ -452,7 +463,6 @@ namespace Duktape
             var methods = type.GetMethods(bindingFlags);
             foreach (var method in methods)
             {
-                var name = method.Name;
                 if (BindingManager.IsGenericMethod(method))
                 {
                     bindingManager.Info("skip generic method: {0}", method);
@@ -471,11 +481,6 @@ namespace Duktape
                 if (method.IsDefined(typeof(ObsoleteAttribute), false))
                 {
                     bindingManager.Info("skip obsolete method: {0}", method);
-                    continue;
-                }
-                if (IsPointer(method))
-                {
-                    bindingManager.Info("skip pointer method: {0}", method);
                     continue;
                 }
                 if (bindingManager.IsTypeMemberBlocked(type, method.Name))

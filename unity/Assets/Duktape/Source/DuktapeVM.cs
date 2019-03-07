@@ -10,7 +10,8 @@ namespace Duktape
     public struct UnrefAction
     {
         public uint refid;
-        public Action<IntPtr, uint> action;
+        public object target;
+        public Action<IntPtr, uint, object> action;
     }
 
     public class DuktapeVM // : Scripting.ScriptEngine
@@ -132,12 +133,13 @@ namespace Duktape
             return _exported.TryGetValue(type, out value) ? value : null;
         }
 
-        public void GC(uint refid, Action<IntPtr, uint> op)
+        public void GC(uint refid, object target, Action<IntPtr, uint, object> op)
         {
             var act = new UnrefAction()
             {
                 refid = refid,
                 action = op,
+                target = target,
             };
             lock (_unrefActions)
             {
@@ -158,7 +160,7 @@ namespace Duktape
                         break;
                     }
                     var act = _unrefActions.Dequeue();
-                    act.action(ctx, act.refid);
+                    act.action(ctx, act.refid, act.target);
                     // Debug.LogFormat("duktape gc {0}", act.refid);
                 }
             }

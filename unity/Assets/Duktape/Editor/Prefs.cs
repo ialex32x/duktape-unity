@@ -52,7 +52,6 @@ namespace Duktape
         // 默认不导出任何类型, 需要指定导出类型列表
         public List<string> explicitAssemblies = new List<string>(new string[]
         {
-            //TODO: codegen 完善后再默认开启
             // "Assembly-CSharp-firstpass",
             "Assembly-CSharp",
         });
@@ -60,7 +59,6 @@ namespace Duktape
         // 默认导出所有类型, 过滤黑名单
         public List<string> implicitAssemblies = new List<string>(new string[]
         {
-            //TODO: codegen 完善后再默认开启
             // "UnityEngine",
             "UnityEngine.CoreModule",
             // "UnityEngine.UIModule",

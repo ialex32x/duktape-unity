@@ -9,6 +9,7 @@ namespace Duktape
     // 处理委托的绑定
     public partial class DuktapeBinding
     {
+        //TODO: 尝试还原 js function/dispatcher
         public static void duk_push_delegate(IntPtr ctx, Delegate o)
         {
             //TODO: delegate push
@@ -40,9 +41,18 @@ namespace Duktape
         public static bool duk_get_delegate<T>(IntPtr ctx, int idx, out T o)
         where T : class
         {
-            //TODO: 封装委托处理
-            if (DuktapeDLL.duk_is_object(ctx, idx)/* && check if js delegate type (hidden property) */)
+            if (DuktapeDLL.duk_is_object(ctx, idx)/* && check if js delegate type (hidden property) */
+             || DuktapeDLL.duk_is_function(ctx, idx))
             {
+                DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE);
+                var refid = DuktapeDLL.duk_get_int(ctx, -1);
+                DuktapeDLL.duk_pop(ctx);
+
+                var cache = DuktapeVM.GetObjectCache(ctx);
+                if (cache.TryGetValueTyped(refid, out o) && o != null)
+                {
+                    return true;
+                }
                 // 默认赋值操作
                 DuktapeDLL.duk_dup(ctx, idx);
                 var heapptr = DuktapeDLL.duk_get_heapptr(ctx, idx);
@@ -50,15 +60,12 @@ namespace Duktape
                 var vm = DuktapeVM.GetVM(ctx);
                 o = vm.CreateDelegate(typeof(T), fn) as T;
 
-                //TODO: 临时处理, (另外 push 时是否写重载)
-                var cache = DuktapeVM.GetObjectCache(ctx);
-                //TODO: js delegate object 释放时需要 RemoveJSValue (用 C# 实现 DelagateBase)
+                // DuktapeDelegate 拥有 js 对象的强引用, 此 js 对象无法释放 cache 中的 object, 所以这里用弱引用注册
+                // 会出现的问题是, 如果 c# 没有对 DuktapeDelegate 的强引用, 那么反复 get_delegate 会重复创建 DuktapeDelegate
+                refid = cache.AddWeakObject(fn);
+                DuktapeDLL.duk_unity_set_prop_i(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE, refid);
                 cache.AddJSValue(o, heapptr);
                 return true;
-            }
-            else
-            {
-                //
             }
             o = null;
             return false;

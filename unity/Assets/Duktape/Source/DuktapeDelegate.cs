@@ -18,6 +18,23 @@ namespace Duktape
         {
         }
 
+        private static void duk_unity_unref(IntPtr ctx, uint refid, object target)
+        {
+            DuktapeVM.GetObjectCache(ctx).RemoveJSValue(target);
+            DuktapeDLL.duk_unity_unref(ctx, refid);
+        }
+
+        protected override void Dispose(bool bManaged)
+        {
+            if (this._refid != 0 && this._ctx != null)
+            {
+                var vm = DuktapeContext.GetVM(this._ctx);
+                vm.GC(this._refid, this.target, duk_unity_unref);
+                this._refid = 0;
+                this.target = null;
+            }
+        }
+
         public void Invoke(IntPtr ctx)
         {
             this.BeginInvoke(ctx);
@@ -31,7 +48,7 @@ namespace Duktape
             if (_jsInvoker == null)
             {
                 this.Push(ctx); // push this
-                if (!DuktapeDLL.duk_is_function(ctx, -1)) 
+                if (!DuktapeDLL.duk_is_function(ctx, -1))
                 {
                     DuktapeDLL.duk_get_prop_string(ctx, -1, "dispatch");
                     DuktapeDLL.duk_remove(ctx, -2); // remove this
