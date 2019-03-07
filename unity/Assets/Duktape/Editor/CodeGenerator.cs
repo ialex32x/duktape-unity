@@ -12,22 +12,28 @@ namespace Duktape
     public partial class CodeGenerator
     {
         public BindingManager bindingManager;
-        public TextGenerator csharp;
-        public TextGenerator typescript;
+        public TextGenerator cs;
+        public TextGenerator tsDeclare;
+        public TextGenerator tsSource;
+        public TextGenerator jsSource;
 
         public CodeGenerator(BindingManager bindingManager)
         {
             this.bindingManager = bindingManager;
             var tab = this.bindingManager.prefs.tab;
             var newline = this.bindingManager.prefs.newline;
-            csharp = new TextGenerator(newline, tab);
-            typescript = new TextGenerator(newline, tab);
+            cs = new TextGenerator(newline, tab);
+            tsDeclare = new TextGenerator(newline, tab);
+            tsSource = new TextGenerator(newline, tab);
+            jsSource = new TextGenerator(newline, tab);
         }
 
         public void Clear()
         {
-            csharp.Clear();
-            typescript.Clear();
+            cs.Clear();
+            tsDeclare.Clear();
+            tsSource.Clear();
+            jsSource.Clear();
         }
 
         // 生成委托绑定
@@ -41,9 +47,15 @@ namespace Duktape
                     {
                         using (new DelegateWrapperCodeGen(this, delegateBindingInfos))
                         {
+                            SortedList<int, int> specs = new SortedList<int, int>();
                             for (var i = 0; i < delegateBindingInfos.Length; i++)
                             {
                                 var bindingInfo = delegateBindingInfos[i];
+                                var nargs = bindingInfo.parameters.Length;
+                                if (!specs.ContainsKey(nargs))
+                                {
+                                    specs.Add(nargs, 0);
+                                }
                                 this.bindingManager.OnPreGenerateDelegate(bindingInfo);
                                 using (new PreservedCodeGen(this))
                                 {
@@ -53,6 +65,39 @@ namespace Duktape
                                 }
                                 this.bindingManager.OnPostGenerateDelegate(bindingInfo);
                             }
+
+                            this.tsDeclare.AppendLine("declare namespace DuktapeJS {");
+                            this.tsDeclare.AddTabLevel();
+                            // this.jsSource.AppendLine($"// dummy code");
+                            foreach (var spec in specs)
+                            {
+                                var argtypelist = "";
+                                var argdecllist = "";
+                                var argvarlist = "";
+                                for (var i = 0; i < spec.Key; i++)
+                                {
+                                    argtypelist += $", T{i + 1}";
+                                    argdecllist += $"arg{i + 1}: T{i + 1}";
+                                    argvarlist += $"arg{i + 1}";
+                                    if (i != spec.Key - 1)
+                                    {
+                                        argdecllist += ", ";
+                                        argvarlist += ", ";
+                                    }
+                                }
+                                this.tsDeclare.AppendLine($"class Delegate{spec.Key}<R{argtypelist}> extends Dispatcher {{");
+                                // this.jsSource.AppendLine($"DuktapeJS.Delegate{spec.Key} = DuktapeJS.Dispatcher;");
+                                this.tsDeclare.AddTabLevel();
+                                {
+                                    this.tsDeclare.AppendLine($"on(caller: any, fn: ({argdecllist}) => R): Delegate{spec.Key}<R{argtypelist}>");
+                                    this.tsDeclare.AppendLine($"off(caller: any, fn: ({argdecllist}) => R): void");
+                                    this.tsDeclare.AppendLine($"dispatch({argdecllist}): R");
+                                }
+                                this.tsDeclare.DecTabLevel();
+                                this.tsDeclare.AppendLine("}");
+                            }
+                            this.tsDeclare.DecTabLevel();
+                            this.tsDeclare.AppendLine("}");
                         }
                     }
                 }
@@ -96,18 +141,28 @@ namespace Duktape
             //     }
             // }
             File.WriteAllText(path, contents);
+            this.bindingManager.Info($"output file: {path} ({contents.Length})");
+        }
+
+        private void CopyFile(string srcPath, string dir, string filename)
+        {
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            File.Copy(srcPath, Path.Combine(dir, filename));
         }
 
         public void WriteTo(string outDir, string filename, string tx)
         {
             try
             {
-                if (this.csharp.enabled && this.csharp.size > 0)
+                if (this.cs.enabled && this.cs.size > 0)
                 {
                     var csName = filename + ".cs" + tx;
                     var csPath = Path.Combine(outDir, csName);
                     this.bindingManager.AddOutputFile(csPath);
-                    WriteAllText(csPath, this.csharp.ToString());
+                    WriteAllText(csPath, this.cs.ToString());
                 }
             }
             catch (Exception exception)
@@ -117,17 +172,49 @@ namespace Duktape
 
             try
             {
-                if (this.typescript.enabled && this.typescript.size > 0)
+                if (this.tsDeclare.enabled && this.tsDeclare.size > 0)
                 {
                     var tsName = filename + ".d.ts" + tx;
                     var tsPath = Path.Combine(outDir, tsName);
                     this.bindingManager.AddOutputFile(tsPath);
-                    WriteAllText(tsPath, this.typescript.ToString());
+                    WriteAllText(tsPath, this.tsDeclare.ToString());
                 }
             }
             catch (Exception exception)
             {
-                this.bindingManager.Error("write typescript file failed [{0}]: {1}", filename, exception.Message);
+                this.bindingManager.Error("write typescript declaration file failed [{0}]: {1}", filename, exception.Message);
+            }
+
+            try
+            {
+                if (this.tsSource.enabled && this.tsSource.size > 0)
+                {
+                    var tsName = filename + ".ts" + tx;
+                    var tsPath = Path.Combine(outDir, tsName);
+                    this.bindingManager.AddOutputFile(tsPath);
+                    WriteAllText(tsPath, this.tsSource.ToString());
+                    CopyFile(tsPath, bindingManager.prefs.tsDir, tsName);
+                }
+            }
+            catch (Exception exception)
+            {
+                this.bindingManager.Error("write typescript source failed [{0}]: {1}", filename, exception.Message);
+            }
+
+            try
+            {
+                if (this.jsSource.enabled && this.jsSource.size > 0)
+                {
+                    var jsName = filename + ".js" + tx;
+                    var jsPath = Path.Combine(outDir, jsName);
+                    this.bindingManager.AddOutputFile(jsPath);
+                    WriteAllText(jsPath, this.jsSource.ToString());
+                    CopyFile(jsPath, bindingManager.prefs.jsDir, jsName);
+                }
+            }
+            catch (Exception exception)
+            {
+                this.bindingManager.Error("write javascript source failed [{0}]: {1}", filename, exception.Message);
             }
         }
 
@@ -137,10 +224,10 @@ namespace Duktape
             {
                 var eType = type.GetEnumUnderlyingType();
                 var eTypeName = this.bindingManager.GetCSTypeFullName(eType);
-                this.csharp.AppendLine($"{this.bindingManager.GetDuktapePusher(eType)}(ctx, ({eTypeName}){value});");
+                this.cs.AppendLine($"{this.bindingManager.GetDuktapePusher(eType)}(ctx, ({eTypeName}){value});");
                 return;
             }
-            this.csharp.AppendLine($"{this.bindingManager.GetDuktapePusher(type)}(ctx, {value});");
+            this.cs.AppendLine($"{this.bindingManager.GetDuktapePusher(type)}(ctx, {value});");
         }
 
         public string AppendGetThisCS(FieldBindingInfo bindingInfo)
@@ -167,8 +254,8 @@ namespace Duktape
             else
             {
                 caller = "self";
-                this.csharp.AppendLine("{0} {1};", this.bindingManager.GetCSTypeFullName(declaringType), caller);
-                this.csharp.AppendLine("{0}(ctx, out {1});", this.bindingManager.GetDuktapeThisGetter(declaringType), caller);
+                this.cs.AppendLine("{0} {1};", this.bindingManager.GetCSTypeFullName(declaringType), caller);
+                this.cs.AppendLine("{0}(ctx, out {1});", this.bindingManager.GetDuktapeThisGetter(declaringType), caller);
             }
             return caller;
         }
@@ -178,7 +265,7 @@ namespace Duktape
             if (isVararg)
             {
                 var varName = "argc";
-                csharp.AppendLine("var {0} = DuktapeDLL.duk_get_top(ctx);", varName);
+                cs.AppendLine("var {0} = DuktapeDLL.duk_get_top(ctx);", varName);
                 return varName;
             }
             return null;
@@ -192,17 +279,17 @@ namespace Duktape
                 var lines = jsdoc.lines;
                 if (lines.Length > 1)
                 {
-                    this.typescript.AppendLine("/**");
+                    this.tsDeclare.AppendLine("/**");
                     foreach (var line in lines)
                     {
-                        this.typescript.AppendLine(" * {0}", line.Replace('\r', ' '));
+                        this.tsDeclare.AppendLine(" * {0}", line.Replace('\r', ' '));
                     }
                 }
                 else
                 {
-                    this.typescript.AppendLine("/** {0}", lines[0]);
+                    this.tsDeclare.AppendLine("/** {0}", lines[0]);
                 }
-                this.typescript.AppendLine(" */");
+                this.tsDeclare.AppendLine(" */");
             }
         }
     }

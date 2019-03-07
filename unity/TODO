@@ -20,6 +20,7 @@
     ✔ !!! 索引访问 ($GetValue/$SetValue) @done(19-03-07 15:21)
     ☐ !!! 扩展方法 @started(19-03-07 14:10)
     ✔ push_delegate 尝试还原 js 对象 @done(19-03-07 14:10)
+    ✔ 自动生成 Delegate 对应的 stub type var (== Dispatcher) @done(19-03-07 17:30)
 
 兼容性: 
     ✔ setInterval/setTimeout @done(19-02-28 16:02)
@@ -29,7 +30,7 @@ TODO:
     ☐ 为导出类型链末端 constructor 增加额外一层继承, 以便在 d.ts 中对 Type 做出具体类型约束
 
 FIXME: 
-    ☐ duk_get_delegate 中缓存的 jsValue 存在gc问题 (js 层 DelegateBase 没有 Finalizer) @started(19-03-01 15:14)
+    ✔ duk_get_delegate 中缓存的 jsValue 存在gc问题 (js 层 DelegateBase 没有 Finalizer) @started(19-03-01 15:14) @done(19-03-07 17:31) @lasted(6d2h17m22s)
     ✔ 剔除重复的枚举值 @done(19-03-05 17:31)
     ✔ 嵌套类型 ts 定义修正 @done(19-03-06 06:12)
 

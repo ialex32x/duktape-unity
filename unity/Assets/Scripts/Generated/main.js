@@ -1,3 +1,17 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+require("./mm/foo");
+(function () {
+    console.log("### Delegates begin");
+    var d = new DuktapeJS.Delegate0();
+    d.on(this, function () {
+        console.log("delegate0");
+    });
+    d.dispatch();
+    d.clear();
+    d.dispatch();
+    console.log("### Delegates end");
+})();
 (function () {
     console.log("### System.Array");
     var nativeArray = System.Array.CreateInstance(System.Int32, 10);

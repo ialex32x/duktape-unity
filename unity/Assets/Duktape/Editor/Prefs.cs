@@ -26,6 +26,10 @@ namespace Duktape
         // 静态绑定代码的生成目录
         public string outDir = "Assets/Source/Generated";
 
+        // ts 代码的目录 (例如自动生成的 Delegate 泛型, 需要放在 ts 源码目录)
+        public string tsDir = "Assets/Scripts/Source/duktape";
+        public string jsDir = "Assets/Scripts/Generated/duktape";
+
         public string extraExt = ""; // 生成文件的额外后缀
 
         public NewLineStyle newLineStyle;
