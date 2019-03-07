@@ -14,6 +14,10 @@ namespace Duktape
         public DateTime dateTime;
         public TextGenerator log;
         public Prefs prefs;
+
+        private List<string> _implicitAssemblies = new List<string>(); // 默认导出所有类型
+        private List<string> _explicitAssemblies = new List<string>(); // 仅导出指定需要导出的类型
+
         private HashSet<Type> blacklist;
         private HashSet<Type> whitelist;
         private List<string> typePrefixBlacklist;
@@ -242,10 +246,15 @@ namespace Duktape
         }
 
         // 增加导出类型 (需要在 Collect 阶段进行)
-        public void AddExport(Type type)
+        public void AddExportedType(Type type)
         {
             var typeBindingInfo = new TypeBindingInfo(this, type);
             exportedTypes.Add(type, typeBindingInfo);
+        }
+
+        public bool RemoveExportedType(Type type)
+        {
+            return exportedTypes.Remove(type);
         }
 
         public DelegateBindingInfo GetDelegateBindingInfo(Type type)
@@ -662,14 +671,14 @@ namespace Duktape
             return false;
         }
 
-        private void OnPreCollect()
+        private void OnPreCollectAssemblies()
         {
             for (int i = 0, size = _bindingProcess.Count; i < size; i++)
             {
                 var bp = _bindingProcess[i];
                 try
                 {
-                    bp.OnPreCollect(this);
+                    bp.OnPreCollectAssemblies(this);
                 }
                 catch (Exception exception)
                 {
@@ -678,14 +687,46 @@ namespace Duktape
             }
         }
 
-        private void OnPostCollect()
+        private void OnPostCollectAssemblies()
         {
             for (int i = 0, size = _bindingProcess.Count; i < size; i++)
             {
                 var bp = _bindingProcess[i];
                 try
                 {
-                    bp.OnPostCollect(this);
+                    bp.OnPostCollectAssemblies(this);
+                }
+                catch (Exception exception)
+                {
+                    this.Error($"process failed [{bp}][OnPostCollect]: {exception}");
+                }
+            }
+        }
+
+        private void OnPreCollectMembers()
+        {
+            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            {
+                var bp = _bindingProcess[i];
+                try
+                {
+                    bp.OnPreCollectMembers(this);
+                }
+                catch (Exception exception)
+                {
+                    this.Error($"process failed [{bp}][OnPreCollect]: {exception}");
+                }
+            }
+        }
+
+        private void OnPostCollectMembers()
+        {
+            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            {
+                var bp = _bindingProcess[i];
+                try
+                {
+                    bp.OnPostCollectMembers(this);
                 }
                 catch (Exception exception)
                 {
@@ -779,12 +820,17 @@ namespace Duktape
         public void Collect()
         {
             // 收集直接类型, 加入 exportedTypes
-            Collect(prefs.explicitAssemblies, false);
-            Collect(prefs.implicitAssemblies, true);
+            OnPreCollectAssemblies();
+            AddAssemblies(false, prefs.explicitAssemblies.ToArray());
+            AddAssemblies(true, prefs.implicitAssemblies.ToArray());
+            OnPostCollectAssemblies();
+
+            ExportAssemblies(_explicitAssemblies, false);
+            ExportAssemblies(_implicitAssemblies, true);
 
             log.AppendLine("collecting members");
             log.AddTabLevel();
-            OnPreCollect();
+            OnPreCollectMembers();
             foreach (var typeBindingInfoKV in exportedTypes)
             {
                 var typeBindingInfo = typeBindingInfoKV.Value;
@@ -793,12 +839,33 @@ namespace Duktape
                 typeBindingInfo.Collect();
                 log.DecTabLevel();
             }
-            OnPostCollect();
+            OnPostCollectMembers();
             log.DecTabLevel();
         }
 
+        public void AddAssemblies(bool implicitExport, params string[] assemblyNames)
+        {
+            if (implicitExport)
+            {
+                _implicitAssemblies.AddRange(assemblyNames);
+            }
+            else
+            {
+                _explicitAssemblies.AddRange(assemblyNames);
+            }
+        }
+
+        public void RemoveAssemblies(params string[] assemblyNames)
+        {
+            foreach (var name in assemblyNames)
+            {
+                _implicitAssemblies.Remove(name);
+                _explicitAssemblies.Remove(name);
+            }
+        }
+
         // implicitExport: 默认进行导出(黑名单例外), 否则根据导出标记或手工添加
-        private void Collect(List<string> assemblyNames, bool implicitExport)
+        private void ExportAssemblies(List<string> assemblyNames, bool implicitExport)
         {
             foreach (var assemblyName in assemblyNames)
             {
@@ -820,7 +887,7 @@ namespace Duktape
                         if (implicitExport || IsExportingExplicit(type))
                         {
                             log.AppendLine("export: {0}", type.FullName);
-                            this.AddExport(type);
+                            this.AddExportedType(type);
                             continue;
                         }
                         log.AppendLine("skip: {0}", type.FullName);

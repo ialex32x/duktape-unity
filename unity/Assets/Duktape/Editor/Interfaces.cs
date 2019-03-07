@@ -8,16 +8,25 @@ namespace Duktape
     using UnityEngine;
     using UnityEditor;
 
+    // 继承该接口(或 AbstractBindingProcess)的类将在导出过程中执行指定方法, 可以在特定阶段进行特定操作
+    // NOTE: AddAssemblies 等基本配置操作可以通过 ProjectSettings/duktape.json 进行配置, 不需要使用此接口方式
+    //       可配置项参考 Prefs.cs 
     public interface IBindingProcess
     {
         // 初始化阶段回调, 可以调用 AddTSMethodDeclaration, AddTSKeywords 等进行定制
         void OnInitialize(BindingManager bindingManager);
 
-        // 收集类型阶段开始, 可在该阶段 AddExported 增加导出类型
-        void OnPreCollect(BindingManager bindingManager);
+        // 收集 Assembly 阶段, 可在该阶段 AddAssemblies/RemoveAssemblies
+        void OnPreCollectAssemblies(BindingManager bindingManager);
 
         //
-        void OnPostCollect(BindingManager bindingManager);
+        void OnPostCollectAssemblies(BindingManager bindingManager);
+
+        // 收集类型阶段开始, 可在该阶段 AddExportedType 增加导出类型
+        void OnPreCollectMembers(BindingManager bindingManager);
+
+        //
+        void OnPostCollectMembers(BindingManager bindingManager);
 
         // 生成指定类型绑定代码前
         void OnPreGenerateType(BindingManager bindingManager, TypeBindingInfo bindingInfo);
@@ -41,11 +50,19 @@ namespace Duktape
         {
         }
 
-        public virtual void OnPreCollect(BindingManager bindingManager)
+        public virtual void OnPreCollectAssemblies(BindingManager bindingManager)
         {
         }
 
-        public virtual void OnPostCollect(BindingManager bindingManager)
+        public virtual void OnPostCollectAssemblies(BindingManager bindingManager)
+        {
+        }
+
+        public virtual void OnPreCollectMembers(BindingManager bindingManager)
+        {
+        }
+
+        public virtual void OnPostCollectMembers(BindingManager bindingManager)
         {
         }
 
