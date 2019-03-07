@@ -34,7 +34,7 @@ namespace Duktape
                     var cache = DuktapeVM.GetObjectCache(ctx);
                     var refid = DuktapeDLL.duk_get_int(ctx, -1);
                     DuktapeDLL.duk_pop(ctx);
-                    cache.TryGetValueTyped(refid, out o);
+                    cache.TryGetTypedObject(refid, out o);
                     // Debug.Log($"get type from objectcache registry {o}:{refid}");
                     return true;
                 }

@@ -6,6 +6,9 @@ declare namespace DuktapeJS {
     const COMPLETE: string
     const ERROR: string
 
+    class Behaviour extends UnityEngine.MonoBehaviour {
+    }
+
     /**
      * 监听者
      */

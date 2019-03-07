@@ -27,6 +27,10 @@ namespace Duktape
             this.cg = cg;
         }
 
+        protected virtual void OnBegin()
+        {
+        }
+
         public virtual void Dispose()
         {
         }
@@ -168,7 +172,11 @@ namespace Duktape
                     }
                 }
             }
+        }
 
+        protected void WriteTSAllVariants(MethodBaseBindingInfo<T> bindingInfo)
+        {
+            var variants = bindingInfo.variants;
             //TODO: 如果产生了无法在 typescript 中声明的方法, 则作标记, 并输出一条万能声明 
             //      [key: string]: any
             foreach (var variantKV in variants)
@@ -446,6 +454,7 @@ namespace Duktape
             if (this.bindingInfo.count > 0)
             {
                 WriteAllVariants(this.bindingInfo);
+                WriteTSAllVariants(this.bindingInfo);
             }
             else
             {
@@ -523,6 +532,29 @@ namespace Duktape
         {
             this.bindingInfo = bindingInfo;
             WriteAllVariants(this.bindingInfo);
+            // WriteTSAllVariants(this.bindingInfo);
+        }
+    }
+
+    public class TSMethodCodeGen: MethodBaseCodeGen<MethodInfo>
+    {
+        protected MethodBindingInfo bindingInfo;
+
+        protected override Type GetReturnType(MethodInfo method)
+        {
+            return method.ReturnType;
+        }
+
+        protected override string GetInvokeBinding(string caller, MethodInfo method, bool hasParams, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
+        {
+            return null;
+        }
+
+        public TSMethodCodeGen(CodeGenerator cg, MethodBindingInfo bindingInfo)
+        : base(cg)
+        {
+            this.bindingInfo = bindingInfo;
+            WriteTSAllVariants(this.bindingInfo);
         }
     }
 }

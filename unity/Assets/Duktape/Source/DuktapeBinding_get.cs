@@ -574,7 +574,7 @@ namespace Duktape
             {
                 var id = DuktapeDLL.duk_get_int(ctx, -1);
                 DuktapeDLL.duk_pop(ctx);
-                return DuktapeVM.GetObjectCache(ctx).TryGetValue(id, out o);
+                return DuktapeVM.GetObjectCache(ctx).TryGetObject(id, out o);
             }
             else
             {

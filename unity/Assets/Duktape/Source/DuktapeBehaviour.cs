@@ -11,7 +11,7 @@ namespace Duktape
         private DuktapeValue _prototype;
         private DuktapeObject _instance;
 
-        public void SetDuktape(DuktapeObject instance)
+        public void MakeBridge(DuktapeObject instance)
         {
             _instance = instance;
             if (_instance != null)
@@ -61,7 +61,7 @@ namespace Duktape
         {
             if (_instance != null)
             {
-                _instance.InvokeMember("OnEnable");
+                _instance.InvokeMember("OnDisable");
             }
         }
 

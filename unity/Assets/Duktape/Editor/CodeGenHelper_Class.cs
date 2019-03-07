@@ -63,6 +63,9 @@ namespace Duktape
                         }
                     }
                 }
+                using (new TSMethodCodeGen(cg, methodBindingInfo))
+                {
+                }
             }
             // 静态成员方法
             foreach (var kv in this.bindingInfo.staticMethods)
@@ -82,6 +85,9 @@ namespace Duktape
                             }
                         }
                     }
+                }
+                using (new TSMethodCodeGen(cg, methodBindingInfo))
+                {
                 }
             }
             // 所有属性

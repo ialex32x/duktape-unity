@@ -1,6 +1,27 @@
 
 import "./mm/foo"
 
+DuktapeJS.Behaviour = function () { }
+
+class MyBehaviour extends DuktapeJS.Behaviour {
+    Awake() {
+        console.log("Awake")
+    }
+
+    OnEnable() {
+        console.log("OnEnable")
+    }
+
+    OnDestroy() {
+        console.log("OnDestroy")
+    }
+}
+
+(function () {
+    let go = new UnityEngine.GameObject("Bridge")
+    go.AddComponent(MyBehaviour)
+})();
+
 (function () {
     console.log("### Delegates begin")
     let d = new DuktapeJS.Delegate0<void>()

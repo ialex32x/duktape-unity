@@ -48,8 +48,21 @@ namespace Duktape
             var member = GetMember(name);
             if (member != null)
             {
-                member.Invoke();
+                var ctx = member.ctx;
+                member.Push(ctx);
+                this.Push(ctx);
+                var ret = DuktapeDLL.duk_pcall_method(ctx, 0);
+                if (ret != DuktapeDLL.DUK_EXEC_SUCCESS)
+                {
+                    DuktapeAux.PrintError(ctx, -1);
+                    // throw new Exception(err); 
+                }
+                DuktapeDLL.duk_pop(ctx);
             }
+            // else
+            // {
+            //     Debug.LogWarning($"no such member {name}");
+            // }
         }
 
         protected override void Dispose(bool bManaged)
