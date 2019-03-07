@@ -16,8 +16,8 @@ namespace Duktape
         {
             this.cg.AppendJSDoc(type.type);
             var prefix = bindingInfo.Namespace != null ? "" : "declare ";
-            this.cg.typescript.AppendLine("{0}enum {1} {{", prefix, bindingInfo.regName);
-            this.cg.typescript.AddTabLevel();
+            this.cg.tsDeclare.AppendLine("{0}enum {1} {{", prefix, bindingInfo.regName);
+            this.cg.tsDeclare.AddTabLevel();
         }
 
         public override void Dispose()
@@ -28,7 +28,7 @@ namespace Duktape
                 {
                     using (new RegFuncNamespaceCodeGen(cg, bindingInfo))
                     {
-                        this.cg.csharp.AppendLine("duk_begin_enum(ctx, \"{0}\", typeof({1}));",
+                        this.cg.cs.AppendLine("duk_begin_enum(ctx, \"{0}\", typeof({1}));",
                             bindingInfo.regName,
                             this.cg.bindingManager.GetCSTypeFullName(bindingInfo.type));
                         var values = new Dictionary<string, int>();
@@ -40,16 +40,16 @@ namespace Duktape
                         {
                             var name = kv.Key;
                             var value = kv.Value;
-                            this.cg.csharp.AppendLine($"duk_add_const(ctx, \"{name}\", {value}, {-2});");
-                            this.cg.typescript.AppendLine($"{name} = {value},");
+                            this.cg.cs.AppendLine($"duk_add_const(ctx, \"{name}\", {value}, {-2});");
+                            this.cg.tsDeclare.AppendLine($"{name} = {value},");
                         }
-                        this.cg.csharp.AppendLine("duk_end_enum(ctx);");
+                        this.cg.cs.AppendLine("duk_end_enum(ctx);");
                     }
                 }
                 base.Dispose();
             }
-            this.cg.typescript.DecTabLevel();
-            this.cg.typescript.AppendLine("}");
+            this.cg.tsDeclare.DecTabLevel();
+            this.cg.tsDeclare.AppendLine("}");
         }
     }
 }

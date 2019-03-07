@@ -408,7 +408,7 @@ namespace Duktape
                     var ret = GetTSTypeFullName(delegateBindingInfo.returnType);
                     var t_arglist = (nargs > 0 ? ", " : "") + GetTSArglistTypes(delegateBindingInfo.parameters, false);
                     var v_arglist = GetTSArglistTypes(delegateBindingInfo.parameters, true);
-                    return $"Delegate{nargs}<{ret}{t_arglist}> | (({v_arglist}) => {ret})";
+                    return $"DuktapeJS.Delegate{nargs}<{ret}{t_arglist}> | (({v_arglist}) => {ret})";
                 }
             }
             return "any";
@@ -1063,6 +1063,7 @@ namespace Duktape
 
                     cg.Clear();
                     cg.Generate(exportedDelegatesArray);
+                    cg.tsSource.enabled = false;
                     cg.WriteTo(outDir, DuktapeVM._DuktapeDelegates, tx);
                 }
                 catch (Exception exception)

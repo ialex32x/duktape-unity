@@ -18,10 +18,10 @@ namespace Duktape
         {
             this.cg = cg;
             this.delegateBindingInfos = delegateBindingInfos;
-            this.cg.csharp.AppendLine("[{0}({1})]", typeof(JSBindingAttribute).Name, DuktapeVM.VERSION);
-            this.cg.csharp.AppendLine("[UnityEngine.Scripting.Preserve]");
-            this.cg.csharp.AppendLine("public class {0} : {1} {{", DuktapeVM._DuktapeDelegates, typeof(DuktapeBinding).Name);
-            this.cg.csharp.AddTabLevel();
+            this.cg.cs.AppendLine("[{0}({1})]", typeof(JSBindingAttribute).Name, DuktapeVM.VERSION);
+            this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
+            this.cg.cs.AppendLine("public class {0} : {1} {{", DuktapeVM._DuktapeDelegates, typeof(DuktapeBinding).Name);
+            this.cg.cs.AddTabLevel();
         }
 
         public void Dispose()
@@ -30,35 +30,49 @@ namespace Duktape
             {
                 using (new RegFuncCodeGen(cg))
                 {
-                    this.cg.csharp.AppendLine("var type = typeof({0});", DuktapeVM._DuktapeDelegates);
-                    this.cg.csharp.AppendLine("var vm = DuktapeVM.GetVM(ctx);");
-                    this.cg.csharp.AppendLine("var methods = type.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);");
-                    this.cg.csharp.AppendLine("for (int i = 0, size = methods.Length; i < size; i++)");
-                    this.cg.csharp.AppendLine("{");
+                    this.cg.cs.AppendLine("var type = typeof({0});", DuktapeVM._DuktapeDelegates);
+                    this.cg.cs.AppendLine("var vm = DuktapeVM.GetVM(ctx);");
+                    this.cg.cs.AppendLine("var methods = type.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);");
+                    this.cg.cs.AppendLine("for (int i = 0, size = methods.Length; i < size; i++)");
+                    this.cg.cs.AppendLine("{");
                     {
-                        this.cg.csharp.AddTabLevel();
-                        this.cg.csharp.AppendLine("var method = methods[i];");
-                        this.cg.csharp.AppendLine("var attributes = method.GetCustomAttributes(typeof(JSDelegateAttribute), false);");
-                        this.cg.csharp.AppendLine("var attributesLength = attributes.Length;");
-                        this.cg.csharp.AppendLine("if (attributesLength > 0)");
-                        this.cg.csharp.AppendLine("{");
+                        this.cg.cs.AddTabLevel();
+                        this.cg.cs.AppendLine("var method = methods[i];");
+                        this.cg.cs.AppendLine("var attributes = method.GetCustomAttributes(typeof(JSDelegateAttribute), false);");
+                        this.cg.cs.AppendLine("var attributesLength = attributes.Length;");
+                        this.cg.cs.AppendLine("if (attributesLength > 0)");
+                        this.cg.cs.AppendLine("{");
+                        this.cg.cs.AddTabLevel();
                         {
-                            this.cg.csharp.AddTabLevel();
-                            this.cg.csharp.AppendLine("for (var a = 0; a < attributesLength; a++)");
-                            this.cg.csharp.AppendLine("{");
+                            this.cg.cs.AppendLine("for (var a = 0; a < attributesLength; a++)");
+                            this.cg.cs.AppendLine("{");
+                            this.cg.cs.AddTabLevel();
                             {
-                                this.cg.csharp.AddTabLevel();
-                                this.cg.csharp.AppendLine("var attribute = attributes[a] as JSDelegateAttribute;");
-                                this.cg.csharp.AppendLine("vm.AddDelegate(attribute.target, method);");
-                                this.cg.csharp.DecTabLevel();
+                                this.cg.cs.AppendLine("var attribute = attributes[a] as JSDelegateAttribute;");
+                                this.cg.cs.AppendLine("vm.AddDelegate(attribute.target, method);");
                             }
-                            this.cg.csharp.AppendLine("}");
-                            this.cg.csharp.DecTabLevel();
+                            this.cg.cs.DecTabLevel();
+                            this.cg.cs.AppendLine("}");
+
+                            this.cg.cs.AppendLine("duk_begin_namespace(ctx, \"DuktapeJS\");");
+                            this.cg.cs.AppendLine("var name = \"Delegate\" + (method.GetParameters().Length - 1);");
+                            this.cg.cs.AppendLine("if (!DuktapeDLL.duk_get_prop_string(ctx, -1, name))");
+                            this.cg.cs.AppendLine("{");
+                            this.cg.cs.AddTabLevel();
+                            {
+                                this.cg.cs.AppendLine("DuktapeDLL.duk_get_prop_string(ctx, -2, \"Dispatcher\");");
+                                this.cg.cs.AppendLine("DuktapeDLL.duk_put_prop_string(ctx, -3, name);");
+                            }
+                            this.cg.cs.DecTabLevel();
+                            this.cg.cs.AppendLine("}");
+                            this.cg.cs.AppendLine("DuktapeDLL.duk_pop(ctx);");
+                            this.cg.cs.AppendLine("duk_end_namespace(ctx);");
                         }
-                        this.cg.csharp.AppendLine("}");
-                        this.cg.csharp.DecTabLevel();
+                        this.cg.cs.DecTabLevel();
+                        this.cg.cs.AppendLine("}");
                     }
-                    this.cg.csharp.AppendLine("}");
+                    this.cg.cs.DecTabLevel();
+                    this.cg.cs.AppendLine("}");
 
 
                     // for (var i = 0; i < delegateBindingInfos.Length; i++)
@@ -67,8 +81,8 @@ namespace Duktape
                     // }
                 }
             }
-            this.cg.csharp.DecTabLevel();
-            this.cg.csharp.AppendLine("}");
+            this.cg.cs.DecTabLevel();
+            this.cg.cs.AppendLine("}");
         }
     }
 
@@ -84,46 +98,47 @@ namespace Duktape
             var returnTypeName = this.cg.bindingManager.GetCSTypeFullName(delegateBindingInfo.returnType);
             var delegateName = DuktapeVM._DuktapeDelegates + index;
             var arglist = this.cg.bindingManager.GetCSArglistDecl(delegateBindingInfo.parameters);
+
             foreach (var target in delegateBindingInfo.types)
             {
-                this.cg.csharp.AppendLine("[{0}(typeof({1}))]", 
-                    this.cg.bindingManager.GetCSTypeFullName(typeof(JSDelegateAttribute)), 
+                this.cg.cs.AppendLine("[{0}(typeof({1}))]",
+                    this.cg.bindingManager.GetCSTypeFullName(typeof(JSDelegateAttribute)),
                     this.cg.bindingManager.GetCSTypeFullName(target));
             }
             if (!string.IsNullOrEmpty(arglist))
             {
                 arglist = ", " + arglist;
             }
-            this.cg.csharp.AppendLine($"public static {returnTypeName} {delegateName}({firstArgument}{arglist}) {{");
-            this.cg.csharp.AddTabLevel();
+            this.cg.cs.AppendLine($"public static {returnTypeName} {delegateName}({firstArgument}{arglist}) {{");
+            this.cg.cs.AddTabLevel();
 
-            this.cg.csharp.AppendLine("var ctx = fn.ctx;");
+            this.cg.cs.AppendLine("var ctx = fn.ctx;");
             if (nargs > 0)
             {
-                this.cg.csharp.AppendLine("fn.BeginInvoke(ctx);");
+                this.cg.cs.AppendLine("fn.BeginInvoke(ctx);");
                 for (var i = 0; i < nargs; i++)
                 {
                     var parameter = delegateBindingInfo.parameters[i];
                     this.cg.AppendPushValue(parameter.ParameterType, parameter.Name);
                 }
-                this.cg.csharp.AppendLine("fn.EndInvoke(ctx);");
+                this.cg.cs.AppendLine("fn.EndInvoke(ctx);");
             }
             else
             {
-                this.cg.csharp.AppendLine("fn.Invoke(ctx);");
+                this.cg.cs.AppendLine("fn.Invoke(ctx);");
             }
             if (delegateBindingInfo.returnType != typeof(void))
             {
-                this.cg.csharp.AppendLine($"{this.cg.bindingManager.GetCSTypeFullName(delegateBindingInfo.returnType)} {retName};");
-                this.cg.csharp.AppendLine($"{this.cg.bindingManager.GetDuktapeGetter(delegateBindingInfo.returnType)}(ctx, -1, out {retName});");
-                this.cg.csharp.AppendLine($"return {retName};");
+                this.cg.cs.AppendLine($"{this.cg.bindingManager.GetCSTypeFullName(delegateBindingInfo.returnType)} {retName};");
+                this.cg.cs.AppendLine($"{this.cg.bindingManager.GetDuktapeGetter(delegateBindingInfo.returnType)}(ctx, -1, out {retName});");
+                this.cg.cs.AppendLine($"return {retName};");
             }
         }
 
         public void Dispose()
         {
-            this.cg.csharp.DecTabLevel();
-            this.cg.csharp.AppendLine("}");
+            this.cg.cs.DecTabLevel();
+            this.cg.cs.AppendLine("}");
         }
     }
 }

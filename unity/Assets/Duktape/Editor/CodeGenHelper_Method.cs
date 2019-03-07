@@ -98,25 +98,25 @@ namespace Duktape
                     var argType = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType);
                     var argElementType = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType.GetElementType());
                     var argElementIndex = i == 0 ? nargs : nargs + " - " + i;
-                    this.cg.csharp.AppendLine($"{argType} arg{i} = null;");
-                    this.cg.csharp.AppendLine($"if ({argElementIndex} > 0)");
-                    this.cg.csharp.AppendLine("{");
-                    this.cg.csharp.AddTabLevel();
+                    this.cg.cs.AppendLine($"{argType} arg{i} = null;");
+                    this.cg.cs.AppendLine($"if ({argElementIndex} > 0)");
+                    this.cg.cs.AppendLine("{");
+                    this.cg.cs.AddTabLevel();
                     {
-                        this.cg.csharp.AppendLine($"arg{i} = new {argElementType}[{argElementIndex}];");
-                        this.cg.csharp.AppendLine($"for (var i = {i}; i < {nargs}; i++)");
-                        this.cg.csharp.AppendLine("{");
-                        this.cg.csharp.AddTabLevel();
+                        this.cg.cs.AppendLine($"arg{i} = new {argElementType}[{argElementIndex}];");
+                        this.cg.cs.AppendLine($"for (var i = {i}; i < {nargs}; i++)");
+                        this.cg.cs.AppendLine("{");
+                        this.cg.cs.AddTabLevel();
                         {
                             var argElementGetterOp = this.cg.bindingManager.GetDuktapeGetter(parameter.ParameterType.GetElementType());
                             var argElementOffset = i == 0 ? "" : " - " + i;
-                            this.cg.csharp.AppendLine($"{argElementGetterOp}(ctx, i, out arg{i}[i{argElementOffset}]);");
+                            this.cg.cs.AppendLine($"{argElementGetterOp}(ctx, i, out arg{i}[i{argElementOffset}]);");
                         }
-                        this.cg.csharp.DecTabLevel();
-                        this.cg.csharp.AppendLine("}");
+                        this.cg.cs.DecTabLevel();
+                        this.cg.cs.AppendLine("}");
                     }
-                    this.cg.csharp.DecTabLevel();
-                    this.cg.csharp.AppendLine("}");
+                    this.cg.cs.DecTabLevel();
+                    this.cg.cs.AppendLine("}");
                 }
                 else
                 {
@@ -130,8 +130,8 @@ namespace Duktape
         {
             var argType = this.cg.bindingManager.GetCSTypeFullName(ptype);
             var argGetterOp = this.cg.bindingManager.GetDuktapeGetter(ptype);
-            this.cg.csharp.AppendLine($"{argType} {argname};");
-            this.cg.csharp.AppendLine($"{argGetterOp}(ctx, {index}, out {argname});");
+            this.cg.cs.AppendLine($"{argType} {argname};");
+            this.cg.cs.AppendLine($"{argGetterOp}(ctx, {index}, out {argname});");
         }
 
         // 输出所有变体绑定
@@ -195,38 +195,38 @@ namespace Duktape
                 var returnTypeTS = this.cg.bindingManager.GetTSTypeFullName(returnType);
                 if (returnParameters != null && returnParameters.Count > 0)
                 {
-                    this.cg.typescript.AppendL(": {");
-                    this.cg.typescript.AppendLine();
-                    this.cg.typescript.AddTabLevel();
-                    this.cg.typescript.AppendLine($"ret: {returnTypeTS}, ");
+                    this.cg.tsDeclare.AppendL(": {");
+                    this.cg.tsDeclare.AppendLine();
+                    this.cg.tsDeclare.AddTabLevel();
+                    this.cg.tsDeclare.AppendLine($"ret: {returnTypeTS}, ");
                     for (var i = 0; i < returnParameters.Count; i++)
                     {
                         var parameter = returnParameters[i];
                         var parameterType = parameter.ParameterType;
                         var parameterTypeTS = this.cg.bindingManager.GetTSTypeFullName(parameterType);
-                        this.cg.typescript.AppendLine($"{BindingManager.GetTSVariable(parameter.Name)}: {parameterTypeTS}, ");
+                        this.cg.tsDeclare.AppendLine($"{BindingManager.GetTSVariable(parameter.Name)}: {parameterTypeTS}, ");
                     }
-                    this.cg.typescript.DecTabLevel();
-                    this.cg.typescript.AppendLine("}");
+                    this.cg.tsDeclare.DecTabLevel();
+                    this.cg.tsDeclare.AppendLine("}");
                 }
                 else
                 {
-                    this.cg.typescript.AppendL($": {returnTypeTS}");
-                    this.cg.typescript.AppendLine();
+                    this.cg.tsDeclare.AppendL($": {returnTypeTS}");
+                    this.cg.tsDeclare.AppendLine();
                 }
             }
             else
             {
-                this.cg.typescript.AppendLine();
+                this.cg.tsDeclare.AppendLine();
             }
         }
 
         protected void GenMethodVariants(SortedDictionary<int, MethodBaseVariant<T>> variants)
         {
             var argc = cg.AppendGetArgCount(true);
-            cg.csharp.AppendLine("do");
-            cg.csharp.AppendLine("{");
-            cg.csharp.AddTabLevel();
+            cg.cs.AppendLine("do");
+            cg.cs.AppendLine("{");
+            cg.cs.AddTabLevel();
             {
                 foreach (var variantKV in variants)
                 {
@@ -236,28 +236,28 @@ namespace Duktape
                     var gecheck = args > 0 && variant.isVararg; // 最后一组分支且存在变参时才需要判断 >= 
                     if (gecheck)
                     {
-                        cg.csharp.AppendLine("if (argc >= {0})", args);
-                        cg.csharp.AppendLine("{");
-                        cg.csharp.AddTabLevel();
+                        cg.cs.AppendLine("if (argc >= {0})", args);
+                        cg.cs.AppendLine("{");
+                        cg.cs.AddTabLevel();
                     }
                     // 处理定参
                     if (variant.plainMethods.Count > 0)
                     {
-                        cg.csharp.AppendLine("if (argc == {0})", args);
-                        cg.csharp.AppendLine("{");
-                        cg.csharp.AddTabLevel();
+                        cg.cs.AppendLine("if (argc == {0})", args);
+                        cg.cs.AppendLine("{");
+                        cg.cs.AddTabLevel();
                         if (variant.plainMethods.Count > 1)
                         {
                             foreach (var method in variant.plainMethods)
                             {
-                                cg.csharp.AppendLine($"if (duk_match_types(ctx, argc, {GetFixedMatchTypes(method)}))");
-                                cg.csharp.AppendLine("{");
-                                cg.csharp.AddTabLevel();
+                                cg.cs.AppendLine($"if (duk_match_types(ctx, argc, {GetFixedMatchTypes(method)}))");
+                                cg.cs.AppendLine("{");
+                                cg.cs.AddTabLevel();
                                 this.WriteCSMethodBinding(method, argc, false);
-                                cg.csharp.DecTabLevel();
-                                cg.csharp.AppendLine("}");
+                                cg.cs.DecTabLevel();
+                                cg.cs.AppendLine("}");
                             }
-                            cg.csharp.AppendLine("break;");
+                            cg.cs.AppendLine("break;");
                         }
                         else
                         {
@@ -265,34 +265,34 @@ namespace Duktape
                             var method = variant.plainMethods[0];
                             this.WriteCSMethodBinding(method, argc, false);
                         }
-                        cg.csharp.DecTabLevel();
-                        cg.csharp.AppendLine("}");
+                        cg.cs.DecTabLevel();
+                        cg.cs.AppendLine("}");
                     }
                     // 处理变参
                     if (variant.varargMethods.Count > 0)
                     {
                         foreach (var method in variant.varargMethods)
                         {
-                            cg.csharp.AppendLine($"if (duk_match_types(ctx, argc, {GetFixedMatchTypes(method)})");
-                            cg.csharp.AppendLine($" && duk_match_param_types(ctx, {args}, argc, {GetParamArrayMatchType(method)}))");
-                            cg.csharp.AppendLine("{");
-                            cg.csharp.AddTabLevel();
+                            cg.cs.AppendLine($"if (duk_match_types(ctx, argc, {GetFixedMatchTypes(method)})");
+                            cg.cs.AppendLine($" && duk_match_param_types(ctx, {args}, argc, {GetParamArrayMatchType(method)}))");
+                            cg.cs.AppendLine("{");
+                            cg.cs.AddTabLevel();
                             this.WriteCSMethodBinding(method, argc, true);
-                            cg.csharp.DecTabLevel();
-                            cg.csharp.AppendLine("}");
+                            cg.cs.DecTabLevel();
+                            cg.cs.AppendLine("}");
                         }
                     }
                     if (gecheck)
                     {
-                        cg.csharp.DecTabLevel();
-                        cg.csharp.AppendLine("}");
+                        cg.cs.DecTabLevel();
+                        cg.cs.AppendLine("}");
                     }
                 }
             }
-            cg.csharp.DecTabLevel();
-            cg.csharp.AppendLine("} while(false);");
+            cg.cs.DecTabLevel();
+            cg.cs.AppendLine("} while(false);");
             var error = this.cg.bindingManager.GetDuktapeGenericError("no matched method variant");
-            cg.csharp.AppendLine($"return {error}");
+            cg.cs.AppendLine($"return {error}");
         }
 
         //TODO: 考虑将 ref/out 参数以额外增加一个参数的形式返回
@@ -302,7 +302,7 @@ namespace Duktape
             string tsMethodDeclaration;
             if (this.cg.bindingManager.GetTSMethodDeclaration(method, out tsMethodDeclaration))
             {
-                this.cg.typescript.AppendLine(tsMethodDeclaration);
+                this.cg.tsDeclare.AppendLine(tsMethodDeclaration);
                 return refParameters;
             }
             //TODO: 需要处理参数类型归并问题, 因为如果类型没有导入 ts 中, 可能会在声明中出现相同参数列表的定义
@@ -313,7 +313,7 @@ namespace Duktape
             {
                 prefix = "static ";
             }
-            this.cg.typescript.Append($"{prefix}{bindingInfo.regName}(");
+            this.cg.tsDeclare.Append($"{prefix}{bindingInfo.regName}(");
             var parameters = method.GetParameters();
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -334,21 +334,21 @@ namespace Duktape
                     var elementType = parameter.ParameterType.GetElementType();
                     var elementTS = this.cg.bindingManager.GetTSTypeFullName(elementType);
                     var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
-                    this.cg.typescript.AppendL($"{parameter_prefix}...{parameterVarName}: {elementTS}[]");
+                    this.cg.tsDeclare.AppendL($"{parameter_prefix}...{parameterVarName}: {elementTS}[]");
                 }
                 else
                 {
                     var parameterType = parameter.ParameterType;
                     var parameterTS = this.cg.bindingManager.GetTSTypeFullName(parameterType);
                     var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
-                    this.cg.typescript.AppendL($"{parameter_prefix}{parameterVarName}: {parameterTS}");
+                    this.cg.tsDeclare.AppendL($"{parameter_prefix}{parameterVarName}: {parameterTS}");
                 }
                 if (i != parameters.Length - 1)
                 {
-                    this.cg.typescript.AppendL(", ");
+                    this.cg.tsDeclare.AppendL(", ");
                 }
             }
-            this.cg.typescript.AppendL($")");
+            this.cg.tsDeclare.AppendL($")");
             WriteTSReturn(method, refParameters);
             return refParameters;
         }
@@ -376,14 +376,14 @@ namespace Duktape
             {
                 // 方法本身没有返回值
                 this.BeginInvokeBinding();
-                cg.csharp.AppendLine($"{this.GetInvokeBinding(caller, method, isVararg, argc, parameters, returnParameters)};");
+                cg.cs.AppendLine($"{this.GetInvokeBinding(caller, method, isVararg, argc, parameters, returnParameters)};");
                 this.EndInvokeBinding();
                 if (returnParameters.Count > 0)
                 {
-                    cg.csharp.AppendLine("DuktapeDLL.duk_push_object(ctx);");
+                    cg.cs.AppendLine("DuktapeDLL.duk_push_object(ctx);");
                     //TODO: 填充返回值组合
-                    cg.csharp.AppendLine("// fill object properties here;");
-                    cg.csharp.AppendLine("return 1;");
+                    cg.cs.AppendLine("// fill object properties here;");
+                    cg.cs.AppendLine("return 1;");
                 }
                 else
                 {
@@ -391,29 +391,29 @@ namespace Duktape
                     {
                         if (method.IsDefined(typeof(JSMutableAttribute), false))
                         {
-                            cg.csharp.AppendLine($"duk_rebind_this(ctx, {caller});");
+                            cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
                         }
                     }
-                    cg.csharp.AppendLine("return 0;");
+                    cg.cs.AppendLine("return 0;");
                 }
             }
             else
             {
                 // 方法本身有返回值
                 this.BeginInvokeBinding();
-                cg.csharp.AppendLine($"var ret = {this.GetInvokeBinding(caller, method, isVararg, argc, parameters, returnParameters)};");
+                cg.cs.AppendLine($"var ret = {this.GetInvokeBinding(caller, method, isVararg, argc, parameters, returnParameters)};");
                 this.EndInvokeBinding();
                 if (returnParameters.Count > 0)
                 {
-                    cg.csharp.AppendLine("DuktapeDLL.duk_push_object(ctx);");
+                    cg.cs.AppendLine("DuktapeDLL.duk_push_object(ctx);");
                     //TODO: 填充返回值组合
-                    cg.csharp.AppendLine("// fill object properties here;");
+                    cg.cs.AppendLine("// fill object properties here;");
                 }
                 else
                 {
                     cg.AppendPushValue(returnType, "ret");
                 }
-                cg.csharp.AppendLine("return 1;");
+                cg.cs.AppendLine("return 1;");
             }
         }
     }
@@ -436,7 +436,7 @@ namespace Duktape
 
         protected override void EndInvokeBinding()
         {
-            this.cg.csharp.AppendLine("duk_bind_native(ctx, o);");
+            this.cg.cs.AppendLine("duk_bind_native(ctx, o);");
         }
 
         public ConstructorCodeGen(CodeGenerator cg, ConstructorBindingInfo bindingInfo)
@@ -457,11 +457,11 @@ namespace Duktape
         private void WriteDefaultConstructorBinding()
         {
             var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.bindingInfo.decalringType);
-            this.cg.csharp.AppendLine($"var o = new {decalringTypeName}();");
-            this.cg.csharp.AppendLine("duk_bind_native(ctx, o);");
-            this.cg.csharp.AppendLine("return 0;");
+            this.cg.cs.AppendLine($"var o = new {decalringTypeName}();");
+            this.cg.cs.AppendLine("duk_bind_native(ctx, o);");
+            this.cg.cs.AppendLine("return 0;");
 
-            this.cg.typescript.AppendLine($"{this.bindingInfo.regName}()");
+            this.cg.tsDeclare.AppendLine($"{this.bindingInfo.regName}()");
         }
     }
 

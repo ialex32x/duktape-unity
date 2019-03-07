@@ -23,8 +23,8 @@ namespace Duktape
             {
                 prefix += "abstract ";
             }
-            this.cg.typescript.AppendLine($"{prefix}class {regName}{extends} {{");
-            this.cg.typescript.AddTabLevel();
+            this.cg.tsDeclare.AppendLine($"{prefix}class {regName}{extends} {{");
+            this.cg.tsDeclare.AddTabLevel();
 
             // 生成函数体
             // 构造函数
@@ -163,9 +163,9 @@ namespace Duktape
                         var constructor = bindingInfo.constructors.available ? bindingInfo.constructors.name : "object_private_ctor";
                         if (!bindingInfo.constructors.available && !bindingInfo.type.IsAbstract)
                         {
-                            cg.typescript.AppendLine("protected constructor()");
+                            cg.tsDeclare.AppendLine("protected constructor()");
                         }
-                        cg.csharp.AppendLine("duk_begin_class(ctx, \"{0}\", typeof({1}), {2});",
+                        cg.cs.AppendLine("duk_begin_class(ctx, \"{0}\", typeof({1}), {2});",
                             bindingInfo.regName,
                             this.cg.bindingManager.GetCSTypeFullName(bindingInfo.type),
                             constructor);
@@ -174,21 +174,21 @@ namespace Duktape
                             var regName = kv.Value.regName;
                             var funcName = kv.Value.name;
                             var bStatic = false;
-                            cg.csharp.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? -2 : -1);
+                            cg.cs.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? -2 : -1);
                         }
                         foreach (var kv in bindingInfo.staticMethods)
                         {
                             var regName = kv.Value.regName;
                             var funcName = kv.Value.name;
                             var bStatic = true;
-                            cg.csharp.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? -2 : -1);
+                            cg.cs.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? -2 : -1);
                         }
                         foreach (var kv in bindingInfo.properties)
                         {
                             var bindingInfo = kv.Value;
                             var bStatic = false;
                             var tsPropertyVar = BindingManager.GetTSVariable(bindingInfo.regName);
-                            cg.csharp.AppendLine("duk_add_property(ctx, \"{0}\", {1}, {2}, {3});",
+                            cg.cs.AppendLine("duk_add_property(ctx, \"{0}\", {1}, {2}, {3});",
                                 tsPropertyVar,
                                 bindingInfo.getterName != null ? bindingInfo.getterName : "null",
                                 bindingInfo.setterName != null ? bindingInfo.setterName : "null",
@@ -196,7 +196,7 @@ namespace Duktape
 
                             var tsPropertyPrefix = bindingInfo.setterName != null ? "" : "readonly ";
                             var tsPropertyType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.propertyInfo.PropertyType);
-                            cg.typescript.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
+                            cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                         }
                         foreach (var kv in bindingInfo.fields)
                         {
@@ -206,11 +206,11 @@ namespace Duktape
                             if (bindingInfo.constantValue != null)
                             {
                                 var cv = bindingInfo.constantValue;
-                                cg.csharp.AppendLine($"duk_add_const(ctx, \"{tsFieldVar}\", {cv}, {-2});");
+                                cg.cs.AppendLine($"duk_add_const(ctx, \"{tsFieldVar}\", {cv}, {-2});");
                             }
                             else
                             {
-                                cg.csharp.AppendLine("duk_add_field(ctx, \"{0}\", {1}, {2}, {3});",
+                                cg.cs.AppendLine("duk_add_field(ctx, \"{0}\", {1}, {2}, {3});",
                                     tsFieldVar,
                                     bindingInfo.getterName != null ? bindingInfo.getterName : "null",
                                     bindingInfo.setterName != null ? bindingInfo.setterName : "null",
@@ -222,16 +222,16 @@ namespace Duktape
                                 tsFieldPrefix += "readonly ";
                             }
                             var tsFieldType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.fieldInfo.FieldType);
-                            cg.typescript.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
+                            cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
                         }
-                        cg.csharp.AppendLine("duk_end_class(ctx);");
+                        cg.cs.AppendLine("duk_end_class(ctx);");
                     }
                 }
                 base.Dispose();
             }
 
-            this.cg.typescript.DecTabLevel();
-            this.cg.typescript.AppendLine("}");
+            this.cg.tsDeclare.DecTabLevel();
+            this.cg.tsDeclare.AppendLine("}");
         }
     }
 }

@@ -1,4 +1,18 @@
 
+import "./mm/foo"
+
+(function () {
+    console.log("### Delegates begin")
+    let d = new DuktapeJS.Delegate0<void>()
+    d.on(this, () => {
+        console.log("delegate0")
+    })
+    d.dispatch()
+    d.clear()
+    d.dispatch()
+    console.log("### Delegates end")
+})();
+
 (function () {
     console.log("### System.Array")
     let nativeArray = System.Array.CreateInstance(System.Int32, 10)

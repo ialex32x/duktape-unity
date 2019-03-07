@@ -16,11 +16,11 @@ namespace Duktape
         public TopLevelCodeGen(CodeGenerator cg, TypeBindingInfo type)
         {
             this.cg = cg;
-            this.cg.csharp.AppendLine("// Assembly: {0}", type.Assembly.GetName());
-            this.cg.csharp.AppendLine("// Type: {0}", type.FullName);
-            this.cg.csharp.AppendLine("using System;");
-            this.cg.csharp.AppendLine("using System.Collections.Generic;");
-            this.cg.csharp.AppendLine();
+            this.cg.cs.AppendLine("// Assembly: {0}", type.Assembly.GetName());
+            this.cg.cs.AppendLine("// Type: {0}", type.FullName);
+            this.cg.cs.AppendLine("using System;");
+            this.cg.cs.AppendLine("using System.Collections.Generic;");
+            this.cg.cs.AppendLine();
 
             // this.cg.typescript.AppendLine("// {0} {1}", Environment.UserName, this.cg.bindingManager.dateTime);
         }
@@ -28,10 +28,10 @@ namespace Duktape
         public TopLevelCodeGen(CodeGenerator cg, string name)
         {
             this.cg = cg;
-            this.cg.csharp.AppendLine("// Special: {0}", name);
-            this.cg.csharp.AppendLine("using System;");
-            this.cg.csharp.AppendLine("using System.Collections.Generic;");
-            this.cg.csharp.AppendLine();
+            this.cg.cs.AppendLine("// Special: {0}", name);
+            this.cg.cs.AppendLine("using System;");
+            this.cg.cs.AppendLine("using System.Collections.Generic;");
+            this.cg.cs.AppendLine();
         }
 
         public void Dispose()
@@ -52,10 +52,10 @@ namespace Duktape
             this.csNamespace = csNamespace;
             if (!string.IsNullOrEmpty(csNamespace))
             {
-                this.cg.csharp.AppendLine("namespace {0} {{", csNamespace);
-                this.cg.csharp.AddTabLevel();
+                this.cg.cs.AppendLine("namespace {0} {{", csNamespace);
+                this.cg.cs.AddTabLevel();
             }
-            this.cg.csharp.AppendLine("using Duktape;");
+            this.cg.cs.AppendLine("using Duktape;");
         }
 
         public NamespaceCodeGen(CodeGenerator cg, string csNamespace, string tsNamespace)
@@ -65,16 +65,16 @@ namespace Duktape
             this.tsNamespace = tsNamespace;
             if (!string.IsNullOrEmpty(csNamespace))
             {
-                this.cg.csharp.AppendLine("namespace {0} {{", csNamespace);
-                this.cg.csharp.AddTabLevel();
+                this.cg.cs.AppendLine("namespace {0} {{", csNamespace);
+                this.cg.cs.AddTabLevel();
             }
-            this.cg.csharp.AppendLine("using Duktape;");
+            this.cg.cs.AppendLine("using Duktape;");
             // cg.csharp.AppendLine("using UnityEngine;");
             if (!string.IsNullOrEmpty(tsNamespace))
             {
                 tsNamespaceWrite = true;
-                this.cg.typescript.AppendLine("declare namespace {0} {{", tsNamespace);
-                this.cg.typescript.AddTabLevel();
+                this.cg.tsDeclare.AppendLine("declare namespace {0} {{", tsNamespace);
+                this.cg.tsDeclare.AddTabLevel();
             }
         }
 
@@ -82,13 +82,13 @@ namespace Duktape
         {
             if (!string.IsNullOrEmpty(csNamespace))
             {
-                this.cg.csharp.DecTabLevel();
-                this.cg.csharp.AppendLine("}");
+                this.cg.cs.DecTabLevel();
+                this.cg.cs.AppendLine("}");
             }
             if (tsNamespaceWrite)
             {
-                this.cg.typescript.DecTabLevel();
-                this.cg.typescript.AppendLine("}");
+                this.cg.tsDeclare.DecTabLevel();
+                this.cg.tsDeclare.AppendLine("}");
             }
         }
     }
@@ -100,16 +100,16 @@ namespace Duktape
         public RegFuncCodeGen(CodeGenerator cg)
         {
             this.cg = cg;
-            this.cg.csharp.AppendLine("public static int reg(IntPtr ctx)");
-            this.cg.csharp.AppendLine("{");
-            this.cg.csharp.AddTabLevel();
+            this.cg.cs.AppendLine("public static int reg(IntPtr ctx)");
+            this.cg.cs.AppendLine("{");
+            this.cg.cs.AddTabLevel();
         }
 
         public virtual void Dispose()
         {
-            this.cg.csharp.AppendLine("return 0;");
-            this.cg.csharp.DecTabLevel();
-            this.cg.csharp.AppendLine("}");
+            this.cg.cs.AppendLine("return 0;");
+            this.cg.cs.DecTabLevel();
+            this.cg.cs.AppendLine("}");
         }
     }
 
@@ -120,7 +120,7 @@ namespace Duktape
         public RegFuncNamespaceCodeGen(CodeGenerator cg, TypeBindingInfo bindingInfo)
         {
             this.cg = cg;
-            this.cg.csharp.Append("duk_begin_namespace(ctx");
+            this.cg.cs.Append("duk_begin_namespace(ctx");
             // Debug.LogErrorFormat("{0}: {1}", bindingInfo.type, bindingInfo.Namespace);
             if (bindingInfo.Namespace != null)
             {
@@ -128,15 +128,15 @@ namespace Duktape
                 for (var i = 0; i < split_ns.Length; i++)
                 {
                     var el_ns = split_ns[i];
-                    this.cg.csharp.AppendL(", \"{0}\"", el_ns);
+                    this.cg.cs.AppendL(", \"{0}\"", el_ns);
                 }
             }
-            this.cg.csharp.AppendLineL(");");
+            this.cg.cs.AppendLineL(");");
         }
 
         public virtual void Dispose()
         {
-            this.cg.csharp.AppendLine("duk_end_namespace(ctx);");
+            this.cg.cs.AppendLine("duk_end_namespace(ctx);");
         }
     }
 
@@ -149,10 +149,10 @@ namespace Duktape
         {
             this.cg = cg;
             this.bindingInfo = bindingInfo;
-            this.cg.csharp.AppendLine("[{0}({1})]", typeof(JSBindingAttribute).Name, DuktapeVM.VERSION);
-            this.cg.csharp.AppendLine("[UnityEngine.Scripting.Preserve]");
-            this.cg.csharp.AppendLine("public class {0} : {1} {{", bindingInfo.name, typeof(DuktapeBinding).Name);
-            this.cg.csharp.AddTabLevel();
+            this.cg.cs.AppendLine("[{0}({1})]", typeof(JSBindingAttribute).Name, DuktapeVM.VERSION);
+            this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
+            this.cg.cs.AppendLine("public class {0} : {1} {{", bindingInfo.name, typeof(DuktapeBinding).Name);
+            this.cg.cs.AddTabLevel();
         }
 
         public string GetTypeName(Type type)
@@ -162,8 +162,8 @@ namespace Duktape
 
         public virtual void Dispose()
         {
-            this.cg.csharp.DecTabLevel();
-            this.cg.csharp.AppendLine("}");
+            this.cg.cs.DecTabLevel();
+            this.cg.cs.AppendLine("}");
         }
     }
 
@@ -174,7 +174,7 @@ namespace Duktape
         public PreservedCodeGen(CodeGenerator cg)
         {
             this.cg = cg;
-            this.cg.csharp.AppendLine("[UnityEngine.Scripting.Preserve]");
+            this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
         }
 
         public virtual void Dispose()
@@ -187,7 +187,7 @@ namespace Duktape
         public PInvokeGuardCodeGen(CodeGenerator cg)
         : base(cg)
         {
-            this.cg.csharp.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]");
+            this.cg.cs.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]");
         }
     }
 
@@ -198,15 +198,15 @@ namespace Duktape
         public BindingFuncDeclareCodeGen(CodeGenerator cg, string name)
         {
             this.cg = cg;
-            this.cg.csharp.AppendLine("public static int {0}(IntPtr ctx)", name);
-            this.cg.csharp.AppendLine("{");
-            this.cg.csharp.AddTabLevel();
+            this.cg.cs.AppendLine("public static int {0}(IntPtr ctx)", name);
+            this.cg.cs.AppendLine("{");
+            this.cg.cs.AddTabLevel();
         }
 
         public virtual void Dispose()
         {
-            this.cg.csharp.DecTabLevel();
-            this.cg.csharp.AppendLine("}");
+            this.cg.cs.DecTabLevel();
+            this.cg.cs.AppendLine("}");
         }
     }
 
@@ -216,9 +216,9 @@ namespace Duktape
         public TryCatchGuradCodeGen(CodeGenerator cg)
         {
             this.cg = cg;
-            this.cg.csharp.AppendLine("try");
-            this.cg.csharp.AppendLine("{");
-            this.cg.csharp.AddTabLevel();
+            this.cg.cs.AppendLine("try");
+            this.cg.cs.AppendLine("{");
+            this.cg.cs.AddTabLevel();
         }
 
         private string GetVarName(Type type)
@@ -230,20 +230,20 @@ namespace Duktape
         private void AddCatchClause(Type exceptionType, string handler)
         {
             var varName = GetVarName(exceptionType);
-            this.cg.csharp.AppendLine("catch ({0} {1})", exceptionType.Name, varName);
-            this.cg.csharp.AppendLine("{");
-            this.cg.csharp.AddTabLevel();
+            this.cg.cs.AppendLine("catch ({0} {1})", exceptionType.Name, varName);
+            this.cg.cs.AppendLine("{");
+            this.cg.cs.AddTabLevel();
             {
-                this.cg.csharp.AppendLine("return DuktapeDLL.{0}(ctx, {1}.ToString());", handler, varName);
+                this.cg.cs.AppendLine("return DuktapeDLL.{0}(ctx, {1}.ToString());", handler, varName);
             }
-            this.cg.csharp.DecTabLevel();
-            this.cg.csharp.AppendLine("}");
+            this.cg.cs.DecTabLevel();
+            this.cg.cs.AppendLine("}");
         }
 
         public virtual void Dispose()
         {
-            this.cg.csharp.DecTabLevel();
-            this.cg.csharp.AppendLine("}");
+            this.cg.cs.DecTabLevel();
+            this.cg.cs.AppendLine("}");
             // this.AddCatchClause(typeof(NullReferenceException), "duk_reference_error");
             // this.AddCatchClause(typeof(IndexOutOfRangeException), "duk_range_error");
             this.AddCatchClause(typeof(Exception), "duk_generic_error");
@@ -262,20 +262,20 @@ namespace Duktape
             switch (buildTarget)
             {
                 case BuildTarget.Android:
-                    cg.csharp.AppendLineL("#if UNITY_ANDROID");
+                    cg.cs.AppendLineL("#if UNITY_ANDROID");
                     break;
                 case BuildTarget.iOS:
-                    cg.csharp.AppendLineL("#if UNITY_IOS");
+                    cg.cs.AppendLineL("#if UNITY_IOS");
                     break;
                 case BuildTarget.StandaloneWindows:
                 case BuildTarget.StandaloneWindows64:
-                    cg.csharp.AppendLineL("#if UNITY_STANDALONE_WIN");
+                    cg.cs.AppendLineL("#if UNITY_STANDALONE_WIN");
                     break;
                 case BuildTarget.StandaloneOSX:
-                    cg.csharp.AppendLineL("#if UNITY_STANDALONE_OSX");
+                    cg.cs.AppendLineL("#if UNITY_STANDALONE_OSX");
                     break;
                 default:
-                    cg.csharp.AppendLineL("#if false");
+                    cg.cs.AppendLineL("#if false");
                     break;
             }
         }
@@ -283,7 +283,7 @@ namespace Duktape
 
         public void Dispose()
         {
-            cg.csharp.AppendLineL("#endif");
+            cg.cs.AppendLineL("#endif");
         }
     }
 }
