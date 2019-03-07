@@ -232,6 +232,7 @@ namespace Duktape
     {
         public BindingManager bindingManager;
         public Type type;
+        public TypeTransform transform;
         public Type super { get { return type.BaseType; } } // 父类类型
 
         public string name; // 绑定代码名
@@ -275,6 +276,7 @@ namespace Duktape
         {
             this.bindingManager = bindingManager;
             this.type = type;
+            this.transform = bindingManager.GetTypeTransform(type);
             if (type.DeclaringType != null)
             {
                 this.Namespace = $"{type.Namespace}.{type.DeclaringType.Name}";

@@ -15,6 +15,7 @@ namespace Duktape
         : base(cg, bindingInfo)
         {
             this.cg.AppendJSDoc(this.bindingInfo.type);
+            var transform = this.bindingInfo.transform;
             var prefix = this.bindingInfo.Namespace != null ? "" : "declare ";
             var super = this.cg.bindingManager.GetTSSuperName(this.bindingInfo);
             var extends = string.IsNullOrEmpty(super) ? "" : $" extends {super}";
@@ -47,14 +48,17 @@ namespace Duktape
             foreach (var kv in this.bindingInfo.methods)
             {
                 var methodBindingInfo = kv.Value;
-                using (new PInvokeGuardCodeGen(cg))
+                if (transform == null || !transform.IsRedirectedMethod(methodBindingInfo.regName))
                 {
-                    using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.name))
+                    using (new PInvokeGuardCodeGen(cg))
                     {
-                        using (new TryCatchGuradCodeGen(cg))
+                        using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.name))
                         {
-                            using (new MethodCodeGen(cg, methodBindingInfo))
+                            using (new TryCatchGuradCodeGen(cg))
                             {
+                                using (new MethodCodeGen(cg, methodBindingInfo))
+                                {
+                                }
                             }
                         }
                     }
@@ -63,15 +67,18 @@ namespace Duktape
             // 静态成员方法
             foreach (var kv in this.bindingInfo.staticMethods)
             {
-                var propertyBindingInfo = kv.Value;
-                using (new PInvokeGuardCodeGen(cg))
+                var methodBindingInfo = kv.Value;
+                if (transform == null || !transform.IsRedirectedMethod(methodBindingInfo.regName))
                 {
-                    using (new BindingFuncDeclareCodeGen(cg, propertyBindingInfo.name))
+                    using (new PInvokeGuardCodeGen(cg))
                     {
-                        using (new TryCatchGuradCodeGen(cg))
+                        using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.name))
                         {
-                            using (new MethodCodeGen(cg, propertyBindingInfo))
+                            using (new TryCatchGuradCodeGen(cg))
                             {
+                                using (new MethodCodeGen(cg, methodBindingInfo))
+                                {
+                                }
                             }
                         }
                     }
@@ -174,6 +181,11 @@ namespace Duktape
                             var regName = kv.Value.regName;
                             var funcName = kv.Value.name;
                             var bStatic = false;
+                            string redirect;
+                            if (this.bindingInfo.transform != null && this.bindingInfo.transform.TryRedirectMethod(regName, out redirect))
+                            {
+                                funcName = redirect;
+                            }
                             cg.cs.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? -2 : -1);
                         }
                         foreach (var kv in bindingInfo.staticMethods)
@@ -181,6 +193,11 @@ namespace Duktape
                             var regName = kv.Value.regName;
                             var funcName = kv.Value.name;
                             var bStatic = true;
+                            string redirect;
+                            if (this.bindingInfo.transform != null && this.bindingInfo.transform.TryRedirectMethod(regName, out redirect))
+                            {
+                                funcName = redirect;
+                            }
                             cg.cs.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? -2 : -1);
                         }
                         foreach (var kv in bindingInfo.properties)

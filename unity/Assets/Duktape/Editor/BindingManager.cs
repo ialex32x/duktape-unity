@@ -25,6 +25,8 @@ namespace Duktape
         private Dictionary<Type, TypeBindingInfo> exportedTypes = new Dictionary<Type, TypeBindingInfo>();
         private Dictionary<Type, DelegateBindingInfo> exportedDelegates = new Dictionary<Type, DelegateBindingInfo>();
         private Dictionary<Type, Type> redirectDelegates = new Dictionary<Type, Type>();
+        // 类型修改
+        private Dictionary<Type, TypeTransform> typesTarnsform = new Dictionary<Type, TypeTransform>();
         private List<string> outputFiles = new List<string>();
         private List<string> removedFiles = new List<string>();
 
@@ -135,6 +137,16 @@ namespace Duktape
             AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): T[]",
                 typeof(GameObject), "GetComponentsInParent", typeof(Type));
 
+            TransformType(typeof(GameObject))
+                .AddRedirectMethod("AddComponent", "_AddComponent")
+                .AddRedirectMethod("GetComponent", "_GetComponent")
+                .AddRedirectMethod("GetComponentInChildren", "_GetComponentInChildren")
+                .AddRedirectMethod("GetComponentInParent", "_GetComponentInParent")
+                .AddRedirectMethod("GetComponents", "_GetComponents")
+                .AddRedirectMethod("GetComponentsInChildren", "_GetComponentsInChildren")
+                .AddRedirectMethod("GetComponentsInParent", "_GetComponentsInParent")
+            ;
+
             AddTSTypeNameMap(typeof(sbyte), "number");
             AddTSTypeNameMap(typeof(byte), "number");
             AddTSTypeNameMap(typeof(int), "number");
@@ -181,6 +193,22 @@ namespace Duktape
             BlockCSTypeMember(typeof(string), "Chars");
 
             Initialize();
+        }
+
+        public TypeTransform GetTypeTransform(Type type)
+        {
+            TypeTransform transform;
+            return typesTarnsform.TryGetValue(type, out transform) ? transform : null;
+        }
+
+        public TypeTransform TransformType(Type type)
+        {
+            TypeTransform transform;
+            if (!typesTarnsform.TryGetValue(type, out transform))
+            {
+                typesTarnsform[type] = transform = new TypeTransform();
+            }
+            return transform;
         }
 
         private static bool _FindFilterBindingProcess(Type type, object l)
