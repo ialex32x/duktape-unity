@@ -19,6 +19,7 @@ namespace Duktape
         private List<string> _explicitAssemblies = new List<string>(); // 仅导出指定需要导出的类型
 
         private HashSet<Type> blacklist;
+        private Dictionary<Type, HashSet<string>> _csTypeMemberBlacklist = new Dictionary<Type, HashSet<string>>();
         private HashSet<Type> whitelist;
         private List<string> typePrefixBlacklist;
         private Dictionary<Type, TypeBindingInfo> exportedTypes = new Dictionary<Type, TypeBindingInfo>();
@@ -27,7 +28,7 @@ namespace Duktape
         private List<string> outputFiles = new List<string>();
         private List<string> removedFiles = new List<string>();
 
-        private Dictionary<Type, string> _tsTypeNameMap = new Dictionary<Type, string>();
+        private Dictionary<Type, List<string>> _tsTypeNameMap = new Dictionary<Type, List<string>>();
         private Dictionary<Type, string> _csTypeNameMap = new Dictionary<Type, string>();
         private Dictionary<string, string> _csTypeNameMapS = new Dictionary<string, string>();
         private static HashSet<string> _tsKeywords = new HashSet<string>();
@@ -134,29 +135,29 @@ namespace Duktape
             AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): T[]",
                 typeof(GameObject), "GetComponentsInParent", typeof(Type));
 
-            _tsTypeNameMap[typeof(sbyte)] = "number";
-            _tsTypeNameMap[typeof(byte)] = "number";
-            _tsTypeNameMap[typeof(int)] = "number";
-            _tsTypeNameMap[typeof(uint)] = "number";
-            _tsTypeNameMap[typeof(short)] = "number";
-            _tsTypeNameMap[typeof(ushort)] = "number";
-            _tsTypeNameMap[typeof(long)] = "number";
-            _tsTypeNameMap[typeof(ulong)] = "number";
-            _tsTypeNameMap[typeof(float)] = "number";
-            _tsTypeNameMap[typeof(double)] = "number";
-            _tsTypeNameMap[typeof(bool)] = "boolean";
-            _tsTypeNameMap[typeof(string)] = "string";
-            _tsTypeNameMap[typeof(char)] = "string";
-            _tsTypeNameMap[typeof(void)] = "void";
-            _tsTypeNameMap[typeof(LayerMask)] = "(UnityEngine.LayerMask | number)";
-            _tsTypeNameMap[typeof(Color)] = "(UnityEngine.Color | Array<number>)";
-            _tsTypeNameMap[typeof(Color32)] = "(UnityEngine.Color32 | Array<number>)";
-            _tsTypeNameMap[typeof(Vector2)] = "(UnityEngine.Vector2 | Array<number>)";
-            _tsTypeNameMap[typeof(Vector2Int)] = "(UnityEngine.Vector2Int | Array<number>)";
-            _tsTypeNameMap[typeof(Vector3)] = "(UnityEngine.Vector3 | Array<number>)";
-            _tsTypeNameMap[typeof(Vector3Int)] = "(UnityEngine.Vector3Int | Array<number>)";
-            _tsTypeNameMap[typeof(Vector4)] = "(UnityEngine.Vector4 | Array<number>)";
-            _tsTypeNameMap[typeof(Quaternion)] = "(UnityEngine.Quaternion | Array<number>)";
+            AddTSTypeNameMap(typeof(sbyte), "number");
+            AddTSTypeNameMap(typeof(byte), "number");
+            AddTSTypeNameMap(typeof(int), "number");
+            AddTSTypeNameMap(typeof(uint), "number");
+            AddTSTypeNameMap(typeof(short), "number");
+            AddTSTypeNameMap(typeof(ushort), "number");
+            AddTSTypeNameMap(typeof(long), "number");
+            AddTSTypeNameMap(typeof(ulong), "number");
+            AddTSTypeNameMap(typeof(float), "number");
+            AddTSTypeNameMap(typeof(double), "number");
+            AddTSTypeNameMap(typeof(bool), "boolean");
+            AddTSTypeNameMap(typeof(string), "string");
+            AddTSTypeNameMap(typeof(char), "string");
+            AddTSTypeNameMap(typeof(void), "void");
+            AddTSTypeNameMap(typeof(LayerMask), "UnityEngine.LayerMask", "number");
+            AddTSTypeNameMap(typeof(Color), "UnityEngine.Color", "Array<number>");
+            AddTSTypeNameMap(typeof(Color32), "UnityEngine.Color32", "Array<number>");
+            AddTSTypeNameMap(typeof(Vector2), "UnityEngine.Vector2", "Array<number>");
+            AddTSTypeNameMap(typeof(Vector2Int), "UnityEngine.Vector2Int", "Array<number>");
+            AddTSTypeNameMap(typeof(Vector3), "UnityEngine.Vector3", "Array<number>");
+            AddTSTypeNameMap(typeof(Vector3Int), "UnityEngine.Vector3Int", "Array<number>");
+            AddTSTypeNameMap(typeof(Vector4), "UnityEngine.Vector4", "Array<number>");
+            AddTSTypeNameMap(typeof(Quaternion), "UnityEngine.Quaternion", "Array<number>");
 
             AddCSTypeNameMap(typeof(sbyte), "sbyte");
             AddCSTypeNameMap(typeof(byte), "byte");
@@ -173,6 +174,10 @@ namespace Duktape
             AddCSTypeNameMap(typeof(char), "char");
             AddCSTypeNameMap(typeof(System.Object), "object");
             AddCSTypeNameMap(typeof(void), "void");
+
+            BlockCSTypeMember(typeof(double), "IsFinite");
+            BlockCSTypeMember(typeof(float), "IsFinite");
+            BlockCSTypeMember(typeof(string), "Chars");
 
             Initialize();
         }
@@ -213,6 +218,22 @@ namespace Duktape
             }
         }
 
+        public bool IsTypeMemberBlocked(Type type, string memeberName)
+        {
+            HashSet<string> blacklist;
+            return _csTypeMemberBlacklist.TryGetValue(type, out blacklist) && blacklist.Contains(memeberName);
+        }
+
+        public void BlockCSTypeMember(Type type, string memberName)
+        {
+            HashSet<string> blacklist;
+            if (!_csTypeMemberBlacklist.TryGetValue(type, out blacklist))
+            {
+                _csTypeMemberBlacklist[type] = blacklist = new HashSet<string>();
+            }
+            blacklist.Add(memberName);
+        }
+
         // TS: 为指定类型的匹配方法添加声明映射 (仅用于优化代码提示体验)
         public void AddTSMethodDeclaration(string spec, Type type, string name, params Type[] parameters)
         {
@@ -237,6 +258,16 @@ namespace Duktape
             return _tsMethodDeclarations.TryGetValue(method, out code);
         }
 
+        public void AddTSTypeNameMap(Type type, params string[] names)
+        {
+            List<string> list;
+            if (!_tsTypeNameMap.TryGetValue(type, out list))
+            {
+                _tsTypeNameMap[type] = list = new List<string>();
+            }
+            list.AddRange(names);
+        }
+
         // CS, 添加类型名称映射, 用于简化导出时的常用类型名
         public void AddCSTypeNameMap(Type type, string name)
         {
@@ -246,10 +277,15 @@ namespace Duktape
         }
 
         // 增加导出类型 (需要在 Collect 阶段进行)
-        public void AddExportedType(Type type)
+        public bool AddExportedType(Type type)
         {
-            var typeBindingInfo = new TypeBindingInfo(this, type);
-            exportedTypes.Add(type, typeBindingInfo);
+            if (!exportedTypes.ContainsKey(type))
+            {
+                var typeBindingInfo = new TypeBindingInfo(this, type);
+                exportedTypes.Add(type, typeBindingInfo);
+                return true;
+            }
+            return false;
         }
 
         public bool RemoveExportedType(Type type)
@@ -342,10 +378,10 @@ namespace Duktape
             {
                 return "void";
             }
-            string name;
-            if (_tsTypeNameMap.TryGetValue(type, out name))
+            List<string> names;
+            if (_tsTypeNameMap.TryGetValue(type, out names))
             {
-                return name;
+                return names.Count > 1 ? $"({String.Join(" | ", names)})" : names[0];
             }
             if (type.IsArray)
             {
@@ -551,6 +587,11 @@ namespace Duktape
         // 获取 type 在 绑定代码 中对应类型名
         public string GetCSTypeFullName(Type type)
         {
+            return GetCSTypeFullName(type, true);
+        }
+
+        public string GetCSTypeFullName(Type type, bool shortName)
+        {
             // Debug.LogFormat("{0} Array {1} ByRef {2} GetElementType {3}", type, type.IsArray, type.IsByRef, type.GetElementType());
             if (type.IsGenericType)
             {
@@ -560,7 +601,7 @@ namespace Duktape
                 for (var i = 0; i < gargs.Length; i++)
                 {
                     var garg = gargs[i];
-                    purename += GetCSTypeFullName(garg);
+                    purename += GetCSTypeFullName(garg, shortName);
                     if (i != gargs.Length - 1)
                     {
                         purename += ", ";
@@ -571,16 +612,19 @@ namespace Duktape
             }
             if (type.IsArray)
             {
-                return GetCSTypeFullName(type.GetElementType()) + "[]";
+                return GetCSTypeFullName(type.GetElementType(), shortName) + "[]";
             }
             if (type.IsByRef)
             {
-                return GetCSTypeFullName(type.GetElementType());
+                return GetCSTypeFullName(type.GetElementType(), shortName);
             }
             string name;
-            if (_csTypeNameMap.TryGetValue(type, out name))
+            if (shortName)
             {
-                return name;
+                if (_csTypeNameMap.TryGetValue(type, out name))
+                {
+                    return name;
+                }
             }
             var fullname = type.FullName.Replace('+', '.');
             if (fullname.Contains("`"))
@@ -703,14 +747,14 @@ namespace Duktape
             }
         }
 
-        private void OnPreCollectMembers()
+        private void OnPreCollectTypes()
         {
             for (int i = 0, size = _bindingProcess.Count; i < size; i++)
             {
                 var bp = _bindingProcess[i];
                 try
                 {
-                    bp.OnPreCollectMembers(this);
+                    bp.OnPreCollectTypes(this);
                 }
                 catch (Exception exception)
                 {
@@ -719,14 +763,14 @@ namespace Duktape
             }
         }
 
-        private void OnPostCollectMembers()
+        private void OnPostCollectTypes()
         {
             for (int i = 0, size = _bindingProcess.Count; i < size; i++)
             {
                 var bp = _bindingProcess[i];
                 try
                 {
-                    bp.OnPostCollectMembers(this);
+                    bp.OnPostCollectTypes(this);
                 }
                 catch (Exception exception)
                 {
@@ -827,10 +871,11 @@ namespace Duktape
 
             ExportAssemblies(_explicitAssemblies, false);
             ExportAssemblies(_implicitAssemblies, true);
+            ExportBuiltins();
 
             log.AppendLine("collecting members");
             log.AddTabLevel();
-            OnPreCollectMembers();
+            OnPreCollectTypes();
             foreach (var typeBindingInfoKV in exportedTypes)
             {
                 var typeBindingInfo = typeBindingInfoKV.Value;
@@ -839,7 +884,7 @@ namespace Duktape
                 typeBindingInfo.Collect();
                 log.DecTabLevel();
             }
-            OnPostCollectMembers();
+            OnPostCollectTypes();
             log.DecTabLevel();
         }
 
@@ -862,6 +907,24 @@ namespace Duktape
                 _implicitAssemblies.Remove(name);
                 _explicitAssemblies.Remove(name);
             }
+        }
+
+        // 导出一些必要的基本类型 (预实现的辅助功能需要用到, DuktapeJS)
+        private void ExportBuiltins()
+        {
+            AddExportedType(typeof(byte));
+            AddExportedType(typeof(sbyte));
+            AddExportedType(typeof(float));
+            AddExportedType(typeof(double));
+            AddExportedType(typeof(string));
+            AddExportedType(typeof(int));
+            AddExportedType(typeof(uint));
+            AddExportedType(typeof(short));
+            AddExportedType(typeof(ushort));
+            AddExportedType(typeof(object));
+            AddExportedType(typeof(Array));
+            AddExportedType(typeof(Object));
+            AddExportedType(typeof(Vector3));
         }
 
         // implicitExport: 默认进行导出(黑名单例外), 否则根据导出标记或手工添加

@@ -23,10 +23,10 @@ namespace Duktape
         void OnPostCollectAssemblies(BindingManager bindingManager);
 
         // 收集类型阶段开始, 可在该阶段 AddExportedType 增加导出类型
-        void OnPreCollectMembers(BindingManager bindingManager);
+        void OnPreCollectTypes(BindingManager bindingManager);
 
         //
-        void OnPostCollectMembers(BindingManager bindingManager);
+        void OnPostCollectTypes(BindingManager bindingManager);
 
         // 生成指定类型绑定代码前
         void OnPreGenerateType(BindingManager bindingManager, TypeBindingInfo bindingInfo);
@@ -58,11 +58,11 @@ namespace Duktape
         {
         }
 
-        public virtual void OnPreCollectMembers(BindingManager bindingManager)
+        public virtual void OnPreCollectTypes(BindingManager bindingManager)
         {
         }
 
-        public virtual void OnPostCollectMembers(BindingManager bindingManager)
+        public virtual void OnPostCollectTypes(BindingManager bindingManager)
         {
         }
 

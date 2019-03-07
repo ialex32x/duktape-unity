@@ -169,6 +169,30 @@ namespace SampleNamespace
             }
             return sum;
         }
+
+        public int GetPositions(int[] positions)
+        {
+            var size = positions != null ? positions.Length : 0;
+            if (size > 2)
+            {
+                positions[2] = 2;
+                positions[0] = 0;
+                positions[1] = 1;
+                return 3;
+            }
+            if (size > 1)
+            {
+                positions[0] = 0;
+                positions[1] = 1;
+                return 2;
+            }
+            if (size > 0)
+            {
+                positions[1] = 1;
+                return 1;
+            }
+            return 0;
+        }
     }
 }
 

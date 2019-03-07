@@ -16,6 +16,35 @@ namespace Duktape
             return 0;
         }
 
+        // 创建一个 native array
+        [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+        public static int Array_Create(IntPtr ctx)
+        {
+            Type type;
+            int size;
+            if (duk_get_type(ctx, 0, out type))
+            {
+                if (type != null)
+                {
+                    if (DuktapeDLL.duk_is_number(ctx, 1) && duk_get_primitive(ctx, 1, out size))
+                    {
+                        var o = Array.CreateInstance(type, size);
+                        duk_push_any(ctx, (object)o);
+                        return 1;
+                    }
+                    else
+                    {
+                        return DuktapeDLL.duk_generic_error(ctx, "invalid size");
+                    }
+                }
+                else
+                {
+                    return DuktapeDLL.duk_generic_error(ctx, "invalid type");
+                }
+            }
+            return DuktapeDLL.duk_generic_error(ctx, "invalid args");
+        }
+
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         public static int ClearTimer(IntPtr ctx)
         {
@@ -68,7 +97,7 @@ namespace Duktape
                 fn = null;
                 return 1;
             }
-            var top_index = DuktapeDLL.duk_get_top_index(ctx); 
+            var top_index = DuktapeDLL.duk_get_top_index(ctx);
             // Debug.Log($"_GetTimerFunction {top} ?? {DuktapeDLL.duk_get_top(ctx)}");
             DuktapeValue[] argv = null;
             if (top_index > 1)
@@ -168,11 +197,12 @@ namespace Duktape
             DuktapeDLL.duk_put_global_string(ctx, "global");
             DuktapeDLL.duk_push_global_object(ctx);
             DuktapeDLL.duk_put_global_string(ctx, "window");
-            
+
             duk_begin_namespace(ctx, "DuktapeJS");
             {
                 duk_begin_special(ctx, DuktapeVM.SPECIAL_ENUM);
                 duk_add_method(ctx, "GetName", Enum_GetName, -3);
+                duk_add_method(ctx, "Array", Array_Create, -3);
                 duk_end_special(ctx);
             }
             {
