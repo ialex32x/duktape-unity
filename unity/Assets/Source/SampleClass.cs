@@ -170,6 +170,15 @@ namespace SampleNamespace
             return sum;
         }
 
+        public void TestDuktapeArray(DuktapeArray array)
+        {
+            var len = array.length;
+            for (var i = 0; i < len; i++)
+            {
+                Debug.Log($"    #{i}: {array.GetFloatValue(i)}");
+            }
+        }
+
         public int GetPositions(int[] positions)
         {
             var size = positions != null ? positions.Length : 0;
