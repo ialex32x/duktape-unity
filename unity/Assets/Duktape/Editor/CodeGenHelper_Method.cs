@@ -92,10 +92,10 @@ namespace Duktape
                 {
                     arglist += ", ";
                 }
-                var argType = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType);
                 if (hasParams && i == parameters.Length - 1)
                 {
                     // 处理数组
+                    var argType = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType);
                     var argElementType = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType.GetElementType());
                     var argElementIndex = i == 0 ? nargs : nargs + " - " + i;
                     this.cg.csharp.AppendLine($"{argType} arg{i} = null;");
@@ -120,12 +120,18 @@ namespace Duktape
                 }
                 else
                 {
-                    var argGetterOp = this.cg.bindingManager.GetDuktapeGetter(parameter.ParameterType);
-                    this.cg.csharp.AppendLine($"{argType} arg{i};");
-                    this.cg.csharp.AppendLine($"{argGetterOp}(ctx, {i}, out arg{i});");
+                    WriteParameterGetter(parameter.ParameterType, i, $"arg{i}");
                 }
             }
             return arglist;
+        }
+
+        protected void WriteParameterGetter(Type ptype, int index, string argname)
+        {
+            var argType = this.cg.bindingManager.GetCSTypeFullName(ptype);
+            var argGetterOp = this.cg.bindingManager.GetDuktapeGetter(ptype);
+            this.cg.csharp.AppendLine($"{argType} {argname};");
+            this.cg.csharp.AppendLine($"{argGetterOp}(ctx, {index}, out {argname});");
         }
 
         // 输出所有变体绑定
@@ -351,7 +357,7 @@ namespace Duktape
         protected abstract Type GetReturnType(T method);
 
         // 获取方法调用
-        protected abstract string GetInvokeBinding(string caller, T method, string arglist);
+        protected abstract string GetInvokeBinding(string caller, T method, bool hasParams, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef);
 
         protected virtual void BeginInvokeBinding() { }
 
@@ -364,14 +370,13 @@ namespace Duktape
             var parameters = method.GetParameters();
             var returnParameters = new List<ParameterInfo>();
             var caller = this.cg.AppendGetThisCS(method);
-            var arglist = this.AppendGetParameters(isVararg, argc, parameters, returnParameters);
             var returnType = GetReturnType(method);
 
             if (returnType == null || returnType == typeof(void))
             {
                 // 方法本身没有返回值
                 this.BeginInvokeBinding();
-                cg.csharp.AppendLine($"{this.GetInvokeBinding(caller, method, arglist)};");
+                cg.csharp.AppendLine($"{this.GetInvokeBinding(caller, method, isVararg, argc, parameters, returnParameters)};");
                 this.EndInvokeBinding();
                 if (returnParameters.Count > 0)
                 {
@@ -396,7 +401,7 @@ namespace Duktape
             {
                 // 方法本身有返回值
                 this.BeginInvokeBinding();
-                cg.csharp.AppendLine($"var ret = {this.GetInvokeBinding(caller, method, arglist)};");
+                cg.csharp.AppendLine($"var ret = {this.GetInvokeBinding(caller, method, isVararg, argc, parameters, returnParameters)};");
                 this.EndInvokeBinding();
                 if (returnParameters.Count > 0)
                 {
@@ -422,8 +427,9 @@ namespace Duktape
             return null;
         }
 
-        protected override string GetInvokeBinding(string caller, ConstructorInfo method, string arglist)
+        protected override string GetInvokeBinding(string caller, ConstructorInfo method, bool hasParams, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
         {
+            var arglist = this.AppendGetParameters(hasParams, nargs, parameters, parametersByRef);
             var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.bindingInfo.decalringType);
             return $"var o = new {decalringTypeName}({arglist})";
         }
@@ -469,8 +475,46 @@ namespace Duktape
             return method.ReturnType;
         }
 
-        protected override string GetInvokeBinding(string caller, MethodInfo method, string arglist)
+        protected override string GetInvokeBinding(string caller, MethodInfo method, bool hasParams, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
         {
+            if (bindingInfo.isIndexer)
+            {
+                if (method.ReturnType == typeof(void))
+                {
+                    var last = parameters.Length - 1;
+                    var arglist_t = "";
+                    for (var i = 0; i < last; i++)
+                    {
+                        var argname = $"arg{i}";
+                        this.WriteParameterGetter(parameters[i].ParameterType, i, argname);
+                        arglist_t += argname;
+                        if (i != last - 1)
+                        {
+                            arglist_t += ", ";
+                        }
+                    }
+                    var argname_last = $"arg{last}";
+                    this.WriteParameterGetter(parameters[last].ParameterType, last, argname_last);
+                    return $"{caller}[{arglist_t}] = {argname_last}"; // setter
+                }
+                else
+                {
+                    var last = parameters.Length;
+                    var arglist_t = "";
+                    for (var i = 0; i < last; i++)
+                    {
+                        var argname = $"arg{i}";
+                        this.WriteParameterGetter(parameters[i].ParameterType, i, argname);
+                        arglist_t += argname;
+                        if (i != last - 1)
+                        {
+                            arglist_t += ", ";
+                        }
+                    }
+                    return $"{caller}[{arglist_t}]"; // getter
+                }
+            }
+            var arglist = this.AppendGetParameters(hasParams, nargs, parameters, parametersByRef);
             return $"{caller}.{method.Name}({arglist})";
         }
 

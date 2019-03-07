@@ -328,6 +328,11 @@ namespace Duktape
             return method.GetGenericArguments().Length > 0;
         }
 
+        public static bool IsUnsupported(MethodBase method)
+        {
+            return ContainsPointer(method) || IsGenericMethod(method);
+        }
+
         // 收集所有 delegate 类型
         public void CollectDelegate(Type type)
         {
