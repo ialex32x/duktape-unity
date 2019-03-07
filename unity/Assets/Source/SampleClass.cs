@@ -170,6 +170,14 @@ namespace SampleNamespace
             return sum;
         }
 
+        public static void TestDelegate(Action act)
+        {
+            if (act != null)
+            {
+                act();
+            }
+        }
+
         public void TestDuktapeArray(DuktapeArray array)
         {
             var len = array.length;

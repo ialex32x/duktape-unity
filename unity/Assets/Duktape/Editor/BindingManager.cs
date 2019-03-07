@@ -401,8 +401,9 @@ namespace Duktape
                 {
                     var nargs = delegateBindingInfo.parameters.Length;
                     var ret = GetTSTypeFullName(delegateBindingInfo.returnType);
-                    var arglist = (nargs > 0 ? ", " : "") + GetArglistTypesTS(delegateBindingInfo.parameters);
-                    return $"Delegate{nargs}<{ret}{arglist}>";
+                    var t_arglist = (nargs > 0 ? ", " : "") + GetTSArglistTypes(delegateBindingInfo.parameters, false);
+                    var v_arglist = GetTSArglistTypes(delegateBindingInfo.parameters, true);
+                    return $"Delegate{nargs}<{ret}{t_arglist}> | (({v_arglist}) => {ret})";
                 }
             }
             return "any";
@@ -419,7 +420,7 @@ namespace Duktape
         }
 
         // 生成参数对应的字符串形式参数列表定义 (typescript)
-        public string GetArglistTypesTS(ParameterInfo[] parameters)
+        public string GetTSArglistTypes(ParameterInfo[] parameters, bool withVarName)
         {
             var size = parameters.Length;
             var arglist = "";
@@ -439,6 +440,10 @@ namespace Duktape
                 // {
                 //     arglist += "ref ";
                 // }
+                if (withVarName)
+                {
+                    arglist += GetTSVariable(parameter.Name) + ": ";
+                }
                 arglist += typename;
                 // arglist += " ";
                 // arglist += parameter.Name;

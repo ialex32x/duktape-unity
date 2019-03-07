@@ -7,6 +7,16 @@
     console.log(s.GetPositions(nativeArray));
     s.TestDuktapeArray([1, 2, 3]);
 })();
+(function () {
+    SampleNamespace.SampleClass.TestDelegate(function () {
+        console.log(this, "TestDelegate");
+    });
+    var d = new DuktapeJS.Dispatcher();
+    d.on("this", function () {
+        console.log(this, "TestDelegate");
+    });
+    SampleNamespace.SampleClass.TestDelegate(d);
+})();
 console.log(UnityEngine.Mathf.PI);
 // UnityEngine.Debug.Log("greeting")
 var go = new UnityEngine.GameObject("testing");
