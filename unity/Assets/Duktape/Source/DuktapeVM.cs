@@ -292,6 +292,7 @@ namespace Duktape
                     }
                 }
             }
+            DuktapeJSBuiltins.postreg(ctx);
             DuktapeDLL.duk_pop(ctx);
             // Debug.LogFormat("exported {0} classes", _exported.Count);
 

@@ -193,8 +193,8 @@ namespace Duktape
 
         public static void reg(IntPtr ctx)
         {
-            DuktapeDLL.duk_push_global_object(ctx);
-            DuktapeDLL.duk_put_global_string(ctx, "global");
+            // DuktapeDLL.duk_push_global_object(ctx);
+            // DuktapeDLL.duk_put_global_string(ctx, "global");
             DuktapeDLL.duk_push_global_object(ctx);
             DuktapeDLL.duk_put_global_string(ctx, "window");
 
@@ -224,6 +224,14 @@ namespace Duktape
             duk_add_method(ctx, "setTimeout", SetTimeout, -1);
             duk_add_method(ctx, "clearInterval", ClearTimer, -1);
             duk_add_method(ctx, "clearTimeout", ClearTimer, -1);
+        }
+
+        public static void postreg(IntPtr ctx)
+        {
+            duk_begin_namespace(ctx, "UnityEngine");
+            DuktapeDLL.duk_builtins_reg_get(ctx, "Vector3");
+            DuktapeDLL.duk_put_prop_string(ctx, -2, "Vector3"); // replace unity.vector3
+            duk_end_namespace(ctx);
         }
     }
 }

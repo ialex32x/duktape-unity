@@ -1666,11 +1666,11 @@ namespace Duktape
 
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_unity_put2i(IntPtr ctx, duk_int_t v1, duk_int_t v2);
+        public static extern void duk_unity_put2i(IntPtr ctx, duk_idx_t idx,  duk_int_t v1, duk_int_t v2);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_unity_put3i(IntPtr ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3);
+        public static extern void duk_unity_put3i(IntPtr ctx, duk_idx_t idx,  duk_int_t v1, duk_int_t v2, duk_int_t v3);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_unity_put4i(IntPtr ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3, duk_int_t v4);
+        public static extern void duk_unity_put4i(IntPtr ctx, duk_idx_t idx,  duk_int_t v1, duk_int_t v2, duk_int_t v3, duk_int_t v4);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_unity_get2i(IntPtr ctx, duk_idx_t idx, out duk_int_t v1, out duk_int_t v2);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -1679,11 +1679,11 @@ namespace Duktape
         public static extern duk_bool_t duk_unity_get4i(IntPtr ctx, duk_idx_t idx, out duk_int_t v1, out duk_int_t v2, out duk_int_t v3, out duk_int_t v4);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_unity_put2f(IntPtr ctx, float v1, float v2);
+        public static extern void duk_unity_put2f(IntPtr ctx, duk_idx_t idx,  float v1, float v2);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_unity_put3f(IntPtr ctx, float v1, float v2, float v3);
+        public static extern void duk_unity_put3f(IntPtr ctx, duk_idx_t idx,  float v1, float v2, float v3);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_unity_put4f(IntPtr ctx, float v1, float v2, float v3, float v4);
+        public static extern void duk_unity_put4f(IntPtr ctx, duk_idx_t idx,  float v1, float v2, float v3, float v4);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_unity_get2f(IntPtr ctx, duk_idx_t idx, out float v1, out float v2);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -1692,10 +1692,31 @@ namespace Duktape
         public static extern duk_bool_t duk_unity_get4f(IntPtr ctx, duk_idx_t idx, out float v1, out float v2, out float v3, out float v4);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void duk_unity_put2d(IntPtr ctx, duk_idx_t idx,  double v1, double v2);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void duk_unity_put3d(IntPtr ctx, duk_idx_t idx,  double v1, double v2, double v3);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void duk_unity_put4d(IntPtr ctx, duk_idx_t idx,  double v1, double v2, double v3, double v4);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_unity_get2d(IntPtr ctx, duk_idx_t idx, out double v1, out double v2);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_unity_get3d(IntPtr ctx, duk_idx_t idx, out double v1, out double v2, out double v3);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_unity_get4d(IntPtr ctx, duk_idx_t idx, out double v1, out double v2, out double v3, out double v4);
+
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void duk_unity_push_vector3(IntPtr ctx, float v1, float v2, float v3);
+
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_unity_set_prop_i(IntPtr ctx, duk_idx_t idx, string key, duk_int_t val);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_uint_t duk_unity_open(IntPtr ctx); // 初始化附加内容 (比如ref/unref的使用)
+
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void duk_builtins_reg_put(IntPtr ctx, string key);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void duk_builtins_reg_get(IntPtr ctx, string key);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_uint_t duk_unity_ref(IntPtr ctx);

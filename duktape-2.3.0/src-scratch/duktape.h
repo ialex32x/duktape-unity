@@ -6,7 +6,7 @@
  *  comments.  Other parts of the header are Duktape internal and related to
  *  e.g. platform/compiler/feature detection.
  *
- *  Git commit b6a43acecc38321cb450b9ce08b0b3692324988c (b6a43ac-dirty).
+ *  Git commit f0f828c1e6a4f273edf71f2494a62e7e61ef810e (f0f828c-dirty).
  *  Git branch develop.
  *
  *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and
@@ -171,8 +171,8 @@
  * which Duktape snapshot was used.  Not available in the ECMAScript
  * environment.
  */
-#define DUK_GIT_COMMIT                    "b6a43acecc38321cb450b9ce08b0b3692324988c"
-#define DUK_GIT_DESCRIBE                  "b6a43ac-dirty"
+#define DUK_GIT_COMMIT                    "f0f828c1e6a4f273edf71f2494a62e7e61ef810e"
+#define DUK_GIT_DESCRIBE                  "f0f828c-dirty"
 #define DUK_GIT_BRANCH                    "develop"
 
 /* External duk_config.h provides platform/compiler/OS dependent
@@ -1451,30 +1451,35 @@ DUK_EXTERNAL_DECL void *duk_unity_to_buffer_raw(duk_context *ctx, duk_idx_t idx,
 DUK_EXTERNAL_DECL void *duk_unity_get_buffer(duk_context *ctx, duk_idx_t idx, duk_uint_t *out_size);
 DUK_EXTERNAL_DECL void *duk_unity_get_buffer_data(duk_context *ctx, duk_idx_t idx, duk_uint_t *out_size);
 
-DUK_EXTERNAL_DECL void duk_unity_put2i(duk_context *ctx, duk_int_t v1, duk_int_t v2);
-DUK_EXTERNAL_DECL void duk_unity_put3i(duk_context *ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3);
-DUK_EXTERNAL_DECL void duk_unity_put4i(duk_context *ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3, duk_int_t v4);
+DUK_EXTERNAL_DECL void duk_unity_put2i(duk_context *ctx, duk_idx_t idx, duk_int_t v1, duk_int_t v2);
+DUK_EXTERNAL_DECL void duk_unity_put3i(duk_context *ctx, duk_idx_t idx, duk_int_t v1, duk_int_t v2, duk_int_t v3);
+DUK_EXTERNAL_DECL void duk_unity_put4i(duk_context *ctx, duk_idx_t idx, duk_int_t v1, duk_int_t v2, duk_int_t v3, duk_int_t v4);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get2i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get3i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2, duk_int_t *v3);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get4i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2, duk_int_t *v3, duk_int_t *v4);
 
-DUK_EXTERNAL_DECL void duk_unity_put2f(duk_context *ctx, float v1, float v2);
-DUK_EXTERNAL_DECL void duk_unity_put3f(duk_context *ctx, float v1, float v2, float v3);
-DUK_EXTERNAL_DECL void duk_unity_put4f(duk_context *ctx, float v1, float v2, float v3, float v4);
+DUK_EXTERNAL_DECL void duk_unity_put2f(duk_context *ctx, duk_idx_t idx, float v1, float v2);
+DUK_EXTERNAL_DECL void duk_unity_put3f(duk_context *ctx, duk_idx_t idx, float v1, float v2, float v3);
+DUK_EXTERNAL_DECL void duk_unity_put4f(duk_context *ctx, duk_idx_t idx, float v1, float v2, float v3, float v4);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get2f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get3f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get4f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3, float *v4);
 
-DUK_EXTERNAL_DECL void duk_unity_put2d(duk_context *ctx, double v1, double v2);
-DUK_EXTERNAL_DECL void duk_unity_put3d(duk_context *ctx, double v1, double v2, double v3);
-DUK_EXTERNAL_DECL void duk_unity_put4d(duk_context *ctx, double v1, double v2, double v3, double v4);
+DUK_EXTERNAL_DECL void duk_unity_put2d(duk_context *ctx, duk_idx_t idx, double v1, double v2);
+DUK_EXTERNAL_DECL void duk_unity_put3d(duk_context *ctx, duk_idx_t idx, double v1, double v2, double v3);
+DUK_EXTERNAL_DECL void duk_unity_put4d(duk_context *ctx, duk_idx_t idx, double v1, double v2, double v3, double v4);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get2d(duk_context *ctx, duk_idx_t idx, double *v1, double *v2);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get3d(duk_context *ctx, duk_idx_t idx, double *v1, double *v2, double *v3);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get4d(duk_context *ctx, duk_idx_t idx, double *v1, double *v2, double *v3, double *v4);
 
+DUK_EXTERNAL_DECL void duk_unity_push_vector3(duk_context *ctx, float v1, float v2, float v3);
+
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_prop_i(duk_context *ctx, duk_idx_t idx, const char *key, duk_int_t val);
 
 DUK_EXTERNAL_DECL void duk_unity_open(duk_context *ctx);
+
+DUK_EXTERNAL_DECL void duk_builtins_reg_put(duk_context *ctx, const char *key);
+DUK_EXTERNAL_DECL void duk_builtins_reg_get(duk_context *ctx, const char *key);
 
 DUK_EXTERNAL_DECL duk_uint_t duk_unity_ref(duk_context *ctx); /// Creates and returns a reference for the object at the top of the stack (and pops the object).
 DUK_EXTERNAL_DECL void duk_unity_unref(duk_context *ctx, duk_uint_t refid); /// push object referenced by refid to top of the stack
