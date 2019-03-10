@@ -6,8 +6,8 @@
  *  comments.  Other parts of the header are Duktape internal and related to
  *  e.g. platform/compiler/feature detection.
  *
- *  Git commit 33665adc6be85a82ddd6e20faedafe1ffe37eb72 (33665ad-dirty).
- *  Git branch features/websocket.
+ *  Git commit b6a43acecc38321cb450b9ce08b0b3692324988c (b6a43ac-dirty).
+ *  Git branch develop.
  *
  *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and
  *  licensing information.
@@ -171,9 +171,9 @@
  * which Duktape snapshot was used.  Not available in the ECMAScript
  * environment.
  */
-#define DUK_GIT_COMMIT                    "33665adc6be85a82ddd6e20faedafe1ffe37eb72"
-#define DUK_GIT_DESCRIBE                  "33665ad-dirty"
-#define DUK_GIT_BRANCH                    "features/websocket"
+#define DUK_GIT_COMMIT                    "b6a43acecc38321cb450b9ce08b0b3692324988c"
+#define DUK_GIT_DESCRIBE                  "b6a43ac-dirty"
+#define DUK_GIT_BRANCH                    "develop"
 
 /* External duk_config.h provides platform/compiler/OS dependent
  * typedefs and macros, and DUK_USE_xxx config options so that
@@ -1464,6 +1464,13 @@ DUK_EXTERNAL_DECL void duk_unity_put4f(duk_context *ctx, float v1, float v2, flo
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get2f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get3f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get4f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3, float *v4);
+
+DUK_EXTERNAL_DECL void duk_unity_put2d(duk_context *ctx, double v1, double v2);
+DUK_EXTERNAL_DECL void duk_unity_put3d(duk_context *ctx, double v1, double v2, double v3);
+DUK_EXTERNAL_DECL void duk_unity_put4d(duk_context *ctx, double v1, double v2, double v3, double v4);
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_get2d(duk_context *ctx, duk_idx_t idx, double *v1, double *v2);
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_get3d(duk_context *ctx, duk_idx_t idx, double *v1, double *v2, double *v3);
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_get4d(duk_context *ctx, duk_idx_t idx, double *v1, double *v2, double *v3, double *v4);
 
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_prop_i(duk_context *ctx, duk_idx_t idx, const char *key, duk_int_t val);
 

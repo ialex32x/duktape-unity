@@ -49,14 +49,15 @@ int main(int argc, char *argv[]) {
 		long length = ftell(fp);
 		fseek(fp, 0, SEEK_SET);
 		char *buf = malloc(length + 1);
-		memset(buf, 0, length);
+		memset(buf, 0, length + 1);
 		fread(buf, length, 1, fp);
 		fclose(fp);
 		//printf("source(%d): %s\n", length, buf);
 		if (duk_peval_string(ctx, buf) != 0) {
 			duk_get_prop_string(ctx, -1, "stack");
-			char *err = duk_safe_to_string(ctx, -1);
+			const char *err = duk_safe_to_string(ctx, -1);
 			printf("peval error: %s\n", err);
+			printf("source: %s\n", buf);
 		}
 		free(buf);
 		duk_pop(ctx);  /* pop eval result */
