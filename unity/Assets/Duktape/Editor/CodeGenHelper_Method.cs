@@ -73,8 +73,6 @@ namespace Duktape
             for (var i = 0; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
-                //TODO: 需要处理 ref/out 参数在 js 中的返回方式问题
-                //      可能的处理方式是将这些参数合并函数返回值转化为一个 object 作为最终返回值
                 if (parameter.IsOut && parameter.ParameterType.IsByRef)
                 {
                     arglist += "out ";
@@ -124,18 +122,23 @@ namespace Duktape
                 }
                 else
                 {
-                    WriteParameterGetter(parameter.ParameterType, i, $"arg{i}");
+                    WriteParameterGetter(parameter, i, $"arg{i}");
                 }
             }
             return arglist;
         }
 
-        protected void WriteParameterGetter(Type ptype, int index, string argname)
+        protected void WriteParameterGetter(ParameterInfo parameter, int index, string argname)
         {
+            var ptype = parameter.ParameterType;
             var argType = this.cg.bindingManager.GetCSTypeFullName(ptype);
-            var argGetterOp = this.cg.bindingManager.GetDuktapeGetter(ptype);
             this.cg.cs.AppendLine($"{argType} {argname};");
-            this.cg.cs.AppendLine($"{argGetterOp}(ctx, {index}, out {argname});");
+            // 非 out 参数才需要取值
+            if (!parameter.IsOut || !parameter.ParameterType.IsByRef)
+            {
+                var argGetterOp = this.cg.bindingManager.GetDuktapeGetter(ptype);
+                this.cg.cs.AppendLine($"{argGetterOp}(ctx, {index}, out {argname});");
+            }
         }
 
         // 输出所有变体绑定
@@ -195,33 +198,12 @@ namespace Duktape
         // 写入返回类型声明
         protected virtual void WriteTSReturn(T method, List<ParameterInfo> returnParameters)
         {
-            //TODO: 如果存在 ref/out 参数， 则返回值改写为带定义的 object
-            //      例如 foo(/*out*/ b: string): { b: string, ret: original_return_type }
             var returnType = GetReturnType(method);
             if (returnType != null)
             {
                 var returnTypeTS = this.cg.bindingManager.GetTSTypeFullName(returnType);
-                // if (returnParameters != null && returnParameters.Count > 0)
-                // {
-                //     this.cg.tsDeclare.AppendL(": {");
-                //     this.cg.tsDeclare.AppendLine();
-                //     this.cg.tsDeclare.AddTabLevel();
-                //     this.cg.tsDeclare.AppendLine($"ret: {returnTypeTS}, ");
-                //     for (var i = 0; i < returnParameters.Count; i++)
-                //     {
-                //         var parameter = returnParameters[i];
-                //         var parameterType = parameter.ParameterType;
-                //         var parameterTypeTS = this.cg.bindingManager.GetTSTypeFullName(parameterType);
-                //         this.cg.tsDeclare.AppendLine($"{BindingManager.GetTSVariable(parameter.Name)}: {parameterTypeTS}, ");
-                //     }
-                //     this.cg.tsDeclare.DecTabLevel();
-                //     this.cg.tsDeclare.AppendLine("}");
-                // }
-                // else
-                {
-                    this.cg.tsDeclare.AppendL($": {returnTypeTS}");
-                    this.cg.tsDeclare.AppendLine();
-                }
+                this.cg.tsDeclare.AppendL($": {returnTypeTS}");
+                this.cg.tsDeclare.AppendLine();
             }
             else
             {
@@ -485,7 +467,7 @@ namespace Duktape
                     for (var i = 0; i < last; i++)
                     {
                         var argname = $"arg{i}";
-                        this.WriteParameterGetter(parameters[i].ParameterType, i, argname);
+                        this.WriteParameterGetter(parameters[i], i, argname);
                         arglist_t += argname;
                         if (i != last - 1)
                         {
@@ -493,7 +475,7 @@ namespace Duktape
                         }
                     }
                     var argname_last = $"arg{last}";
-                    this.WriteParameterGetter(parameters[last].ParameterType, last, argname_last);
+                    this.WriteParameterGetter(parameters[last], last, argname_last);
                     return $"{caller}[{arglist_t}] = {argname_last}"; // setter
                 }
                 else
@@ -503,7 +485,7 @@ namespace Duktape
                     for (var i = 0; i < last; i++)
                     {
                         var argname = $"arg{i}";
-                        this.WriteParameterGetter(parameters[i].ParameterType, i, argname);
+                        this.WriteParameterGetter(parameters[i], i, argname);
                         arglist_t += argname;
                         if (i != last - 1)
                         {
