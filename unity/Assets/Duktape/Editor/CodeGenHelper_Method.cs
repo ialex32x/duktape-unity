@@ -303,7 +303,6 @@ namespace Duktape
             cg.cs.AppendLine($"return {error}");
         }
 
-        //TODO: 考虑将 ref/out 参数以额外增加一个参数的形式返回
         protected List<ParameterInfo> WriteTSDeclaration(T method, MethodBaseBindingInfo<T> bindingInfo)
         {
             var refParameters = new List<ParameterInfo>();
