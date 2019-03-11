@@ -10,6 +10,20 @@ declare namespace DuktapeJS {
     }
 
     /**
+     * 封装 C# ref 传参约定
+     */
+    interface Ref<T> {
+        target: T
+    }
+
+    /**
+     * 封装 C# out 传参约定
+     */
+    interface Out<T> {
+        target: T
+    }
+
+    /**
      * 监听者
      */
     class Handler {

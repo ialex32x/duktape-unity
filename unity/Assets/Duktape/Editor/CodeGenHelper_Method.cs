@@ -201,23 +201,23 @@ namespace Duktape
             if (returnType != null)
             {
                 var returnTypeTS = this.cg.bindingManager.GetTSTypeFullName(returnType);
-                if (returnParameters != null && returnParameters.Count > 0)
-                {
-                    this.cg.tsDeclare.AppendL(": {");
-                    this.cg.tsDeclare.AppendLine();
-                    this.cg.tsDeclare.AddTabLevel();
-                    this.cg.tsDeclare.AppendLine($"ret: {returnTypeTS}, ");
-                    for (var i = 0; i < returnParameters.Count; i++)
-                    {
-                        var parameter = returnParameters[i];
-                        var parameterType = parameter.ParameterType;
-                        var parameterTypeTS = this.cg.bindingManager.GetTSTypeFullName(parameterType);
-                        this.cg.tsDeclare.AppendLine($"{BindingManager.GetTSVariable(parameter.Name)}: {parameterTypeTS}, ");
-                    }
-                    this.cg.tsDeclare.DecTabLevel();
-                    this.cg.tsDeclare.AppendLine("}");
-                }
-                else
+                // if (returnParameters != null && returnParameters.Count > 0)
+                // {
+                //     this.cg.tsDeclare.AppendL(": {");
+                //     this.cg.tsDeclare.AppendLine();
+                //     this.cg.tsDeclare.AddTabLevel();
+                //     this.cg.tsDeclare.AppendLine($"ret: {returnTypeTS}, ");
+                //     for (var i = 0; i < returnParameters.Count; i++)
+                //     {
+                //         var parameter = returnParameters[i];
+                //         var parameterType = parameter.ParameterType;
+                //         var parameterTypeTS = this.cg.bindingManager.GetTSTypeFullName(parameterType);
+                //         this.cg.tsDeclare.AppendLine($"{BindingManager.GetTSVariable(parameter.Name)}: {parameterTypeTS}, ");
+                //     }
+                //     this.cg.tsDeclare.DecTabLevel();
+                //     this.cg.tsDeclare.AppendLine("}");
+                // }
+                // else
                 {
                     this.cg.tsDeclare.AppendL($": {returnTypeTS}");
                     this.cg.tsDeclare.AppendLine();
@@ -327,27 +327,27 @@ namespace Duktape
             {
                 var parameter = parameters[i];
                 var parameter_prefix = "";
-                if (parameter.IsOut && parameter.ParameterType.IsByRef)
+                var parameterType = parameter.ParameterType;
+                if (parameter.IsOut && parameterType.IsByRef)
                 {
-                    parameter_prefix = "/*out*/ ";
+                    // parameter_prefix = "/*out*/ ";
                     refParameters.Add(parameter);
                 }
-                else if (parameter.ParameterType.IsByRef)
+                else if (parameterType.IsByRef)
                 {
-                    parameter_prefix = "/*ref*/ ";
+                    // parameter_prefix = "/*ref*/ ";
                     refParameters.Add(parameter);
                 }
                 if (parameter.IsDefined(typeof(ParamArrayAttribute), false) && i == parameters.Length - 1)
                 {
-                    var elementType = parameter.ParameterType.GetElementType();
+                    var elementType = parameterType.GetElementType();
                     var elementTS = this.cg.bindingManager.GetTSTypeFullName(elementType);
                     var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
                     this.cg.tsDeclare.AppendL($"{parameter_prefix}...{parameterVarName}: {elementTS}[]");
                 }
                 else
                 {
-                    var parameterType = parameter.ParameterType;
-                    var parameterTS = this.cg.bindingManager.GetTSTypeFullName(parameterType);
+                    var parameterTS = this.cg.bindingManager.GetTSTypeFullName(parameterType, parameter.IsOut);
                     var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
                     this.cg.tsDeclare.AppendL($"{parameter_prefix}{parameterVarName}: {parameterTS}");
                 }
@@ -388,22 +388,17 @@ namespace Duktape
                 this.EndInvokeBinding();
                 if (returnParameters.Count > 0)
                 {
-                    cg.cs.AppendLine("DuktapeDLL.duk_push_object(ctx);");
-                    //TODO: 填充返回值组合
-                    cg.cs.AppendLine("// fill object properties here;");
-                    cg.cs.AppendLine("return 1;");
+                    //TODO: 回填 ref/out 参数
+                    cg.cs.AppendLine("// write back ref/out parameter here;");
                 }
-                else
+                if (!method.IsStatic && method.DeclaringType.IsValueType) // struct 非静态方法 检查 Mutable 属性
                 {
-                    if (!method.IsStatic && method.DeclaringType.IsValueType) // struct 非静态方法 检查 Mutable 属性
+                    if (method.IsDefined(typeof(JSMutableAttribute), false))
                     {
-                        if (method.IsDefined(typeof(JSMutableAttribute), false))
-                        {
-                            cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
-                        }
+                        cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
                     }
-                    cg.cs.AppendLine("return 0;");
                 }
+                cg.cs.AppendLine("return 0;");
             }
             else
             {
@@ -413,14 +408,10 @@ namespace Duktape
                 this.EndInvokeBinding();
                 if (returnParameters.Count > 0)
                 {
-                    cg.cs.AppendLine("DuktapeDLL.duk_push_object(ctx);");
-                    //TODO: 填充返回值组合
-                    cg.cs.AppendLine("// fill object properties here;");
+                    //TODO: 回填 ref/out 参数
+                    cg.cs.AppendLine("// write back ref/out parameter here;");
                 }
-                else
-                {
-                    cg.AppendPushValue(returnType, "ret");
-                }
+                cg.AppendPushValue(returnType, "ret");
                 cg.cs.AppendLine("return 1;");
             }
         }

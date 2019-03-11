@@ -133,6 +133,15 @@ namespace Duktape
                     "GetComponentsInParent", typeof(Type))
             ;
 
+            TransformType(typeof(Vector3))
+                .AddTSMethodDeclaration("static Add(a: Vector3, b: Vector3): Vector3")
+                .AddTSMethodDeclaration("static Sub(a: Vector3, b: Vector3): Vector3")
+                .AddTSMethodDeclaration("static Mul(a: Vector3, b: Vector3): Vector3")
+                .AddTSMethodDeclaration("static Div(a: Vector3, b: Vector3): Vector3")
+                .AddTSMethodDeclaration("static Equals(a: Vector3, b: Vector3): boolean")
+                .AddTSMethodDeclaration("Equals(b: Vector3): boolean")
+            ;
+
             AddTSTypeNameMap(typeof(sbyte), "number");
             AddTSTypeNameMap(typeof(byte), "number");
             AddTSTypeNameMap(typeof(int), "number");
@@ -387,12 +396,36 @@ namespace Duktape
             return exportedTypes.ContainsKey(type);
         }
 
+        public string GetTSRefWrap(string name)
+        {
+            return $"DuktapeJS.Ref<{name}>";
+        }
+
+        public string GetTSTypeFullName(ParameterInfo parameter)
+        {
+            var parameterType = parameter.ParameterType;
+            return GetTSTypeFullName(parameterType, parameter.IsOut);
+        }
+
         // 获取 type 在 typescript 中对应类型名
         public string GetTSTypeFullName(Type type)
+        {
+            return GetTSTypeFullName(type, false);
+        }
+
+        public string GetTSTypeFullName(Type type, bool isOut)
         {
             if (type == null || type == typeof(void))
             {
                 return "void";
+            }
+            if (type.IsByRef)
+            {
+                if (isOut)
+                {
+                    return $"DuktapeJS.Out<{GetTSTypeFullName(type.GetElementType())}>";
+                }
+                return $"DuktapeJS.Ref<{GetTSTypeFullName(type.GetElementType())}>";
             }
             List<string> names;
             if (_tsTypeNameMap.TryGetValue(type, out names))

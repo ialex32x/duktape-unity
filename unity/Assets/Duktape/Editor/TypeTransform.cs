@@ -16,11 +16,26 @@ namespace Duktape
         // 针对特定方法的 ts 声明优化
         private Dictionary<MethodBase, string> _tsMethodDeclarations = new Dictionary<MethodBase, string>();
 
+        // d.ts 中额外输出附加方法声明 (例如 Vector3, js中需要通过方法调用进行 +-*/== 等运算)
+        private List<string> _tsAdditionalMethodDeclarations = new List<string>();
+
         private Dictionary<string, string> _redirectedMethods = new Dictionary<string, string>();
 
         public TypeTransform(Type type)
         {
             _type = type;
+        }
+
+        public TypeTransform AddTSMethodDeclaration(string spec)
+        {
+            _tsAdditionalMethodDeclarations.Add(spec);
+            return this;
+        }
+
+        public TypeTransform AddTSMethodDeclaration(params string[] specs)
+        {
+            _tsAdditionalMethodDeclarations.AddRange(specs);
+            return this;
         }
 
         // TS: 为指定类型的匹配方法添加声明映射 (仅用于优化代码提示体验)

@@ -8,6 +8,8 @@ import "./mm/foo"
     console.log(`v: ${v1[0]}, ${v1[1]}, ${v1[2]}`)
     let v2 = v1.normalized
     console.log(`v: ${v2.x}, ${v2.y}, ${v2.z} (${v2.magnitude})`)
+    v2.x += 10
+    console.log(`v: ${v2.x}, ${v2.y}, ${v2.z} (${v2.magnitude})`)
 })();
 
 DuktapeJS.Behaviour = function () { }
