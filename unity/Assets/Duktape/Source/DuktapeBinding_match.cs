@@ -27,6 +27,10 @@ namespace Duktape
 
         protected static bool duk_match_type(IntPtr ctx, int idx, Type type)
         {
+            if (type == null)
+            {
+                return true;
+            }
             if (type == typeof(object))
             {
                 return true;

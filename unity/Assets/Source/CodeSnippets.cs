@@ -144,8 +144,25 @@ public class CodeSnippets : MonoBehaviour
         }
     }
 
+    public static void testTypeByRefMethod(ref string p)
+    {}
+
+    void testTypeByRef(MethodInfo method)
+    {
+        var ps = method.GetParameters();
+        foreach (var p in ps)
+        {
+            Debug.Log($"IsByRef: {p.ParameterType.IsByRef}");
+            Debug.Log($"UnderlyingSystemType: {p.ParameterType.UnderlyingSystemType}");
+            Debug.Log($"BaseType: {p.ParameterType.BaseType}");
+            Debug.Log($"DeclaringType: {p.ParameterType.DeclaringType}");
+            Debug.Log($"GetElementType: {p.ParameterType.GetElementType()}");
+        }
+    }
+
     void Awake()
     {
+        testTypeByRef(GetType().GetMethod("testTypeByRefMethod"));
         testConstant(GetType().GetField("constant"));
         testConstant(GetType().GetField("constantInt"));
         testConstant(GetType().GetField("constantSingle"));

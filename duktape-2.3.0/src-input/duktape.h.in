@@ -1350,6 +1350,8 @@ DUK_EXTERNAL_DECL void duk_unity_push_vector3(duk_context *ctx, float v1, float 
 
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_prop_i(duk_context *ctx, duk_idx_t idx, const char *key, duk_int_t val);
 
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_put_target_i(duk_context *ctx, duk_idx_t idx);
+
 DUK_EXTERNAL_DECL void duk_unity_open(duk_context *ctx);
 
 DUK_EXTERNAL_DECL void duk_builtins_reg_put(duk_context *ctx, const char *key);

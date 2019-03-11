@@ -51,8 +51,16 @@ namespace Duktape
             for (int i = 0, length = parameters.Length; i < length; i++)
             {
                 var parameter = parameters[i];
-                var typename = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType);
-                snippet += $"typeof({typename})";
+                if (parameter.ParameterType.IsByRef)
+                {
+                    //TODO: 检查 ref/out 参数有效请 (null undefined 或者 符合 Ref/Out 约定)
+                    snippet += "null";
+                }
+                else
+                {
+                    var typename = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType);
+                    snippet += $"typeof({typename})";
+                }
                 if (parameter.IsDefined(typeof(ParamArrayAttribute), false))
                 {
                     break;
@@ -73,8 +81,6 @@ namespace Duktape
             for (var i = 0; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
-                //TODO: 需要处理 ref/out 参数在 js 中的返回方式问题
-                //      可能的处理方式是将这些参数合并函数返回值转化为一个 object 作为最终返回值
                 if (parameter.IsOut && parameter.ParameterType.IsByRef)
                 {
                     arglist += "out ";
@@ -124,18 +130,23 @@ namespace Duktape
                 }
                 else
                 {
-                    WriteParameterGetter(parameter.ParameterType, i, $"arg{i}");
+                    WriteParameterGetter(parameter, i, $"arg{i}");
                 }
             }
             return arglist;
         }
 
-        protected void WriteParameterGetter(Type ptype, int index, string argname)
+        protected void WriteParameterGetter(ParameterInfo parameter, int index, string argname)
         {
+            var ptype = parameter.ParameterType;
             var argType = this.cg.bindingManager.GetCSTypeFullName(ptype);
-            var argGetterOp = this.cg.bindingManager.GetDuktapeGetter(ptype);
             this.cg.cs.AppendLine($"{argType} {argname};");
-            this.cg.cs.AppendLine($"{argGetterOp}(ctx, {index}, out {argname});");
+            // 非 out 参数才需要取值
+            if (!parameter.IsOut || !parameter.ParameterType.IsByRef)
+            {
+                var argGetterOp = this.cg.bindingManager.GetDuktapeGetter(ptype);
+                this.cg.cs.AppendLine($"{argGetterOp}(ctx, {index}, out {argname});");
+            }
         }
 
         // 输出所有变体绑定
@@ -195,33 +206,12 @@ namespace Duktape
         // 写入返回类型声明
         protected virtual void WriteTSReturn(T method, List<ParameterInfo> returnParameters)
         {
-            //TODO: 如果存在 ref/out 参数， 则返回值改写为带定义的 object
-            //      例如 foo(/*out*/ b: string): { b: string, ret: original_return_type }
             var returnType = GetReturnType(method);
             if (returnType != null)
             {
                 var returnTypeTS = this.cg.bindingManager.GetTSTypeFullName(returnType);
-                if (returnParameters != null && returnParameters.Count > 0)
-                {
-                    this.cg.tsDeclare.AppendL(": {");
-                    this.cg.tsDeclare.AppendLine();
-                    this.cg.tsDeclare.AddTabLevel();
-                    this.cg.tsDeclare.AppendLine($"ret: {returnTypeTS}, ");
-                    for (var i = 0; i < returnParameters.Count; i++)
-                    {
-                        var parameter = returnParameters[i];
-                        var parameterType = parameter.ParameterType;
-                        var parameterTypeTS = this.cg.bindingManager.GetTSTypeFullName(parameterType);
-                        this.cg.tsDeclare.AppendLine($"{BindingManager.GetTSVariable(parameter.Name)}: {parameterTypeTS}, ");
-                    }
-                    this.cg.tsDeclare.DecTabLevel();
-                    this.cg.tsDeclare.AppendLine("}");
-                }
-                else
-                {
-                    this.cg.tsDeclare.AppendL($": {returnTypeTS}");
-                    this.cg.tsDeclare.AppendLine();
-                }
+                this.cg.tsDeclare.AppendL($": {returnTypeTS}");
+                this.cg.tsDeclare.AppendLine();
             }
             else
             {
@@ -303,7 +293,6 @@ namespace Duktape
             cg.cs.AppendLine($"return {error}");
         }
 
-        //TODO: 考虑将 ref/out 参数以额外增加一个参数的形式返回
         protected List<ParameterInfo> WriteTSDeclaration(T method, MethodBaseBindingInfo<T> bindingInfo)
         {
             var refParameters = new List<ParameterInfo>();
@@ -327,27 +316,27 @@ namespace Duktape
             {
                 var parameter = parameters[i];
                 var parameter_prefix = "";
-                if (parameter.IsOut && parameter.ParameterType.IsByRef)
+                var parameterType = parameter.ParameterType;
+                if (parameter.IsOut && parameterType.IsByRef)
                 {
-                    parameter_prefix = "/*out*/ ";
+                    // parameter_prefix = "/*out*/ ";
                     refParameters.Add(parameter);
                 }
-                else if (parameter.ParameterType.IsByRef)
+                else if (parameterType.IsByRef)
                 {
-                    parameter_prefix = "/*ref*/ ";
+                    // parameter_prefix = "/*ref*/ ";
                     refParameters.Add(parameter);
                 }
                 if (parameter.IsDefined(typeof(ParamArrayAttribute), false) && i == parameters.Length - 1)
                 {
-                    var elementType = parameter.ParameterType.GetElementType();
+                    var elementType = parameterType.GetElementType();
                     var elementTS = this.cg.bindingManager.GetTSTypeFullName(elementType);
                     var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
                     this.cg.tsDeclare.AppendL($"{parameter_prefix}...{parameterVarName}: {elementTS}[]");
                 }
                 else
                 {
-                    var parameterType = parameter.ParameterType;
-                    var parameterTS = this.cg.bindingManager.GetTSTypeFullName(parameterType);
+                    var parameterTS = this.cg.bindingManager.GetTSTypeFullName(parameterType, parameter.IsOut);
                     var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
                     this.cg.tsDeclare.AppendL($"{parameter_prefix}{parameterVarName}: {parameterTS}");
                 }
@@ -376,7 +365,7 @@ namespace Duktape
         protected void WriteCSMethodBinding(T method, string argc, bool isVararg)
         {
             var parameters = method.GetParameters();
-            var returnParameters = new List<ParameterInfo>();
+            var parametersByRef = new List<ParameterInfo>();
             var caller = this.cg.AppendGetThisCS(method);
             var returnType = GetReturnType(method);
 
@@ -384,44 +373,51 @@ namespace Duktape
             {
                 // 方法本身没有返回值
                 this.BeginInvokeBinding();
-                cg.cs.AppendLine($"{this.GetInvokeBinding(caller, method, isVararg, argc, parameters, returnParameters)};");
+                cg.cs.AppendLine($"{this.GetInvokeBinding(caller, method, isVararg, argc, parameters, parametersByRef)};");
                 this.EndInvokeBinding();
-                if (returnParameters.Count > 0)
+                if (parametersByRef.Count > 0)
                 {
-                    cg.cs.AppendLine("DuktapeDLL.duk_push_object(ctx);");
-                    //TODO: 填充返回值组合
-                    cg.cs.AppendLine("// fill object properties here;");
-                    cg.cs.AppendLine("return 1;");
+                    _WriteBackParametersByRef(parametersByRef);
+
                 }
-                else
+                if (!method.IsStatic && method.DeclaringType.IsValueType) // struct 非静态方法 检查 Mutable 属性
                 {
-                    if (!method.IsStatic && method.DeclaringType.IsValueType) // struct 非静态方法 检查 Mutable 属性
+                    if (method.IsDefined(typeof(JSMutableAttribute), false))
                     {
-                        if (method.IsDefined(typeof(JSMutableAttribute), false))
-                        {
-                            cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
-                        }
+                        cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
                     }
-                    cg.cs.AppendLine("return 0;");
                 }
+                cg.cs.AppendLine("return 0;");
             }
             else
             {
                 // 方法本身有返回值
                 this.BeginInvokeBinding();
-                cg.cs.AppendLine($"var ret = {this.GetInvokeBinding(caller, method, isVararg, argc, parameters, returnParameters)};");
+                cg.cs.AppendLine($"var ret = {this.GetInvokeBinding(caller, method, isVararg, argc, parameters, parametersByRef)};");
                 this.EndInvokeBinding();
-                if (returnParameters.Count > 0)
+                if (parametersByRef.Count > 0)
                 {
-                    cg.cs.AppendLine("DuktapeDLL.duk_push_object(ctx);");
-                    //TODO: 填充返回值组合
-                    cg.cs.AppendLine("// fill object properties here;");
+                    _WriteBackParametersByRef(parametersByRef);
                 }
-                else
-                {
-                    cg.AppendPushValue(returnType, "ret");
-                }
+                cg.AppendPushValue(returnType, "ret");
                 cg.cs.AppendLine("return 1;");
+            }
+        }
+
+        // 回填 ref/out 参数
+        protected void _WriteBackParametersByRef(List<ParameterInfo> parametersByRef)
+        {
+            for (var i = 0; i < parametersByRef.Count; i++)
+            {
+                var parameter = parametersByRef[i];
+                cg.cs.AppendLine($"if (!DuktapeDLL.duk_is_null_or_undefined(ctx, {parameter.Position}))");
+                cg.cs.AppendLine("{");
+                cg.cs.AddTabLevel();
+                var argname = $"arg{parameter.Position}";
+                cg.AppendPushValue(parameter.ParameterType, argname);
+                cg.cs.AppendLine($"DuktapeDLL.duk_unity_put_target_i(ctx, {parameter.Position});");
+                cg.cs.DecTabLevel();
+                cg.cs.AppendLine("}");
             }
         }
     }
@@ -495,7 +491,7 @@ namespace Duktape
                     for (var i = 0; i < last; i++)
                     {
                         var argname = $"arg{i}";
-                        this.WriteParameterGetter(parameters[i].ParameterType, i, argname);
+                        this.WriteParameterGetter(parameters[i], i, argname);
                         arglist_t += argname;
                         if (i != last - 1)
                         {
@@ -503,7 +499,7 @@ namespace Duktape
                         }
                     }
                     var argname_last = $"arg{last}";
-                    this.WriteParameterGetter(parameters[last].ParameterType, last, argname_last);
+                    this.WriteParameterGetter(parameters[last], last, argname_last);
                     return $"{caller}[{arglist_t}] = {argname_last}"; // setter
                 }
                 else
@@ -513,7 +509,7 @@ namespace Duktape
                     for (var i = 0; i < last; i++)
                     {
                         var argname = $"arg{i}";
-                        this.WriteParameterGetter(parameters[i].ParameterType, i, argname);
+                        this.WriteParameterGetter(parameters[i], i, argname);
                         arglist_t += argname;
                         if (i != last - 1)
                         {

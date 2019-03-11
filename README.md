@@ -9,16 +9,16 @@
 * 支持 nodejs 风格的模块
 * 生成 C# to js 静态绑定, 自动生成对应 d.ts 声明 
 * setTimeout/setInterval/clearTimeout/clearInterval 兼容
+* delegate 操作接口 
+* 针对Vector3等常用值类型的绑定优化 (待细化)
+* 可使用 protobufjs
 
 # 特性支持 (未实现)
-* delegate 操作接口 (+=, -=, 以及清空) (待细化)
-* 针对Vector3等常用值类型的绑定优化 (待细化)
 * 支持在脚本层面扩展 MonoBehaviour
 * 基本的 eventloop 支持
 * Android/iOS 支持 (热更)
 * socket (tcp/udp)
 * websocket ()
-* 使用 protobufjs
 * enable debugger support (vscode)
 
 # 依赖环境
@@ -61,11 +61,18 @@ export class A {
 
         let f = new Custom()
         // delegate 操作 
-        f.onload = new Delegate()
+        f.onload = new DuktapeJS.Dispatcher() // 如果脚本需要注册多个监听, 用 Dispatcher
+        // f.onload = () => { ... }              // 也可以直接注册函数 (会覆盖原值)
         f.onload.on(this, this.onload)  // 添加this.onload监听
         f.onload.off(this, this.onload) // 移除this.onload监听
         f.onload.off(this)              // 清空this监听
         f.onload.clear()                // 清空所有监听
+
+        // out 取参
+        let v = {}
+        if (System.Int32.TryParse("123", v)) {
+            console.log(v.target)
+        }
     }
 
     private onload() {

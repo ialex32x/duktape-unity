@@ -276,7 +276,14 @@ namespace Duktape
             var jsdoc = info.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
             if (jsdoc != null)
             {
-                var lines = jsdoc.lines;
+                AppendJSDoc(jsdoc.lines);
+            }
+        }
+
+        public void AppendJSDoc(string[] lines)
+        {
+            if (lines != null && lines.Length > 0)
+            {
                 if (lines.Length > 1)
                 {
                     this.tsDeclare.AppendLine("/**");
