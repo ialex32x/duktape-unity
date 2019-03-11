@@ -51,8 +51,16 @@ namespace Duktape
             for (int i = 0, length = parameters.Length; i < length; i++)
             {
                 var parameter = parameters[i];
-                var typename = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType);
-                snippet += $"typeof({typename})";
+                if (parameter.ParameterType.IsByRef)
+                {
+                    //TODO: 检查 ref/out 参数有效请 (null undefined 或者 符合 Ref/Out 约定)
+                    snippet += "null";
+                }
+                else
+                {
+                    var typename = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType);
+                    snippet += $"typeof({typename})";
+                }
                 if (parameter.IsDefined(typeof(ParamArrayAttribute), false))
                 {
                     break;

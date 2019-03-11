@@ -8,7 +8,7 @@
     ✔ 处理 interface @done(19-03-05 17:31)
     ☐ 优化 Vector3 等值类型 (Vector3已部分完成, Slerp等考虑转接到binding调用, 不在优化中自己实现) @started(19-03-11 14:09)
     ☐ extends MonoBehaviour (需要禁止 MonoBehaviour binding 中对构造方法调用的默认行为) @started(19-03-11 14:09)
-    ☐ 将 ref/out 做成 ts 泛型调用约定 (DuktapeJS.Ref<T> & Out<T>) @started(19-03-11 14:09)
+    ✔ 将 ref/out 做成 ts 泛型调用约定 (DuktapeJS.Ref<T> & Out<T>) @started(19-03-11 14:09) @done(19-03-12 04:54) @lasted(14h45m29s)
     
 其他功能: 
     ✔ 处理泛型 @started(19-03-01 08:44) @done(19-03-06 06:09) @lasted(4d21h25m8s)
