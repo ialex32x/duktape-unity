@@ -6,7 +6,7 @@
  *  comments.  Other parts of the header are Duktape internal and related to
  *  e.g. platform/compiler/feature detection.
  *
- *  Git commit b6a43acecc38321cb450b9ce08b0b3692324988c (b6a43ac-dirty).
+ *  Git commit d20562198a1e34f7dad562555b1641faa9c500f1 (d205621-dirty).
  *  Git branch develop.
  *
  *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and
@@ -15,134 +15,134 @@
 
 /* LICENSE.txt */
 /*
- *  ===============
- *  Duktape license
- *  ===============
- *  
- *  (http://opensource.org/licenses/MIT)
- *  
- *  Copyright (c) 2013-2018 by Duktape authors (see AUTHORS.rst)
- *  
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions:
- *  
- *  The above copyright notice and this permission notice shall be included in
- *  all copies or substantial portions of the Software.
- *  
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- *  THE SOFTWARE.
+ *  ===============\u000d
+ *  Duktape license\u000d
+ *  ===============\u000d
+ *  \u000d
+ *  (http://opensource.org/licenses/MIT)\u000d
+ *  \u000d
+ *  Copyright (c) 2013-2018 by Duktape authors (see AUTHORS.rst)\u000d
+ *  \u000d
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy\u000d
+ *  of this software and associated documentation files (the "Software"), to deal\u000d
+ *  in the Software without restriction, including without limitation the rights\u000d
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\u000d
+ *  copies of the Software, and to permit persons to whom the Software is\u000d
+ *  furnished to do so, subject to the following conditions:\u000d
+ *  \u000d
+ *  The above copyright notice and this permission notice shall be included in\u000d
+ *  all copies or substantial portions of the Software.\u000d
+ *  \u000d
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\u000d
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\u000d
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\u000d
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\u000d
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\u000d
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\u000d
+ *  THE SOFTWARE.\u000d
  */
 
 /* AUTHORS.rst */
 /*
- *  ===============
- *  Duktape authors
- *  ===============
- *  
- *  Copyright
- *  =========
- *  
- *  Duktape copyrights are held by its authors.  Each author has a copyright
- *  to their contribution, and agrees to irrevocably license the contribution
- *  under the Duktape ``LICENSE.txt``.
- *  
- *  Authors
- *  =======
- *  
- *  Please include an e-mail address, a link to your GitHub profile, or something
- *  similar to allow your contribution to be identified accurately.
- *  
- *  The following people have contributed code, website contents, or Wiki contents,
- *  and agreed to irrevocably license their contributions under the Duktape
- *  ``LICENSE.txt`` (in order of appearance):
- *  
- *  * Sami Vaarala <sami.vaarala@iki.fi>
- *  * Niki Dobrev
- *  * Andreas \u00d6man <andreas@lonelycoder.com>
- *  * L\u00e1szl\u00f3 Lang\u00f3 <llango.u-szeged@partner.samsung.com>
- *  * Legimet <legimet.calc@gmail.com>
- *  * Karl Skomski <karl@skomski.com>
- *  * Bruce Pascoe <fatcerberus1@gmail.com>
- *  * Ren\u00e9 Hollander <rene@rene8888.at>
- *  * Julien Hamaide (https://github.com/crazyjul)
- *  * Sebastian G\u00f6tte (https://github.com/jaseg)
- *  * Tomasz Magulski (https://github.com/magul)
- *  * \D. Bohdan (https://github.com/dbohdan)
- *  * Ond\u0159ej Jirman (https://github.com/megous)
- *  * Sa\u00fal Ibarra Corretg\u00e9 <saghul@gmail.com>
- *  * Jeremy HU <huxingyi@msn.com>
- *  * Ole Andr\u00e9 Vadla Ravn\u00e5s (https://github.com/oleavr)
- *  * Harold Brenes (https://github.com/harold-b)
- *  * Oliver Crow (https://github.com/ocrow)
- *  * Jakub Ch\u0142api\u0144ski (https://github.com/jchlapinski)
- *  * Brett Vickers (https://github.com/beevik)
- *  * Dominik Okwieka (https://github.com/okitec)
- *  * Remko Tron\u00e7on (https://el-tramo.be)
- *  * Romero Malaquias (rbsm@ic.ufal.br)
- *  * Michael Drake <michael.drake@codethink.co.uk>
- *  * Steven Don (https://github.com/shdon)
- *  * Simon Stone (https://github.com/sstone1)
- *  * \J. McC. (https://github.com/jmhmccr)
- *  * Jakub Nowakowski (https://github.com/jimvonmoon)
- *  * Tommy Nguyen (https://github.com/tn0502)
- *  * Fabrice Fontaine (https://github.com/ffontaine)
- *  * Christopher Hiller (https://github.com/boneskull)
- *  * Gonzalo Diethelm (https://github.com/gonzus)
- *  * Michal Kasperek (https://github.com/michalkas)
- *  * Andrew Janke (https://github.com/apjanke)
- *  * Steve Fan (https://github.com/stevefan1999)
- *  
- *  Other contributions
- *  ===================
- *  
- *  The following people have contributed something other than code (e.g. reported
- *  bugs, provided ideas, etc; roughly in order of appearance):
- *  
- *  * Greg Burns
- *  * Anthony Rabine
- *  * Carlos Costa
- *  * Aur\u00e9lien Bouilland
- *  * Preet Desai (Pris Matic)
- *  * judofyr (http://www.reddit.com/user/judofyr)
- *  * Jason Woofenden
- *  * Micha\u0142 Przyby\u015b
- *  * Anthony Howe
- *  * Conrad Pankoff
- *  * Jim Schimpf
- *  * Rajaran Gaunker (https://github.com/zimbabao)
- *  * Andreas \u00d6man
- *  * Doug Sanden
- *  * Josh Engebretson (https://github.com/JoshEngebretson)
- *  * Remo Eichenberger (https://github.com/remoe)
- *  * Mamod Mehyar (https://github.com/mamod)
- *  * David Demelier (https://github.com/markand)
- *  * Tim Caswell (https://github.com/creationix)
- *  * Mitchell Blank Jr (https://github.com/mitchblank)
- *  * https://github.com/yushli
- *  * Seo Sanghyeon (https://github.com/sanxiyn)
- *  * Han ChoongWoo (https://github.com/tunz)
- *  * Joshua Peek (https://github.com/josh)
- *  * Bruce E. Pascoe (https://github.com/fatcerberus)
- *  * https://github.com/Kelledin
- *  * https://github.com/sstruchtrup
- *  * Michael Drake (https://github.com/tlsa)
- *  * https://github.com/chris-y
- *  * Laurent Zubiaur (https://github.com/lzubiaur)
- *  * Neil Kolban (https://github.com/nkolban)
- *  * Wilhelm Wanecek (https://github.com/wanecek)
- *  * Andrew Janke (https://github.com/apjanke)
- *  
- *  If you are accidentally missing from this list, send me an e-mail
- *  (``sami.vaarala@iki.fi``) and I'll fix the omission.
+ *  ===============\u000d
+ *  Duktape authors\u000d
+ *  ===============\u000d
+ *  \u000d
+ *  Copyright\u000d
+ *  =========\u000d
+ *  \u000d
+ *  Duktape copyrights are held by its authors.  Each author has a copyright\u000d
+ *  to their contribution, and agrees to irrevocably license the contribution\u000d
+ *  under the Duktape ``LICENSE.txt``.\u000d
+ *  \u000d
+ *  Authors\u000d
+ *  =======\u000d
+ *  \u000d
+ *  Please include an e-mail address, a link to your GitHub profile, or something\u000d
+ *  similar to allow your contribution to be identified accurately.\u000d
+ *  \u000d
+ *  The following people have contributed code, website contents, or Wiki contents,\u000d
+ *  and agreed to irrevocably license their contributions under the Duktape\u000d
+ *  ``LICENSE.txt`` (in order of appearance):\u000d
+ *  \u000d
+ *  * Sami Vaarala <sami.vaarala@iki.fi>\u000d
+ *  * Niki Dobrev\u000d
+ *  * Andreas \u00d6man <andreas@lonelycoder.com>\u000d
+ *  * L\u00e1szl\u00f3 Lang\u00f3 <llango.u-szeged@partner.samsung.com>\u000d
+ *  * Legimet <legimet.calc@gmail.com>\u000d
+ *  * Karl Skomski <karl@skomski.com>\u000d
+ *  * Bruce Pascoe <fatcerberus1@gmail.com>\u000d
+ *  * Ren\u00e9 Hollander <rene@rene8888.at>\u000d
+ *  * Julien Hamaide (https://github.com/crazyjul)\u000d
+ *  * Sebastian G\u00f6tte (https://github.com/jaseg)\u000d
+ *  * Tomasz Magulski (https://github.com/magul)\u000d
+ *  * \D. Bohdan (https://github.com/dbohdan)\u000d
+ *  * Ond\u0159ej Jirman (https://github.com/megous)\u000d
+ *  * Sa\u00fal Ibarra Corretg\u00e9 <saghul@gmail.com>\u000d
+ *  * Jeremy HU <huxingyi@msn.com>\u000d
+ *  * Ole Andr\u00e9 Vadla Ravn\u00e5s (https://github.com/oleavr)\u000d
+ *  * Harold Brenes (https://github.com/harold-b)\u000d
+ *  * Oliver Crow (https://github.com/ocrow)\u000d
+ *  * Jakub Ch\u0142api\u0144ski (https://github.com/jchlapinski)\u000d
+ *  * Brett Vickers (https://github.com/beevik)\u000d
+ *  * Dominik Okwieka (https://github.com/okitec)\u000d
+ *  * Remko Tron\u00e7on (https://el-tramo.be)\u000d
+ *  * Romero Malaquias (rbsm@ic.ufal.br)\u000d
+ *  * Michael Drake <michael.drake@codethink.co.uk>\u000d
+ *  * Steven Don (https://github.com/shdon)\u000d
+ *  * Simon Stone (https://github.com/sstone1)\u000d
+ *  * \J. McC. (https://github.com/jmhmccr)\u000d
+ *  * Jakub Nowakowski (https://github.com/jimvonmoon)\u000d
+ *  * Tommy Nguyen (https://github.com/tn0502)\u000d
+ *  * Fabrice Fontaine (https://github.com/ffontaine)\u000d
+ *  * Christopher Hiller (https://github.com/boneskull)\u000d
+ *  * Gonzalo Diethelm (https://github.com/gonzus)\u000d
+ *  * Michal Kasperek (https://github.com/michalkas)\u000d
+ *  * Andrew Janke (https://github.com/apjanke)\u000d
+ *  * Steve Fan (https://github.com/stevefan1999)\u000d
+ *  \u000d
+ *  Other contributions\u000d
+ *  ===================\u000d
+ *  \u000d
+ *  The following people have contributed something other than code (e.g. reported\u000d
+ *  bugs, provided ideas, etc; roughly in order of appearance):\u000d
+ *  \u000d
+ *  * Greg Burns\u000d
+ *  * Anthony Rabine\u000d
+ *  * Carlos Costa\u000d
+ *  * Aur\u00e9lien Bouilland\u000d
+ *  * Preet Desai (Pris Matic)\u000d
+ *  * judofyr (http://www.reddit.com/user/judofyr)\u000d
+ *  * Jason Woofenden\u000d
+ *  * Micha\u0142 Przyby\u015b\u000d
+ *  * Anthony Howe\u000d
+ *  * Conrad Pankoff\u000d
+ *  * Jim Schimpf\u000d
+ *  * Rajaran Gaunker (https://github.com/zimbabao)\u000d
+ *  * Andreas \u00d6man\u000d
+ *  * Doug Sanden\u000d
+ *  * Josh Engebretson (https://github.com/JoshEngebretson)\u000d
+ *  * Remo Eichenberger (https://github.com/remoe)\u000d
+ *  * Mamod Mehyar (https://github.com/mamod)\u000d
+ *  * David Demelier (https://github.com/markand)\u000d
+ *  * Tim Caswell (https://github.com/creationix)\u000d
+ *  * Mitchell Blank Jr (https://github.com/mitchblank)\u000d
+ *  * https://github.com/yushli\u000d
+ *  * Seo Sanghyeon (https://github.com/sanxiyn)\u000d
+ *  * Han ChoongWoo (https://github.com/tunz)\u000d
+ *  * Joshua Peek (https://github.com/josh)\u000d
+ *  * Bruce E. Pascoe (https://github.com/fatcerberus)\u000d
+ *  * https://github.com/Kelledin\u000d
+ *  * https://github.com/sstruchtrup\u000d
+ *  * Michael Drake (https://github.com/tlsa)\u000d
+ *  * https://github.com/chris-y\u000d
+ *  * Laurent Zubiaur (https://github.com/lzubiaur)\u000d
+ *  * Neil Kolban (https://github.com/nkolban)\u000d
+ *  * Wilhelm Wanecek (https://github.com/wanecek)\u000d
+ *  * Andrew Janke (https://github.com/apjanke)\u000d
+ *  \u000d
+ *  If you are accidentally missing from this list, send me an e-mail\u000d
+ *  (``sami.vaarala@iki.fi``) and I'll fix the omission.\u000d
  */
 
 #if !defined(DUKTAPE_H_INCLUDED)
@@ -171,8 +171,8 @@
  * which Duktape snapshot was used.  Not available in the ECMAScript
  * environment.
  */
-#define DUK_GIT_COMMIT                    "b6a43acecc38321cb450b9ce08b0b3692324988c"
-#define DUK_GIT_DESCRIBE                  "b6a43ac-dirty"
+#define DUK_GIT_COMMIT                    "d20562198a1e34f7dad562555b1641faa9c500f1"
+#define DUK_GIT_DESCRIBE                  "d205621-dirty"
 #define DUK_GIT_BRANCH                    "develop"
 
 /* External duk_config.h provides platform/compiler/OS dependent
@@ -1451,30 +1451,35 @@ DUK_EXTERNAL_DECL void *duk_unity_to_buffer_raw(duk_context *ctx, duk_idx_t idx,
 DUK_EXTERNAL_DECL void *duk_unity_get_buffer(duk_context *ctx, duk_idx_t idx, duk_uint_t *out_size);
 DUK_EXTERNAL_DECL void *duk_unity_get_buffer_data(duk_context *ctx, duk_idx_t idx, duk_uint_t *out_size);
 
-DUK_EXTERNAL_DECL void duk_unity_put2i(duk_context *ctx, duk_int_t v1, duk_int_t v2);
-DUK_EXTERNAL_DECL void duk_unity_put3i(duk_context *ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3);
-DUK_EXTERNAL_DECL void duk_unity_put4i(duk_context *ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3, duk_int_t v4);
+DUK_EXTERNAL_DECL void duk_unity_put2i(duk_context *ctx, duk_idx_t idx, duk_int_t v1, duk_int_t v2);
+DUK_EXTERNAL_DECL void duk_unity_put3i(duk_context *ctx, duk_idx_t idx, duk_int_t v1, duk_int_t v2, duk_int_t v3);
+DUK_EXTERNAL_DECL void duk_unity_put4i(duk_context *ctx, duk_idx_t idx, duk_int_t v1, duk_int_t v2, duk_int_t v3, duk_int_t v4);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get2i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get3i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2, duk_int_t *v3);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get4i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2, duk_int_t *v3, duk_int_t *v4);
 
-DUK_EXTERNAL_DECL void duk_unity_put2f(duk_context *ctx, float v1, float v2);
-DUK_EXTERNAL_DECL void duk_unity_put3f(duk_context *ctx, float v1, float v2, float v3);
-DUK_EXTERNAL_DECL void duk_unity_put4f(duk_context *ctx, float v1, float v2, float v3, float v4);
+DUK_EXTERNAL_DECL void duk_unity_put2f(duk_context *ctx, duk_idx_t idx, float v1, float v2);
+DUK_EXTERNAL_DECL void duk_unity_put3f(duk_context *ctx, duk_idx_t idx, float v1, float v2, float v3);
+DUK_EXTERNAL_DECL void duk_unity_put4f(duk_context *ctx, duk_idx_t idx, float v1, float v2, float v3, float v4);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get2f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get3f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get4f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3, float *v4);
 
-DUK_EXTERNAL_DECL void duk_unity_put2d(duk_context *ctx, double v1, double v2);
-DUK_EXTERNAL_DECL void duk_unity_put3d(duk_context *ctx, double v1, double v2, double v3);
-DUK_EXTERNAL_DECL void duk_unity_put4d(duk_context *ctx, double v1, double v2, double v3, double v4);
+DUK_EXTERNAL_DECL void duk_unity_put2d(duk_context *ctx, duk_idx_t idx, double v1, double v2);
+DUK_EXTERNAL_DECL void duk_unity_put3d(duk_context *ctx, duk_idx_t idx, double v1, double v2, double v3);
+DUK_EXTERNAL_DECL void duk_unity_put4d(duk_context *ctx, duk_idx_t idx, double v1, double v2, double v3, double v4);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get2d(duk_context *ctx, duk_idx_t idx, double *v1, double *v2);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get3d(duk_context *ctx, duk_idx_t idx, double *v1, double *v2, double *v3);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get4d(duk_context *ctx, duk_idx_t idx, double *v1, double *v2, double *v3, double *v4);
 
+DUK_EXTERNAL_DECL void duk_unity_push_vector3(duk_context *ctx, float v1, float v2, float v3);
+
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_prop_i(duk_context *ctx, duk_idx_t idx, const char *key, duk_int_t val);
 
 DUK_EXTERNAL_DECL void duk_unity_open(duk_context *ctx);
+
+DUK_EXTERNAL_DECL void duk_builtins_reg_put(duk_context *ctx, const char *key);
+DUK_EXTERNAL_DECL void duk_builtins_reg_get(duk_context *ctx, const char *key);
 
 DUK_EXTERNAL_DECL duk_uint_t duk_unity_ref(duk_context *ctx); /// Creates and returns a reference for the object at the top of the stack (and pops the object).
 DUK_EXTERNAL_DECL void duk_unity_unref(duk_context *ctx, duk_uint_t refid); /// push object referenced by refid to top of the stack

@@ -536,7 +536,7 @@ namespace Duktape
         }
     }
 
-    public class TSMethodCodeGen: MethodBaseCodeGen<MethodInfo>
+    public class TSMethodCodeGen : MethodBaseCodeGen<MethodInfo>
     {
         protected MethodBindingInfo bindingInfo;
 

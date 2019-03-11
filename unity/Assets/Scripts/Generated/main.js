@@ -14,6 +14,14 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 require("./mm/foo");
+(function () {
+    console.log("### Vector3 (replaced)");
+    var v1 = new UnityEngine.Vector3(1, 2, 3);
+    console.log("v: " + v1.x + ", " + v1.y + ", " + v1.z + " (" + v1.magnitude + ")");
+    console.log("v: " + v1[0] + ", " + v1[1] + ", " + v1[2]);
+    var v2 = v1.normalized;
+    console.log("v: " + v2.x + ", " + v2.y + ", " + v2.z + " (" + v2.magnitude + ")");
+})();
 DuktapeJS.Behaviour = function () { };
 var MyBehaviour = /** @class */ (function (_super) {
     __extends(MyBehaviour, _super);
@@ -33,7 +41,6 @@ var MyBehaviour = /** @class */ (function (_super) {
 }(DuktapeJS.Behaviour));
 (function () {
     var go = new UnityEngine.GameObject("Bridge");
-    console.log("AAAAA", new MyBehaviour().Awake);
     go.AddComponent(MyBehaviour);
 })();
 (function () {
