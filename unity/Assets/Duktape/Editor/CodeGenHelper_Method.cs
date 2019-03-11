@@ -357,7 +357,7 @@ namespace Duktape
         protected void WriteCSMethodBinding(T method, string argc, bool isVararg)
         {
             var parameters = method.GetParameters();
-            var returnParameters = new List<ParameterInfo>();
+            var parametersByRef = new List<ParameterInfo>();
             var caller = this.cg.AppendGetThisCS(method);
             var returnType = GetReturnType(method);
 
@@ -365,12 +365,12 @@ namespace Duktape
             {
                 // 方法本身没有返回值
                 this.BeginInvokeBinding();
-                cg.cs.AppendLine($"{this.GetInvokeBinding(caller, method, isVararg, argc, parameters, returnParameters)};");
+                cg.cs.AppendLine($"{this.GetInvokeBinding(caller, method, isVararg, argc, parameters, parametersByRef)};");
                 this.EndInvokeBinding();
-                if (returnParameters.Count > 0)
+                if (parametersByRef.Count > 0)
                 {
-                    //TODO: 回填 ref/out 参数
-                    cg.cs.AppendLine("// write back ref/out parameter here;");
+                    _WriteBackParametersByRef(parametersByRef);
+
                 }
                 if (!method.IsStatic && method.DeclaringType.IsValueType) // struct 非静态方法 检查 Mutable 属性
                 {
@@ -385,15 +385,31 @@ namespace Duktape
             {
                 // 方法本身有返回值
                 this.BeginInvokeBinding();
-                cg.cs.AppendLine($"var ret = {this.GetInvokeBinding(caller, method, isVararg, argc, parameters, returnParameters)};");
+                cg.cs.AppendLine($"var ret = {this.GetInvokeBinding(caller, method, isVararg, argc, parameters, parametersByRef)};");
                 this.EndInvokeBinding();
-                if (returnParameters.Count > 0)
+                if (parametersByRef.Count > 0)
                 {
-                    //TODO: 回填 ref/out 参数
-                    cg.cs.AppendLine("// write back ref/out parameter here;");
+                    _WriteBackParametersByRef(parametersByRef);
                 }
                 cg.AppendPushValue(returnType, "ret");
                 cg.cs.AppendLine("return 1;");
+            }
+        }
+
+        // 回填 ref/out 参数
+        protected void _WriteBackParametersByRef(List<ParameterInfo> parametersByRef)
+        {
+            for (var i = 0; i < parametersByRef.Count; i++)
+            {
+                var parameter = parametersByRef[i];
+                cg.cs.AppendLine($"if (!DuktapeDLL.duk_is_null_or_undefined(ctx, {parameter.Position}))");
+                cg.cs.AppendLine("{");
+                cg.cs.AddTabLevel();
+                var argname = $"arg{parameter.Position}";
+                cg.AppendPushValue(parameter.ParameterType, argname);
+                cg.cs.AppendLine($"DuktapeDLL.duk_unity_put_target_i(ctx, {parameter.Position});");
+                cg.cs.DecTabLevel();
+                cg.cs.AppendLine("}");
             }
         }
     }

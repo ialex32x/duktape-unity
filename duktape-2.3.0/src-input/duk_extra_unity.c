@@ -586,6 +586,14 @@ DUK_EXTERNAL duk_idx_t duk_unity_push_error_object_raw(duk_context *ctx, duk_err
     return duk_push_error_object_raw(ctx, err_code, filename, line, fmt);
 }
 
+DUK_EXTERNAL duk_bool_t duk_unity_put_target_i(duk_context *ctx, duk_idx_t idx) {
+    if (!duk_is_null_or_undefined(ctx, idx)) {
+        return duk_put_prop_string(ctx, idx, "target");
+    } 
+    duk_pop(ctx);
+    return 0;
+}
+
 // debugger support
 
 struct duk_unity_debugger {
