@@ -26,6 +26,14 @@ namespace Duktape
             _type = type;
         }
 
+        public void ForEachAdditionalTSMethodDeclaration(Action<string> fn)
+        {
+            foreach (var decl in _tsAdditionalMethodDeclarations)
+            {
+                fn(decl);
+            }
+        }
+
         public TypeTransform AddTSMethodDeclaration(string spec)
         {
             _tsAdditionalMethodDeclarations.Add(spec);

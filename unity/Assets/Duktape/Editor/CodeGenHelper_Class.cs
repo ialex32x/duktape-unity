@@ -90,6 +90,14 @@ namespace Duktape
                 {
                 }
             }
+            // 所有附加方法
+            if (transform != null)
+            {
+                transform.ForEachAdditionalTSMethodDeclaration(decl =>
+                {
+                    this.cg.tsDeclare.AppendLine(decl);
+                });
+            }
             // 所有属性
             foreach (var kv in this.bindingInfo.properties)
             {
