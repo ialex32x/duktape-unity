@@ -81,55 +81,54 @@ namespace Duktape
         public static void duk_push_any(IntPtr ctx, Color o)
         {
             DuktapeDLL.duk_push_array(ctx);
-            DuktapeDLL.duk_unity_put4f(ctx, o.r, o.g, o.b, o.a);
+            DuktapeDLL.duk_unity_put4f(ctx,-1,  o.r, o.g, o.b, o.a);
         }
 
         public static void duk_push_any(IntPtr ctx, Color32 o)
         {
             DuktapeDLL.duk_push_array(ctx);
-            DuktapeDLL.duk_unity_put4i(ctx, o.r, o.g, o.b, o.a);
+            DuktapeDLL.duk_unity_put4i(ctx, -1, o.r, o.g, o.b, o.a);
         }
 
         public static void duk_push_any(IntPtr ctx, Vector2 o)
         {
             DuktapeDLL.duk_push_array(ctx);
-            DuktapeDLL.duk_unity_put2f(ctx, o.x, o.y);
+            DuktapeDLL.duk_unity_put2f(ctx, -1, o.x, o.y);
         }
 
         public static void duk_push_any(IntPtr ctx, Vector2Int o)
         {
             DuktapeDLL.duk_push_array(ctx);
-            DuktapeDLL.duk_unity_put2i(ctx, o.x, o.y);
+            DuktapeDLL.duk_unity_put2i(ctx, -1, o.x, o.y);
         }
 
         public static void duk_push_any(IntPtr ctx, Vector3 o)
         {
-            DuktapeDLL.duk_push_array(ctx);
-            DuktapeDLL.duk_unity_put3f(ctx, o.x, o.y, o.z);
+            DuktapeDLL.duk_unity_push_vector3(ctx, o.x, o.y, o.z);
         }
 
         public static void duk_push_any(IntPtr ctx, Vector3Int o)
         {
             DuktapeDLL.duk_push_array(ctx);
-            DuktapeDLL.duk_unity_put3i(ctx, o.x, o.y, o.z);
+            DuktapeDLL.duk_unity_put3i(ctx, -1, o.x, o.y, o.z);
         }
 
         public static void duk_push_any(IntPtr ctx, Vector4 o)
         {
             DuktapeDLL.duk_push_array(ctx);
-            DuktapeDLL.duk_unity_put4f(ctx, o.x, o.y, o.z, o.w);
+            DuktapeDLL.duk_unity_put4f(ctx, -1, o.x, o.y, o.z, o.w);
         }
 
         public static void duk_push_any(IntPtr ctx, Quaternion o)
         {
             DuktapeDLL.duk_push_array(ctx);
-            DuktapeDLL.duk_unity_put4f(ctx, o.x, o.y, o.z, o.w);
+            DuktapeDLL.duk_unity_put4f(ctx, -1, o.x, o.y, o.z, o.w);
         }
 
         // public static void duk_push_any(IntPtr ctx, Matrix4x4 o)
         // {
         //     DuktapeDLL.duk_push_array(ctx);
-        //     DuktapeDLL.duk_unity_put16f(ctx, ...);
+        //     DuktapeDLL.duk_unity_put16f(ctx, -1, ...);
         // }
 
         // variant push

@@ -27,6 +27,12 @@ namespace Duktape
             return DuktapeDLL.duk_generic_error(ctx, "cant call constructor on this type");
         }
 
+        [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+        protected static int object_dummy_ctor(IntPtr ctx)
+        {
+            return 0;
+        }
+
         // 无命名空间, 直接外围对象作为容器 (通常是global)
         public static void duk_begin_namespace(IntPtr ctx) // [parent]
         {

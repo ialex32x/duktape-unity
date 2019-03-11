@@ -2,6 +2,36 @@
 import "./mm/foo"
 
 (function () {
+    console.log("### Vector3 (replaced)")
+    let v1 = new UnityEngine.Vector3(1, 2, 3)
+    console.log(`v: ${v1.x}, ${v1.y}, ${v1.z} (${v1.magnitude})`)
+    console.log(`v: ${v1[0]}, ${v1[1]}, ${v1[2]}`)
+    let v2 = v1.normalized
+    console.log(`v: ${v2.x}, ${v2.y}, ${v2.z} (${v2.magnitude})`)
+})();
+
+DuktapeJS.Behaviour = function () { }
+
+class MyBehaviour extends DuktapeJS.Behaviour {
+    Awake() {
+        console.log("Awake")
+    }
+
+    OnEnable() {
+        console.log("OnEnable")
+    }
+
+    OnDestroy() {
+        console.log("OnDestroy")
+    }
+}
+
+(function () {
+    let go = new UnityEngine.GameObject("Bridge")
+    go.AddComponent(MyBehaviour)
+})();
+
+(function () {
     console.log("### Delegates begin")
     let d = new DuktapeJS.Delegate0<void>()
     d.on(this, () => {

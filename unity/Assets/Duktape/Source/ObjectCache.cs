@@ -98,7 +98,21 @@ namespace Duktape
             return false;
         }
 
-        public bool TryGetValueTyped<T>(int id, out T o)
+        public bool TryGetTypedWeakObject<T>(int id, out T o)
+        where T : class
+        {
+            object obj;
+            if (_map.TryGetValue(id, out obj))
+            {
+                var w = obj as WeakReference;
+                o = w != null ? w.Target as T : null;
+                return true;
+            }
+            o = null;
+            return false;
+        }
+
+        public bool TryGetTypedObject<T>(int id, out T o)
         where T : class
         {
             object obj;
@@ -111,12 +125,12 @@ namespace Duktape
             return false;
         }
 
-        public bool TryGetValue(int id, out object o)
+        public bool TryGetObject(int id, out object o)
         {
             return _map.TryGetValue(id, out o);
         }
 
-        public bool MatchType(int id, Type type)
+        public bool MatchObjectType(int id, Type type)
         {
             object o;
             if (_map.TryGetValue(id, out o))

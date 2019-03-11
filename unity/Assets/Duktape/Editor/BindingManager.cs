@@ -25,6 +25,8 @@ namespace Duktape
         private Dictionary<Type, TypeBindingInfo> exportedTypes = new Dictionary<Type, TypeBindingInfo>();
         private Dictionary<Type, DelegateBindingInfo> exportedDelegates = new Dictionary<Type, DelegateBindingInfo>();
         private Dictionary<Type, Type> redirectDelegates = new Dictionary<Type, Type>();
+        // 类型修改
+        private Dictionary<Type, TypeTransform> typesTarnsform = new Dictionary<Type, TypeTransform>();
         private List<string> outputFiles = new List<string>();
         private List<string> removedFiles = new List<string>();
 
@@ -35,9 +37,6 @@ namespace Duktape
 
         // 自定义的处理流程
         private List<IBindingProcess> _bindingProcess = new List<IBindingProcess>();
-
-        // 针对特定方法的 ts 声明优化
-        private Dictionary<MethodBase, string> _tsMethodDeclarations = new Dictionary<MethodBase, string>();
 
         static BindingManager()
         {
@@ -102,38 +101,37 @@ namespace Duktape
             {
             });
 
-            AddTSMethodDeclaration("AddComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
-                typeof(GameObject), "AddComponent", typeof(Type));
-
-            AddTSMethodDeclaration("GetComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
-                typeof(GameObject), "GetComponent", typeof(Type));
-
-            AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T",
-                typeof(GameObject), "GetComponentInChildren", typeof(Type), typeof(bool));
-
-            AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }): T",
-                typeof(GameObject), "GetComponentInChildren", typeof(Type));
-
-            AddTSMethodDeclaration("GetComponentInParent<T extends UnityEngine.Component>(type: { new(): T }): T",
-                typeof(GameObject), "GetComponentInParent", typeof(Type));
-
-            // AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }, results: any): void", 
-            //     typeof(GameObject), "GetComponents", typeof(Type));
-
-            AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): T[]",
-                typeof(GameObject), "GetComponents", typeof(Type));
-
-            AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T[]",
-                typeof(GameObject), "GetComponentsInChildren", typeof(Type), typeof(bool));
-
-            AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): T[]",
-                typeof(GameObject), "GetComponentsInChildren", typeof(Type));
-
-            AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T[]",
-                typeof(GameObject), "GetComponentsInParent", typeof(Type), typeof(bool));
-
-            AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): T[]",
-                typeof(GameObject), "GetComponentsInParent", typeof(Type));
+            TransformType(typeof(GameObject))
+                .AddRedirectMethod("AddComponent", "_AddComponent")
+                .AddRedirectMethod("GetComponent", "_GetComponent")
+                .AddRedirectMethod("GetComponentInChildren", "_GetComponentInChildren")
+                .AddRedirectMethod("GetComponentInParent", "_GetComponentInParent")
+                .AddRedirectMethod("GetComponents", "_GetComponents")
+                .AddRedirectMethod("GetComponentsInChildren", "_GetComponentsInChildren")
+                .AddRedirectMethod("GetComponentsInParent", "_GetComponentsInParent")
+                .AddTSMethodDeclaration("AddComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
+                    "AddComponent", typeof(Type))
+                .AddTSMethodDeclaration("GetComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
+                    "GetComponent", typeof(Type))
+                .AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T",
+                    "GetComponentInChildren", typeof(Type), typeof(bool))
+                .AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }): T",
+                    "GetComponentInChildren", typeof(Type))
+                .AddTSMethodDeclaration("GetComponentInParent<T extends UnityEngine.Component>(type: { new(): T }): T",
+                    "GetComponentInParent", typeof(Type))
+                // .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }, results: any): void", 
+                //     "GetComponents", typeof(Type))
+                .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): T[]",
+                    "GetComponents", typeof(Type))
+                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T[]",
+                    "GetComponentsInChildren", typeof(Type), typeof(bool))
+                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): T[]",
+                    "GetComponentsInChildren", typeof(Type))
+                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T[]",
+                    "GetComponentsInParent", typeof(Type), typeof(bool))
+                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): T[]",
+                    "GetComponentsInParent", typeof(Type))
+            ;
 
             AddTSTypeNameMap(typeof(sbyte), "number");
             AddTSTypeNameMap(typeof(byte), "number");
@@ -154,7 +152,7 @@ namespace Duktape
             AddTSTypeNameMap(typeof(Color32), "UnityEngine.Color32", "number[]");
             AddTSTypeNameMap(typeof(Vector2), "UnityEngine.Vector2", "number[]");
             AddTSTypeNameMap(typeof(Vector2Int), "UnityEngine.Vector2Int", "number[]");
-            AddTSTypeNameMap(typeof(Vector3), "UnityEngine.Vector3", "number[]");
+            AddTSTypeNameMap(typeof(Vector3), "UnityEngine.Vector3"); // 已优化, 在 VM 初始化时替换为 DuktapeJS.Vector3
             AddTSTypeNameMap(typeof(Vector3Int), "UnityEngine.Vector3Int", "number[]");
             AddTSTypeNameMap(typeof(Vector4), "UnityEngine.Vector4", "number[]");
             AddTSTypeNameMap(typeof(Quaternion), "UnityEngine.Quaternion", "number[]");
@@ -181,6 +179,33 @@ namespace Duktape
             BlockCSTypeMember(typeof(string), "Chars");
 
             Initialize();
+        }
+
+        public bool GetTSMethodDeclaration(MethodBase method, out string code)
+        {
+            var transform = GetTypeTransform(method.DeclaringType);
+            if (transform != null)
+            {
+                return transform.GetTSMethodDeclaration(method, out code);
+            }
+            code = null;
+            return false;
+        }
+
+        public TypeTransform GetTypeTransform(Type type)
+        {
+            TypeTransform transform;
+            return typesTarnsform.TryGetValue(type, out transform) ? transform : null;
+        }
+
+        public TypeTransform TransformType(Type type)
+        {
+            TypeTransform transform;
+            if (!typesTarnsform.TryGetValue(type, out transform))
+            {
+                typesTarnsform[type] = transform = new TypeTransform(type);
+            }
+            return transform;
         }
 
         private static bool _FindFilterBindingProcess(Type type, object l)
@@ -235,16 +260,6 @@ namespace Duktape
             blacklist.Add(memberName);
         }
 
-        // TS: 为指定类型的匹配方法添加声明映射 (仅用于优化代码提示体验)
-        public void AddTSMethodDeclaration(string spec, Type type, string name, params Type[] parameters)
-        {
-            var method = type.GetMethod(name, parameters);
-            if (method != null)
-            {
-                _tsMethodDeclarations[method] = spec;
-            }
-        }
-
         // TS: 添加保留字, CS中相关变量名等会自动重命名注册到js中
         public static void AddTSKeywords(params string[] keywords)
         {
@@ -252,11 +267,6 @@ namespace Duktape
             {
                 _tsKeywords.Add(keyword);
             }
-        }
-
-        public bool GetTSMethodDeclaration(MethodBase method, out string code)
-        {
-            return _tsMethodDeclarations.TryGetValue(method, out code);
         }
 
         public void AddTSTypeNameMap(Type type, params string[] names)

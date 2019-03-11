@@ -1,43 +1,14 @@
-var ev = new DuktapeJS.EventDispatcher();
-var JSO = (function () {
-    function JSO(name) {
-        this.name = name;
-    }
-    JSO.prototype.foo1 = function (phase) {
-        print(phase, this.name, "foo1");
-    };
-    JSO.prototype.foo2 = function (phase) {
-        print(phase, this.name, "foo2");
-    };
-    JSO.prototype.foo3 = function (phase) {
-        print(phase, this.name, "foo3");
-    };
-    return JSO;
-}());
-function inspect(o) {
-    print(o.length, o)
-    for (var i = 0; i < o.length; i++) {
-        print("index:", i, "value:", o[i])
-    }
-}
-var jso1 = new JSO("A");
-var jso2 = new JSO("B");
-ev.on("test", jso1, jso1.foo1);
-ev.on("test", jso2, jso2.foo1);
-ev.on("test", jso1, jso1.foo2);
-ev.on("test", jso1, jso1.foo3);
-print(ev.events["test"] === ev.events["test"])
-// ev.events["test"].off(jso1)
-ev.off("test", jso1, jso1.foo2)
-// inspect(ev.events["test"].handlers)
-ev.dispatch("test", "DISPATCH #1")
+var Vector3 = DuktapeJS.Vector3
+var v1 = new Vector3(1, 2, 3)
 
-ev.off("test", jso1)
-ev.on("test", jso1, jso1.foo2);
-ev.on("test", jso1, jso1.foo3);
-// inspect(ev.events["test"].handlers)
-ev.dispatch("test", "DISPATCH #2")
+print(v1[0], v1[1], v1[2])
+print(v1.x, v1.y, v1.z)
 
-ev.clear("test")
-ev.dispatch("test", "DISPATCH #3")
+var m = v1.magnitude
+var n = v1.normalized
+
+print("magnitude = " + m)
+print(n.x, n.y, n.z)
+n = Vector3.Mul(2, n)
+print("Mul", n.x, n.y, n.z)
 

@@ -26,6 +26,7 @@ namespace Duktape
 
         protected override void Dispose(bool bManaged)
         {
+            _jsInvoker = null;
             if (this._refid != 0 && this._ctx != null)
             {
                 var vm = DuktapeContext.GetVM(this._ctx);

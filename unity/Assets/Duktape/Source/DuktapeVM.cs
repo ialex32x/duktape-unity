@@ -20,10 +20,11 @@ namespace Duktape
         public const int VERSION = 0x10001;
         public const string HEAP_STASH_PROPS_REGISTRY = "registry";
         // 在jsobject实例上记录关联的本地对象 object cache refid
-        public static readonly string OBJ_PROP_NATIVE = DuktapeDLL.DUK_HIDDEN_SYMBOL("native-cache-id");
-        public static readonly string OBJ_PROP_TYPE = DuktapeDLL.DUK_HIDDEN_SYMBOL("type-refid");
+        public static readonly string OBJ_PROP_NATIVE = DuktapeDLL.DUK_HIDDEN_SYMBOL("1");
+        public static readonly string OBJ_PROP_NATIVE_WEAK = DuktapeDLL.DUK_HIDDEN_SYMBOL("2");
+        public static readonly string OBJ_PROP_TYPE = DuktapeDLL.DUK_HIDDEN_SYMBOL("3");
         // 导出类的js构造函数隐藏属性, 记录在vm中的注册id
-        public static readonly string OBJ_PROP_EXPORTED_REFID = DuktapeDLL.DUK_HIDDEN_SYMBOL("exported-registry-refid");
+        public static readonly string OBJ_PROP_EXPORTED_REFID = DuktapeDLL.DUK_HIDDEN_SYMBOL("4");
         // public static readonly string OBJ_PROP_SPECIAL_REFID = DuktapeDLL.DUK_HIDDEN_SYMBOL("special-refid");
 
         public const string _DuktapeDelegates = "_DuktapeDelegates";
@@ -291,6 +292,7 @@ namespace Duktape
                     }
                 }
             }
+            DuktapeJSBuiltins.postreg(ctx);
             DuktapeDLL.duk_pop(ctx);
             // Debug.LogFormat("exported {0} classes", _exported.Count);
 

@@ -3,7 +3,7 @@
 
 // #include <librws.h>
 
-DUK_LOCAL void duk_builtins_reg_put(duk_context *ctx, const char *key) {
+DUK_EXTERNAL void duk_builtins_reg_put(duk_context *ctx, const char *key) {
     duk_push_heap_stash(ctx);
     duk_get_prop_string(ctx, -1, "c_builtins"); // obj, stash, builtins
     duk_dup(ctx, -3); // obj, stash, builtins, obj
@@ -11,7 +11,7 @@ DUK_LOCAL void duk_builtins_reg_put(duk_context *ctx, const char *key) {
     duk_pop_3(ctx);
 }
 
-DUK_LOCAL void duk_builtins_reg_get(duk_context *ctx, const char *key) {
+DUK_EXTERNAL void duk_builtins_reg_get(duk_context *ctx, const char *key) {
     duk_push_heap_stash(ctx);
     duk_get_prop_string(ctx, -1, "c_builtins"); // stash, builtins
     duk_get_prop_string(ctx, -1, key); // stash, builtins, obj
@@ -232,71 +232,110 @@ DUK_EXTERNAL void *duk_unity_get_buffer_data(duk_context *ctx, duk_idx_t idx, du
 
 // int 
 
-DUK_EXTERNAL void duk_unity_put2i(duk_context *ctx, duk_int_t v1, duk_int_t v2) {
+DUK_EXTERNAL void duk_unity_put2i(duk_context *ctx, duk_idx_t idx, duk_int_t v1, duk_int_t v2) {
     // duk_push_array(ctx);
+    idx = duk_normalize_index(ctx, idx);
     duk_push_int(ctx, v1);
-    duk_put_prop_index(ctx, -2, 0);
+    duk_put_prop_index(ctx, idx, 0);
     duk_push_int(ctx, v2);
-    duk_put_prop_index(ctx, -2, 1);
+    duk_put_prop_index(ctx, idx, 1);
 }
 
-DUK_EXTERNAL void duk_unity_put3i(duk_context *ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3) {
+DUK_EXTERNAL void duk_unity_put3i(duk_context *ctx, duk_idx_t idx, duk_int_t v1, duk_int_t v2, duk_int_t v3) {
     // duk_push_array(ctx);
+    idx = duk_normalize_index(ctx, idx);
     duk_push_int(ctx, v1);
-    duk_put_prop_index(ctx, -2, 0);
+    duk_put_prop_index(ctx, idx, 0);
     duk_push_int(ctx, v2);
-    duk_put_prop_index(ctx, -2, 1);
+    duk_put_prop_index(ctx, idx, 1);
     duk_push_int(ctx, v3);
-    duk_put_prop_index(ctx, -2, 2);
+    duk_put_prop_index(ctx, idx, 2);
 }
 
-DUK_EXTERNAL void duk_unity_put4i(duk_context *ctx, duk_int_t v1, duk_int_t v2, duk_int_t v3, duk_int_t v4) {
+DUK_EXTERNAL void duk_unity_put4i(duk_context *ctx, duk_idx_t idx, duk_int_t v1, duk_int_t v2, duk_int_t v3, duk_int_t v4) {
     // duk_push_array(ctx);
+    idx = duk_normalize_index(ctx, idx);
     duk_push_int(ctx, v1);
-    duk_put_prop_index(ctx, -2, 0);
+    duk_put_prop_index(ctx, idx, 0);
     duk_push_int(ctx, v2);
-    duk_put_prop_index(ctx, -2, 1);
+    duk_put_prop_index(ctx, idx, 1);
     duk_push_int(ctx, v3);
-    duk_put_prop_index(ctx, -2, 2);
+    duk_put_prop_index(ctx, idx, 2);
     duk_push_int(ctx, v4);
-    duk_put_prop_index(ctx, -2, 3);
+    duk_put_prop_index(ctx, idx, 3);
 }
 
 // float
 
-DUK_EXTERNAL void duk_unity_put2f(duk_context *ctx, float v1, float v2) {
+DUK_EXTERNAL void duk_unity_put2f(duk_context *ctx, duk_idx_t idx, float v1, float v2) {
     // duk_push_array(ctx);
+    idx = duk_normalize_index(ctx, idx);
     duk_push_number(ctx, v1);
-    duk_put_prop_index(ctx, -2, 0);
+    duk_put_prop_index(ctx, idx, 0);
     duk_push_number(ctx, v2);
-    duk_put_prop_index(ctx, -2, 1);
+    duk_put_prop_index(ctx, idx, 1);
 }
 
-DUK_EXTERNAL void duk_unity_put3f(duk_context *ctx, float v1, float v2, float v3) {
+DUK_EXTERNAL void duk_unity_put3f(duk_context *ctx, duk_idx_t idx, float v1, float v2, float v3) {
     // duk_push_array(ctx);
+    idx = duk_normalize_index(ctx, idx);
     duk_push_number(ctx, v1);
-    duk_put_prop_index(ctx, -2, 0);
+    duk_put_prop_index(ctx, idx, 0);
     duk_push_number(ctx, v2);
-    duk_put_prop_index(ctx, -2, 1);
+    duk_put_prop_index(ctx, idx, 1);
     duk_push_number(ctx, v3);
-    duk_put_prop_index(ctx, -2, 2);
+    duk_put_prop_index(ctx, idx, 2);
 }
 
-DUK_EXTERNAL void duk_unity_put4f(duk_context *ctx, float v1, float v2, float v3, float v4) {
+DUK_EXTERNAL void duk_unity_put4f(duk_context *ctx, duk_idx_t idx, float v1, float v2, float v3, float v4) {
     // duk_push_array(ctx);
+    idx = duk_normalize_index(ctx, idx);
     duk_push_number(ctx, v1);
-    duk_put_prop_index(ctx, -2, 0);
+    duk_put_prop_index(ctx, idx, 0);
     duk_push_number(ctx, v2);
-    duk_put_prop_index(ctx, -2, 1);
+    duk_put_prop_index(ctx, idx, 1);
     duk_push_number(ctx, v3);
-    duk_put_prop_index(ctx, -2, 2);
+    duk_put_prop_index(ctx, idx, 2);
     duk_push_number(ctx, v4);
-    duk_put_prop_index(ctx, -2, 3);
+    duk_put_prop_index(ctx, idx, 3);
+}
+
+DUK_EXTERNAL void duk_unity_put2d(duk_context *ctx, duk_idx_t idx, double v1, double v2) {
+    // duk_push_array(ctx);
+    idx = duk_normalize_index(ctx, idx);
+    duk_push_number(ctx, v1);
+    duk_put_prop_index(ctx, idx, 0);
+    duk_push_number(ctx, v2);
+    duk_put_prop_index(ctx, idx, 1);
+}
+
+DUK_EXTERNAL void duk_unity_put3d(duk_context *ctx, duk_idx_t idx, double v1, double v2, double v3) {
+    // duk_push_array(ctx);
+    idx = duk_normalize_index(ctx, idx);
+    duk_push_number(ctx, v1);
+    duk_put_prop_index(ctx, idx, 0);
+    duk_push_number(ctx, v2);
+    duk_put_prop_index(ctx, idx, 1);
+    duk_push_number(ctx, v3);
+    duk_put_prop_index(ctx, idx, 2);
+}
+
+DUK_EXTERNAL void duk_unity_put4d(duk_context *ctx, duk_idx_t idx, double v1, double v2, double v3, double v4) {
+    // duk_push_array(ctx);
+    idx = duk_normalize_index(ctx, idx);
+    duk_push_number(ctx, v1);
+    duk_put_prop_index(ctx, idx, 0);
+    duk_push_number(ctx, v2);
+    duk_put_prop_index(ctx, idx, 1);
+    duk_push_number(ctx, v3);
+    duk_put_prop_index(ctx, idx, 2);
+    duk_push_number(ctx, v4);
+    duk_put_prop_index(ctx, idx, 3);
 }
 
 DUK_EXTERNAL duk_bool_t duk_unity_get2f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2) {
     idx = duk_normalize_index(ctx, idx);
-    /*if (duk_is_array(ctx, idx))*/ {
+    // /*if (duk_is_array(ctx, idx))*/ {
         if (duk_get_prop_index(ctx, idx, 0)) {
             *v1 = (float)duk_get_number_default(ctx, -1, 0.0);
         }
@@ -305,13 +344,28 @@ DUK_EXTERNAL duk_bool_t duk_unity_get2f(duk_context *ctx, duk_idx_t idx, float *
         }
         duk_pop_2(ctx);
         return 1;
-    }
-    return 0;
+    // }
+    // return 0;
+}
+
+DUK_EXTERNAL duk_bool_t duk_unity_get2d(duk_context *ctx, duk_idx_t idx, double *v1, double *v2) {
+    idx = duk_normalize_index(ctx, idx);
+    // /*if (duk_is_array(ctx, idx))*/ {
+        if (duk_get_prop_index(ctx, idx, 0)) {
+            *v1 = (double)duk_get_number_default(ctx, -1, 0.0);
+        }
+        if (duk_get_prop_index(ctx, idx, 1)) {
+            *v2 = (double)duk_get_number_default(ctx, -1, 0.0);
+        }
+        duk_pop_2(ctx);
+        return 1;
+    // }
+    // return 0;
 }
 
 DUK_EXTERNAL duk_bool_t duk_unity_get3f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3) {
     idx = duk_normalize_index(ctx, idx);
-    /*if (duk_is_array(ctx, idx))*/ {
+    // /*if (duk_is_array(ctx, idx))*/ {
         if (duk_get_prop_index(ctx, idx, 0)) {
             *v1 = (float)duk_get_number_default(ctx, -1, 0.0);
         }
@@ -323,13 +377,31 @@ DUK_EXTERNAL duk_bool_t duk_unity_get3f(duk_context *ctx, duk_idx_t idx, float *
         }
         duk_pop_3(ctx);
         return 1;
-    }
-    return 0;
+    // }
+    // return 0;
+}
+
+DUK_EXTERNAL duk_bool_t duk_unity_get3d(duk_context *ctx, duk_idx_t idx, double *v1, double *v2, double *v3) {
+    idx = duk_normalize_index(ctx, idx);
+    // /*if (duk_is_array(ctx, idx))*/ {
+        if (duk_get_prop_index(ctx, idx, 0)) {
+            *v1 = (double)duk_get_number_default(ctx, -1, 0.0);
+        }
+        if (duk_get_prop_index(ctx, idx, 1)) {
+            *v2 = (double)duk_get_number_default(ctx, -1, 0.0);
+        }
+        if (duk_get_prop_index(ctx, idx, 2)) {
+            *v3 = (double)duk_get_number_default(ctx, -1, 0.0);
+        }
+        duk_pop_3(ctx);
+        return 1;
+    // }
+    // return 0;
 }
 
 DUK_EXTERNAL duk_bool_t duk_unity_get4f(duk_context *ctx, duk_idx_t idx, float *v1, float *v2, float *v3, float *v4) {
     idx = duk_normalize_index(ctx, idx);
-    /*if (duk_is_array(ctx, idx))*/ {
+    // /*if (duk_is_array(ctx, idx))*/ {
         if (duk_get_prop_index(ctx, idx, 0)) {
             *v1 = (float)duk_get_number_default(ctx, -1, 0.0);
         }
@@ -344,15 +416,36 @@ DUK_EXTERNAL duk_bool_t duk_unity_get4f(duk_context *ctx, duk_idx_t idx, float *
         }
         duk_pop_n(ctx, 4);
         return 1;
-    }
-    return 0;
+    // }
+    // return 0;
+}
+
+DUK_EXTERNAL duk_bool_t duk_unity_get4d(duk_context *ctx, duk_idx_t idx, double *v1, double *v2, double *v3, double *v4) {
+    idx = duk_normalize_index(ctx, idx);
+    // /*if (duk_is_array(ctx, idx))*/ {
+        if (duk_get_prop_index(ctx, idx, 0)) {
+            *v1 = (double)duk_get_number_default(ctx, -1, 0.0);
+        }
+        if (duk_get_prop_index(ctx, idx, 1)) {
+            *v2 = (double)duk_get_number_default(ctx, -1, 0.0);
+        }
+        if (duk_get_prop_index(ctx, idx, 2)) {
+            *v3 = (double)duk_get_number_default(ctx, -1, 0.0);
+        }
+        if (duk_get_prop_index(ctx, idx, 3)) {
+            *v4 = (double)duk_get_number_default(ctx, -1, 0.0);
+        }
+        duk_pop_n(ctx, 4);
+        return 1;
+    // }
+    // return 0;
 }
 
 // int
 
 DUK_EXTERNAL duk_bool_t duk_unity_get2i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2) {
     idx = duk_normalize_index(ctx, idx);
-    /*if (duk_is_array(ctx, idx))*/ {
+    // /*if (duk_is_array(ctx, idx))*/ {
         if (duk_get_prop_index(ctx, idx, 0)) {
             *v1 = duk_get_int_default(ctx, -1, 0);
         }
@@ -361,13 +454,13 @@ DUK_EXTERNAL duk_bool_t duk_unity_get2i(duk_context *ctx, duk_idx_t idx, duk_int
         }
         duk_pop_2(ctx);
         return 1;
-    }
-    return 0;
+    // }
+    // return 0;
 }
 
 DUK_EXTERNAL duk_bool_t duk_unity_get3i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2, duk_int_t *v3) {
     idx = duk_normalize_index(ctx, idx);
-    /*if (duk_is_array(ctx, idx))*/ {
+    // /*if (duk_is_array(ctx, idx))*/ {
         if (duk_get_prop_index(ctx, idx, 0)) {
             *v1 = duk_get_int_default(ctx, -1, 0);
         }
@@ -379,13 +472,13 @@ DUK_EXTERNAL duk_bool_t duk_unity_get3i(duk_context *ctx, duk_idx_t idx, duk_int
         }
         duk_pop_3(ctx);
         return 1;
-    }
-    return 0;
+    // }
+    // return 0;
 }
 
 DUK_EXTERNAL duk_bool_t duk_unity_get4i(duk_context *ctx, duk_idx_t idx, duk_int_t *v1, duk_int_t *v2, duk_int_t *v3, duk_int_t *v4) {
     idx = duk_normalize_index(ctx, idx);
-    /*if (duk_is_array(ctx, idx))*/ {
+    // /*if (duk_is_array(ctx, idx))*/ {
         if (duk_get_prop_index(ctx, idx, 0)) {
             *v1 = duk_get_int_default(ctx, -1, 0);
         }
@@ -400,8 +493,8 @@ DUK_EXTERNAL duk_bool_t duk_unity_get4i(duk_context *ctx, duk_idx_t idx, duk_int
         }
         duk_pop_n(ctx, 4);
         return 1;
-    }
-    return 0;
+    // }
+    // return 0;
 }
 
 DUK_EXTERNAL duk_bool_t duk_unity_set_prop_i(duk_context *ctx, duk_idx_t idx, const char *key, duk_int_t val) {
@@ -1310,8 +1403,11 @@ DUK_LOCAL void duk_rws_open(duk_context *ctx) {
 }
 */
 
+DUK_INTERNAL_DECL void duk_unity_vector3_open(duk_context *ctx);
+
 DUK_EXTERNAL void duk_unity_open(duk_context *ctx) {
     duk_refsys_open(ctx);
     // duk_rws_open(ctx);
     duk_events_open(ctx);
+    duk_unity_vector3_open(ctx);
 }

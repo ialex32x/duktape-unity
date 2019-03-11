@@ -63,7 +63,7 @@ namespace Duktape
                     if (duk_get_native_refid(ctx, idx, out refid))
                     {
                         var cache = DuktapeVM.GetObjectCache(ctx);
-                        return cache.MatchType(refid, type);
+                        return cache.MatchObjectType(refid, type);
                     }
                     return true;
                 case duk_type_t.DUK_TYPE_NUMBER:

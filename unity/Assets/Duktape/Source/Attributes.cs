@@ -58,6 +58,16 @@ namespace Duktape
         }
     }
 
+    //TODO: 指定函数不产生绑定代码 (直接传ctx)
+    [AttributeUsage(AttributeTargets.Method,
+                    AllowMultiple = false)]
+    public class JSCFunctionAttribute : Attribute
+    {
+        public JSCFunctionAttribute()
+        {
+        }
+    }
+
     // 用于标记 struct 非静态方法, 表明该方法调用将修改 struct 自身 (在 js 中产生一次 rebind)
     [AttributeUsage(AttributeTargets.Method,
                     AllowMultiple = false)]
