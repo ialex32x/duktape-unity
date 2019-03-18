@@ -468,7 +468,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_Slerp(duk_context *ctx) {
         return 1;
     }
     float lerpedMag = lhsMag + (rhsMag - lhsMag) * t;
-    float dot = (lhs[0] * rhx + lhs[1] * rhs[1] + lhs[2] * rhs[2]) / (lhsMag * rhsMag);
+    float dot = (lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2]) / (lhsMag * rhsMag);
     if (dot > 1.0f - UNITY_VECTOR3_kEpsilon) {
         duk_builtins_reg_get(ctx, "Vector3");
         duk_push_number(ctx, lhs[0] + (rhs[0] - lhs[0]) * t);
