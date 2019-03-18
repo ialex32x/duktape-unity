@@ -9,6 +9,77 @@
 #define UNITY_VECTOR3_k1OverSqrt2 0.7071067811865475244008443621048490F
 #define UNITY_MATH_PI 3.1415926535897932384626433832795028841971693993F
 
+DUK_INTERNAL DUK_INLINE float vec3_magnitude(const float* lhs) {
+    return sqrtf(lhs[0] * lhs[0] + lhs[1] * lhs[1] + lhs[2] * lhs[2]);
+}
+
+DUK_INTERNAL DUK_INLINE float vec3_dot(const float* lhs, const float* rhs) {
+    return lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2];
+}
+
+DUK_INTERNAL DUK_INLINE void vec3_normalize(float* lhs) {
+    float mag = sqrtf(lhs[0] * lhs[0] + lhs[1] * lhs[1] + lhs[2] * lhs[2]);
+    lhs[0] /= mag;
+    lhs[1] /= mag;
+    lhs[2] /= mag;
+}
+
+DUK_INTERNAL DUK_INLINE void vec3_cross(const float* lhs, const float* rhs, float* res) {
+    res[0] = lhs[1] * rhs[2] - lhs[2] * rhs[1];
+    res[1] = lhs[2] * rhs[0] - lhs[0] * rhs[2];
+    res[2] = lhs[0] * rhs[1] - lhs[1] * rhs[0];
+}
+
+DUK_INTERNAL DUK_INLINE void vec3_multiply(float* out_vec3, float a) {
+    out_vec3[0] *= a;
+    out_vec3[1] *= a;
+    out_vec3[2] *= a;
+}
+
+DUK_INTERNAL DUK_INLINE void m3x3_multiply_vec3(float* mat3x3, const float* vec3, float* out_vec3) {
+	out_vec3[0] = mat3x3[0] * vec3[0] + mat3x3[3] * vec3[1] + mat3x3[6] * vec3[2];
+	out_vec3[1] = mat3x3[1] * vec3[0] + mat3x3[4] * vec3[1] + mat3x3[7] * vec3[2];
+	out_vec3[2] = mat3x3[2] * vec3[0] + mat3x3[5] * vec3[1] + mat3x3[8] * vec3[2];
+}
+
+DUK_INTERNAL DUK_INLINE void m3x3_set_axis_angle(float* mat3x3, const float* vec, float radians) 
+{
+    /* This function contributed by Erich Boleyn (erich@uruk.org) */
+    /* This function used from the Mesa OpenGL code (matrix.c)  */
+    float s, c;
+    float vx, vy, vz, xx, yy, zz, xy, yz, zx, xs, ys, zs, one_c;
+
+    s = sin (radians);
+    c = cos (radians);
+
+    vx = vec[0];
+    vy = vec[1];
+    vz = vec[2];
+
+    xx = vx * vx;
+    yy = vy * vy;
+    zz = vz * vz;
+    xy = vx * vy;
+    yz = vy * vz;
+    zx = vz * vx;
+    xs = vx * s;
+    ys = vy * s;
+    zs = vz * s;
+    one_c = 1.0F - c;
+
+    mat3x3[0*3+0] = (one_c * xx) + c;
+    mat3x3[1*3+0] = (one_c * xy) - zs;
+    mat3x3[2*3+0] = (one_c * zx) + ys;
+
+    mat3x3[0*3+1] = (one_c * xy) + zs;
+    mat3x3[1*3+1] = (one_c * yy) + c;
+    mat3x3[2*3+1] = (one_c * yz) - xs;
+
+    mat3x3[0*3+2] = (one_c * zx) - ys;
+    mat3x3[1*3+2] = (one_c * yz) + xs;
+    mat3x3[2*3+2] = (one_c * zz) + c;
+}
+
 DUK_LOCAL duk_ret_t duk_unity_vector3_constructor(duk_context *ctx) {
     float x = (float)duk_get_number_default(ctx, 0, 0.0);
     float y = (float)duk_get_number_default(ctx, 1, 0.0);
@@ -329,67 +400,53 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_cross(duk_context *ctx) {
     return 1;
 }
 
-DUK_INTERNAL void vec3_normalize(float* lhs) {
-    float mag = sqrtf(lhs[0] * lhs[0] + lhs[1] * lhs[1] + lhs[2] * lhs[2]);
-    lhs[0] /= mag;
-    lhs[1] /= mag;
-    lhs[2] /= mag;
-}
+DUK_LOCAL duk_ret_t duk_unity_vector3_static_OrthoNormalize(duk_context *ctx) {
+    float u[3] = {0};
+    float v[3] = {0};
+    duk_unity_get3f(ctx, 0, &u[0], &u[1], &u[2]);
+    duk_unity_get3f(ctx, 1, &v[0], &v[1], &v[2]);
+    float mag = vec3_magnitude(u);
+    if (mag > UNITY_VECTOR3_kEpsilon) {
+        u[0] /= mag;
+        u[1] /= mag;
+        u[2] /= mag;
+    } else {
+        u[0] = 1;
+        u[1] = u[2] = 0;
+    }
+    duk_unity_put3f(ctx, 0, u[0], u[1], u[2]);
+    float dot0 = vec3_dot(u, v);
+    v[0] -= u[0] * dot0;
+    v[1] -= u[1] * dot0;
+    v[2] -= u[2] * dot0;
+    mag = vec3_magnitude(v);
+    if (mag > UNITY_VECTOR3_kEpsilon) {
+        v[0] /= mag;
+        v[1] /= mag;
+        v[2] /= mag;
+    } else {
+        v[0] = v[1] = v[2] = 0;
+    }
+    duk_unity_put3f(ctx, 1, v[0], v[1], v[2]);
 
-DUK_INTERNAL void vec3_cross(const float* lhs, const float* rhs, float* res) {
-    res[0] = lhs[1] * rhs[2] - lhs[2] * rhs[1];
-    res[1] = lhs[2] * rhs[0] - lhs[0] * rhs[2];
-    res[2] = lhs[0] * rhs[1] - lhs[1] * rhs[0];
-}
-
-DUK_INTERNAL void vec3_multiply(float* out_vec3, float a) {
-    out_vec3[0] *= a;
-    out_vec3[1] *= a;
-    out_vec3[2] *= a;
-}
-
-DUK_INTERNAL void m3x3_multiply_vec3(float* mat3x3, const float* vec3, float* out_vec3) {
-	out_vec3[0] = mat3x3[0] * vec3[0] + mat3x3[3] * vec3[1] + mat3x3[6] * vec3[2];
-	out_vec3[1] = mat3x3[1] * vec3[0] + mat3x3[4] * vec3[1] + mat3x3[7] * vec3[2];
-	out_vec3[2] = mat3x3[2] * vec3[0] + mat3x3[5] * vec3[1] + mat3x3[8] * vec3[2];
-}
-
-DUK_INTERNAL void m3x3_set_axis_angle(float* mat3x3, const float* vec, float radians) 
-{
-    /* This function contributed by Erich Boleyn (erich@uruk.org) */
-    /* This function used from the Mesa OpenGL code (matrix.c)  */
-    float s, c;
-    float vx, vy, vz, xx, yy, zz, xy, yz, zx, xs, ys, zs, one_c;
-
-    s = sin (radians);
-    c = cos (radians);
-
-    vx = vec[0];
-    vy = vec[1];
-    vz = vec[2];
-
-    xx = vx * vx;
-    yy = vy * vy;
-    zz = vz * vz;
-    xy = vx * vy;
-    yz = vy * vz;
-    zx = vz * vx;
-    xs = vx * s;
-    ys = vy * s;
-    zs = vz * s;
-    one_c = 1.0F - c;
-
-    mat3x3[0*3+0] = (one_c * xx) + c;
-    mat3x3[1*3+0] = (one_c * xy) - zs;
-    mat3x3[2*3+0] = (one_c * zx) + ys;
-
-    mat3x3[0*3+1] = (one_c * xy) + zs;
-    mat3x3[1*3+1] = (one_c * yy) + c;
-    mat3x3[2*3+1] = (one_c * yz) - xs;
-
-    mat3x3[0*3+2] = (one_c * zx) - ys;
-    mat3x3[1*3+2] = (one_c * yz) + xs;
-    mat3x3[2*3+2] = (one_c * zz) + c;
+    if (duk_get_top(ctx) > 2) {
+        float w[3] = {0};
+        duk_unity_get3f(ctx, 2, &w[0], &w[1], &w[2]);
+        float dot1 = vec3_dot(v, w);
+        dot0 = vec3_dot(u, w);
+        w[0] -= u[0] * dot0 + v[0] * dot1;
+        w[1] -= u[1] * dot0 + v[1] * dot1;
+        w[2] -= u[2] * dot0 + v[2] * dot1;
+        mag = vec3_magnitude(w);
+        if (mag > UNITY_VECTOR3_kEpsilon) {
+            w[0] /= mag;
+            w[1] /= mag;
+            w[2] /= mag;
+        } else {
+            vec3_cross(u, v, w);
+        }
+        duk_unity_put3f(ctx, 2, w[0], w[1], w[2]);
+    }
 }
 
 DUK_LOCAL duk_ret_t duk_unity_vector3_static_Slerp(duk_context *ctx) {
@@ -789,6 +846,7 @@ DUK_INTERNAL void duk_unity_vector3_open(duk_context *ctx) {
     duk_unity_add_member(ctx, "Scale", duk_unity_vector3_static_scale, -2);
     duk_unity_add_member(ctx, "Cross", duk_unity_vector3_static_cross, -2);
     duk_unity_add_member(ctx, "Slerp", duk_unity_vector3_static_Slerp, -2);
+    duk_unity_add_member(ctx, "OrthoNormalize", duk_unity_vector3_static_OrthoNormalize, -2);
     duk_unity_add_member(ctx, "Reflect", duk_unity_vector3_static_reflect, -2);
     duk_unity_add_member(ctx, "Normalize", duk_unity_vector3_normalize, -1);
     duk_unity_add_property(ctx, "normalized", duk_unity_vector3_normalized, NULL, -1);
