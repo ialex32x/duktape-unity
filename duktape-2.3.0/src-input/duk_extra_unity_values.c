@@ -9,6 +9,21 @@
 #define UNITY_VECTOR3_k1OverSqrt2 0.7071067811865475244008443621048490F
 #define UNITY_MATH_PI 3.1415926535897932384626433832795028841971693993F
 
+DUK_INTERNAL DUK_INLINE void vec2_push_new(duk_context *ctx, float x, float y) {
+    duk_builtins_reg_get(ctx, "Vector2");
+    duk_push_number(ctx, x);
+    duk_push_number(ctx, y);
+    duk_new(ctx, 2);
+}
+
+DUK_INTERNAL DUK_INLINE void vec3_push_new(duk_context *ctx, float x, float y, float z) {
+    duk_builtins_reg_get(ctx, "Vector3");
+    duk_push_number(ctx, x);
+    duk_push_number(ctx, y);
+    duk_push_number(ctx, z);
+    duk_new(ctx, 3);
+}
+
 DUK_INTERNAL DUK_INLINE float vec3_magnitude(const float* lhs) {
     return sqrtf(lhs[0] * lhs[0] + lhs[1] * lhs[1] + lhs[2] * lhs[2]);
 }
@@ -80,13 +95,178 @@ DUK_INTERNAL DUK_INLINE void m3x3_set_axis_angle(float* mat3x3, const float* vec
     mat3x3[2*3+2] = (one_c * zz) + c;
 }
 
+DUK_LOCAL duk_ret_t duk_unity_vector2_constructor(duk_context *ctx) {
+    float x = (float)duk_get_number_default(ctx, 0, 0.0);
+    float y = (float)duk_get_number_default(ctx, 1, 0.0);
+    duk_push_this(ctx);
+    duk_unity_put2f(ctx, -1, x, y);
+    duk_pop(ctx);
+    return 0;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector2_Set(duk_context *ctx) {
+    float x, y;
+    x = (float)duk_get_number_default(ctx, 0, 0);
+    y = (float)duk_get_number_default(ctx, 1, 0);
+    duk_push_this(ctx);
+    duk_unity_put2f(ctx, -1, x, y);
+    duk_pop(ctx);
+    return 0;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector2_Scale(duk_context *ctx) {
+    float lhsx, lhsy;
+    float rhsx, rhsy;
+    duk_unity_get2f(ctx, 0, &lhsx, &lhsy);
+    duk_push_this(ctx);
+    duk_unity_get2f(ctx, -1, &rhsx, &rhsy);
+    duk_unity_put2f(ctx, -1, rhsx * lhsx, rhsy * lhsy);
+    duk_pop(ctx);
+    return 0;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector2_Normalize(duk_context *ctx) {
+    float rhsx, rhsy;
+    duk_push_this(ctx);
+    duk_unity_get2f(ctx, -1, &rhsx, &rhsy);
+    float mag = 1.0f / sqrtf(rhsx * rhsx + rhsy * rhsy);
+    duk_unity_put2f(ctx, -1, rhsx / mag, rhsy / mag);
+    duk_pop(ctx);
+    return 0;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector2_ToString(duk_context *ctx) {
+    float rhsx, rhsy;
+    duk_push_this(ctx);
+    duk_unity_get2f(ctx, -1, &rhsx, &rhsy);
+    duk_pop(ctx);
+    duk_push_sprintf(ctx, "%f, %f", rhsx, rhsy);
+    return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_Add(duk_context *ctx) {
+    float lhsx, lhsy;
+    float rhsx, rhsy;
+    duk_unity_get2f(ctx, 0, &lhsx, &lhsy);
+    duk_unity_get2f(ctx, 1, &rhsx, &rhsy);
+    vec2_push_new(ctx, lhsx + rhsx, lhsy + rhsy);
+    return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_Sub(duk_context *ctx) {
+    float lhsx, lhsy;
+    float rhsx, rhsy;
+    duk_unity_get2f(ctx, 0, &lhsx, &lhsy);
+    duk_unity_get2f(ctx, 1, &rhsx, &rhsy);
+    vec2_push_new(ctx, lhsx - rhsx, lhsy - rhsy);
+    return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_Neg(duk_context *ctx) {
+    float lhsx, lhsy;
+    duk_unity_get2f(ctx, 0, &lhsx, &lhsy);
+    vec2_push_new(ctx, -lhsx, -lhsy);
+    return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_Mul(duk_context *ctx) {
+    float lhsx, lhsy;
+    float f;
+    if (duk_is_number(ctx, 0)) {
+        f = (float)duk_get_number_default(ctx, 0, 0.0);
+        duk_unity_get2f(ctx, 1, &lhsx, &lhsy);
+    } else {
+        duk_unity_get2f(ctx, 0, &lhsx, &lhsy);
+        f = (float)duk_get_number_default(ctx, 1, 0.0);
+    }
+    vec2_push_new(ctx, lhsx * f, lhsy * f);
+    return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector2_Inverse(duk_context *ctx) {
+    float rhsx, rhsy;
+    duk_push_this(ctx);
+    duk_unity_get2f(ctx, -1, &rhsx, &rhsy);
+    duk_pop(ctx);
+    float x = 1.0f / rhsx;
+    float y = 1.0f / rhsy;
+    vec2_push_new(ctx, x, y);
+    return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_Equals(duk_context *ctx) {
+    float lhsx, lhsy;
+    float rhsx, rhsy;
+    duk_unity_get2f(ctx, 0, &lhsx, &lhsy);
+    duk_unity_get2f(ctx, 1, &rhsx, &rhsy);
+    float x = lhsx - rhsx;
+    float y = lhsy - rhsy;
+    duk_push_boolean(ctx, (x * x + y * y) < UNITY_VECTOR3_kEpsilon * UNITY_VECTOR3_kEpsilon);
+    return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector2_Equals(duk_context *ctx) {
+    float lhsx, lhsy;
+    duk_unity_get2f(ctx, 0, &lhsx, &lhsy);
+    float rhsx, rhsy;
+    duk_push_this(ctx);
+    duk_unity_get2f(ctx, -1, &rhsx, &rhsy);
+    duk_pop(ctx);
+    float x = lhsx - rhsx;
+    float y = lhsy - rhsy;
+    duk_push_boolean(ctx, (x * x + y * y) < UNITY_VECTOR3_kEpsilon * UNITY_VECTOR3_kEpsilon);
+    return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_Div(duk_context *ctx) {
+    float lhsx, lhsy;
+    float f;
+    if (duk_is_number(ctx, 0)) {
+        f = 1.0f / (float)duk_get_number_default(ctx, 0, 0.0);
+        duk_unity_get2f(ctx, 1, &lhsx, &lhsy);
+    } else {
+        duk_unity_get2f(ctx, 0, &lhsx, &lhsy);
+        f = 1.0f / (float)duk_get_number_default(ctx, 1, 0.0);
+    }
+    vec2_push_new(ctx, lhsx * f, lhsy * f);
+    return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector2_magnitude(duk_context *ctx) {
+    float x, y;
+    duk_push_this(ctx);
+    duk_unity_get2f(ctx, -1, &x, &y);
+    duk_pop(ctx);
+    duk_push_number(ctx, sqrtf(x * x + y * y));
+    return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector2_sqrMagnitude(duk_context *ctx) {
+    float x, y;
+    duk_push_this(ctx);
+    duk_unity_get2f(ctx, -1, &x, &y);
+    duk_pop(ctx);
+    duk_push_number(ctx, x * x + y * y);
+    return 1;
+}
+
 DUK_LOCAL duk_ret_t duk_unity_vector3_constructor(duk_context *ctx) {
     float x = (float)duk_get_number_default(ctx, 0, 0.0);
     float y = (float)duk_get_number_default(ctx, 1, 0.0);
     float z = (float)duk_get_number_default(ctx, 2, 0.0);
     duk_push_this(ctx);
     duk_unity_put3f(ctx, -1, x, y, z);
+    duk_pop(ctx);
     return 0;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector3_ToString(duk_context *ctx) {
+    float rhsx, rhsy, rhsz;
+    duk_push_this(ctx);
+    duk_unity_get3f(ctx, -1, &rhsx, &rhsy, &rhsz);
+    duk_pop(ctx);
+    duk_push_sprintf(ctx, "%f, %f, %f", rhsx, rhsy, rhsz);
+    return 1;
 }
 
 DUK_LOCAL duk_ret_t duk_unity_vector3_static_lerp(duk_context *ctx) {
@@ -352,13 +532,13 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_Div(duk_context *ctx) {
     return 1;
 }
 
-DUK_LOCAL duk_ret_t duk_unity_vector3_set(duk_context *ctx) {
-    float ax, ay, az;
-    ax = (float)duk_get_number_default(ctx, 0, 0.0);
-    ay = (float)duk_get_number_default(ctx, 1, 0.0);
-    az = (float)duk_get_number_default(ctx, 2, 0.0);
+DUK_LOCAL duk_ret_t duk_unity_vector3_Set(duk_context *ctx) {
+    float x, y, z;
+    x = (float)duk_get_number_default(ctx, 0, 0);
+    y = (float)duk_get_number_default(ctx, 1, 0);
+    z = (float)duk_get_number_default(ctx, 2, 0);
     duk_push_this(ctx);
-    duk_unity_put3f(ctx, -1, ax, ay, az);
+    duk_unity_put3f(ctx, -1, x, y, z);
     duk_pop(ctx);
     return 0;
 }
@@ -704,18 +884,10 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_clampMagnitude(duk_context *ctx) {
     float sqrMag = x * x + y * y + z * z;
     if (sqrMag > maxLength * maxLength) {
         float rx = maxLength / sqrMag;
-        duk_builtins_reg_get(ctx, "Vector3");
-        duk_push_number(ctx, x * rx);
-        duk_push_number(ctx, y * rx);
-        duk_push_number(ctx, z * rx);
-        duk_new(ctx, 3);
+        vec3_push_new(ctx, x * rx, y * rx, z * rx);
         return 1;
     }
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, x);
-    duk_push_number(ctx, y);
-    duk_push_number(ctx, z);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, x, y, z);
     return 1;
 }
 
@@ -723,6 +895,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_magnitude(duk_context *ctx) {
     float x, y, z;
     duk_push_this(ctx);
     duk_unity_get3f(ctx, -1, &x, &y, &z);
+    duk_pop(ctx);
     duk_push_number(ctx, sqrtf(x * x + y * y + z * z));
     return 1;
 }
@@ -731,11 +904,12 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_sqrMagnitude(duk_context *ctx) {
     float x, y, z;
     duk_push_this(ctx);
     duk_unity_get3f(ctx, -1, &x, &y, &z);
+    duk_pop(ctx);
     duk_push_number(ctx, x * x + y * y + z * z);
     return 1;
 }
 
-DUK_LOCAL duk_ret_t duk_unity_vector3_min(duk_context *ctx) {
+DUK_LOCAL duk_ret_t duk_unity_vector3_static_min(duk_context *ctx) {
     float lhsx, lhsy, lhsz;
     float rhsx, rhsy, rhsz;
     duk_unity_get3f(ctx, 0, &lhsx, &lhsy, &lhsz);
@@ -748,7 +922,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_min(duk_context *ctx) {
     return 1;
 }
 
-DUK_LOCAL duk_ret_t duk_unity_vector3_max(duk_context *ctx) {
+DUK_LOCAL duk_ret_t duk_unity_vector3_static_max(duk_context *ctx) {
     float lhsx, lhsy, lhsz;
     float rhsx, rhsy, rhsz;
     duk_unity_get3f(ctx, 0, &lhsx, &lhsy, &lhsz);
@@ -827,51 +1001,80 @@ DUK_EXTERNAL void duk_unity_push_vector3(duk_context *ctx, float v1, float v2, f
 DUK_INTERNAL void duk_unity_vector3_open(duk_context *ctx) {
     duk_push_global_object(ctx);
     duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
-    duk_unity_begin_class(ctx, "Vector3", duk_unity_vector3_constructor, NULL);
+    {
+        duk_unity_begin_class(ctx, "Vector2", duk_unity_vector2_constructor, NULL);
 
-    duk_unity_add_member(ctx, "Add", duk_unity_vector3_static_Add, -2);
-    duk_unity_add_member(ctx, "Sub", duk_unity_vector3_static_Sub, -2);
-    duk_unity_add_member(ctx, "Neg", duk_unity_vector3_static_Neg, -2);
-    duk_unity_add_member(ctx, "Mul", duk_unity_vector3_static_Mul, -2);
-    duk_unity_add_member(ctx, "Div", duk_unity_vector3_static_Div, -2);
-    duk_unity_add_member(ctx, "Inverse", duk_unity_vector3_Inverse, -1);
-    duk_unity_add_member(ctx, "Equals", duk_unity_vector3_static_Equals, -2);
-    duk_unity_add_member(ctx, "Equals", duk_unity_vector3_Equals, -1);
+        duk_unity_add_member(ctx, "Add", duk_unity_vector2_static_Add, -2);
+        duk_unity_add_member(ctx, "Sub", duk_unity_vector2_static_Sub, -2);
+        duk_unity_add_member(ctx, "Neg", duk_unity_vector2_static_Neg, -2);
+        duk_unity_add_member(ctx, "Mul", duk_unity_vector2_static_Mul, -2);
+        duk_unity_add_member(ctx, "Div", duk_unity_vector2_static_Div, -2);
+        duk_unity_add_member(ctx, "Inverse", duk_unity_vector2_Inverse, -1);
+        duk_unity_add_member(ctx, "Equals", duk_unity_vector2_static_Equals, -2);
+        duk_unity_add_member(ctx, "Equals", duk_unity_vector2_Equals, -1);
+        duk_unity_add_member(ctx, "ToString", duk_unity_vector2_ToString, -1);
 
-    duk_unity_add_member(ctx, "Lerp", duk_unity_vector3_static_lerp, -1);
-    duk_unity_add_member(ctx, "LerpUnclamped", duk_unity_vector3_static_lerpUnclamped, -2);
-    duk_unity_add_member(ctx, "MoveTowards", duk_unity_vector3_static_moveTowards, -2);
-    duk_unity_add_member(ctx, "SmoothDamp", duk_unity_vector3_static_smoothDamp, -2);
-    duk_unity_add_member(ctx, "Scale", duk_unity_vector3_scale, -1);
-    duk_unity_add_member(ctx, "Scale", duk_unity_vector3_static_scale, -2);
-    duk_unity_add_member(ctx, "Cross", duk_unity_vector3_static_cross, -2);
-    duk_unity_add_member(ctx, "Slerp", duk_unity_vector3_static_Slerp, -2);
-    duk_unity_add_member(ctx, "OrthoNormalize", duk_unity_vector3_static_OrthoNormalize, -2);
-    duk_unity_add_member(ctx, "Reflect", duk_unity_vector3_static_reflect, -2);
-    duk_unity_add_member(ctx, "Normalize", duk_unity_vector3_normalize, -1);
-    duk_unity_add_property(ctx, "normalized", duk_unity_vector3_normalized, NULL, -1);
-    duk_unity_add_member(ctx, "Dot", duk_unity_vector3_static_dot, -2);
-    duk_unity_add_member(ctx, "Project", duk_unity_vector3_static_project, -2);
-    duk_unity_add_member(ctx, "ProjectOnPlane", duk_unity_vector3_static_projectOnPlane, -2);
-    duk_unity_add_member(ctx, "Angle", duk_unity_vector3_static_angle, -2);
-    duk_unity_add_member(ctx, "SignedAngle", duk_unity_vector3_static_signedAngle, -2);
-    duk_unity_add_member(ctx, "Distance", duk_unity_vector3_static_distance, -2);
-    duk_unity_add_member(ctx, "ClampMagnitude", duk_unity_vector3_static_clampMagnitude, -2);
-    duk_unity_add_property(ctx, "magnitude", duk_unity_vector3_magnitude, NULL, -1);
-    duk_unity_add_property(ctx, "sqrMagnitude", duk_unity_vector3_sqrMagnitude, NULL, -1);
-    duk_unity_add_member(ctx, "Min", duk_unity_vector3_min, -1);
-    duk_unity_add_member(ctx, "Max", duk_unity_vector3_max, -1);
-    duk_unity_add_property(ctx, "x", duk_unity_vector3_getx, duk_unity_vector3_setx, -1);
-    duk_unity_add_property(ctx, "y", duk_unity_vector3_gety, duk_unity_vector3_sety, -1);
-    duk_unity_add_property(ctx, "z", duk_unity_vector3_getz, duk_unity_vector3_setz, -1);
-    duk_unity_vector3_add_const(ctx, -2, "zero", 0.0, 0.0, 0.0);
-    duk_unity_vector3_add_const(ctx, -2, "one", 1.0, 1.0, 1.0);
-    duk_unity_vector3_add_const(ctx, -2, "forward", 0.0, 0.0, 1.0);
-    duk_unity_vector3_add_const(ctx, -2, "back", 0.0, 0.0, -1.0);
-    duk_unity_vector3_add_const(ctx, -2, "up", 0.0, 1.0, 0.0);
-    duk_unity_vector3_add_const(ctx, -2, "down", 0.0, -1.0, 0.0);
-    duk_unity_vector3_add_const(ctx, -2, "left", -1.0, 0.0, 0.0);
-    duk_unity_vector3_add_const(ctx, -2, "right", 1.0, 0.0, 0.0);
-    duk_unity_end_class(ctx);
+        duk_unity_add_member(ctx, "Set", duk_unity_vector2_Set, -1);
+        duk_unity_add_member(ctx, "Scale", duk_unity_vector2_Scale, -1);
+        duk_unity_add_member(ctx, "Normalize", duk_unity_vector2_Normalize, -1);
+
+        
+        duk_unity_add_property(ctx, "magnitude", duk_unity_vector2_magnitude, NULL, -1);
+        duk_unity_add_property(ctx, "sqrMagnitude", duk_unity_vector2_sqrMagnitude, NULL, -1);
+        duk_unity_end_class(ctx);
+    }
+    {
+        duk_unity_begin_class(ctx, "Vector3", duk_unity_vector3_constructor, NULL);
+
+        duk_unity_add_member(ctx, "Add", duk_unity_vector3_static_Add, -2);
+        duk_unity_add_member(ctx, "Sub", duk_unity_vector3_static_Sub, -2);
+        duk_unity_add_member(ctx, "Neg", duk_unity_vector3_static_Neg, -2);
+        duk_unity_add_member(ctx, "Mul", duk_unity_vector3_static_Mul, -2);
+        duk_unity_add_member(ctx, "Div", duk_unity_vector3_static_Div, -2);
+        duk_unity_add_member(ctx, "Inverse", duk_unity_vector3_Inverse, -1);
+        duk_unity_add_member(ctx, "Equals", duk_unity_vector3_static_Equals, -2);
+        duk_unity_add_member(ctx, "Equals", duk_unity_vector3_Equals, -1);
+        duk_unity_add_member(ctx, "ToString", duk_unity_vector3_ToString, -1);
+
+        duk_unity_add_member(ctx, "Set", duk_unity_vector3_Set, -1);
+        duk_unity_add_member(ctx, "Lerp", duk_unity_vector3_static_lerp, -1);
+        duk_unity_add_member(ctx, "LerpUnclamped", duk_unity_vector3_static_lerpUnclamped, -2);
+        duk_unity_add_member(ctx, "MoveTowards", duk_unity_vector3_static_moveTowards, -2);
+        duk_unity_add_member(ctx, "SmoothDamp", duk_unity_vector3_static_smoothDamp, -2);
+        duk_unity_add_member(ctx, "Scale", duk_unity_vector3_scale, -1);
+        duk_unity_add_member(ctx, "Scale", duk_unity_vector3_static_scale, -2);
+        duk_unity_add_member(ctx, "Cross", duk_unity_vector3_static_cross, -2);
+        duk_unity_add_member(ctx, "Slerp", duk_unity_vector3_static_Slerp, -2);
+        duk_unity_add_member(ctx, "OrthoNormalize", duk_unity_vector3_static_OrthoNormalize, -2);
+        duk_unity_add_member(ctx, "Reflect", duk_unity_vector3_static_reflect, -2);
+        duk_unity_add_member(ctx, "Normalize", duk_unity_vector3_normalize, -1);
+        duk_unity_add_property(ctx, "normalized", duk_unity_vector3_normalized, NULL, -1);
+        duk_unity_add_member(ctx, "Dot", duk_unity_vector3_static_dot, -2);
+        duk_unity_add_member(ctx, "Project", duk_unity_vector3_static_project, -2);
+        duk_unity_add_member(ctx, "ProjectOnPlane", duk_unity_vector3_static_projectOnPlane, -2);
+        duk_unity_add_member(ctx, "Angle", duk_unity_vector3_static_angle, -2);
+        duk_unity_add_member(ctx, "SignedAngle", duk_unity_vector3_static_signedAngle, -2);
+        duk_unity_add_member(ctx, "Distance", duk_unity_vector3_static_distance, -2);
+        duk_unity_add_member(ctx, "ClampMagnitude", duk_unity_vector3_static_clampMagnitude, -2);
+        duk_unity_add_property(ctx, "magnitude", duk_unity_vector3_magnitude, NULL, -1);
+        duk_unity_add_property(ctx, "sqrMagnitude", duk_unity_vector3_sqrMagnitude, NULL, -1);
+        duk_unity_add_member(ctx, "Min", duk_unity_vector3_static_min, -2);
+        duk_unity_add_member(ctx, "Max", duk_unity_vector3_static_max, -2);
+        duk_unity_add_property(ctx, "x", duk_unity_vector3_getx, duk_unity_vector3_setx, -1);
+        duk_unity_add_property(ctx, "y", duk_unity_vector3_gety, duk_unity_vector3_sety, -1);
+        duk_unity_add_property(ctx, "z", duk_unity_vector3_getz, duk_unity_vector3_setz, -1);
+        duk_unity_vector3_add_const(ctx, -2, "zero", 0.0, 0.0, 0.0);
+        duk_unity_vector3_add_const(ctx, -2, "one", 1.0, 1.0, 1.0);
+        duk_unity_vector3_add_const(ctx, -2, "forward", 0.0, 0.0, 1.0);
+        duk_unity_vector3_add_const(ctx, -2, "back", 0.0, 0.0, -1.0);
+        duk_unity_vector3_add_const(ctx, -2, "up", 0.0, 1.0, 0.0);
+        duk_unity_vector3_add_const(ctx, -2, "down", 0.0, -1.0, 0.0);
+        duk_unity_vector3_add_const(ctx, -2, "left", -1.0, 0.0, 0.0);
+        duk_unity_vector3_add_const(ctx, -2, "right", 1.0, 0.0, 0.0);
+        duk_unity_end_class(ctx);
+    }
+    {
+
+    }
     duk_pop_2(ctx); // pop DuktapeJS and global
 }
