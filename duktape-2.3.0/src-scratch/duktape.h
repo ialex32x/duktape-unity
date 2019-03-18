@@ -6,7 +6,7 @@
  *  comments.  Other parts of the header are Duktape internal and related to
  *  e.g. platform/compiler/feature detection.
  *
- *  Git commit f0f828c1e6a4f273edf71f2494a62e7e61ef810e (f0f828c-dirty).
+ *  Git commit efa352600313f8a347abbd5595f42aa7db775e14 (efa3526-dirty).
  *  Git branch develop.
  *
  *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and
@@ -171,8 +171,8 @@
  * which Duktape snapshot was used.  Not available in the ECMAScript
  * environment.
  */
-#define DUK_GIT_COMMIT                    "f0f828c1e6a4f273edf71f2494a62e7e61ef810e"
-#define DUK_GIT_DESCRIBE                  "f0f828c-dirty"
+#define DUK_GIT_COMMIT                    "efa352600313f8a347abbd5595f42aa7db775e14"
+#define DUK_GIT_DESCRIBE                  "efa3526-dirty"
 #define DUK_GIT_BRANCH                    "develop"
 
 /* External duk_config.h provides platform/compiler/OS dependent
@@ -1475,6 +1475,8 @@ DUK_EXTERNAL_DECL duk_bool_t duk_unity_get4d(duk_context *ctx, duk_idx_t idx, do
 DUK_EXTERNAL_DECL void duk_unity_push_vector3(duk_context *ctx, float v1, float v2, float v3);
 
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_prop_i(duk_context *ctx, duk_idx_t idx, const char *key, duk_int_t val);
+
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_put_target_i(duk_context *ctx, duk_idx_t idx);
 
 DUK_EXTERNAL_DECL void duk_unity_open(duk_context *ctx);
 
