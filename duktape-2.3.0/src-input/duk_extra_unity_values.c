@@ -3,9 +3,11 @@
 /**
  * Vector3
  */
-#define UNITY_VECTOR3_kEpsilon 0.00001
+#define UNITY_VECTOR3_kEpsilon 0.00001F
 #define UNITY_SINGLE_Epsilon 1.401298E-45F
 #define UNITY_VECTOR3_kEpsilonNormalSqrt 1e-15F
+#define UNITY_VECTOR3_k1OverSqrt2 0.7071067811865475244008443621048490F
+#define UNITY_MATH_PI 3.1415926535897932384626433832795028841971693993F
 
 DUK_LOCAL duk_ret_t duk_unity_vector3_constructor(duk_context *ctx) {
     float x = (float)duk_get_number_default(ctx, 0, 0.0);
@@ -219,6 +221,22 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_Mul(duk_context *ctx) {
     return 1;
 }
 
+DUK_LOCAL duk_ret_t duk_unity_vector3_Inverse(duk_context *ctx) {
+    float rhsx, rhsy, rhsz;
+    duk_push_this(ctx);
+    duk_unity_get3f(ctx, -1, &rhsx, &rhsy, &rhsz);
+    duk_pop(ctx);
+    float x = 1.0f / rhsx;
+    float y = 1.0f / rhsy;
+    float z = 1.0f / rhsz;
+    duk_builtins_reg_get(ctx, "Vector3");
+    duk_push_number(ctx, x);
+    duk_push_number(ctx, y);
+    duk_push_number(ctx, z);
+    duk_new(ctx, 3);
+    return 1;
+}
+
 DUK_LOCAL duk_ret_t duk_unity_vector3_static_Equals(duk_context *ctx) {
     float lhsx, lhsy, lhsz;
     float rhsx, rhsy, rhsz;
@@ -237,6 +255,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_Equals(duk_context *ctx) {
     float rhsx, rhsy, rhsz;
     duk_push_this(ctx);
     duk_unity_get3f(ctx, -1, &rhsx, &rhsy, &rhsz);
+    duk_pop(ctx);
     float x = lhsx - rhsx;
     float y = lhsy - rhsy;
     float z = lhsz - rhsz;
@@ -308,6 +327,148 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_cross(duk_context *ctx) {
     duk_push_number(ctx, lhsx * rhsy - lhsy * rhsx);
     duk_new(ctx, 3);
     return 1;
+}
+
+DUK_INTERNAL void vec3_normalize(float* lhs) {
+    float mag = sqrtf(lhs[0] * lhs[0] + lhs[1] * lhs[1] + lhs[2] * lhs[2]);
+    lhs[0] /= mag;
+    lhs[1] /= mag;
+    lhs[2] /= mag;
+}
+
+DUK_INTERNAL void vec3_cross(const float* lhs, const float* rhs, float* res) {
+    res[0] = lhs[1] * rhs[2] - lhs[2] * rhs[1];
+    res[1] = lhs[2] * rhs[0] - lhs[0] * rhs[2];
+    res[2] = lhs[0] * rhs[1] - lhs[1] * rhs[0];
+}
+
+DUK_INTERNAL void vec3_multiply(float* out_vec3, float a) {
+    out_vec3[0] *= a;
+    out_vec3[1] *= a;
+    out_vec3[2] *= a;
+}
+
+DUK_INTERNAL void m3x3_multiply_vec3(float* mat3x3, const float* vec3, float* out_vec3) {
+	out_vec3[0] = mat3x3[0] * vec3[0] + mat3x3[3] * vec3[1] + mat3x3[6] * vec3[2];
+	out_vec3[1] = mat3x3[1] * vec3[0] + mat3x3[4] * vec3[1] + mat3x3[7] * vec3[2];
+	out_vec3[2] = mat3x3[2] * vec3[0] + mat3x3[5] * vec3[1] + mat3x3[8] * vec3[2];
+}
+
+DUK_INTERNAL void m3x3_set_axis_angle(float* mat3x3, const float* vec, float radians) 
+{
+    /* This function contributed by Erich Boleyn (erich@uruk.org) */
+    /* This function used from the Mesa OpenGL code (matrix.c)  */
+    float s, c;
+    float vx, vy, vz, xx, yy, zz, xy, yz, zx, xs, ys, zs, one_c;
+
+    s = sin (radians);
+    c = cos (radians);
+
+    vx = vec[0];
+    vy = vec[1];
+    vz = vec[2];
+
+    xx = vx * vx;
+    yy = vy * vy;
+    zz = vz * vz;
+    xy = vx * vy;
+    yz = vy * vz;
+    zx = vz * vx;
+    xs = vx * s;
+    ys = vy * s;
+    zs = vz * s;
+    one_c = 1.0F - c;
+
+    mat3x3[0*3+0] = (one_c * xx) + c;
+    mat3x3[1*3+0] = (one_c * xy) - zs;
+    mat3x3[2*3+0] = (one_c * zx) + ys;
+
+    mat3x3[0*3+1] = (one_c * xy) + zs;
+    mat3x3[1*3+1] = (one_c * yy) + c;
+    mat3x3[2*3+1] = (one_c * yz) - xs;
+
+    mat3x3[0*3+2] = (one_c * zx) - ys;
+    mat3x3[1*3+2] = (one_c * yz) + xs;
+    mat3x3[2*3+2] = (one_c * zz) + c;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector3_static_Slerp(duk_context *ctx) {
+    float lhs[3] = {0};
+    float rhs[3] = {0};
+    float t;
+    duk_unity_get3f(ctx, 0, &lhs[0], &lhs[1], &lhs[2]);
+    duk_unity_get3f(ctx, 1, &rhs[0], &rhs[1], &rhs[2]);
+    t = (float)duk_get_number_default(ctx, 2, 0);
+    // t = t > 1.0f ? 1.0f : (t < 0.0f ? 0.0f : t);
+    float lhsMag = sqrtf(lhs[0] * lhs[0] + lhs[1] * lhs[1] + lhs[2] * lhs[2]);
+    float rhsMag = sqrtf(rhs[0] * rhs[0] + rhs[1] * rhs[1] + rhs[2] * rhs[2]);
+    if (lhsMag < UNITY_VECTOR3_kEpsilon || rhsMag < UNITY_VECTOR3_kEpsilon) {
+        duk_builtins_reg_get(ctx, "Vector3");
+        duk_push_number(ctx, lhs[0] + (rhs[0] - lhs[0]) * t);
+        duk_push_number(ctx, lhs[1] + (rhs[1] - lhs[1]) * t);
+        duk_push_number(ctx, lhs[2] + (rhs[2] - lhs[2]) * t);
+        duk_new(ctx, 3);
+        return 1;
+    }
+    float lerpedMag = lhsMag + (rhsMag - lhsMag) * t;
+    float dot = (lhs[0] * rhx + lhs[1] * rhs[1] + lhs[2] * rhs[2]) / (lhsMag * rhsMag);
+    if (dot > 1.0f - UNITY_VECTOR3_kEpsilon) {
+        duk_builtins_reg_get(ctx, "Vector3");
+        duk_push_number(ctx, lhs[0] + (rhs[0] - lhs[0]) * t);
+        duk_push_number(ctx, lhs[1] + (rhs[1] - lhs[1]) * t);
+        duk_push_number(ctx, lhs[2] + (rhs[2] - lhs[2]) * t);
+        duk_new(ctx, 3);
+        return 1;
+    } else if (dot < -1.0f + UNITY_VECTOR3_kEpsilon) {
+        float lhsNorm[3] = {0};
+        lhsNorm[0] = lhs[0] / lhsMag;
+        lhsNorm[1] = lhs[1] / lhsMag;
+        lhsNorm[2] = lhs[2] / lhsMag;
+        float axis[3];
+        if (fabsf(lhsNorm[2]) > UNITY_VECTOR3_k1OverSqrt2) {
+            float k = 1.0f / sqrtf(lhsNorm[1] * lhsNorm[1] + lhsNorm[2] * lhsNorm[2]);
+            axis[0] = 0;
+            axis[1] = -lhsNorm[2] * k;
+            axis[2] = lhsNorm[1] * k;
+        } else {
+            float k = 1.0f / sqrtf(lhsNorm[0] * lhsNorm[0] + lhsNorm[1] * lhsNorm[1]);
+            axis[0] = -lhsNorm[1] * k;
+            axis[1] = lhsNorm[0] * k;
+            axis[2] = 0;
+        }
+        float m[9] = {0};
+        m3x3_set_axis_angle(m, axis, UNITY_MATH_PI * t);
+        float slerped[3] = {0};
+        m3x3_multiply_vec3(m, lhsNorm, slerped);
+        vec3_multiply(slerped, lerpedMag);
+		duk_builtins_reg_get(ctx, "Vector3");
+        duk_push_number(ctx, slerped[0]);
+        duk_push_number(ctx, slerped[1]);
+        duk_push_number(ctx, slerped[2]);
+        duk_new(ctx, 3);
+        return 1;
+    } else {
+        float axis[3] = {0};
+        vec3_cross(lhs, rhs, axis);
+        vec3_normalize(axis);
+        float lhsNorm[3] = {0};
+        lhsNorm[0] = lhs[0] / lhsMag;
+        lhsNorm[1] = lhs[1] / lhsMag;
+        lhsNorm[2] = lhs[2] / lhsMag;
+		float angle = acosf(dot) * t;
+		
+        float m[9] = {0};
+        m3x3_set_axis_angle(m, axis, angle);
+        float slerped[3] = {0};
+        m3x3_multiply_vec3(m, lhsNorm, slerped);
+		vec3_multiply(slerped, lerpedMag);
+		duk_builtins_reg_get(ctx, "Vector3");
+        duk_push_number(ctx, slerped[0]);
+        duk_push_number(ctx, slerped[1]);
+        duk_push_number(ctx, slerped[2]);
+        duk_new(ctx, 3);
+        return 1;
+    }
 }
 
 DUK_LOCAL duk_ret_t duk_unity_vector3_static_reflect(duk_context *ctx) {
@@ -616,6 +777,7 @@ DUK_INTERNAL void duk_unity_vector3_open(duk_context *ctx) {
     duk_unity_add_member(ctx, "Neg", duk_unity_vector3_static_Neg, -2);
     duk_unity_add_member(ctx, "Mul", duk_unity_vector3_static_Mul, -2);
     duk_unity_add_member(ctx, "Div", duk_unity_vector3_static_Div, -2);
+    duk_unity_add_member(ctx, "Inverse", duk_unity_vector3_Inverse, -1);
     duk_unity_add_member(ctx, "Equals", duk_unity_vector3_static_Equals, -2);
     duk_unity_add_member(ctx, "Equals", duk_unity_vector3_Equals, -1);
 
@@ -626,6 +788,7 @@ DUK_INTERNAL void duk_unity_vector3_open(duk_context *ctx) {
     duk_unity_add_member(ctx, "Scale", duk_unity_vector3_scale, -1);
     duk_unity_add_member(ctx, "Scale", duk_unity_vector3_static_scale, -2);
     duk_unity_add_member(ctx, "Cross", duk_unity_vector3_static_cross, -2);
+    duk_unity_add_member(ctx, "Slerp", duk_unity_vector3_static_Slerp, -2);
     duk_unity_add_member(ctx, "Reflect", duk_unity_vector3_static_reflect, -2);
     duk_unity_add_member(ctx, "Normalize", duk_unity_vector3_normalize, -1);
     duk_unity_add_property(ctx, "normalized", duk_unity_vector3_normalized, NULL, -1);
