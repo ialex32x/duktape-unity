@@ -134,12 +134,27 @@ namespace Duktape
             ;
 
             TransformType(typeof(Vector3))
+                .SetMethodBlocked("SqrMagnitude", typeof(Vector3))
+                .SetMethodBlocked("Magnitude", typeof(Vector3))
                 .AddTSMethodDeclaration("static Add(a: Vector3, b: Vector3): Vector3")
                 .AddTSMethodDeclaration("static Sub(a: Vector3, b: Vector3): Vector3")
                 .AddTSMethodDeclaration("static Mul(a: Vector3, b: Vector3): Vector3")
                 .AddTSMethodDeclaration("static Div(a: Vector3, b: Vector3): Vector3")
                 .AddTSMethodDeclaration("static Equals(a: Vector3, b: Vector3): boolean")
                 .AddTSMethodDeclaration("Equals(b: Vector3): boolean")
+                .AddTSMethodDeclaration("Inverse(): Vector3")
+            ;
+
+            TransformType(typeof(Vector2))
+                .SetMethodBlocked("SqrMagnitude")
+                .SetMethodBlocked("SqrMagnitude", typeof(Vector2))
+                .AddTSMethodDeclaration("static Add(a: Vector2, b: Vector2): Vector2")
+                .AddTSMethodDeclaration("static Sub(a: Vector2, b: Vector2): Vector2")
+                .AddTSMethodDeclaration("static Mul(a: Vector2, b: Vector2): Vector2")
+                .AddTSMethodDeclaration("static Div(a: Vector2, b: Vector2): Vector2")
+                .AddTSMethodDeclaration("static Equals(a: Vector2, b: Vector2): boolean")
+                .AddTSMethodDeclaration("Equals(b: Vector2): boolean")
+                .AddTSMethodDeclaration("Inverse(): Vector2")
             ;
 
             AddTSTypeNameMap(typeof(sbyte), "number");

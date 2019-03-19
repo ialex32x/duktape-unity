@@ -532,11 +532,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_Mul(duk_context *ctx) {
         duk_unity_get3f(ctx, 0, &lhsx, &lhsy, &lhsz);
         f = (float)duk_get_number_default(ctx, 1, 0.0);
     }
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, lhsx * f);
-    duk_push_number(ctx, lhsy * f);
-    duk_push_number(ctx, lhsz * f);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, lhsx * f, lhsy * f, lhsz * f);
     return 1;
 }
 
@@ -548,11 +544,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_Inverse(duk_context *ctx) {
     float x = 1.0f / rhsx;
     float y = 1.0f / rhsy;
     float z = 1.0f / rhsz;
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, x);
-    duk_push_number(ctx, y);
-    duk_push_number(ctx, z);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, x, y, z);
     return 1;
 }
 

@@ -13,6 +13,9 @@ namespace Duktape
     {
         private Type _type;
 
+        // 强制不导出的方法
+        private HashSet<MethodBase> _blockedMethods = new HashSet<MethodBase>();
+
         // 针对特定方法的 ts 声明优化
         private Dictionary<MethodBase, string> _tsMethodDeclarations = new Dictionary<MethodBase, string>();
 
@@ -43,6 +46,21 @@ namespace Duktape
         public TypeTransform AddTSMethodDeclaration(params string[] specs)
         {
             _tsAdditionalMethodDeclarations.AddRange(specs);
+            return this;
+        }
+
+        public bool IsBlocked(MethodBase method)
+        {
+            return _blockedMethods.Contains(method);
+        }
+
+        public TypeTransform SetMethodBlocked(string name, params Type[] parameters)
+        {
+            var method = _type.GetMethod(name, parameters);
+            if (method != null)
+            {
+                _blockedMethods.Add(method);
+            }
             return this;
         }
 

@@ -332,6 +332,14 @@ namespace Duktape
 
         public void AddMethod(MethodInfo methodInfo, bool isIndexer, string renameRegName)
         {
+            if (this.transform != null)
+            {
+                if (this.transform.IsBlocked(methodInfo))
+                {
+                    bindingManager.Info("skip blocked method: {0}", methodInfo.Name);
+                    return;
+                }
+            }
             var group = methodInfo.IsStatic ? staticMethods : methods;
             MethodBindingInfo overrides;
             var methodName = TypeBindingInfo.GetNamingAttribute(methodInfo);
