@@ -9,6 +9,11 @@
 #define UNITY_VECTOR3_k1OverSqrt2 0.7071067811865475244008443621048490F
 #define UNITY_MATH_PI 3.1415926535897932384626433832795028841971693993F
 
+DUK_INTERNAL DUK_INLINE float float_clamped(float a, float b, float t) {
+    float d = b - a;
+    return d > 0 ? a + fmin(d, t) : a - fmin(-d, t);
+}
+
 DUK_INTERNAL DUK_INLINE void vec2_push_new(duk_context *ctx, float x, float y) {
     duk_builtins_reg_get(ctx, "Vector2");
     duk_push_number(ctx, x);
@@ -49,6 +54,22 @@ DUK_INTERNAL DUK_INLINE void vec3_multiply(float* out_vec3, float a) {
     out_vec3[0] *= a;
     out_vec3[1] *= a;
     out_vec3[2] *= a;
+}
+
+DUK_INTERNAL DUK_INLINE void vec3_move_towards(const float *lhs, const float *rhs, float maxDistanceDelta, float *res) {
+    float to[3];
+    to[0] = rhs[0] - lhs[0];
+    to[1] = rhs[1] - lhs[1];
+    to[2] = rhs[2] - lhs[2];
+    float dist = sqrtf(to[0] * to[0] + to[1] * to[1] + to[2] * to[2]);
+    if (dist < maxDistanceDelta || dist < UNITY_SINGLE_Epsilon) {
+        memcpy(res, rhs, sizeof(float) * 3);
+        return;
+    }
+    float dd = 1.0f / dist * maxDistanceDelta;
+    res[0] = lhs[0] + to[0] * dd;
+    res[1] = lhs[1] + to[1] * dd;
+    res[2] = lhs[2] + to[2] * dd;
 }
 
 DUK_INTERNAL DUK_INLINE void m3x3_multiply_vec3(float* mat3x3, const float* vec3, float* out_vec3) {
@@ -308,29 +329,76 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_lerpUnclamped(duk_context *ctx) {
     return 1;
 }
 
-DUK_LOCAL duk_ret_t duk_unity_vector3_static_moveTowards(duk_context *ctx) {
-    float lhsx, lhsy, lhsz;
-    float rhsx, rhsy, rhsz;
+DUK_LOCAL duk_ret_t duk_unity_vector3_static_MoveTowards(duk_context *ctx) {
+    float lhs[3];
+    float rhs[3];
+    float res[3];
     float maxDistanceDelta;
-    duk_unity_get3f(ctx, 0, &lhsx, &lhsy, &lhsz);
-    duk_unity_get3f(ctx, 1, &rhsx, &rhsy, &rhsz);
+    duk_unity_get3f(ctx, 0, &lhs[0], &lhs[1], &lhs[2]);
+    duk_unity_get3f(ctx, 1, &rhs[0], &rhs[1], &rhs[2]);
     maxDistanceDelta = (float)duk_get_number_default(ctx, 2, 0.0);
+    vec3_move_towards(lhs, rhs, maxDistanceDelta, res);
+    vec3_push_new(ctx, res[0], res[1], res[2]);
+    return 1;
+}
 
-    float tox, toy, toz;
-    tox = rhsx - lhsx;
-    toy = rhsy - lhsy;
-    toz = rhsz - lhsz;
-    float dist = sqrtf(tox * tox + toy * toy + toz * toz);
-    if (dist < maxDistanceDelta || dist < UNITY_SINGLE_Epsilon) {
-        duk_dup(ctx, 1);
+// static RotateTowards(current: UnityEngine.Vector3, target: UnityEngine.Vector3, maxRadiansDelta: number, maxMagnitudeDelta: number): UnityEngine.Vector3
+DUK_LOCAL duk_ret_t duk_unity_vector3_static_RotateTowards(duk_context *ctx) {
+    float current[3];
+    float target[3];
+    float res[3];
+    float maxRadiansDelta;
+    float maxMagnitudeDelta;
+
+    duk_unity_get3f(ctx, 0, &current[0], &current[1], &current[2]);
+    duk_unity_get3f(ctx, 1, &target[0], &target[1], &target[2]);
+    maxRadiansDelta = (float)duk_get_number_default(ctx, 2, 0.0);
+    maxMagnitudeDelta = (float)duk_get_number_default(ctx, 3, 0.0);
+
+    float lhsMag = vec3_magnitude(lhs);
+    float rhsMag = vec3_magnitude(rhs);
+    if (lhsMag > UNITY_VECTOR3_kEpsilon && rhsMag > UNITY_VECTOR3_kEpsilon) {
+        float lhsN[3] = { lhs[0] / lhsMag, lhs[1] / lhsMag, lhs[2] / lhsMag };
+        float rhsN[3] = { rhs[0] / rhsMag, rhs[1] / rhsMag, rhs[2] / rhsMag };
+        float dot = vec3_dot(lhsN, rhsN);
+        if (dot > 1 - UNITY_VECTOR3_kEpsilon) {
+            vec3_move_towards(lhs, rhs, maxMagnitudeDelta, res);
+            vec3_push_new(ctx, res[0], res[1], res[2]);
+            return 1;
+        }
+        if (dot < -1 + UNITY_VECTOR3_kEpsilon) {
+            float axis[3];
+            if (fabs(lhsN[2]) > UNITY_VECTOR3_k1OverSqrt2) {
+                float k = 1.0f / sqrtf(lhsN[1] * lhsN[1] + lhsN[2] * lhsN[2]);
+                axis[0] = 0;
+                axis[1] = -lhsN[2] * k;
+                axis[2] = lhsN[1] * k;
+            } else {
+                float k = 1.0f / sqrtf(lhsN[0] * lhsN[0] + lhsN[1] * lhsN[1]);
+                axis[0] = -lhsN[1] * k;
+                axis[1] = lhsN[0] * k;
+                axis[2] = 0;
+            }
+            float m[9];
+            m3x3_set_axis_angle(m, axis, maxRadiansDelta);
+            m3x3_multiply_vec3(m, lhsN, res);
+            float c = float_clamped(lhsMag, rhsMag, maxMagnitudeDelta);
+            vec3_push_new(ctx, res[0] * c, res[1] * c, res[2] * c);
+            return 1;
+        }
+        float angle = acosf(dot);
+        float naxis[3];
+        vec3_cross(lhsN, rhsN, naxis);
+        vec3_normalize(naxis);
+        float nm[9];
+        m3x3_set_axis_angle(nm, naxis, fmin(maxRadiansDelta, angle));
+        m3x3_multiply_vec3(nm, lhsN, res);
+        float c = float_clamped(lhsMag, rhsMag, maxMagnitudeDelta);
+        vec3_push_new(ctx, res[0] * c, res[1] * c, res[2] * c);
         return 1;
-    }
-    float dd = 1.0f / dist * maxDistanceDelta;
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, lhsx + tox * dd);
-    duk_push_number(ctx, lhsy + toy * dd);
-    duk_push_number(ctx, lhsz + toz * dd);
-    duk_new(ctx, 3);
+    } 
+    vec3_move_towards(lhs, rhs, maxMagnitudeDelta, res);
+    vec3_push_new(ctx, res[0], res[1], res[2]);
     return 1;
 }
 
@@ -1039,7 +1107,8 @@ DUK_INTERNAL void duk_unity_vector3_open(duk_context *ctx) {
         duk_unity_add_member(ctx, "Set", duk_unity_vector3_Set, -1);
         duk_unity_add_member(ctx, "Lerp", duk_unity_vector3_static_lerp, -1);
         duk_unity_add_member(ctx, "LerpUnclamped", duk_unity_vector3_static_lerpUnclamped, -2);
-        duk_unity_add_member(ctx, "MoveTowards", duk_unity_vector3_static_moveTowards, -2);
+        duk_unity_add_member(ctx, "MoveTowards", duk_unity_vector3_static_MoveTowards, -2);
+        duk_unity_add_member(ctx, "RotateTowards", duk_unity_vector3_static_RotateTowards, -2);
         duk_unity_add_member(ctx, "SmoothDamp", duk_unity_vector3_static_smoothDamp, -2);
         duk_unity_add_member(ctx, "Scale", duk_unity_vector3_scale, -1);
         duk_unity_add_member(ctx, "Scale", duk_unity_vector3_static_scale, -2);
