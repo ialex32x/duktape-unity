@@ -16,13 +16,6 @@ DUK_INTERNAL DUK_INLINE float float_clamped(float a, float b, float t) {
     return d > 0 ? a + fmin(d, t) : a - fmin(-d, t);
 }
 
-DUK_INTERNAL DUK_INLINE void vec2_push_new(duk_context *ctx, float x, float y) {
-    duk_builtins_reg_get(ctx, "Vector2");
-    duk_push_number(ctx, x);
-    duk_push_number(ctx, y);
-    duk_new(ctx, 2);
-}
-
 DUK_INTERNAL DUK_INLINE void vec2_sub(const float* a, const float* b, float* res) {
     res[0] = a[0] - b[0];
     res[1] = a[1] - b[1];
@@ -62,12 +55,37 @@ DUK_INTERNAL DUK_INLINE void vec2_move_towards(const float* current, const float
     }
 }
 
+DUK_INTERNAL DUK_INLINE void vec2_push_new(duk_context *ctx, float x, float y) {
+    duk_builtins_reg_get(ctx, "Vector2");
+    duk_push_number(ctx, x);
+    duk_push_number(ctx, y);
+    duk_new(ctx, 2);
+}
+
 DUK_INTERNAL DUK_INLINE void vec3_push_new(duk_context *ctx, float x, float y, float z) {
     duk_builtins_reg_get(ctx, "Vector3");
     duk_push_number(ctx, x);
     duk_push_number(ctx, y);
     duk_push_number(ctx, z);
     duk_new(ctx, 3);
+}
+
+DUK_INTERNAL DUK_INLINE void quaternion_push_new(duk_context *ctx, float x, float y, float z, float w) {
+    duk_builtins_reg_get(ctx, "Quaternion");
+    duk_push_number(ctx, x);
+    duk_push_number(ctx, y);
+    duk_push_number(ctx, z);
+    duk_push_number(ctx, w);
+    duk_new(ctx, 4);
+}
+
+DUK_INTERNAL DUK_INLINE void color_push_new(duk_context *ctx, float r, float g, float b, float a) {
+    duk_builtins_reg_get(ctx, "Color");
+    duk_push_number(ctx, r);
+    duk_push_number(ctx, g);
+    duk_push_number(ctx, b);
+    duk_push_number(ctx, a);
+    duk_new(ctx, 4);
 }
 
 DUK_INTERNAL DUK_INLINE float vec3_magnitude(const float* lhs) {
@@ -160,6 +178,28 @@ DUK_LOCAL void duk_unity_vector2_add_const(duk_context *ctx, duk_idx_t idx, cons
     idx = duk_normalize_index(ctx, idx);
     vec2_push_new(ctx, x, y);
     duk_put_prop_string(ctx, idx, key);
+}
+
+DUK_LOCAL duk_ret_t duk_unity_color_constructor(duk_context *ctx) {
+    float r = (float)duk_get_number_default(ctx, 0, 0.0);
+    float g = (float)duk_get_number_default(ctx, 1, 0.0);
+    float b = (float)duk_get_number_default(ctx, 2, 0.0);
+    float a = (float)duk_get_number_default(ctx, 3, 0.0);
+    duk_push_this(ctx);
+    duk_unity_put4f(ctx, -1, r, g, b, a);
+    duk_pop(ctx);
+    return 0;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_quaternion_constructor(duk_context *ctx) {
+    float x = (float)duk_get_number_default(ctx, 0, 0.0);
+    float y = (float)duk_get_number_default(ctx, 1, 0.0);
+    float z = (float)duk_get_number_default(ctx, 2, 0.0);
+    float w = (float)duk_get_number_default(ctx, 3, 0.0);
+    duk_push_this(ctx);
+    duk_unity_put4f(ctx, -1, x, y, z, w);
+    duk_pop(ctx);
+    return 0;
 }
 
 DUK_LOCAL duk_ret_t duk_unity_vector2_constructor(duk_context *ctx) {
@@ -1222,13 +1262,33 @@ DUK_LOCAL void duk_unity_vector3_add_const(duk_context *ctx, duk_idx_t idx, cons
     duk_put_prop_string(ctx, idx, key);
 }
 
-DUK_EXTERNAL void duk_unity_push_vector3(duk_context *ctx, float v1, float v2, float v3) {
-    vec3_push_new(ctx, v1, v2, v3);
+DUK_EXTERNAL void duk_unity_push_vector2(duk_context *ctx, float x, float y) {
+    vec2_push_new(ctx, x, y);
+}
+
+DUK_EXTERNAL void duk_unity_push_vector3(duk_context *ctx, float x, float y, float z) {
+    vec3_push_new(ctx, x, y, z);
+}
+
+DUK_EXTERNAL void duk_unity_push_quaternion(duk_context *ctx, float x, float y, float z, float w) {
+    quaternion_push_new(ctx, x, y, z, w);
+}
+
+DUK_EXTERNAL void duk_unity_push_color(duk_context *ctx, float r, float g, float b, float a) {
+    color_push_new(ctx, r, g, b, a);
 }
 
 DUK_INTERNAL void duk_unity_vector3_open(duk_context *ctx) {
     duk_push_global_object(ctx);
     duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
+    {
+        duk_unity_begin_class(ctx, "Color", duk_unity_color_constructor, NULL);
+        duk_unity_end_class(ctx);
+    }
+    {
+        duk_unity_begin_class(ctx, "Quaternion", duk_unity_quaternion_constructor, NULL);
+        duk_unity_end_class(ctx);
+    }
     {
         duk_unity_begin_class(ctx, "Vector2", duk_unity_vector2_constructor, NULL);
 

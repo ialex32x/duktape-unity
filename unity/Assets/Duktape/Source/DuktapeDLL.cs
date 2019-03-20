@@ -1705,7 +1705,13 @@ namespace Duktape
         public static extern duk_bool_t duk_unity_get4d(IntPtr ctx, duk_idx_t idx, out double v1, out double v2, out double v3, out double v4);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_unity_push_vector3(IntPtr ctx, float v1, float v2, float v3);
+        public static extern void duk_unity_push_vector2(IntPtr ctx, float x, float y);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void duk_unity_push_vector3(IntPtr ctx, float x, float y, float z);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void duk_unity_push_quaternion(IntPtr ctx, float x, float y, float z, float w);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void duk_unity_push_color(IntPtr ctx, float r, float g, float b, float a);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_unity_set_prop_i(IntPtr ctx, duk_idx_t idx, string key, duk_int_t val);
