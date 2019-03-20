@@ -238,8 +238,10 @@ namespace Duktape
         public static void postreg(IntPtr ctx)
         {
             duk_begin_namespace(ctx, "UnityEngine");
-            replace_by_builtin(ctx, "Vector3", "_Vector3");
             replace_by_builtin(ctx, "Vector2", "_Vector2");
+            replace_by_builtin(ctx, "Vector3", "_Vector3");
+            replace_by_builtin(ctx, "Quaternion", "_Quaternion");
+            replace_by_builtin(ctx, "Color", "_Color");
             duk_end_namespace(ctx);
         }
     }
