@@ -182,14 +182,14 @@ namespace Duktape
             AddTSTypeNameMap(typeof(char), "string");
             AddTSTypeNameMap(typeof(void), "void");
             AddTSTypeNameMap(typeof(LayerMask), "UnityEngine.LayerMask", "number");
-            AddTSTypeNameMap(typeof(Color), "UnityEngine.Color", "number[]");
-            AddTSTypeNameMap(typeof(Color32), "UnityEngine.Color32", "number[]");
-            AddTSTypeNameMap(typeof(Vector2), "UnityEngine.Vector2", "number[]");
-            AddTSTypeNameMap(typeof(Vector2Int), "UnityEngine.Vector2Int", "number[]");
+            AddTSTypeNameMap(typeof(Color), "UnityEngine.Color");
+            AddTSTypeNameMap(typeof(Color32), "UnityEngine.Color32");
+            AddTSTypeNameMap(typeof(Vector2), "UnityEngine.Vector2");
+            AddTSTypeNameMap(typeof(Vector2Int), "UnityEngine.Vector2Int");
             AddTSTypeNameMap(typeof(Vector3), "UnityEngine.Vector3"); // 已优化, 在 VM 初始化时替换为 DuktapeJS.Vector3
-            AddTSTypeNameMap(typeof(Vector3Int), "UnityEngine.Vector3Int", "number[]");
-            AddTSTypeNameMap(typeof(Vector4), "UnityEngine.Vector4", "number[]");
-            AddTSTypeNameMap(typeof(Quaternion), "UnityEngine.Quaternion", "number[]");
+            AddTSTypeNameMap(typeof(Vector3Int), "UnityEngine.Vector3Int");
+            AddTSTypeNameMap(typeof(Vector4), "UnityEngine.Vector4");
+            AddTSTypeNameMap(typeof(Quaternion), "UnityEngine.Quaternion");
             AddTSTypeNameMap(typeof(DuktapeArray), "any[]");
 
             AddCSTypeNameMap(typeof(sbyte), "sbyte");
