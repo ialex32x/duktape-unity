@@ -156,6 +156,12 @@ DUK_INTERNAL DUK_INLINE void m3x3_set_axis_angle(float* mat3x3, const float* vec
     mat3x3[2*3+2] = (one_c * zz) + c;
 }
 
+DUK_LOCAL void duk_unity_vector2_add_const(duk_context *ctx, duk_idx_t idx, const char *key, float x, float y) {
+    idx = duk_normalize_index(ctx, idx);
+    vec2_push_new(ctx, x, y);
+    duk_put_prop_string(ctx, idx, key);
+}
+
 DUK_LOCAL duk_ret_t duk_unity_vector2_constructor(duk_context *ctx) {
     float x = (float)duk_get_number_default(ctx, 0, 0.0);
     float y = (float)duk_get_number_default(ctx, 1, 0.0);
@@ -924,11 +930,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_Slerp(duk_context *ctx) {
         float slerped[3] = {0};
         m3x3_multiply_vec3(m, lhsNorm, slerped);
         vec3_multiply(slerped, lerpedMag);
-		duk_builtins_reg_get(ctx, "Vector3");
-        duk_push_number(ctx, slerped[0]);
-        duk_push_number(ctx, slerped[1]);
-        duk_push_number(ctx, slerped[2]);
-        duk_new(ctx, 3);
+        vec3_push_new(ctx, slerped[0], slerped[1], slerped[2]);
         return 1;
     } else {
         float axis[3] = {0};
@@ -945,11 +947,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_Slerp(duk_context *ctx) {
         float slerped[3] = {0};
         m3x3_multiply_vec3(m, lhsNorm, slerped);
 		vec3_multiply(slerped, lerpedMag);
-		duk_builtins_reg_get(ctx, "Vector3");
-        duk_push_number(ctx, slerped[0]);
-        duk_push_number(ctx, slerped[1]);
-        duk_push_number(ctx, slerped[2]);
-        duk_new(ctx, 3);
+        vec3_push_new(ctx, slerped[0], slerped[1], slerped[2]);
         return 1;
     }
 }
@@ -960,11 +958,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_reflect(duk_context *ctx) {
     duk_unity_get3f(ctx, 0, &lhsx, &lhsy, &lhsz);
     duk_unity_get3f(ctx, 1, &rhsx, &rhsy, &rhsz);
     float dot2 = 2.0f * (lhsx * rhsx + lhsy * rhsy + lhsz * rhsz);
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, dot2 * rhsx + lhsx);
-    duk_push_number(ctx, dot2 * rhsy + lhsy);
-    duk_push_number(ctx, dot2 * rhsz + lhsz);
-    duk_new(ctx, 3);    
+    vec3_push_new(ctx, dot2 * rhsx + lhsx, dot2 * rhsy + lhsy, dot2 * rhsz + lhsz);
     return 1;
 }
 
@@ -993,15 +987,10 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_normalized(duk_context *ctx) {
     mag = sqrtf(x * x + y * y + z * z);
     if (mag > UNITY_VECTOR3_kEpsilon) {
         float rmag = 1.0f / mag;
-        duk_builtins_reg_get(ctx, "Vector3");
-        duk_push_number(ctx, x * rmag);
-        duk_push_number(ctx, y * rmag);
-        duk_push_number(ctx, z * rmag);
-        duk_new(ctx, 3);
+        vec3_push_new(ctx, x * rmag, y * rmag, z * rmag);
         return 1;
     }
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_get_prop_string(ctx, -1, "zero");
+    vec3_push_new(ctx, 0, 0, 0);
     return 1;
 }
 
@@ -1025,8 +1014,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_project(duk_context *ctx) {
     duk_unity_get3f(ctx, 1, &nx, &ny, &nz);
     float sqrMag = nx * nx + ny * ny + nz * nz;
     if (sqrMag < UNITY_SINGLE_Epsilon) {
-        duk_builtins_reg_get(ctx, "Vector3");
-        duk_get_prop_string(ctx, -1, "zero");
+        vec3_push_new(ctx, 0, 0, 0);
         return 1;
     }
     float vx, vy, vz;
@@ -1230,20 +1218,12 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_setz(duk_context *ctx) {
 
 DUK_LOCAL void duk_unity_vector3_add_const(duk_context *ctx, duk_idx_t idx, const char *key, float x, float y, float z) {
     idx = duk_normalize_index(ctx, idx);
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, x);
-    duk_push_number(ctx, y);
-    duk_push_number(ctx, z);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, x, y, z);
     duk_put_prop_string(ctx, idx, key);
 }
 
 DUK_EXTERNAL void duk_unity_push_vector3(duk_context *ctx, float v1, float v2, float v3) {
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, v1);
-    duk_push_number(ctx, v2);
-    duk_push_number(ctx, 3);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, v1, v2, v3);
 }
 
 DUK_INTERNAL void duk_unity_vector3_open(duk_context *ctx) {
