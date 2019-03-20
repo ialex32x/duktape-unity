@@ -8,6 +8,8 @@
 #define UNITY_VECTOR3_kEpsilonNormalSqrt 1e-15F
 #define UNITY_VECTOR3_k1OverSqrt2 0.7071067811865475244008443621048490F
 #define UNITY_MATH_PI 3.1415926535897932384626433832795028841971693993F
+#define UNITY_DEG2RAD 0.017453292519943295F
+#define UNITY_RAD2DEG 57.29577951308232F
 
 DUK_INTERNAL DUK_INLINE float float_clamped(float a, float b, float t) {
     float d = b - a;
@@ -19,6 +21,45 @@ DUK_INTERNAL DUK_INLINE void vec2_push_new(duk_context *ctx, float x, float y) {
     duk_push_number(ctx, x);
     duk_push_number(ctx, y);
     duk_new(ctx, 2);
+}
+
+DUK_INTERNAL DUK_INLINE void vec2_sub(const float* a, const float* b, float* res) {
+    res[0] = a[0] - b[0];
+    res[1] = a[1] - b[1];
+}
+
+DUK_INTERNAL DUK_INLINE float vec2_angle(const float* from, const float* to) {
+    float denominator = sqrtf((from[0] * from[0] + from[1] * from[1]) * (to[0] * to[0] + to[1] * to[1]));
+    if (denominator < UNITY_VECTOR3_kEpsilonNormalSqrt) {
+        return 0;
+    } 
+    float dot = vec2_dot(from, to) / denominator;
+    if (dot > 1) {
+        dot = 1;
+    } else if (dot < -1) {
+        dot = -1;
+    }
+    return acosf(dot) * UNITY_RAD2DEG;
+}
+
+DUK_INTERNAL DUK_INLINE float vec2_dot(const float* a, const float* b) {
+    return a[0] * b[0] + a[1] * b[1];
+}
+
+DUK_INTERNAL DUK_INLINE float vec2_magnitude(const float* a) {
+    return sqrtf(a[0] * a[0] + b[0] * b[0]);
+}
+
+DUK_INTERNAL DUK_INLINE void vec2_move_towards(const float* current, const float* target, float maxDistanceDelta, float* res) {
+    vec2_sub(target, current, res);
+    float dist = vec2_magnitude(res);
+    if (dist <= maxDistanceDelta || dist == 0) {
+        res[0] = target[0];
+        res[1] = target[1];
+    } else {
+        res[0] = current[0] + res[0] / dist * maxDistanceDelta; 
+        res[1] = current[1] + res[1] / dist * maxDistanceDelta;
+    }
 }
 
 DUK_INTERNAL DUK_INLINE void vec3_push_new(duk_context *ctx, float x, float y, float z) {
@@ -66,10 +107,9 @@ DUK_INTERNAL DUK_INLINE void vec3_move_towards(const float *lhs, const float *rh
         memcpy(res, rhs, sizeof(float) * 3);
         return;
     }
-    float dd = 1.0f / dist * maxDistanceDelta;
-    res[0] = lhs[0] + to[0] * dd;
-    res[1] = lhs[1] + to[1] * dd;
-    res[2] = lhs[2] + to[2] * dd;
+    res[0] = lhs[0] + to[0] / dist * maxDistanceDelta;
+    res[1] = lhs[1] + to[1] / dist * maxDistanceDelta;
+    res[2] = lhs[2] + to[2] / dist * maxDistanceDelta;
 }
 
 DUK_INTERNAL DUK_INLINE void m3x3_multiply_vec3(float* mat3x3, const float* vec3, float* out_vec3) {
@@ -154,6 +194,160 @@ DUK_LOCAL duk_ret_t duk_unity_vector2_Normalize(duk_context *ctx) {
     duk_unity_put2f(ctx, -1, rhsx / mag, rhsy / mag);
     duk_pop(ctx);
     return 0;
+}
+
+// static Lerp(a: UnityEngine.Vector2, b: UnityEngine.Vector2, t: number): UnityEngine.Vector2
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_Lerp(duk_context *ctx) {
+    float a[2];
+    float b[2];
+    float t;
+    duk_unity_get2f(ctx, 0, &a[0], &a[1]);
+    duk_unity_get2f(ctx, 1, &b[0], &b[1]);
+    t = (float)duk_get_number_default(ctx, 2, 0);
+    t = t > 1.0f ? 1.0f : (t < 0.0f ? 0.0f : t);
+    vec2_push_new(ctx, a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t);
+    return 1;
+}
+
+// static LerpUnclamped(a: UnityEngine.Vector2, b: UnityEngine.Vector2, t: number): UnityEngine.Vector2
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_LerpUnclamped(duk_context *ctx) {
+    float a[2];
+    float b[2];
+    float t;
+    duk_unity_get2f(ctx, 0, &a[0], &a[1]);
+    duk_unity_get2f(ctx, 1, &b[0], &b[1]);
+    t = (float)duk_get_number_default(ctx, 2, 0);
+    vec2_push_new(ctx, a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t);
+    return 1;
+}
+
+// static MoveTowards(current: UnityEngine.Vector2, target: UnityEngine.Vector2, maxDistanceDelta: number): UnityEngine.Vector2
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_MoveTowards(duk_context *ctx) {
+    float current[2];
+    float target[2];
+    float maxDistanceDelta;
+    duk_unity_get2f(ctx, 0, &current[0], &current[1]);
+    duk_unity_get2f(ctx, 1, &target[0], &target[1]);
+    maxDistanceDelta = (float)duk_get_number_default(ctx, 2, 0);
+
+    float res[2];
+    vec2_move_towards(current, target, maxDistanceDelta, res);
+    vec2_push_new(ctx, res[0], res[1]);
+    return 1;
+}
+
+// static Scale(a: UnityEngine.Vector2, b: UnityEngine.Vector2): UnityEngine.Vector2
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_Scale(duk_context *ctx) {
+    float a[2];
+    float b[2];
+    duk_unity_get2f(ctx, 0, &a[0], &a[1]);
+    duk_unity_get2f(ctx, 1, &b[0], &b[1]);
+    vec2_push_new(ctx, a[0] * b[0], a[1] * b[1]);
+    return 1;
+}
+
+// static Reflect(inDirection: UnityEngine.Vector2, inNormal: UnityEngine.Vector2): UnityEngine.Vector2
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_Reflect(duk_context *ctx) {
+    float inDirection[2];
+    float inNormal[2];
+    duk_unity_get2f(ctx, 0, &inDirection[0], &inDirection[1]);
+    duk_unity_get2f(ctx, 1, &inNormal[0], &inNormal[1]);
+    float dot2 = vec2_dot(inNormal, inDirection) * -2.0F;
+    vec2_push_new(ctx, 
+        dot2 * inNormal[0] + inDirection[0], 
+        dot2 * inNormal[1] + inDirection[1]
+    );
+    return 1;
+}
+
+// static Perpendicular(inDirection: UnityEngine.Vector2): UnityEngine.Vector2
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_Perpendicular(duk_context *ctx) {
+    float inDirection[2];
+    duk_unity_get2f(ctx, 0, &inDirection[0], &inDirection[1]);
+    vec2_push_new(ctx, 
+        -inDirection[1], 
+        inDirection[0]
+    );
+    return 1;
+}
+
+// static Dot(lhs: UnityEngine.Vector2, rhs: UnityEngine.Vector2): number
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_Dot(duk_context *ctx) {
+    float lhs[2];
+    float rhs[2];
+    duk_unity_get2f(ctx, 0, &lhs[0], &lhs[1]);
+    duk_unity_get2f(ctx, 1, &rhs[0], &rhs[1]);
+    vec2_push_new(ctx, 
+        lhs[0] * rhs[0], 
+        lhs[1] * rhs[1]
+    );
+    return 1;
+}
+
+// static Angle(from: UnityEngine.Vector2, to: UnityEngine.Vector2): number
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_Angle(duk_context *ctx) {
+    float from[2];
+    float to[2];
+    duk_unity_get2f(ctx, 0, &from[0], &from[1]);
+    duk_unity_get2f(ctx, 1, &to[0], &to[1]);
+    duk_push_number(ctx, vec2_angle(from, to));
+    return 1;
+}
+
+// static SignedAngle(from: UnityEngine.Vector2, to: UnityEngine.Vector2): number
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_SignedAngle(duk_context *ctx) {
+    float from[2];
+    float to[2];
+    duk_unity_get2f(ctx, 0, &from[0], &from[1]);
+    duk_unity_get2f(ctx, 1, &to[0], &to[1]);
+    float angle = vec2_angle(from, to);
+    if (from[0] * to[1] - from[1] * to[0] >= 0.0F) {
+        duk_push_number(ctx, angle);
+    } else {
+        duk_push_number(ctx, -angle);
+    }
+    return 1;
+}
+
+// static Distance(a: UnityEngine.Vector2, b: UnityEngine.Vector2): number
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_Distance(duk_context *ctx) {
+    float a[2];
+    float b[2];
+    duk_unity_get2f(ctx, 0, &a[0], &a[1]);
+    duk_unity_get2f(ctx, 1, &b[0], &b[1]);
+    a[0] -= b[0];
+    a[1] -= b[1];
+    duk_push_number(ctx, vec2_magnitude(a));
+    return 1;
+}
+
+// static ClampMagnitude(vector: UnityEngine.Vector2, maxLength: number): UnityEngine.Vector2
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_ClampMagnitude(duk_context *ctx) {
+    float vector[2];
+    float maxLength;
+    duk_unity_get2f(ctx, 0, &vector[0], &vector[1]);
+    maxLength = duk_get_number_default(ctx, 1, 0);
+    float sqrMag = vector[0] * vector[0] + vector[1] * vector[1];
+    if (sqrMag > maxLength * maxLength) {
+        float mag = sqrtf(sqrMag);
+        if (mag > UNITY_VECTOR3_kEpsilon) {
+            vec2_push_new(ctx, 
+                vector[0] * maxLength / mag, 
+                vector[1] * maxLength / mag
+            );
+        } else {
+            vec2_push_new(ctx, 
+                0, 
+                0
+            );
+        }
+    } else {
+        vec2_push_new(ctx, 
+            vector[0], 
+            vector[1]
+        );
+    }
+    return 1;
 }
 
 DUK_LOCAL duk_ret_t duk_unity_vector2_ToString(duk_context *ctx) {
@@ -302,11 +496,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_lerp(duk_context *ctx) {
     cx = ax + (bx - ax) * t;
     cy = ay + (by - ay) * t;
     cz = az + (bz - az) * t;
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, cx);
-    duk_push_number(ctx, cy);
-    duk_push_number(ctx, cz);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, cx, cy, cz);
     return 1;
 }
 
@@ -321,11 +511,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_lerpUnclamped(duk_context *ctx) {
     cx = ax + (bx - ax) * t;
     cy = ay + (by - ay) * t;
     cz = az + (bz - az) * t;
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, cx);
-    duk_push_number(ctx, cy);
-    duk_push_number(ctx, cz);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, cx, cy, cz);
     return 1;
 }
 
@@ -861,15 +1047,17 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_projectOnPlane(duk_context *ctx) {
     duk_unity_get3f(ctx, 1, &nx, &ny, &nz);
     float sqrMag = nx * nx + ny * ny + nz * nz;
     if (sqrMag < UNITY_SINGLE_Epsilon) {
-        duk_dup(ctx, 0);
+        vec3_push_new(ctx, 
+            nx, 
+            ny, 
+            nz);
         return 1;
     }
     float dotsq = (vx * nx + vy * ny + vz * nz) / sqrMag;
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, vx - nx * dotsq);
-    duk_push_number(ctx, vy - ny * dotsq);
-    duk_push_number(ctx, vz - nz * dotsq);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, 
+        vx - nx * dotsq, 
+        vy - ny * dotsq, 
+        vz - nz * dotsq);
     return 1;
 }
 
@@ -892,7 +1080,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_angle(duk_context *ctx) {
     } else if (dot < -1) {
         dot = -1;
     }
-    float ret = acosf(dot) / (3.1415926535897931f * 2.0f / 360.0f);
+    float ret = acosf(dot) * UNITY_RAD2DEG;
     duk_push_number(ctx, ret);
     return 1;
 }
@@ -915,7 +1103,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_signedAngle(duk_context *ctx) {
     } else if (dot < -1) {
         dot = -1;
     }
-    float ret = acosf(dot) / (3.1415926535897931f * 2.0f / 360.0f);
+    float ret = acosf(dot) * UNITY_RAD2DEG;
     float cross_x = from_y * to_z - from_z * to_y;
     float cross_y = from_z * to_x - from_x * to_z;
     float cross_z = from_x * to_y - from_y * to_x;
@@ -1077,8 +1265,18 @@ DUK_INTERNAL void duk_unity_vector3_open(duk_context *ctx) {
         duk_unity_add_member(ctx, "Set", duk_unity_vector2_Set, -1);
         duk_unity_add_member(ctx, "Scale", duk_unity_vector2_Scale, -1);
         duk_unity_add_member(ctx, "Normalize", duk_unity_vector2_Normalize, -1);
+        duk_unity_add_member(ctx, "Lerp", duk_unity_vector2_static_Lerp, -2);
+        duk_unity_add_member(ctx, "LerpUnclamped", duk_unity_vector2_static_LerpUnclamped, -2);
+        duk_unity_add_member(ctx, "MoveTowards", duk_unity_vector2_static_MoveTowards, -2);
+        duk_unity_add_member(ctx, "Scale", duk_unity_vector2_static_Scale, -2);
+        duk_unity_add_member(ctx, "Reflect", duk_unity_vector2_static_Reflect, -2);
+        duk_unity_add_member(ctx, "Perpendicular", duk_unity_vector2_static_Perpendicular, -2);
+        duk_unity_add_member(ctx, "Dot", duk_unity_vector2_static_Dot, -2);
+        duk_unity_add_member(ctx, "Angle", duk_unity_vector2_static_Angle, -2);
+        duk_unity_add_member(ctx, "SignedAngle", duk_unity_vector2_static_SignedAngle, -2);
+        duk_unity_add_member(ctx, "Distance", duk_unity_vector2_static_Distance, -2);
+        duk_unity_add_member(ctx, "ClampMagnitude", duk_unity_vector2_static_ClampMagnitude, -2);
 
-        
         duk_unity_add_property(ctx, "magnitude", duk_unity_vector2_magnitude, NULL, -1);
         duk_unity_add_property(ctx, "sqrMagnitude", duk_unity_vector2_sqrMagnitude, NULL, -1);
         duk_unity_end_class(ctx);
