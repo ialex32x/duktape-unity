@@ -19,7 +19,6 @@ namespace Duktape
         private List<string> _explicitAssemblies = new List<string>(); // 仅导出指定需要导出的类型
 
         private HashSet<Type> blacklist;
-        private Dictionary<Type, HashSet<string>> _csTypeMemberBlacklist = new Dictionary<Type, HashSet<string>>();
         private HashSet<Type> whitelist;
         private List<string> typePrefixBlacklist;
         private Dictionary<Type, TypeBindingInfo> exportedTypes = new Dictionary<Type, TypeBindingInfo>();
@@ -157,6 +156,17 @@ namespace Duktape
                 .AddTSMethodDeclaration("Inverse(): Vector2")
             ;
 
+            // editor 使用的 .net 与 player 所用存在差异, 这里屏蔽不存在的成员
+            TransformType(typeof(double))
+                .SetMemberBlocked("IsFinite")
+            ;
+            TransformType(typeof(float))
+                .SetMemberBlocked("IsFinite")
+            ;
+            TransformType(typeof(string))
+                .SetMemberBlocked("Chars")
+            ;
+
             AddTSTypeNameMap(typeof(sbyte), "number");
             AddTSTypeNameMap(typeof(byte), "number");
             AddTSTypeNameMap(typeof(int), "number");
@@ -197,10 +207,6 @@ namespace Duktape
             AddCSTypeNameMap(typeof(char), "char");
             AddCSTypeNameMap(typeof(System.Object), "object");
             AddCSTypeNameMap(typeof(void), "void");
-
-            BlockCSTypeMember(typeof(double), "IsFinite");
-            BlockCSTypeMember(typeof(float), "IsFinite");
-            BlockCSTypeMember(typeof(string), "Chars");
 
             Initialize();
         }
@@ -268,22 +274,6 @@ namespace Duktape
             }
         }
 
-        public bool IsTypeMemberBlocked(Type type, string memeberName)
-        {
-            HashSet<string> blacklist;
-            return _csTypeMemberBlacklist.TryGetValue(type, out blacklist) && blacklist.Contains(memeberName);
-        }
-
-        public void BlockCSTypeMember(Type type, string memberName)
-        {
-            HashSet<string> blacklist;
-            if (!_csTypeMemberBlacklist.TryGetValue(type, out blacklist))
-            {
-                _csTypeMemberBlacklist[type] = blacklist = new HashSet<string>();
-            }
-            blacklist.Add(memberName);
-        }
-
         // TS: 添加保留字, CS中相关变量名等会自动重命名注册到js中
         public static void AddTSKeywords(params string[] keywords)
         {
@@ -293,6 +283,7 @@ namespace Duktape
             }
         }
 
+        // 指定类型在 ts 声明中的映射名 (可以指定多项)
         public void AddTSTypeNameMap(Type type, params string[] names)
         {
             List<string> list;

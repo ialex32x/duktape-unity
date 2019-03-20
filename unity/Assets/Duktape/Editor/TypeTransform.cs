@@ -13,6 +13,9 @@ namespace Duktape
     {
         private Type _type;
 
+        // 按名字屏蔽导出
+        private HashSet<string> _memberBlacklist = new HashSet<string>();
+
         // 强制不导出的方法
         private HashSet<MethodBase> _blockedMethods = new HashSet<MethodBase>();
 
@@ -47,6 +50,16 @@ namespace Duktape
         {
             _tsAdditionalMethodDeclarations.AddRange(specs);
             return this;
+        }
+
+        public bool IsMemberBlocked(string memeberName)
+        {
+            return _memberBlacklist.Contains(memeberName);
+        }
+
+        public void SetMemberBlocked(string memberName)
+        {
+            _memberBlacklist.Add(memberName);
         }
 
         public bool IsBlocked(MethodBase method)

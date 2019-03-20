@@ -396,7 +396,7 @@ namespace Duktape
                     bindingManager.Info("skip obsolete field: {0}", field.Name);
                     continue;
                 }
-                if (bindingManager.IsTypeMemberBlocked(type, field.Name))
+                if (transform != null && transform.IsMemberBlocked(field.Name))
                 {
                     bindingManager.Info("skip blocked field: {0}", field.Name);
                     continue;
@@ -421,7 +421,7 @@ namespace Duktape
                     bindingManager.Info("skip obsolete property: {0}", property.Name);
                     continue;
                 }
-                if (bindingManager.IsTypeMemberBlocked(type, property.Name))
+                if (transform != null && transform.IsMemberBlocked(property.Name))
                 {
                     bindingManager.Info("skip blocked property: {0}", property.Name);
                     continue;
@@ -493,7 +493,7 @@ namespace Duktape
                     bindingManager.Info("skip obsolete method: {0}", method);
                     continue;
                 }
-                if (bindingManager.IsTypeMemberBlocked(type, method.Name))
+                if (transform != null && transform.IsMemberBlocked(method.Name))
                 {
                     bindingManager.Info("skip blocked method: {0}", method.Name);
                     continue;
