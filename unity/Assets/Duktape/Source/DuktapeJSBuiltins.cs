@@ -226,22 +226,21 @@ namespace Duktape
             duk_add_method(ctx, "clearTimeout", ClearTimer, -1);
         }
 
-        private static void replace_by_builtin(IntPtr ctx, string t, string backup) 
+        private static void replace_by_builtin(IntPtr ctx, string t) 
         {
-            DuktapeDLL.duk_get_prop_string(ctx, -1, t);
-            DuktapeDLL.duk_put_prop_string(ctx, -2, backup);
             DuktapeDLL.duk_builtins_reg_get(ctx, t);
+            DuktapeDLL.duk_get_prop_string(ctx, -2, t);
+            DuktapeDLL.duk_put_prop_string(ctx, -2, "_raw");
             DuktapeDLL.duk_put_prop_string(ctx, -2, t); 
-
         }
 
         public static void postreg(IntPtr ctx)
         {
             duk_begin_namespace(ctx, "UnityEngine");
-            replace_by_builtin(ctx, "Vector2", "_Vector2");
-            replace_by_builtin(ctx, "Vector3", "_Vector3");
-            replace_by_builtin(ctx, "Quaternion", "_Quaternion");
-            replace_by_builtin(ctx, "Color", "_Color");
+            replace_by_builtin(ctx, "Vector2");
+            replace_by_builtin(ctx, "Vector3");
+            replace_by_builtin(ctx, "Quaternion");
+            replace_by_builtin(ctx, "Color");
             duk_end_namespace(ctx);
         }
     }
