@@ -15,6 +15,15 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 require("./mm/foo");
 (function () {
+    var Vector3 = UnityEngine.Vector3;
+    var start = Date.now();
+    for (var i = 1; i < 2000000; i++) {
+        var v = new Vector3(i, i, i);
+        v.Normalize();
+    }
+    console.log("test3/js ", (Date.now() - start));
+})();
+(function () {
     console.log("### Vector3 (replaced)");
     var v1 = new UnityEngine.Vector3(1, 2, 3);
     console.log("v: " + v1.x + ", " + v1.y + ", " + v1.z + " (" + v1.magnitude + ")");

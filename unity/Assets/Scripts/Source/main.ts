@@ -2,6 +2,16 @@
 import "./mm/foo"
 
 (function () {
+    let Vector3 = UnityEngine.Vector3
+    let start = Date.now()
+	for (let i = 1; i < 2000000; i++) {
+		let v = new Vector3(i, i, i)
+		v.Normalize()
+    }
+	console.log("test3/js ", (Date.now() - start));
+})();
+
+(function () {
     console.log("### Vector3 (replaced)")
     let v1 = new UnityEngine.Vector3(1, 2, 3)
     console.log(`v: ${v1.x}, ${v1.y}, ${v1.z} (${v1.magnitude})`)

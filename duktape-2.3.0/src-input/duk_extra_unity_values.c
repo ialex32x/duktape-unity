@@ -1018,6 +1018,20 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_normalize(duk_context *ctx) {
     return 0;
 }
 
+DUK_LOCAL duk_ret_t duk_unity_vector3_static_Normalize(duk_context *ctx) {
+    float x, y, z;
+    float mag;
+    duk_unity_get3f(ctx, 0, &x, &y, &z);
+    mag = sqrtf(x * x + y * y + z * z);
+    if (mag > UNITY_VECTOR3_kEpsilon) {
+        float rmag = 1.0f / mag;
+        vec3_push_new(ctx, x * rmag, y * rmag, z * rmag);
+    } else {
+        vec3_push_new(ctx, 0, 0, 0);
+    }
+    return 1;
+}
+
 DUK_LOCAL duk_ret_t duk_unity_vector3_normalized(duk_context *ctx) {
     float x, y, z;
     float mag;
@@ -1347,6 +1361,7 @@ DUK_INTERNAL void duk_unity_vector3_open(duk_context *ctx) {
         duk_unity_add_member(ctx, "OrthoNormalize", duk_unity_vector3_static_OrthoNormalize, -2);
         duk_unity_add_member(ctx, "Reflect", duk_unity_vector3_static_reflect, -2);
         duk_unity_add_member(ctx, "Normalize", duk_unity_vector3_normalize, -1);
+        duk_unity_add_member(ctx, "Normalize", duk_unity_vector3_static_Normalize, -2);
         duk_unity_add_property(ctx, "normalized", duk_unity_vector3_normalized, NULL, -1);
         duk_unity_add_member(ctx, "Dot", duk_unity_vector3_static_dot, -2);
         duk_unity_add_member(ctx, "Project", duk_unity_vector3_static_project, -2);
