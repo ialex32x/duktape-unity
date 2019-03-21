@@ -403,6 +403,24 @@ DUK_LOCAL duk_ret_t duk_unity_vector2_static_ClampMagnitude(duk_context *ctx) {
     return 1;
 }
 
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_Min(duk_context *ctx) {
+    float lhsx, lhsy;
+    float rhsx, rhsy;
+    duk_unity_get2f(ctx, 0, &lhsx, &lhsy);
+    duk_unity_get2f(ctx, 1, &rhsx, &rhsy);
+    vec2_push_new(ctx, lhsx > rhsx ? rhsx : lhsx, lhsy > rhsy ? rhsy : lhsy);
+    return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_Max(duk_context *ctx) {
+    float lhsx, lhsy;
+    float rhsx, rhsy;
+    duk_unity_get2f(ctx, 0, &lhsx, &lhsy);
+    duk_unity_get2f(ctx, 1, &rhsx, &rhsy);
+    vec2_push_new(ctx, lhsx < rhsx ? rhsx : lhsx, lhsy < rhsy ? rhsy : lhsy);
+    return 1;
+}
+
 DUK_LOCAL duk_ret_t duk_unity_vector2_ToString(duk_context *ctx) {
     float rhsx, rhsy;
     duk_push_this(ctx);
@@ -1339,6 +1357,8 @@ DUK_INTERNAL void duk_unity_vector3_open(duk_context *ctx) {
         duk_unity_add_member(ctx, "SignedAngle", duk_unity_vector2_static_SignedAngle, -2);
         duk_unity_add_member(ctx, "Distance", duk_unity_vector2_static_Distance, -2);
         duk_unity_add_member(ctx, "ClampMagnitude", duk_unity_vector2_static_ClampMagnitude, -2);
+        duk_unity_add_member(ctx, "Min", duk_unity_vector2_static_Min, -2);
+        duk_unity_add_member(ctx, "Max", duk_unity_vector2_static_Max, -2);
 
         duk_unity_add_property(ctx, "magnitude", duk_unity_vector2_magnitude, NULL, -1);
         duk_unity_add_property(ctx, "sqrMagnitude", duk_unity_vector2_sqrMagnitude, NULL, -1);
