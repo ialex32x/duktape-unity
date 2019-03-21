@@ -241,6 +241,14 @@ DUK_LOCAL duk_ret_t duk_unity_vector2_Normalize(duk_context *ctx) {
     return 0;
 }
 
+DUK_LOCAL duk_ret_t duk_unity_vector2_static_Normalize(duk_context *ctx) {
+    float rhsx, rhsy;
+    duk_unity_get2f(ctx, 0, &rhsx, &rhsy);
+    float mag = 1.0f / sqrtf(rhsx * rhsx + rhsy * rhsy);
+    vec2_push_new(ctx, rhsx / mag, rhsy / mag);
+    return 1;
+}
+
 // static Lerp(a: UnityEngine.Vector2, b: UnityEngine.Vector2, t: number): UnityEngine.Vector2
 DUK_LOCAL duk_ret_t duk_unity_vector2_static_Lerp(duk_context *ctx) {
     float a[2];
@@ -1319,6 +1327,7 @@ DUK_INTERNAL void duk_unity_vector3_open(duk_context *ctx) {
         duk_unity_add_member(ctx, "Set", duk_unity_vector2_Set, -1);
         duk_unity_add_member(ctx, "Scale", duk_unity_vector2_Scale, -1);
         duk_unity_add_member(ctx, "Normalize", duk_unity_vector2_Normalize, -1);
+        duk_unity_add_member(ctx, "Normalize", duk_unity_vector2_static_Normalize, -2);
         duk_unity_add_member(ctx, "Lerp", duk_unity_vector2_static_Lerp, -2);
         duk_unity_add_member(ctx, "LerpUnclamped", duk_unity_vector2_static_LerpUnclamped, -2);
         duk_unity_add_member(ctx, "MoveTowards", duk_unity_vector2_static_MoveTowards, -2);
