@@ -1,27 +1,14 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 require("./mm/foo");
 (function () {
     var Vector3 = UnityEngine.Vector3;
     var start = Date.now();
-    for (var i = 1; i < 2000000; i++) {
+    for (var i = 1; i < 200000; i++) {
         var v = new Vector3(i, i, i);
         v.Normalize();
     }
-    console.log("test3/js ", (Date.now() - start));
+    console.log("test3/js ", (Date.now() - start) / 1000);
 })();
 (function () {
     console.log("### Vector3 (replaced)");
@@ -33,27 +20,22 @@ require("./mm/foo");
     v2.x += 10;
     console.log("v: " + v2.x + ", " + v2.y + ", " + v2.z + " (" + v2.magnitude + ")");
 })();
-DuktapeJS.Behaviour = function () { };
-var MyBehaviour = /** @class */ (function (_super) {
-    __extends(MyBehaviour, _super);
-    function MyBehaviour() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    MyBehaviour.prototype.Awake = function () {
-        console.log("Awake");
-    };
-    MyBehaviour.prototype.OnEnable = function () {
-        console.log("OnEnable");
-    };
-    MyBehaviour.prototype.OnDestroy = function () {
-        console.log("OnDestroy");
-    };
-    return MyBehaviour;
-}(DuktapeJS.Behaviour));
-(function () {
-    var go = new UnityEngine.GameObject("Bridge");
-    go.AddComponent(MyBehaviour);
-})();
+// DuktapeJS.Behaviour = function () { }
+// class MyBehaviour extends DuktapeJS.Behaviour {
+//     Awake() {
+//         console.log("Awake")
+//     }
+//     OnEnable() {
+//         console.log("OnEnable")
+//     }
+//     OnDestroy() {
+//         console.log("OnDestroy")
+//     }
+// }
+// (function () {
+//     let go = new UnityEngine.GameObject("Bridge")
+//     go.AddComponent(MyBehaviour)
+// })();
 (function () {
     console.log("### Delegates begin");
     var d = new DuktapeJS.Delegate0();
@@ -65,15 +47,15 @@ var MyBehaviour = /** @class */ (function (_super) {
     d.dispatch();
     console.log("### Delegates end");
 })();
-(function () {
-    console.log("### System.Array");
-    var nativeArray = System.Array.CreateInstance(System.Int32, 10);
-    var s = new SampleNamespace.SampleClass("test");
-    console.log(nativeArray);
-    console.log(nativeArray.ToString());
-    console.log(s.GetPositions(nativeArray));
-    s.TestDuktapeArray([1, 2, 3]);
-})();
+// (function () {
+//     console.log("### System.Array")
+//     let nativeArray = System.Array.CreateInstance(System.Int32, 10)
+//     let s = new SampleNamespace.SampleClass("test")
+//     console.log(nativeArray)
+//     console.log(nativeArray.ToString())
+//     console.log(s.GetPositions(nativeArray))
+//     s.TestDuktapeArray([1, 2, 3])
+// })();
 (function () {
     SampleNamespace.SampleClass.TestDelegate(function () {
         console.log(this, "TestDelegate");

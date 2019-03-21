@@ -4,11 +4,11 @@ import "./mm/foo"
 (function () {
     let Vector3 = UnityEngine.Vector3
     let start = Date.now()
-	for (let i = 1; i < 2000000; i++) {
+	for (let i = 1; i < 200000; i++) {
 		let v = new Vector3(i, i, i)
 		v.Normalize()
     }
-	console.log("test3/js ", (Date.now() - start));
+	console.log("test3/js ", (Date.now() - start) / 1000);
 })();
 
 (function () {
@@ -22,26 +22,26 @@ import "./mm/foo"
     console.log(`v: ${v2.x}, ${v2.y}, ${v2.z} (${v2.magnitude})`)
 })();
 
-DuktapeJS.Behaviour = function () { }
+// DuktapeJS.Behaviour = function () { }
 
-class MyBehaviour extends DuktapeJS.Behaviour {
-    Awake() {
-        console.log("Awake")
-    }
+// class MyBehaviour extends DuktapeJS.Behaviour {
+//     Awake() {
+//         console.log("Awake")
+//     }
 
-    OnEnable() {
-        console.log("OnEnable")
-    }
+//     OnEnable() {
+//         console.log("OnEnable")
+//     }
 
-    OnDestroy() {
-        console.log("OnDestroy")
-    }
-}
+//     OnDestroy() {
+//         console.log("OnDestroy")
+//     }
+// }
 
-(function () {
-    let go = new UnityEngine.GameObject("Bridge")
-    go.AddComponent(MyBehaviour)
-})();
+// (function () {
+//     let go = new UnityEngine.GameObject("Bridge")
+//     go.AddComponent(MyBehaviour)
+// })();
 
 (function () {
     console.log("### Delegates begin")
@@ -55,15 +55,15 @@ class MyBehaviour extends DuktapeJS.Behaviour {
     console.log("### Delegates end")
 })();
 
-(function () {
-    console.log("### System.Array")
-    let nativeArray = System.Array.CreateInstance(System.Int32, 10)
-    let s = new SampleNamespace.SampleClass("test")
-    console.log(nativeArray)
-    console.log(nativeArray.ToString())
-    console.log(s.GetPositions(nativeArray))
-    s.TestDuktapeArray([1, 2, 3])
-})();
+// (function () {
+//     console.log("### System.Array")
+//     let nativeArray = System.Array.CreateInstance(System.Int32, 10)
+//     let s = new SampleNamespace.SampleClass("test")
+//     console.log(nativeArray)
+//     console.log(nativeArray.ToString())
+//     console.log(s.GetPositions(nativeArray))
+//     s.TestDuktapeArray([1, 2, 3])
+// })();
 
 (function () {
     SampleNamespace.SampleClass.TestDelegate(function () {
