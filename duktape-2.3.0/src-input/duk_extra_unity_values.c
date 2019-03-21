@@ -13,12 +13,16 @@
 
 DUK_INTERNAL DUK_INLINE float float_clamped(float a, float b, float t) {
     float d = b - a;
-    return d > 0 ? a + fmin(d, t) : a - fmin(-d, t);
+    return d > 0.0F ? a + fminf(d, t) : a - fminf(-d, t);
 }
 
 DUK_INTERNAL DUK_INLINE void vec2_sub(const float* a, const float* b, float* res) {
     res[0] = a[0] - b[0];
     res[1] = a[1] - b[1];
+}
+
+DUK_INTERNAL DUK_INLINE float vec2_dot(const float* a, const float* b) {
+    return a[0] * b[0] + a[1] * b[1];
 }
 
 DUK_INTERNAL DUK_INLINE float vec2_angle(const float* from, const float* to) {
@@ -35,12 +39,8 @@ DUK_INTERNAL DUK_INLINE float vec2_angle(const float* from, const float* to) {
     return acosf(dot) * UNITY_RAD2DEG;
 }
 
-DUK_INTERNAL DUK_INLINE float vec2_dot(const float* a, const float* b) {
-    return a[0] * b[0] + a[1] * b[1];
-}
-
 DUK_INTERNAL DUK_INLINE float vec2_magnitude(const float* a) {
-    return sqrtf(a[0] * a[0] + b[0] * b[0]);
+    return sqrtf(a[0] * a[0] + a[1] * a[1]);
 }
 
 DUK_INTERNAL DUK_INLINE void vec2_move_towards(const float* current, const float* target, float maxDistanceDelta, float* res) {
@@ -136,15 +136,14 @@ DUK_INTERNAL DUK_INLINE void m3x3_multiply_vec3(float* mat3x3, const float* vec3
 	out_vec3[2] = mat3x3[2] * vec3[0] + mat3x3[5] * vec3[1] + mat3x3[8] * vec3[2];
 }
 
-DUK_INTERNAL DUK_INLINE void m3x3_set_axis_angle(float* mat3x3, const float* vec, float radians) 
-{
+DUK_INTERNAL DUK_INLINE void m3x3_set_axis_angle(float* mat3x3, const float* vec, float radians) {
     /* This function contributed by Erich Boleyn (erich@uruk.org) */
     /* This function used from the Mesa OpenGL code (matrix.c)  */
     float s, c;
     float vx, vy, vz, xx, yy, zz, xy, yz, zx, xs, ys, zs, one_c;
 
-    s = sin (radians);
-    c = cos (radians);
+    s = sinf(radians);
+    c = cosf(radians);
 
     vx = vec[0];
     vy = vec[1];
@@ -372,7 +371,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector2_static_ClampMagnitude(duk_context *ctx) {
     float vector[2];
     float maxLength;
     duk_unity_get2f(ctx, 0, &vector[0], &vector[1]);
-    maxLength = duk_get_number_default(ctx, 1, 0);
+    maxLength = (float)duk_get_number_default(ctx, 1, 0);
     float sqrMag = vector[0] * vector[0] + vector[1] * vector[1];
     if (sqrMag > maxLength * maxLength) {
         float mag = sqrtf(sqrMag);
@@ -576,14 +575,14 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_MoveTowards(duk_context *ctx) {
 
 // static RotateTowards(current: UnityEngine.Vector3, target: UnityEngine.Vector3, maxRadiansDelta: number, maxMagnitudeDelta: number): UnityEngine.Vector3
 DUK_LOCAL duk_ret_t duk_unity_vector3_static_RotateTowards(duk_context *ctx) {
-    float current[3];
-    float target[3];
+    float lhs[3];
+    float rhs[3];
     float res[3];
     float maxRadiansDelta;
     float maxMagnitudeDelta;
 
-    duk_unity_get3f(ctx, 0, &current[0], &current[1], &current[2]);
-    duk_unity_get3f(ctx, 1, &target[0], &target[1], &target[2]);
+    duk_unity_get3f(ctx, 0, &lhs[0], &lhs[1], &lhs[2]);
+    duk_unity_get3f(ctx, 1, &rhs[0], &rhs[1], &rhs[2]);
     maxRadiansDelta = (float)duk_get_number_default(ctx, 2, 0.0);
     maxMagnitudeDelta = (float)duk_get_number_default(ctx, 3, 0.0);
 
@@ -623,7 +622,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_RotateTowards(duk_context *ctx) {
         vec3_cross(lhsN, rhsN, naxis);
         vec3_normalize(naxis);
         float nm[9];
-        m3x3_set_axis_angle(nm, naxis, fmin(maxRadiansDelta, angle));
+        m3x3_set_axis_angle(nm, naxis, fminf(maxRadiansDelta, angle));
         m3x3_multiply_vec3(nm, lhsN, res);
         float c = float_clamped(lhsMag, rhsMag, maxMagnitudeDelta);
         vec3_push_new(ctx, res[0] * c, res[1] * c, res[2] * c);
@@ -919,6 +918,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_OrthoNormalize(duk_context *ctx) {
         }
         duk_unity_put3f(ctx, 2, w[0], w[1], w[2]);
     }
+    return 0;
 }
 
 DUK_LOCAL duk_ret_t duk_unity_vector3_static_Slerp(duk_context *ctx) {
