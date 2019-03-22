@@ -101,13 +101,13 @@ namespace Duktape
             });
 
             TransformType(typeof(GameObject))
-                .AddRedirectMethod("AddComponent", "_AddComponent")
-                .AddRedirectMethod("GetComponent", "_GetComponent")
-                .AddRedirectMethod("GetComponentInChildren", "_GetComponentInChildren")
-                .AddRedirectMethod("GetComponentInParent", "_GetComponentInParent")
-                .AddRedirectMethod("GetComponents", "_GetComponents")
-                .AddRedirectMethod("GetComponentsInChildren", "_GetComponentsInChildren")
-                .AddRedirectMethod("GetComponentsInParent", "_GetComponentsInParent")
+                // .AddRedirectMethod("AddComponent", "_AddComponent")
+                // .AddRedirectMethod("GetComponent", "_GetComponent")
+                // .AddRedirectMethod("GetComponentInChildren", "_GetComponentInChildren")
+                // .AddRedirectMethod("GetComponentInParent", "_GetComponentInParent")
+                // .AddRedirectMethod("GetComponents", "_GetComponents")
+                // .AddRedirectMethod("GetComponentsInChildren", "_GetComponentsInChildren")
+                // .AddRedirectMethod("GetComponentsInParent", "_GetComponentsInParent")
                 .AddTSMethodDeclaration("AddComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
                     "AddComponent", typeof(Type))
                 .AddTSMethodDeclaration("GetComponent<T extends UnityEngine.Component>(type: { new(): T }): T",

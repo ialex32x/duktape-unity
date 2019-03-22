@@ -364,9 +364,10 @@ namespace Duktape
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void duk_throw_raw(IntPtr ctx);
 
-        public static void duk_throw(IntPtr ctx)
+        public static duk_ret_t duk_throw(IntPtr ctx)
         {
             duk_throw_raw(ctx);
+            return 0;
         }
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]

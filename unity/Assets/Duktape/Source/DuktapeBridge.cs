@@ -1,34 +1,28 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace Duktape
 {
     using UnityEngine;
 
-    // JS 实现的 MonoBehaviour
-    public class DuktapeBehaviour : MonoBehaviour
+    // 提供简单的功能桥接
+    [JSType]
+    [JSNaming("DuktapeJS.Bridge")]
+    public class DuktapeBridge : MonoBehaviour
     {
-        private DuktapeValue _prototype;
         private DuktapeObject _instance;
 
-        public void MakeBridge(DuktapeObject instance)
+        public void SetBridge(DuktapeObject obj)
         {
-            _instance = instance;
-            if (_instance != null)
+            _instance = obj;
+            if (enabled)
             {
-                var ctx = _instance.ctx;
-                _instance.PushPrototype(ctx);
-                var refid = DuktapeDLL.duk_unity_ref(ctx);
-                _prototype = new DuktapeValue(ctx, refid);
-                _instance.InvokeMember("Awake");
-                if (enabled)
-                {
-                    _instance.InvokeMember("OnEnable");
-                }
-                if (_instance.GetMember("Update") != null)
-                {
-                    StartCoroutine(_Update());
-                }
+                _instance.InvokeMember("OnEnable");
+            }
+            if (_instance.GetMember("Update") != null)
+            {
+                StartCoroutine(_Update());
             }
         }
 
@@ -71,11 +65,6 @@ namespace Duktape
             {
                 _instance.InvokeMember("OnDestroy");
                 _instance = null;
-            }
-
-            if (_prototype != null)
-            {
-                _prototype = null;
             }
         }
     }

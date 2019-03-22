@@ -70,13 +70,28 @@ console.log(UnityEngine.Mathf.PI);
 // UnityEngine.Debug.Log("greeting")
 var go = new UnityEngine.GameObject("testing");
 var hello = go.AddComponent(SampleNamespace.Hello);
+var bridge = go.AddComponent(DuktapeJS.Bridge);
+bridge.SetBridge({
+    OnEnable: function () {
+        console.log("bridge.OnEnable");
+    },
+    Start: function () {
+        console.log("bridge.Start");
+    },
+    OnDisable: function () {
+        console.log("bridge.OnDisable");
+    },
+    OnDestroy: function () {
+        console.log("bridge.OnDestroy");
+    },
+});
 console.log("hello.name = ", hello.gameObject.name);
 // let go2 = new UnityEngine.GameObject("testing2")
 console.log("go.activeSelf", go.activeSelf);
 console.log("go.activeSelf", go.activeSelf);
 setTimeout(function () {
     go.SetActive(false);
-}, 15000);
+}, 3500);
 setTimeout(function () {
     UnityEngine.Object.Destroy(go);
 }, 30000);

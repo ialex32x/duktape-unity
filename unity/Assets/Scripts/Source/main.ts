@@ -80,6 +80,25 @@ console.log(UnityEngine.Mathf.PI)
 // UnityEngine.Debug.Log("greeting")
 let go = new UnityEngine.GameObject("testing")
 let hello = go.AddComponent(SampleNamespace.Hello)
+let bridge = go.AddComponent(DuktapeJS.Bridge)
+
+bridge.SetBridge({
+    OnEnable: () => {
+        console.log("bridge.OnEnable")
+    }, 
+
+    Start: () => {
+        console.log("bridge.Start")
+    }, 
+
+    OnDisable: () => {
+        console.log("bridge.OnDisable")
+    }, 
+
+    OnDestroy: () => {
+        console.log("bridge.OnDestroy")
+    }, 
+})
 
 console.log("hello.name = ", hello.gameObject.name)
 // let go2 = new UnityEngine.GameObject("testing2")
@@ -88,7 +107,7 @@ console.log("go.activeSelf", go.activeSelf)
 
 setTimeout(() => {
     go.SetActive(false)
-}, 15000)
+}, 3500)
 
 setTimeout(() => {
     UnityEngine.Object.Destroy(go)

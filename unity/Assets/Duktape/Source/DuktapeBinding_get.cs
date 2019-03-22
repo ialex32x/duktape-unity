@@ -546,6 +546,28 @@ namespace Duktape
             return ret;
         }
 
+        public static bool duk_get_classvalue(IntPtr ctx, int idx, out DuktapeObject o)
+        {
+            object obj;
+            if (duk_get_cached_object(ctx, idx, out obj))
+            {
+                if (obj is DuktapeObject)
+                {
+                    o = (DuktapeObject)obj;
+                    return true;
+                }
+            }
+            if (DuktapeDLL.duk_is_object(ctx, idx))
+            {
+                DuktapeDLL.duk_dup(ctx, idx);
+                var refid = DuktapeDLL.duk_unity_ref(ctx);
+                o = new DuktapeObject(ctx, refid);
+                return true;
+            }
+            o = null;
+            return false;
+        }
+
         public static bool duk_get_classvalue(IntPtr ctx, int idx, out DuktapeArray o)
         {
             object obj;

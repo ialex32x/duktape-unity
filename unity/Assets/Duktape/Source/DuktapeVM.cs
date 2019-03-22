@@ -33,6 +33,7 @@ namespace Duktape
         public const string SPECIAL_DELEGATE = "Delegate";
         public const string SPECIAL_CSHARP = "CSharp";
 
+        private int _updateTimer;
         private DuktapeContext _ctx;
         private IFileSystem _fileManager;
         private ObjectCache _objectCache = new ObjectCache();
@@ -319,7 +320,7 @@ namespace Duktape
                 }
                 DuktapeDLL.duk_pop(ctx);
             }
-            DuktapeRunner.SetInterval(this.OnUpdate, 100f);
+            _updateTimer = DuktapeRunner.SetInterval(this.OnUpdate, 100f);
 
             if (listener != null)
             {
@@ -412,6 +413,12 @@ namespace Duktape
 
         public void Destroy()
         {
+            if (_updateTimer != 0)
+            {
+                DuktapeRunner.Clear(_updateTimer);
+                _updateTimer = 0;
+            }
+            
             if (_ctx != null)
             {
                 DuktapeDLL.duk_destroy_heap(_ctx.rawValue);

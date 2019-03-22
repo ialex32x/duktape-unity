@@ -277,16 +277,41 @@ namespace Duktape
             this.bindingManager = bindingManager;
             this.type = type;
             this.transform = bindingManager.GetTypeTransform(type);
-            if (type.DeclaringType != null)
+            var naming = GetNamingAttribute(type);
+            if (naming != null)
             {
-                this.Namespace = $"{type.Namespace}.{type.DeclaringType.Name}";
+                var indexOfTypeName = naming.LastIndexOf('.');
+                if (indexOfTypeName >= 0)
+                {
+                    this.Namespace = naming.Substring(0, indexOfTypeName);
+                    this.regName = naming.Substring(indexOfTypeName + 1);
+                }
+                else
+                {
+                    if (type.DeclaringType != null)
+                    {
+                        this.Namespace = $"{type.Namespace}.{type.DeclaringType.Name}";
+                    }
+                    else
+                    {
+                        this.Namespace = type.Namespace;
+                    }
+                    this.regName = naming;
+                }
             }
             else
             {
-                this.Namespace = type.Namespace;
+                if (type.DeclaringType != null)
+                {
+                    this.Namespace = $"{type.Namespace}.{type.DeclaringType.Name}";
+                }
+                else
+                {
+                    this.Namespace = type.Namespace;
+                }
+                this.regName = type.Name;
             }
             this.name = "DuktapeJS_" + type.FullName.Replace('.', '_').Replace('+', '_');
-            this.regName = GetNamingAttribute(type);
             this.constructors = new ConstructorBindingInfo(type);
         }
 
