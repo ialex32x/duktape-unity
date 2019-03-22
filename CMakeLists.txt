@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.7.2)
 project(duktape)
 
 set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/)

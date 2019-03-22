@@ -19,7 +19,6 @@ namespace Duktape
         private List<string> _explicitAssemblies = new List<string>(); // 仅导出指定需要导出的类型
 
         private HashSet<Type> blacklist;
-        private Dictionary<Type, HashSet<string>> _csTypeMemberBlacklist = new Dictionary<Type, HashSet<string>>();
         private HashSet<Type> whitelist;
         private List<string> typePrefixBlacklist;
         private Dictionary<Type, TypeBindingInfo> exportedTypes = new Dictionary<Type, TypeBindingInfo>();
@@ -102,13 +101,13 @@ namespace Duktape
             });
 
             TransformType(typeof(GameObject))
-                .AddRedirectMethod("AddComponent", "_AddComponent")
-                .AddRedirectMethod("GetComponent", "_GetComponent")
-                .AddRedirectMethod("GetComponentInChildren", "_GetComponentInChildren")
-                .AddRedirectMethod("GetComponentInParent", "_GetComponentInParent")
-                .AddRedirectMethod("GetComponents", "_GetComponents")
-                .AddRedirectMethod("GetComponentsInChildren", "_GetComponentsInChildren")
-                .AddRedirectMethod("GetComponentsInParent", "_GetComponentsInParent")
+                // .AddRedirectMethod("AddComponent", "_AddComponent")
+                // .AddRedirectMethod("GetComponent", "_GetComponent")
+                // .AddRedirectMethod("GetComponentInChildren", "_GetComponentInChildren")
+                // .AddRedirectMethod("GetComponentInParent", "_GetComponentInParent")
+                // .AddRedirectMethod("GetComponents", "_GetComponents")
+                // .AddRedirectMethod("GetComponentsInChildren", "_GetComponentsInChildren")
+                // .AddRedirectMethod("GetComponentsInParent", "_GetComponentsInParent")
                 .AddTSMethodDeclaration("AddComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
                     "AddComponent", typeof(Type))
                 .AddTSMethodDeclaration("GetComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
@@ -134,12 +133,38 @@ namespace Duktape
             ;
 
             TransformType(typeof(Vector3))
+                .SetMethodBlocked("SqrMagnitude", typeof(Vector3))
+                .SetMethodBlocked("Magnitude", typeof(Vector3))
                 .AddTSMethodDeclaration("static Add(a: Vector3, b: Vector3): Vector3")
                 .AddTSMethodDeclaration("static Sub(a: Vector3, b: Vector3): Vector3")
                 .AddTSMethodDeclaration("static Mul(a: Vector3, b: Vector3): Vector3")
                 .AddTSMethodDeclaration("static Div(a: Vector3, b: Vector3): Vector3")
                 .AddTSMethodDeclaration("static Equals(a: Vector3, b: Vector3): boolean")
                 .AddTSMethodDeclaration("Equals(b: Vector3): boolean")
+                .AddTSMethodDeclaration("Inverse(): Vector3")
+            ;
+
+            TransformType(typeof(Vector2))
+                .SetMethodBlocked("SqrMagnitude")
+                .SetMethodBlocked("SqrMagnitude", typeof(Vector2))
+                .AddTSMethodDeclaration("static Add(a: Vector2, b: Vector2): Vector2")
+                .AddTSMethodDeclaration("static Sub(a: Vector2, b: Vector2): Vector2")
+                .AddTSMethodDeclaration("static Mul(a: Vector2, b: Vector2): Vector2")
+                .AddTSMethodDeclaration("static Div(a: Vector2, b: Vector2): Vector2")
+                .AddTSMethodDeclaration("static Equals(a: Vector2, b: Vector2): boolean")
+                .AddTSMethodDeclaration("Equals(b: Vector2): boolean")
+                .AddTSMethodDeclaration("Inverse(): Vector2")
+            ;
+
+            // editor 使用的 .net 与 player 所用存在差异, 这里屏蔽不存在的成员
+            TransformType(typeof(double))
+                .SetMemberBlocked("IsFinite")
+            ;
+            TransformType(typeof(float))
+                .SetMemberBlocked("IsFinite")
+            ;
+            TransformType(typeof(string))
+                .SetMemberBlocked("Chars")
             ;
 
             AddTSTypeNameMap(typeof(sbyte), "number");
@@ -157,14 +182,14 @@ namespace Duktape
             AddTSTypeNameMap(typeof(char), "string");
             AddTSTypeNameMap(typeof(void), "void");
             AddTSTypeNameMap(typeof(LayerMask), "UnityEngine.LayerMask", "number");
-            AddTSTypeNameMap(typeof(Color), "UnityEngine.Color", "number[]");
-            AddTSTypeNameMap(typeof(Color32), "UnityEngine.Color32", "number[]");
-            AddTSTypeNameMap(typeof(Vector2), "UnityEngine.Vector2", "number[]");
-            AddTSTypeNameMap(typeof(Vector2Int), "UnityEngine.Vector2Int", "number[]");
+            AddTSTypeNameMap(typeof(Color), "UnityEngine.Color");
+            AddTSTypeNameMap(typeof(Color32), "UnityEngine.Color32");
+            AddTSTypeNameMap(typeof(Vector2), "UnityEngine.Vector2");
+            AddTSTypeNameMap(typeof(Vector2Int), "UnityEngine.Vector2Int");
             AddTSTypeNameMap(typeof(Vector3), "UnityEngine.Vector3"); // 已优化, 在 VM 初始化时替换为 DuktapeJS.Vector3
-            AddTSTypeNameMap(typeof(Vector3Int), "UnityEngine.Vector3Int", "number[]");
-            AddTSTypeNameMap(typeof(Vector4), "UnityEngine.Vector4", "number[]");
-            AddTSTypeNameMap(typeof(Quaternion), "UnityEngine.Quaternion", "number[]");
+            AddTSTypeNameMap(typeof(Vector3Int), "UnityEngine.Vector3Int");
+            AddTSTypeNameMap(typeof(Vector4), "UnityEngine.Vector4");
+            AddTSTypeNameMap(typeof(Quaternion), "UnityEngine.Quaternion");
             AddTSTypeNameMap(typeof(DuktapeArray), "any[]");
 
             AddCSTypeNameMap(typeof(sbyte), "sbyte");
@@ -182,10 +207,6 @@ namespace Duktape
             AddCSTypeNameMap(typeof(char), "char");
             AddCSTypeNameMap(typeof(System.Object), "object");
             AddCSTypeNameMap(typeof(void), "void");
-
-            BlockCSTypeMember(typeof(double), "IsFinite");
-            BlockCSTypeMember(typeof(float), "IsFinite");
-            BlockCSTypeMember(typeof(string), "Chars");
 
             Initialize();
         }
@@ -253,22 +274,6 @@ namespace Duktape
             }
         }
 
-        public bool IsTypeMemberBlocked(Type type, string memeberName)
-        {
-            HashSet<string> blacklist;
-            return _csTypeMemberBlacklist.TryGetValue(type, out blacklist) && blacklist.Contains(memeberName);
-        }
-
-        public void BlockCSTypeMember(Type type, string memberName)
-        {
-            HashSet<string> blacklist;
-            if (!_csTypeMemberBlacklist.TryGetValue(type, out blacklist))
-            {
-                _csTypeMemberBlacklist[type] = blacklist = new HashSet<string>();
-            }
-            blacklist.Add(memberName);
-        }
-
         // TS: 添加保留字, CS中相关变量名等会自动重命名注册到js中
         public static void AddTSKeywords(params string[] keywords)
         {
@@ -278,6 +283,7 @@ namespace Duktape
             }
         }
 
+        // 指定类型在 ts 声明中的映射名 (可以指定多项)
         public void AddTSTypeNameMap(Type type, params string[] names)
         {
             List<string> list;

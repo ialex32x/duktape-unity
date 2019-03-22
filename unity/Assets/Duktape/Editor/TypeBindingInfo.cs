@@ -277,16 +277,41 @@ namespace Duktape
             this.bindingManager = bindingManager;
             this.type = type;
             this.transform = bindingManager.GetTypeTransform(type);
-            if (type.DeclaringType != null)
+            var naming = GetNamingAttribute(type);
+            if (naming != null)
             {
-                this.Namespace = $"{type.Namespace}.{type.DeclaringType.Name}";
+                var indexOfTypeName = naming.LastIndexOf('.');
+                if (indexOfTypeName >= 0)
+                {
+                    this.Namespace = naming.Substring(0, indexOfTypeName);
+                    this.regName = naming.Substring(indexOfTypeName + 1);
+                }
+                else
+                {
+                    if (type.DeclaringType != null)
+                    {
+                        this.Namespace = $"{type.Namespace}.{type.DeclaringType.Name}";
+                    }
+                    else
+                    {
+                        this.Namespace = type.Namespace;
+                    }
+                    this.regName = naming;
+                }
             }
             else
             {
-                this.Namespace = type.Namespace;
+                if (type.DeclaringType != null)
+                {
+                    this.Namespace = $"{type.Namespace}.{type.DeclaringType.Name}";
+                }
+                else
+                {
+                    this.Namespace = type.Namespace;
+                }
+                this.regName = type.Name;
             }
             this.name = "DuktapeJS_" + type.FullName.Replace('.', '_').Replace('+', '_');
-            this.regName = GetNamingAttribute(type);
             this.constructors = new ConstructorBindingInfo(type);
         }
 
@@ -332,6 +357,14 @@ namespace Duktape
 
         public void AddMethod(MethodInfo methodInfo, bool isIndexer, string renameRegName)
         {
+            if (this.transform != null)
+            {
+                if (this.transform.IsBlocked(methodInfo))
+                {
+                    bindingManager.Info("skip blocked method: {0}", methodInfo.Name);
+                    return;
+                }
+            }
             var group = methodInfo.IsStatic ? staticMethods : methods;
             MethodBindingInfo overrides;
             var methodName = TypeBindingInfo.GetNamingAttribute(methodInfo);
@@ -388,7 +421,7 @@ namespace Duktape
                     bindingManager.Info("skip obsolete field: {0}", field.Name);
                     continue;
                 }
-                if (bindingManager.IsTypeMemberBlocked(type, field.Name))
+                if (transform != null && transform.IsMemberBlocked(field.Name))
                 {
                     bindingManager.Info("skip blocked field: {0}", field.Name);
                     continue;
@@ -413,7 +446,7 @@ namespace Duktape
                     bindingManager.Info("skip obsolete property: {0}", property.Name);
                     continue;
                 }
-                if (bindingManager.IsTypeMemberBlocked(type, property.Name))
+                if (transform != null && transform.IsMemberBlocked(property.Name))
                 {
                     bindingManager.Info("skip blocked property: {0}", property.Name);
                     continue;
@@ -485,7 +518,7 @@ namespace Duktape
                     bindingManager.Info("skip obsolete method: {0}", method);
                     continue;
                 }
-                if (bindingManager.IsTypeMemberBlocked(type, method.Name))
+                if (transform != null && transform.IsMemberBlocked(method.Name))
                 {
                     bindingManager.Info("skip blocked method: {0}", method.Name);
                     continue;

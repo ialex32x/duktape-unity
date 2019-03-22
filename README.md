@@ -14,7 +14,7 @@
 * 可使用 protobufjs
 
 # 特性支持 (未实现)
-* 支持在脚本层面扩展 MonoBehaviour
+* 支持在脚本层面扩展 MonoBehaviour 
 * 基本的 eventloop 支持
 * Android/iOS 支持 (热更)
 * socket (tcp/udp)
@@ -30,6 +30,10 @@ npm install -g typescript
 如果重新生成 duktape 源代码, 需要安装 python, pip, 以及 pyyaml
 ```shell
 pip install pyyaml
+
+# duktape-2.3.0/src-input: duktape source code
+# duktape-2.3.0/src-custom: combined duktape source code
+./configure_duktape.bat 
 ```
 
 # Example
@@ -41,14 +45,17 @@ import { B } from "base/b"
 // 相对路径导入模块
 import { C } from "./base/c"
 
-// 扩展 MonoBehaviour (not implemented)
-export class MyPlayer extends MonoBehaviour {
+class MyPlayer {
     Start() {
         console.log("MyPlayer.Start")
+        this.Jump()
     }
 
-    Jump() {
+    // Update() {
+    // }
 
+    Jump() {
+        console.log("MyPlayer.Jump")
     }
 }
 
@@ -57,7 +64,9 @@ export class A {
     constructor () {
         this.go = new GameObject("test go")
         this.go.transform.localPosition = new Vector3(1, 2, 3) // (not implemented)
-        this.go.AddComponent(MyPlayer) 
+        // 可以使用 Bridge 将 Enable/Disable/Update 等 Unity 流程引入脚本控制
+        // 不建议大量使用, 可以作为一个入口, 然后由脚本进行更复杂的逻辑
+        this.go.AddComponent(DuktapeJS.Bridge).SetBridge(new MyPlayer()) 
 
         let f = new Custom()
         // delegate 操作 
@@ -86,17 +95,63 @@ export class A {
         }, 5000, "Arg1", 123)
     }
 
-    test() {
-        let player = this.go.GetComponent(MyPlayer)
-        player.Jump()
-    }
-
     square() {
         console.log("A.square")
     }
 }
 
 ```
+
+# 状态 
+开发中, 修改调整幅度比较大, 暂不能用于生产环境.  <br/>
+Vector2/Matrix3x3/Matrix4x4/Quaternion 等类型的优化尚未写完, 无法正常使用. <br/>
+Vector3 基本写完, 还没测试正确性/差异性. <br/>
+
+# 使用方法
+
+Unity 执行菜单项 Duktape/Generate Bindings 可以生成静态绑定代码.
+
+
+## 定制导出类型
+
+* 通过配置
+创建/修改配置文件 ProjectSettings\duktape.json (具体可配置项参考 Assets\Duktape\Editor\Prefs.cs)
+```json
+{
+    "outDir": "Assets/Source/Generated",
+    "implicitAssemblies": [
+        "UnityEngine.CoreModule"
+    ], 
+    "explicitAssemblies": [
+        "Assembly-CSharp"
+    ],
+    "tab": "    "
+}
+```
+* 通过实现 Duktape.IBindingProcess 接口或直接继承 AbstractBindingProcess 类
+```c#
+public class MyCustomBinding : AbstractBindingProcess
+{
+    public override void OnPreCollectTypes(BindingManager bindingManager)
+    {
+        // 添加导出
+        // bindingManager.AddExport(typeof(MyCustomClass));
+    }
+
+    public override void OnCleanup(BindingManager bindingManager)
+    {
+        Debug.Log($"finish @ {DateTime.Now}");
+    }
+}
+```
+
+## 编写脚本
+基本用法可以参考 Assets/Scenes/main.unity (Sample.cs) <br/>
+使用 javascript 直接开发不需要额外配置, 如果使用 typescript 开发需要配置 tsconfig.json.  <br/>
+将自动生成的绑定代码目录配置到 typeRoots 中即可使用完整的代码提示. <br/>
+另外可以考虑开启 watch 自动编译 typescript. <br/>
+
+(后续会详细补充 protobufjs 等的使用方法)<br/>
 
 # 使用及参考的库
 

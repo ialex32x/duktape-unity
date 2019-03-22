@@ -12,3 +12,9 @@ print(n.x, n.y, n.z)
 n = Vector3.Mul(2, n)
 print("Mul", n.x, n.y, n.z)
 
+var v2 = new Vector3(-1, 2, 3)
+var t = 0
+for (var t = 0; t < 1; t += 0.1) {
+    var v3 = Vector3.Slerp(v1, v2, t)
+    print("v3", v3.x, v3.y, v3.z)
+}

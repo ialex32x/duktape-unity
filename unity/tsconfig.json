@@ -5,6 +5,7 @@
         "sourceRoot": "Assets/Scripts/Source",
         "outDir": "Assets/Scripts/Generated",
         "typeRoots": [
+            "Assets/Source/Generated",
             "Assets/Duktape/Generated",
             "Assets/Duktape/Typings",
             "Assets/Scripts/Typings"
