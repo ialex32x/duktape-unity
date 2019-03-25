@@ -242,9 +242,9 @@ namespace Duktape
 
         public string name; // 绑定代码名
 
-        public string Namespace; // js 命名空间
+        public string jsNamespace; // js 命名空间
 
-        public string regName; // js注册名
+        public string jsName; // js注册名
 
         public Dictionary<string, MethodBindingInfo> methods = new Dictionary<string, MethodBindingInfo>();
         public Dictionary<string, MethodBindingInfo> staticMethods = new Dictionary<string, MethodBindingInfo>();
@@ -255,6 +255,11 @@ namespace Duktape
         public Assembly Assembly
         {
             get { return type.Assembly; }
+        }
+
+        public string jsFullName
+        {
+            get { return string.IsNullOrEmpty(jsNamespace) ? jsName : jsNamespace + "." + jsName; }
         }
 
         public string FullName
@@ -283,46 +288,53 @@ namespace Duktape
             this.type = type;
             this.transform = bindingManager.GetTypeTransform(type);
             var naming = GetNamingAttribute(type);
-            if (naming != null)
+            var indexOfTypeName = naming.LastIndexOf('.');
+            if (indexOfTypeName >= 0) // 内部类
             {
-                var indexOfTypeName = naming.LastIndexOf('.');
-                if (indexOfTypeName >= 0)
-                {
-                    this.Namespace = naming.Substring(0, indexOfTypeName);
-                    this.regName = naming.Substring(indexOfTypeName + 1);
-                }
-                else
-                {
-                    if (type.DeclaringType != null)
-                    {
-                        this.Namespace = $"{type.Namespace}.{type.DeclaringType.Name}";
-                    }
-                    else
-                    {
-                        this.Namespace = type.Namespace;
-                    }
-                    this.regName = naming;
-                }
+                this.jsNamespace = naming.Substring(0, indexOfTypeName);
+                this.jsName = naming.Substring(indexOfTypeName + 1);
             }
             else
             {
                 if (type.DeclaringType != null)
                 {
-                    this.Namespace = $"{type.Namespace}.{type.DeclaringType.Name}";
+                    this.jsNamespace = $"{type.Namespace}.{type.DeclaringType.Name}";
                 }
                 else
                 {
-                    this.Namespace = type.Namespace;
+                    this.jsNamespace = type.Namespace;
                 }
-                this.regName = type.Name;
+
+                if (type.IsGenericType)
+                {
+                    this.jsName = naming.Substring(0, naming.IndexOf('`'));
+                    foreach (var gp in type.GetGenericArguments())
+                    {
+                        this.jsName += "_" + gp.Name;
+                    }
+                }
+                else
+                {
+                    this.jsName = naming;
+                }
             }
-            this.name = "DuktapeJS_" + type.FullName.Replace('.', '_').Replace('+', '_');
+            this.name = "DuktapeJS_" + (this.jsNamespace + "_" + this.jsName).Replace('.', '_').Replace('+', '_');
             this.constructors = new ConstructorBindingInfo(type);
         }
 
         // 将类型名转换成简单字符串 (比如用于文件名)
         public string GetFileName()
         {
+            if (type.IsGenericType)
+            {
+                var selfname = string.IsNullOrEmpty(type.Namespace) ? "" : (type.Namespace + "_");
+                selfname += type.Name.Substring(0, type.Name.IndexOf('`'));
+                foreach (var gp in type.GetGenericArguments())
+                {
+                    selfname += "_" + gp.Name;
+                }
+                return selfname.Replace(".", "_").Replace("<", "_").Replace(">", "_").Replace("`", "_");
+            }
             var filename = type.FullName.Replace(".", "_").Replace("<", "_").Replace(">", "_").Replace("`", "_");
             return filename;
         }
@@ -395,6 +407,14 @@ namespace Duktape
 
         public void AddConstructor(ConstructorInfo constructorInfo)
         {
+            if (this.transform != null)
+            {
+                if (this.transform.IsBlocked(constructorInfo))
+                {
+                    bindingManager.Info("skip blocked constructor: {0}", constructorInfo.Name);
+                    return;
+                }
+            }
             constructors.Add(constructorInfo);
             CollectDelegate(constructorInfo);
             this.bindingManager.Info("[AddConstructor] {0}.{1}", type, constructorInfo);

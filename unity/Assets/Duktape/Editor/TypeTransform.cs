@@ -62,11 +62,24 @@ namespace Duktape
             _memberBlacklist.Add(memberName);
         }
 
+        // 指定的方法是否被屏蔽
         public bool IsBlocked(MethodBase method)
         {
             return _blockedMethods.Contains(method);
         }
 
+        // 屏蔽指定签名的构造方法
+        public TypeTransform SetConstructorBlocked(params Type[] parameters)
+        {
+            var method = _type.GetConstructor(parameters);
+            if (method != null)
+            {
+                _blockedMethods.Add(method);
+            }
+            return this;
+        }
+
+        // 屏蔽指定名字与签名的方法
         public TypeTransform SetMethodBlocked(string name, params Type[] parameters)
         {
             var method = _type.GetMethod(name, parameters);

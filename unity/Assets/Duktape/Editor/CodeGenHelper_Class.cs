@@ -16,10 +16,10 @@ namespace Duktape
         {
             this.cg.AppendJSDoc(this.bindingInfo.type);
             var transform = this.bindingInfo.transform;
-            var prefix = this.bindingInfo.Namespace != null ? "" : "declare ";
+            var prefix = this.bindingInfo.jsNamespace != null ? "" : "declare ";
             var super = this.cg.bindingManager.GetTSSuperName(this.bindingInfo);
             var extends = string.IsNullOrEmpty(super) ? "" : $" extends {super}";
-            var regName = this.bindingInfo.regName;
+            var regName = this.bindingInfo.jsName;
             if (bindingInfo.type.IsAbstract)
             {
                 prefix += "abstract ";
@@ -187,7 +187,7 @@ namespace Duktape
                             cg.tsDeclare.AppendLine("protected constructor()");
                         }
                         cg.cs.AppendLine("duk_begin_class(ctx, \"{0}\", typeof({1}), {2});",
-                            bindingInfo.regName,
+                            bindingInfo.jsName,
                             this.cg.bindingManager.GetCSTypeFullName(bindingInfo.type),
                             constructor);
                         foreach (var kv in bindingInfo.methods)

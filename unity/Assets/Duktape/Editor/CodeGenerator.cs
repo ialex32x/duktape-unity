@@ -111,7 +111,7 @@ namespace Duktape
             {
                 using (new TopLevelCodeGen(this, typeBindingInfo))
                 {
-                    using (new NamespaceCodeGen(this, this.bindingManager.prefs.ns, typeBindingInfo.Namespace))
+                    using (new NamespaceCodeGen(this, this.bindingManager.prefs.ns, typeBindingInfo.jsNamespace))
                     {
                         if (typeBindingInfo.IsEnum)
                         {
