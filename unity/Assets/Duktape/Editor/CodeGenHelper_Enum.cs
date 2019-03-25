@@ -15,8 +15,8 @@ namespace Duktape
         : base(cg, type)
         {
             this.cg.AppendJSDoc(type.type);
-            var prefix = bindingInfo.Namespace != null ? "" : "declare ";
-            this.cg.tsDeclare.AppendLine("{0}enum {1} {{", prefix, bindingInfo.regName);
+            var prefix = bindingInfo.jsNamespace != null ? "" : "declare ";
+            this.cg.tsDeclare.AppendLine("{0}enum {1} {{", prefix, bindingInfo.jsName);
             this.cg.tsDeclare.AddTabLevel();
         }
 
@@ -29,7 +29,7 @@ namespace Duktape
                     using (new RegFuncNamespaceCodeGen(cg, bindingInfo))
                     {
                         this.cg.cs.AppendLine("duk_begin_enum(ctx, \"{0}\", typeof({1}));",
-                            bindingInfo.regName,
+                            bindingInfo.jsName,
                             this.cg.bindingManager.GetCSTypeFullName(bindingInfo.type));
                         var values = new Dictionary<string, int>();
                         foreach (var ev in Enum.GetValues(bindingInfo.type))

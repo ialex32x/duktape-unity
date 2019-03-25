@@ -15,7 +15,10 @@ namespace MyProject
         public override void OnPreCollectTypes(BindingManager bindingManager)
         {
             // 添加导出
-            // bindingManager.AddExport(typeof(MyCustomClass));
+            bindingManager.AddExportedType(typeof(List<String>));
+            // bindingManager.AddExportedType(typeof(Dictionary<String, String>))
+            //     .SetMethodBlocked("Remove", typeof(string), typeof(string));
+            //     ...
         }
 
         public override void OnCleanup(BindingManager bindingManager)

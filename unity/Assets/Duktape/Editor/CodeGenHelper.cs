@@ -122,9 +122,9 @@ namespace Duktape
             this.cg = cg;
             this.cg.cs.Append("duk_begin_namespace(ctx");
             // Debug.LogErrorFormat("{0}: {1}", bindingInfo.type, bindingInfo.Namespace);
-            if (bindingInfo.Namespace != null)
+            if (bindingInfo.jsNamespace != null)
             {
-                var split_ns = bindingInfo.Namespace.Split('.');
+                var split_ns = bindingInfo.jsNamespace.Split('.');
                 for (var i = 0; i < split_ns.Length; i++)
                 {
                     var el_ns = split_ns[i];

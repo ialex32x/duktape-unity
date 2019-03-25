@@ -303,15 +303,16 @@ namespace Duktape
         }
 
         // 增加导出类型 (需要在 Collect 阶段进行)
-        public bool AddExportedType(Type type)
+        //NOTE: editor mscorlib 与 runtime 存在差异, 需要手工 block 差异
+        public TypeTransform AddExportedType(Type type)
         {
             if (!exportedTypes.ContainsKey(type))
             {
                 var typeBindingInfo = new TypeBindingInfo(this, type);
                 exportedTypes.Add(type, typeBindingInfo);
-                return true;
+                log.AppendLine($"AddExportedType: {type} Assembly: {type.Assembly}");
             }
-            return false;
+            return TransformType(type);
         }
 
         public bool RemoveExportedType(Type type)
@@ -446,7 +447,7 @@ namespace Duktape
             var info = GetExportedType(type);
             if (info != null)
             {
-                return info.FullName.Replace('+', '.');
+                return info.jsFullName;
             }
             if (type.BaseType == typeof(MulticastDelegate))
             {
