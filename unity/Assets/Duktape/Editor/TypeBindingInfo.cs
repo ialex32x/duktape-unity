@@ -235,6 +235,11 @@ namespace Duktape
         public TypeTransform transform;
         public Type super { get { return type.BaseType; } } // 父类类型
 
+        public bool omit
+        {
+            get { return type.IsDefined(typeof(JSOmitAttribute)); }
+        }
+
         public string name; // 绑定代码名
 
         public string Namespace; // js 命名空间
@@ -365,12 +370,13 @@ namespace Duktape
                     return;
                 }
             }
-            var group = methodInfo.IsStatic ? staticMethods : methods;
+            var isStatic = methodInfo.IsStatic && !methodInfo.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute));
+            var group = isStatic ? staticMethods : methods;
             MethodBindingInfo overrides;
             var methodName = TypeBindingInfo.GetNamingAttribute(methodInfo);
             if (!group.TryGetValue(methodName, out overrides))
             {
-                overrides = new MethodBindingInfo(isIndexer, methodInfo.IsStatic, methodName, renameRegName ?? methodName);
+                overrides = new MethodBindingInfo(isIndexer, isStatic, methodName, renameRegName ?? methodName);
                 group.Add(methodName, overrides);
             }
             overrides.Add(methodInfo);

@@ -1090,11 +1090,14 @@ namespace Duktape
                         Warn("operation canceled");
                         break;
                     }
-                    cg.Clear();
-                    OnPreGenerateType(typeBindingInfo);
-                    cg.Generate(typeBindingInfo);
-                    OnPostGenerateType(typeBindingInfo);
-                    cg.WriteTo(outDir, typeBindingInfo.GetFileName(), tx);
+                    if (!typeBindingInfo.omit)
+                    {
+                        cg.Clear();
+                        OnPreGenerateType(typeBindingInfo);
+                        cg.Generate(typeBindingInfo);
+                        OnPostGenerateType(typeBindingInfo);
+                        cg.WriteTo(outDir, typeBindingInfo.GetFileName(), tx);
+                    }
                 }
                 catch (Exception exception)
                 {
