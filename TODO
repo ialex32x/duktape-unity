@@ -19,7 +19,7 @@
     ☐ websocket
     ☐ protobufjs
     ✔ !!! 索引访问 ($GetValue/$SetValue) @done(19-03-07 15:21)
-    ☐ !!! 扩展方法 @started(19-03-07 14:10)
+    ✔ !!! 扩展方法 @started(19-03-07 14:10) @done(19-03-25 14:02) @lasted(2w3d23h52m10s)
     ☐ Physcis.Raycast 等接口的调用优化
     ✔ push_delegate 尝试还原 js 对象 @done(19-03-07 14:10)
     ✔ 自动生成 Delegate 对应的 stub type var (== Dispatcher) @done(19-03-07 17:30)
