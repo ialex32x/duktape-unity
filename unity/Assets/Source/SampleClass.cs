@@ -259,9 +259,20 @@ public struct SampleStruct
     // }
 }
 
+[JSType]
+[JSOmit]
 public static class SampleStructExtensions
 {
-    public static void Foo(this SampleStruct self)
+    public static int Foo(this SampleStruct self, int a, int b, params int[] any)
     {
+        var sum = a + b;
+        if (any != null)
+        {
+            for (var i = 0; i < any.Length; i++)
+            {
+                sum += any[i];
+            }
+        }
+        return sum;
     }
 }

@@ -241,6 +241,11 @@ namespace Duktape
             {
                 return null;
             }
+            if (method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute)))
+            {
+                var parameters = method.GetParameters();
+                return AppendGetThisCS(false, parameters[0].ParameterType);
+            }
             return AppendGetThisCS(method.IsStatic, method.DeclaringType);
         }
 

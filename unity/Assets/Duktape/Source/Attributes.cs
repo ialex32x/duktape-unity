@@ -2,7 +2,7 @@ using System;
 
 namespace Duktape
 {
-    // 指定类型生成JS类型绑定代码
+    // 指定类型生成绑定代码
     [AttributeUsage(AttributeTargets.Class
                   | AttributeTargets.Struct
                   | AttributeTargets.Enum
@@ -10,6 +10,13 @@ namespace Duktape
                     AllowMultiple = false,
                     Inherited = false)]
     public class JSTypeAttribute : Attribute
+    {
+    }
+
+    [AttributeUsage(AttributeTargets.Class,
+                    AllowMultiple = false,
+                    Inherited = false)]
+    public class JSOmitAttribute : Attribute
     {
     }
 

@@ -78,7 +78,8 @@ namespace Duktape
         public string AppendGetParameters(bool hasParams, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
         {
             var arglist = "";
-            for (var i = 0; i < parameters.Length; i++)
+            var argBase = 0;
+            for (var i = argBase; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
                 if (parameter.IsOut && parameter.ParameterType.IsByRef)
@@ -295,6 +296,7 @@ namespace Duktape
 
         protected List<ParameterInfo> WriteTSDeclaration(T method, MethodBaseBindingInfo<T> bindingInfo)
         {
+            var isExtension = method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute));
             var refParameters = new List<ParameterInfo>();
             string tsMethodDeclaration;
             if (this.cg.bindingManager.GetTSMethodDeclaration(method, out tsMethodDeclaration))
@@ -306,12 +308,16 @@ namespace Duktape
             //      在 MethodVariant 中创建每个方法对应的TS类型名参数列表, 完全相同的不再输出
             this.cg.AppendJSDoc(method);
             var prefix = "";
-            if (method.IsStatic)
+            if (method.IsStatic && !isExtension)
             {
                 prefix = "static ";
             }
             this.cg.tsDeclare.Append($"{prefix}{bindingInfo.regName}(");
             var parameters = method.GetParameters();
+            if (isExtension)
+            {
+                ArrayUtility.RemoveAt(ref parameters, 0);
+            }
             for (var i = 0; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
@@ -365,6 +371,10 @@ namespace Duktape
         protected void WriteCSMethodBinding(T method, string argc, bool isVararg)
         {
             var parameters = method.GetParameters();
+            if (method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute)))
+            {
+                ArrayUtility.RemoveAt(ref parameters, 0);
+            }
             var parametersByRef = new List<ParameterInfo>();
             var caller = this.cg.AppendGetThisCS(method);
             var returnType = GetReturnType(method);
