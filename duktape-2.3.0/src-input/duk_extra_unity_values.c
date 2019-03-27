@@ -179,6 +179,28 @@ DUK_INTERNAL DUK_INLINE void m3x3_set_axis_angle(float* mat3x3, const float* vec
     mat3x3[2*3+2] = (one_c * zz) + c;
 }
 
+// UnityCG.cginc
+DUK_INTERNAL DUK_INLINE float unitycg_LinearToGammaSpaceExact(float value) {
+	if (value <= 0.0F)
+		return 0.0F;
+	else if (value <= 0.0031308F)
+		return 12.92F * value;
+	else if (value < 1.0F)
+		return 1.055F * powf(value, 0.4166667F) - 0.055F;
+	else
+		return powf(value, 0.45454545F);
+}
+
+DUK_INTERNAL DUK_INLINE float unitycg_GammaToLinearSpaceExact(float value) {
+	if (value <= 0.04045F)
+		return value / 12.92F;
+	else if (value < 1.0F)
+		return powf((value + 0.055F)/1.055F, 2.4F);
+	else
+		return powf(value, 2.2F);
+}
+
+
 DUK_LOCAL void duk_unity_Vector2_add_const(duk_context *ctx, duk_idx_t idx, const char *key, float x, float y) {
     idx = duk_normalize_index(ctx, idx);
     vec2_push_new(ctx, x, y);
@@ -362,6 +384,43 @@ DUK_LOCAL duk_ret_t duk_unity_Vector2_grayscale(duk_context *ctx) {
     duk_unity_get3f(ctx, -1, &a[0], &a[1], &a[2]);
     duk_pop(ctx);
     duk_push_number(ctx, 0.299F * a[0] + 0.587F * a[1] + 0.114F * a[2]);
+    return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_Vector2_linear(duk_context *ctx) {
+    float a[4];
+    duk_push_this(ctx);
+    duk_unity_get4f(ctx, -1, &a[0], &a[1], &a[2], a[3]);
+    duk_pop(ctx);
+    color_push_new(ctx, 
+        unitycg_GammaToLinearSpaceExact(a[0]),
+        unitycg_GammaToLinearSpaceExact(a[1]),
+        unitycg_GammaToLinearSpaceExact(a[2]), 
+        a[4]
+    );
+    return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_Vector2_gamma(duk_context *ctx) {
+    float a[4];
+    duk_push_this(ctx);
+    duk_unity_get4f(ctx, -1, &a[0], &a[1], &a[2], a[3]);
+    duk_pop(ctx);
+    color_push_new(ctx, 
+        unitycg_LinearToGammaSpaceExact(a[0]),
+        unitycg_LinearToGammaSpaceExact(a[1]),
+        unitycg_LinearToGammaSpaceExact(a[2]), 
+        a[4]
+    );
+    return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_Vector2_maxColorComponent(duk_context *ctx) {
+    float a[3];
+    duk_push_this(ctx);
+    duk_unity_get3f(ctx, -1, &a[0], &a[1], &a[2]);
+    duk_pop(ctx);
+    duk_push_number(ctx, fmax(fmax(a[0], a[1]), a[2]));
     return 1;
 }
 
@@ -1511,151 +1570,7 @@ DUK_EXTERNAL void duk_unity_push_color(duk_context *ctx, float r, float g, float
 DUK_INTERNAL void duk_unity_Vector3_open(duk_context *ctx) {
     duk_push_global_object(ctx);
     duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
-    {
-        duk_unity_begin_class(ctx, "Color", DUK_UNITY_BUILTINS_COLOR, duk_unity_Color_constructor, NULL);
-        duk_unity_add_member(ctx, "Add", duk_unity_Color_static_Add, -2);
-        duk_unity_add_member(ctx, "Sub", duk_unity_Color_static_Sub, -2);
-        duk_unity_add_member(ctx, "Neg", duk_unity_Color_static_Neg, -2);
-        duk_unity_add_member(ctx, "Mul", duk_unity_Color_static_Mul, -2);
-        duk_unity_add_member(ctx, "Div", duk_unity_Color_static_Div, -2);
-        duk_unity_add_member(ctx, "Inverse", duk_unity_Color_Inverse, -1);
-        duk_unity_add_member(ctx, "Equals", duk_unity_Color_static_Equals, -2);
-        duk_unity_add_member(ctx, "Equals", duk_unity_Color_Equals, -1);
-        duk_unity_add_member(ctx, "ToString", duk_unity_Color_ToString, -1);
-
-        duk_unity_add_member(ctx, "Lerp", duk_unity_Color_static_Lerp, -1);
-        duk_unity_add_member(ctx, "LerpUnclamped", duk_unity_Color_static_LerpUnclamped, -2);
-        
-        duk_unity_Color_add_const(ctx, -2, "red", 1.0F, 0.0F, 0.0F, 1.0F); 
-        duk_unity_Color_add_const(ctx, -2, "green", 0.0F, 1.0F, 0.0F, 1.0F); 
-        duk_unity_Color_add_const(ctx, -2, "blue", 0.0F, 0.0F, 1.0F, 1.0F); 
-        duk_unity_Color_add_const(ctx, -2, "white", 1.0F, 1.0F, 1.0F, 1.0F); 
-        duk_unity_Color_add_const(ctx, -2, "black", 0.0F, 0.0F, 0.0F, 1.0F); 
-        duk_unity_Color_add_const(ctx, -2, "yellow", 1.0F, 235.0F / 255.0F, 4.0F / 255.0F, 1.0F); 
-        duk_unity_Color_add_const(ctx, -2, "cyan", 0.0F, 1.0F, 1.0F, 1.0F); 
-        duk_unity_Color_add_const(ctx, -2, "magenta", 1.0F, 0.0F, 1.0F, 1.0F); 
-        duk_unity_Color_add_const(ctx, -2, "gray", 0.5F, 0.5F, 0.5F, 1.0F); 
-        duk_unity_Color_add_const(ctx, -2, "grey", 0.5F, 0.5F, 0.5F, 1.0F); 
-        duk_unity_Color_add_const(ctx, -2, "clear", 0.0F, 0.0F, 0.0F, 0.0F); 
-        duk_unity_add_property(ctx, "grayscale", duk_unity_Vector2_grayscale, NULL, -1);
-        // static RGBToHSV(rgbColor: UnityEngine.Color, H: DuktapeJS.Out<number>, S: DuktapeJS.Out<number>, V: DuktapeJS.Out<number>): void
-        // static HSVToRGB(H: number, S: number, V: number, hdr: boolean): UnityEngine.Color
-        // static HSVToRGB(H: number, S: number, V: number): UnityEngine.Color
-        // readonly linear: UnityEngine.Color
-        // readonly gamma: UnityEngine.Color
-        // readonly maxColorComponent: number
-        
-        duk_unity_end_class(ctx);
-    }
-    {
-        duk_unity_begin_class(ctx, "Color32", DUK_UNITY_BUILTINS_COLOR32, duk_unity_Color32_constructor, NULL);
-        // static Lerp(a: UnityEngine.Color32, b: UnityEngine.Color32, t: number): UnityEngine.Color32
-        // static LerpUnclamped(a: UnityEngine.Color32, b: UnityEngine.Color32, t: number): UnityEngine.Color32
-        // r: number
-        // g: number
-        // b: number
-        // a: number
-        duk_unity_end_class(ctx);
-    }
-    {
-        duk_unity_begin_class(ctx, "Matrix4x4", DUK_UNITY_BUILTINS_MATRIX44, duk_unity_Matrix4x4_constructor, NULL);
-        // $GetValue(row: number, column: number): number
-        // $GetValue(index: number): number
-        // $SetValue(row: number, column: number, value: number): void
-        // $SetValue(index: number, value: number): void
-        // ValidTRS(): boolean
-        // SetTRS(pos: UnityEngine.Vector3, q: UnityEngine.Quaternion, s: UnityEngine.Vector3): void
-        // GetHashCode(): number
-        // Equals(other: System.Object): boolean
-        // Equals(other: UnityEngine.Matrix4x4): boolean
-        // GetColumn(index: number): UnityEngine.Vector4
-        // GetRow(index: number): UnityEngine.Vector4
-        // SetColumn(index: number, column: UnityEngine.Vector4): void
-        // SetRow(index: number, row: UnityEngine.Vector4): void
-        // MultiplyPoint(point: UnityEngine.Vector3): UnityEngine.Vector3
-        // MultiplyPoint3x4(point: UnityEngine.Vector3): UnityEngine.Vector3
-        // MultiplyVector(vector: UnityEngine.Vector3): UnityEngine.Vector3
-        // TransformPlane(plane: UnityEngine.Plane): UnityEngine.Plane
-        // ToString(format: string): string
-        // ToString(): string
-        // static Determinant(m: UnityEngine.Matrix4x4): number
-        // static TRS(pos: UnityEngine.Vector3, q: UnityEngine.Quaternion, s: UnityEngine.Vector3): UnityEngine.Matrix4x4
-        // static Inverse(m: UnityEngine.Matrix4x4): UnityEngine.Matrix4x4
-        // static Transpose(m: UnityEngine.Matrix4x4): UnityEngine.Matrix4x4
-        // static Ortho(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): UnityEngine.Matrix4x4
-        // static Perspective(fov: number, aspect: number, zNear: number, zFar: number): UnityEngine.Matrix4x4
-        // static LookAt(from: UnityEngine.Vector3, to: UnityEngine.Vector3, up: UnityEngine.Vector3): UnityEngine.Matrix4x4
-        // static Frustum(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): UnityEngine.Matrix4x4
-        // static Frustum(fp: UnityEngine.FrustumPlanes): UnityEngine.Matrix4x4
-        // static Scale(vector: UnityEngine.Vector3): UnityEngine.Matrix4x4
-        // static Translate(vector: UnityEngine.Vector3): UnityEngine.Matrix4x4
-        // static Rotate(q: UnityEngine.Quaternion): UnityEngine.Matrix4x4
-        // readonly rotation: UnityEngine.Quaternion
-        // readonly lossyScale: UnityEngine.Vector3
-        // readonly isIdentity: boolean
-        // readonly determinant: number
-        // readonly decomposeProjection: UnityEngine.FrustumPlanes
-        // readonly inverse: UnityEngine.Matrix4x4
-        // readonly transpose: UnityEngine.Matrix4x4
-        // readonly zero: UnityEngine.Matrix4x4
-        // readonly identity: UnityEngine.Matrix4x4
-        // m00: number
-        // m10: number
-        // m20: number
-        // m30: number
-        // m01: number
-        // m11: number
-        // m21: number
-        // m31: number
-        // m02: number
-        // m12: number
-        // m22: number
-        // m32: number
-        // m03: number
-        // m13: number
-        // m23: number
-        // m33: number
-        duk_unity_end_class(ctx);
-    }
-    {
-        duk_unity_begin_class(ctx, "Quaternion", DUK_UNITY_BUILTINS_QUATERNION, duk_unity_Quaternion_constructor, NULL);
-        duk_unity_add_member(ctx, "Set", duk_unity_Quaternion_Set, -1);
-        // SetLookRotation(view: UnityEngine.Vector3, up: UnityEngine.Vector3): void
-        // SetLookRotation(view: UnityEngine.Vector3): void
-        // ToAngleAxis(angle: DuktapeJS.Out<number>, axis: DuktapeJS.Out<UnityEngine.Vector3>): void
-        // SetFromToRotation(fromDirection: UnityEngine.Vector3, toDirection: UnityEngine.Vector3): void
-        // Normalize(): void
-        // GetHashCode(): number
-        // Equals(other: System.Object): boolean
-        // Equals(other: UnityEngine.Quaternion): boolean
-        // ToString(format: string): string
-        // ToString(): string
-        // static FromToRotation(fromDirection: UnityEngine.Vector3, toDirection: UnityEngine.Vector3): UnityEngine.Quaternion
-        // static Inverse(rotation: UnityEngine.Quaternion): UnityEngine.Quaternion
-        // static Slerp(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion, t: number): UnityEngine.Quaternion
-        // static SlerpUnclamped(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion, t: number): UnityEngine.Quaternion
-        // static Lerp(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion, t: number): UnityEngine.Quaternion
-        // static LerpUnclamped(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion, t: number): UnityEngine.Quaternion
-        // static AngleAxis(angle: number, axis: UnityEngine.Vector3): UnityEngine.Quaternion
-        // static LookRotation(forward: UnityEngine.Vector3, upwards: UnityEngine.Vector3): UnityEngine.Quaternion
-        // static LookRotation(forward: UnityEngine.Vector3): UnityEngine.Quaternion
-        // static Dot(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion): number
-        // static Angle(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion): number
-        // static Euler(x: number, y: number, z: number): UnityEngine.Quaternion
-        // static Euler(euler: UnityEngine.Vector3): UnityEngine.Quaternion
-        // static RotateTowards(from: UnityEngine.Quaternion, to: UnityEngine.Quaternion, maxDegreesDelta: number): UnityEngine.Quaternion
-        // static Normalize(q: UnityEngine.Quaternion): UnityEngine.Quaternion
-        // readonly identity: UnityEngine.Quaternion
-        // eulerAngles: UnityEngine.Vector3
-        // readonly normalized: UnityEngine.Quaternion
-        // x: number
-        // y: number
-        // z: number
-        // w: number
-        // static readonly kEpsilon: number
-
-        duk_unity_end_class(ctx);
-    }
+    
     {
         duk_unity_begin_class(ctx, "Vector2", DUK_UNITY_BUILTINS_VECTOR2, duk_unity_Vector2_constructor, NULL);
 
@@ -1870,6 +1785,151 @@ DUK_INTERNAL void duk_unity_Vector3_open(duk_context *ctx) {
         // y: number
         // z: number
         // w: number
+        duk_unity_end_class(ctx);
+    }
+    {
+        duk_unity_begin_class(ctx, "Quaternion", DUK_UNITY_BUILTINS_QUATERNION, duk_unity_Quaternion_constructor, NULL);
+        duk_unity_add_member(ctx, "Set", duk_unity_Quaternion_Set, -1);
+        // SetLookRotation(view: UnityEngine.Vector3, up: UnityEngine.Vector3): void
+        // SetLookRotation(view: UnityEngine.Vector3): void
+        // ToAngleAxis(angle: DuktapeJS.Out<number>, axis: DuktapeJS.Out<UnityEngine.Vector3>): void
+        // SetFromToRotation(fromDirection: UnityEngine.Vector3, toDirection: UnityEngine.Vector3): void
+        // Normalize(): void
+        // GetHashCode(): number
+        // Equals(other: System.Object): boolean
+        // Equals(other: UnityEngine.Quaternion): boolean
+        // ToString(format: string): string
+        // ToString(): string
+        // static FromToRotation(fromDirection: UnityEngine.Vector3, toDirection: UnityEngine.Vector3): UnityEngine.Quaternion
+        // static Inverse(rotation: UnityEngine.Quaternion): UnityEngine.Quaternion
+        // static Slerp(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion, t: number): UnityEngine.Quaternion
+        // static SlerpUnclamped(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion, t: number): UnityEngine.Quaternion
+        // static Lerp(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion, t: number): UnityEngine.Quaternion
+        // static LerpUnclamped(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion, t: number): UnityEngine.Quaternion
+        // static AngleAxis(angle: number, axis: UnityEngine.Vector3): UnityEngine.Quaternion
+        // static LookRotation(forward: UnityEngine.Vector3, upwards: UnityEngine.Vector3): UnityEngine.Quaternion
+        // static LookRotation(forward: UnityEngine.Vector3): UnityEngine.Quaternion
+        // static Dot(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion): number
+        // static Angle(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion): number
+        // static Euler(x: number, y: number, z: number): UnityEngine.Quaternion
+        // static Euler(euler: UnityEngine.Vector3): UnityEngine.Quaternion
+        // static RotateTowards(from: UnityEngine.Quaternion, to: UnityEngine.Quaternion, maxDegreesDelta: number): UnityEngine.Quaternion
+        // static Normalize(q: UnityEngine.Quaternion): UnityEngine.Quaternion
+        // readonly identity: UnityEngine.Quaternion
+        // eulerAngles: UnityEngine.Vector3
+        // readonly normalized: UnityEngine.Quaternion
+        // x: number
+        // y: number
+        // z: number
+        // w: number
+        // static readonly kEpsilon: number
+
+        duk_unity_end_class(ctx);
+    }
+    {
+        duk_unity_begin_class(ctx, "Color", DUK_UNITY_BUILTINS_COLOR, duk_unity_Color_constructor, NULL);
+        duk_unity_add_member(ctx, "Add", duk_unity_Color_static_Add, -2);
+        duk_unity_add_member(ctx, "Sub", duk_unity_Color_static_Sub, -2);
+        duk_unity_add_member(ctx, "Neg", duk_unity_Color_static_Neg, -2);
+        duk_unity_add_member(ctx, "Mul", duk_unity_Color_static_Mul, -2);
+        duk_unity_add_member(ctx, "Div", duk_unity_Color_static_Div, -2);
+        duk_unity_add_member(ctx, "Inverse", duk_unity_Color_Inverse, -1);
+        duk_unity_add_member(ctx, "Equals", duk_unity_Color_static_Equals, -2);
+        duk_unity_add_member(ctx, "Equals", duk_unity_Color_Equals, -1);
+        duk_unity_add_member(ctx, "ToString", duk_unity_Color_ToString, -1);
+
+        duk_unity_add_member(ctx, "Lerp", duk_unity_Color_static_Lerp, -1);
+        duk_unity_add_member(ctx, "LerpUnclamped", duk_unity_Color_static_LerpUnclamped, -2);
+        
+        duk_unity_Color_add_const(ctx, -2, "red", 1.0F, 0.0F, 0.0F, 1.0F); 
+        duk_unity_Color_add_const(ctx, -2, "green", 0.0F, 1.0F, 0.0F, 1.0F); 
+        duk_unity_Color_add_const(ctx, -2, "blue", 0.0F, 0.0F, 1.0F, 1.0F); 
+        duk_unity_Color_add_const(ctx, -2, "white", 1.0F, 1.0F, 1.0F, 1.0F); 
+        duk_unity_Color_add_const(ctx, -2, "black", 0.0F, 0.0F, 0.0F, 1.0F); 
+        duk_unity_Color_add_const(ctx, -2, "yellow", 1.0F, 235.0F / 255.0F, 4.0F / 255.0F, 1.0F); 
+        duk_unity_Color_add_const(ctx, -2, "cyan", 0.0F, 1.0F, 1.0F, 1.0F); 
+        duk_unity_Color_add_const(ctx, -2, "magenta", 1.0F, 0.0F, 1.0F, 1.0F); 
+        duk_unity_Color_add_const(ctx, -2, "gray", 0.5F, 0.5F, 0.5F, 1.0F); 
+        duk_unity_Color_add_const(ctx, -2, "grey", 0.5F, 0.5F, 0.5F, 1.0F); 
+        duk_unity_Color_add_const(ctx, -2, "clear", 0.0F, 0.0F, 0.0F, 0.0F); 
+        duk_unity_add_property(ctx, "grayscale", duk_unity_Vector2_grayscale, NULL, -1);
+        // static RGBToHSV(rgbColor: UnityEngine.Color, H: DuktapeJS.Out<number>, S: DuktapeJS.Out<number>, V: DuktapeJS.Out<number>): void
+        // static HSVToRGB(H: number, S: number, V: number, hdr: boolean): UnityEngine.Color
+        // static HSVToRGB(H: number, S: number, V: number): UnityEngine.Color
+        duk_unity_add_property(ctx, "linear", duk_unity_Vector2_linear, NULL, -1);
+        duk_unity_add_property(ctx, "gamma", duk_unity_Vector2_gamma, NULL, -1);
+        duk_unity_add_property(ctx, "maxColorComponent", duk_unity_Vector2_maxColorComponent, NULL, -1);
+        
+        duk_unity_end_class(ctx);
+    }
+    {
+        duk_unity_begin_class(ctx, "Color32", DUK_UNITY_BUILTINS_COLOR32, duk_unity_Color32_constructor, NULL);
+        // static Lerp(a: UnityEngine.Color32, b: UnityEngine.Color32, t: number): UnityEngine.Color32
+        // static LerpUnclamped(a: UnityEngine.Color32, b: UnityEngine.Color32, t: number): UnityEngine.Color32
+        // r: number
+        // g: number
+        // b: number
+        // a: number
+        duk_unity_end_class(ctx);
+    }
+    {
+        duk_unity_begin_class(ctx, "Matrix4x4", DUK_UNITY_BUILTINS_MATRIX44, duk_unity_Matrix4x4_constructor, NULL);
+        // $GetValue(row: number, column: number): number
+        // $GetValue(index: number): number
+        // $SetValue(row: number, column: number, value: number): void
+        // $SetValue(index: number, value: number): void
+        // ValidTRS(): boolean
+        // SetTRS(pos: UnityEngine.Vector3, q: UnityEngine.Quaternion, s: UnityEngine.Vector3): void
+        // GetHashCode(): number
+        // Equals(other: System.Object): boolean
+        // Equals(other: UnityEngine.Matrix4x4): boolean
+        // GetColumn(index: number): UnityEngine.Vector4
+        // GetRow(index: number): UnityEngine.Vector4
+        // SetColumn(index: number, column: UnityEngine.Vector4): void
+        // SetRow(index: number, row: UnityEngine.Vector4): void
+        // MultiplyPoint(point: UnityEngine.Vector3): UnityEngine.Vector3
+        // MultiplyPoint3x4(point: UnityEngine.Vector3): UnityEngine.Vector3
+        // MultiplyVector(vector: UnityEngine.Vector3): UnityEngine.Vector3
+        // TransformPlane(plane: UnityEngine.Plane): UnityEngine.Plane
+        // ToString(format: string): string
+        // ToString(): string
+        // static Determinant(m: UnityEngine.Matrix4x4): number
+        // static TRS(pos: UnityEngine.Vector3, q: UnityEngine.Quaternion, s: UnityEngine.Vector3): UnityEngine.Matrix4x4
+        // static Inverse(m: UnityEngine.Matrix4x4): UnityEngine.Matrix4x4
+        // static Transpose(m: UnityEngine.Matrix4x4): UnityEngine.Matrix4x4
+        // static Ortho(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): UnityEngine.Matrix4x4
+        // static Perspective(fov: number, aspect: number, zNear: number, zFar: number): UnityEngine.Matrix4x4
+        // static LookAt(from: UnityEngine.Vector3, to: UnityEngine.Vector3, up: UnityEngine.Vector3): UnityEngine.Matrix4x4
+        // static Frustum(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): UnityEngine.Matrix4x4
+        // static Frustum(fp: UnityEngine.FrustumPlanes): UnityEngine.Matrix4x4
+        // static Scale(vector: UnityEngine.Vector3): UnityEngine.Matrix4x4
+        // static Translate(vector: UnityEngine.Vector3): UnityEngine.Matrix4x4
+        // static Rotate(q: UnityEngine.Quaternion): UnityEngine.Matrix4x4
+        // readonly rotation: UnityEngine.Quaternion
+        // readonly lossyScale: UnityEngine.Vector3
+        // readonly isIdentity: boolean
+        // readonly determinant: number
+        // readonly decomposeProjection: UnityEngine.FrustumPlanes
+        // readonly inverse: UnityEngine.Matrix4x4
+        // readonly transpose: UnityEngine.Matrix4x4
+        // readonly zero: UnityEngine.Matrix4x4
+        // readonly identity: UnityEngine.Matrix4x4
+        // m00: number
+        // m10: number
+        // m20: number
+        // m30: number
+        // m01: number
+        // m11: number
+        // m21: number
+        // m31: number
+        // m02: number
+        // m12: number
+        // m22: number
+        // m32: number
+        // m03: number
+        // m13: number
+        // m23: number
+        // m33: number
         duk_unity_end_class(ctx);
     }
     duk_pop_2(ctx); // pop DuktapeJS and global
