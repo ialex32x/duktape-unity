@@ -226,9 +226,20 @@ namespace Duktape
             duk_add_method(ctx, "clearTimeout", ClearTimer, -1);
         }
 
-        private static void replace_by_builtin(IntPtr ctx, string t) 
+        private const uint DUK_UNITY_BUILTINS_VECTOR2 = 0;
+        private const uint DUK_UNITY_BUILTINS_VECTOR2I = 1;
+        private const uint DUK_UNITY_BUILTINS_VECTOR3 = 2;
+        private const uint DUK_UNITY_BUILTINS_VECTOR3I = 3;
+        private const uint DUK_UNITY_BUILTINS_VECTOR4 = 4;
+        private const uint DUK_UNITY_BUILTINS_QUATERNION = 5;
+        private const uint DUK_UNITY_BUILTINS_COLOR = 6;
+        private const uint DUK_UNITY_BUILTINS_COLOR32 = 7;
+        private const uint DUK_UNITY_BUILTINS_MATRIX33 = 8;
+        private const uint DUK_UNITY_BUILTINS_MATRIX44 = 9;
+
+        private static void replace_by_builtin(IntPtr ctx, string t, uint k) 
         {
-            DuktapeDLL.duk_builtins_reg_get(ctx, t);
+            DuktapeDLL.duk_builtins_reg_get(ctx, k);
             DuktapeDLL.duk_get_prop_string(ctx, -2, t);
             DuktapeDLL.duk_put_prop_string(ctx, -2, "_raw");
             DuktapeDLL.duk_put_prop_string(ctx, -2, t); 
@@ -237,10 +248,16 @@ namespace Duktape
         public static void postreg(IntPtr ctx)
         {
             duk_begin_namespace(ctx, "UnityEngine");
-            replace_by_builtin(ctx, "Vector2");
-            replace_by_builtin(ctx, "Vector3");
-            replace_by_builtin(ctx, "Quaternion");
-            replace_by_builtin(ctx, "Color");
+            replace_by_builtin(ctx, "Vector2", DUK_UNITY_BUILTINS_VECTOR2);
+            replace_by_builtin(ctx, "Vector2Int", DUK_UNITY_BUILTINS_VECTOR2I);
+            replace_by_builtin(ctx, "Vector3", DUK_UNITY_BUILTINS_VECTOR3);
+            replace_by_builtin(ctx, "Vector3Int", DUK_UNITY_BUILTINS_VECTOR3I);
+            replace_by_builtin(ctx, "Vector4", DUK_UNITY_BUILTINS_VECTOR4);
+            replace_by_builtin(ctx, "Quaternion", DUK_UNITY_BUILTINS_QUATERNION);
+            replace_by_builtin(ctx, "Color", DUK_UNITY_BUILTINS_COLOR);
+            replace_by_builtin(ctx, "Color32", DUK_UNITY_BUILTINS_COLOR32);
+            replace_by_builtin(ctx, "Matrix3x3", DUK_UNITY_BUILTINS_MATRIX33);
+            // replace_by_builtin(ctx, "Matrix4x4");
             duk_end_namespace(ctx);
         }
     }
