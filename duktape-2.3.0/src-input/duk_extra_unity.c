@@ -23,14 +23,14 @@ DUK_EXTERNAL void duk_builtins_reg_put(duk_context *ctx, duk_uarridx_t key) {
     duk_push_heap_stash(ctx);
     duk_get_prop_index(ctx, -1, DUK_UNITY_STASH_BUILTINS); //duk_get_prop_string(ctx, -1, "c_builtins"); // obj, stash, builtins
     duk_dup(ctx, -3); // obj, stash, builtins, obj
-    duk_put_prop_string(ctx, -2, key); // obj, stash, builtins
+    duk_put_prop_index(ctx, -2, key); // obj, stash, builtins
     duk_pop_3(ctx);
 }
 
 DUK_EXTERNAL void duk_builtins_reg_get(duk_context *ctx, duk_uarridx_t key) {
     duk_push_heap_stash(ctx);
     duk_get_prop_index(ctx, -1, DUK_UNITY_STASH_BUILTINS); //duk_get_prop_string(ctx, -1, "c_builtins"); // stash, builtins
-    duk_get_prop_string(ctx, -1, key); // stash, builtins, obj
+    duk_put_prop_index(ctx, -1, key); // stash, builtins, obj
     duk_remove(ctx, -2);
     duk_remove(ctx, -2);
 }

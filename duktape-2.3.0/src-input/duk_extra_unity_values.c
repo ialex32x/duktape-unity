@@ -56,14 +56,14 @@ DUK_INTERNAL DUK_INLINE void vec2_move_towards(const float* current, const float
 }
 
 DUK_INTERNAL DUK_INLINE void vec2_push_new(duk_context *ctx, float x, float y) {
-    duk_builtins_reg_get(ctx, "Vector2");
+    duk_builtins_reg_get(ctx, DUK_UNITY_BUILTINS_VECTOR2);
     duk_push_number(ctx, x);
     duk_push_number(ctx, y);
     duk_new(ctx, 2);
 }
 
 DUK_INTERNAL DUK_INLINE void vec3_push_new(duk_context *ctx, float x, float y, float z) {
-    duk_builtins_reg_get(ctx, "Vector3");
+    duk_builtins_reg_get(ctx, DUK_UNITY_BUILTINS_VECTOR3);
     duk_push_number(ctx, x);
     duk_push_number(ctx, y);
     duk_push_number(ctx, z);
@@ -71,7 +71,7 @@ DUK_INTERNAL DUK_INLINE void vec3_push_new(duk_context *ctx, float x, float y, f
 }
 
 DUK_INTERNAL DUK_INLINE void quaternion_push_new(duk_context *ctx, float x, float y, float z, float w) {
-    duk_builtins_reg_get(ctx, "Quaternion");
+    duk_builtins_reg_get(ctx, DUK_UNITY_BUILTINS_QUATERNION);
     duk_push_number(ctx, x);
     duk_push_number(ctx, y);
     duk_push_number(ctx, z);
@@ -80,7 +80,7 @@ DUK_INTERNAL DUK_INLINE void quaternion_push_new(duk_context *ctx, float x, floa
 }
 
 DUK_INTERNAL DUK_INLINE void color_push_new(duk_context *ctx, float r, float g, float b, float a) {
-    duk_builtins_reg_get(ctx, "Color");
+    duk_builtins_reg_get(ctx, DUK_UNITY_BUILTINS_COLOR);
     duk_push_number(ctx, r);
     duk_push_number(ctx, g);
     duk_push_number(ctx, b);
@@ -216,9 +216,11 @@ DUK_LOCAL duk_ret_t duk_unity_color_static_Neg(duk_context *ctx) {
 }
 
 DUK_LOCAL duk_ret_t duk_unity_color_Inverse(duk_context *ctx) {
+    float a[4];
     duk_push_this(ctx);
     duk_unity_get4f(ctx, -1, &a[0], &a[1], &a[2], &a[3]);
-    duk_unity_put4f(ctx, 1.0F / a[0], 1.0F / a[1], 1.0F / a[2], 1.0F / a[3]);
+    duk_unity_put4f(ctx, -1, 1.0F / a[0], 1.0F / a[1], 1.0F / a[2], 1.0F / a[3]);
+    duk_pop(ctx);
     return 0;
 }
 
@@ -241,8 +243,8 @@ DUK_LOCAL duk_ret_t duk_unity_color_static_Div(duk_context *ctx) {
 }
 
 DUK_LOCAL duk_ret_t duk_unity_color_static_Equals(duk_context *ctx) {
-    float a;
-    float b;
+    float a[4];
+    float b[4];
     duk_unity_get4f(ctx, 0, &a[0], &a[1], &a[2], &a[3]);
     duk_unity_get4f(ctx, 1, &b[0], &b[1], &b[2], &b[3]);
     duk_push_boolean(ctx, a[0] == b[0] && a[1] == b[1] && a[2] == b[2] && a[3] == b[3]);
@@ -250,12 +252,22 @@ DUK_LOCAL duk_ret_t duk_unity_color_static_Equals(duk_context *ctx) {
 }
 
 DUK_LOCAL duk_ret_t duk_unity_color_Equals(duk_context *ctx) {
-    float b;
+    float a[4];
+    float b[4];
     duk_push_this(ctx);
     duk_unity_get4f(ctx, -1, &a[0], &a[1], &a[2], &a[3]);
     duk_unity_get4f(ctx, 0, &b[0], &b[1], &b[2], &b[3]);
     duk_pop(ctx);
     duk_push_boolean(ctx, a[0] == b[0] && a[1] == b[1] && a[2] == b[2] && a[3] == b[3]);
+    return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_color_ToString(duk_context *ctx) {
+    float a[4];
+    duk_push_this(ctx);
+    duk_unity_get4f(ctx, -1, &a[0], &a[1], &a[2], &a[3]);
+    duk_pop(ctx);
+    duk_push_sprintf(ctx, "RGBA(%f, %f, %f, %f)", a[0], a[1], a[2], a[3]);
     return 1;
 }
 
@@ -835,11 +847,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_smoothDamp(duk_context *ctx) {
     duk_put_prop_index(ctx, 2, 1);
     duk_push_number(ctx, currentVelocity_z);
     duk_put_prop_index(ctx, 2, 2);
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, output_x);
-    duk_push_number(ctx, output_y);
-    duk_push_number(ctx, output_z);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, output_x, output_y, output_z);
     return 1;
 }
 
@@ -848,11 +856,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_Add(duk_context *ctx) {
     float rhsx, rhsy, rhsz;
     duk_unity_get3f(ctx, 0, &lhsx, &lhsy, &lhsz);
     duk_unity_get3f(ctx, 1, &rhsx, &rhsy, &rhsz);
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, lhsx + rhsx);
-    duk_push_number(ctx, lhsy + rhsy);
-    duk_push_number(ctx, lhsz + rhsz);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, lhsx + rhsx, lhsy + rhsy, lhsz + rhsz);
     return 1;
 }
 
@@ -861,22 +865,14 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_Sub(duk_context *ctx) {
     float rhsx, rhsy, rhsz;
     duk_unity_get3f(ctx, 0, &lhsx, &lhsy, &lhsz);
     duk_unity_get3f(ctx, 1, &rhsx, &rhsy, &rhsz);
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, lhsx - rhsx);
-    duk_push_number(ctx, lhsy - rhsy);
-    duk_push_number(ctx, lhsz - rhsz);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, lhsx - rhsx, lhsy - rhsy, lhsz - rhsz);
     return 1;
 }
 
 DUK_LOCAL duk_ret_t duk_unity_vector3_static_Neg(duk_context *ctx) {
     float lhsx, lhsy, lhsz;
     duk_unity_get3f(ctx, 0, &lhsx, &lhsy, &lhsz);
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, -lhsx);
-    duk_push_number(ctx, -lhsy);
-    duk_push_number(ctx, -lhsz);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, -lhsx, -lhsy, -lhsz);
     return 1;
 }
 
@@ -942,11 +938,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_Div(duk_context *ctx) {
         duk_unity_get3f(ctx, 0, &lhsx, &lhsy, &lhsz);
         f = 1.0f / (float)duk_get_number_default(ctx, 1, 0.0);
     }
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, lhsx * f);
-    duk_push_number(ctx, lhsy * f);
-    duk_push_number(ctx, lhsz * f);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, lhsx * f, lhsy * f, lhsz * f);
     return 1;
 }
 
@@ -977,11 +969,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_scale(duk_context *ctx) {
     float rhsx, rhsy, rhsz;
     duk_unity_get3f(ctx, 0, &lhsx, &lhsy, &lhsz);
     duk_unity_get3f(ctx, 1, &rhsx, &rhsy, &rhsz);
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, lhsx * rhsx);
-    duk_push_number(ctx, lhsy * rhsy);
-    duk_push_number(ctx, lhsz * rhsz);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, lhsx * rhsx, lhsy * rhsy, lhsz * rhsz);
     return 1;
 }
 
@@ -990,11 +978,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_cross(duk_context *ctx) {
     float rhsx, rhsy, rhsz;
     duk_unity_get3f(ctx, 0, &lhsx, &lhsy, &lhsz);
     duk_unity_get3f(ctx, 1, &rhsx, &rhsy, &rhsz);
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, lhsy * rhsz - lhsz * rhsy);
-    duk_push_number(ctx, lhsz * rhsx - lhsx * rhsz);
-    duk_push_number(ctx, lhsx * rhsy - lhsy * rhsx);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, lhsy * rhsz - lhsz * rhsy, lhsz * rhsx - lhsx * rhsz, lhsx * rhsy - lhsy * rhsx);
     return 1;
 }
 
@@ -1059,21 +1043,13 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_Slerp(duk_context *ctx) {
     float lhsMag = sqrtf(lhs[0] * lhs[0] + lhs[1] * lhs[1] + lhs[2] * lhs[2]);
     float rhsMag = sqrtf(rhs[0] * rhs[0] + rhs[1] * rhs[1] + rhs[2] * rhs[2]);
     if (lhsMag < UNITY_VECTOR3_kEpsilon || rhsMag < UNITY_VECTOR3_kEpsilon) {
-        duk_builtins_reg_get(ctx, "Vector3");
-        duk_push_number(ctx, lhs[0] + (rhs[0] - lhs[0]) * t);
-        duk_push_number(ctx, lhs[1] + (rhs[1] - lhs[1]) * t);
-        duk_push_number(ctx, lhs[2] + (rhs[2] - lhs[2]) * t);
-        duk_new(ctx, 3);
+        vec3_push_new(ctx, lhs[0] + (rhs[0] - lhs[0]) * t, lhs[1] + (rhs[1] - lhs[1]) * t, lhs[2] + (rhs[2] - lhs[2]) * t);
         return 1;
     }
     float lerpedMag = lhsMag + (rhsMag - lhsMag) * t;
     float dot = (lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2]) / (lhsMag * rhsMag);
     if (dot > 1.0f - UNITY_VECTOR3_kEpsilon) {
-        duk_builtins_reg_get(ctx, "Vector3");
-        duk_push_number(ctx, lhs[0] + (rhs[0] - lhs[0]) * t);
-        duk_push_number(ctx, lhs[1] + (rhs[1] - lhs[1]) * t);
-        duk_push_number(ctx, lhs[2] + (rhs[2] - lhs[2]) * t);
-        duk_new(ctx, 3);
+        vec3_push_new(ctx, lhs[0] + (rhs[0] - lhs[0]) * t, lhs[1] + (rhs[1] - lhs[1]) * t, lhs[2] + (rhs[2] - lhs[2]) * t);
         return 1;
     } else if (dot < -1.0f + UNITY_VECTOR3_kEpsilon) {
         float lhsNorm[3] = {0};
@@ -1201,11 +1177,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_project(duk_context *ctx) {
     float vx, vy, vz;
     duk_unity_get3f(ctx, 0, &vx, &vy, &vz);
     float dotsq = (vx * nx + vy * ny + vz * nz) / sqrMag;
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, nx * dotsq);
-    duk_push_number(ctx, ny * dotsq);
-    duk_push_number(ctx, nz * dotsq);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, nx * dotsq, ny * dotsq, nz * dotsq);
     return 1;
 }
 
@@ -1331,11 +1303,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_min(duk_context *ctx) {
     float rhsx, rhsy, rhsz;
     duk_unity_get3f(ctx, 0, &lhsx, &lhsy, &lhsz);
     duk_unity_get3f(ctx, 1, &rhsx, &rhsy, &rhsz);
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, lhsx > rhsx ? rhsx : lhsx);
-    duk_push_number(ctx, lhsy > rhsy ? rhsy : lhsy);
-    duk_push_number(ctx, lhsz > rhsz ? rhsz : lhsz);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, lhsx > rhsx ? rhsx : lhsx, lhsy > rhsy ? rhsy : lhsy, lhsz > rhsz ? rhsz : lhsz);
     return 1;
 }
 
@@ -1344,11 +1312,7 @@ DUK_LOCAL duk_ret_t duk_unity_vector3_static_max(duk_context *ctx) {
     float rhsx, rhsy, rhsz;
     duk_unity_get3f(ctx, 0, &lhsx, &lhsy, &lhsz);
     duk_unity_get3f(ctx, 1, &rhsx, &rhsy, &rhsz);
-    duk_builtins_reg_get(ctx, "Vector3");
-    duk_push_number(ctx, lhsx < rhsx ? rhsx : lhsx);
-    duk_push_number(ctx, lhsy < rhsy ? rhsy : lhsy);
-    duk_push_number(ctx, lhsz < rhsz ? rhsz : lhsz);
-    duk_new(ctx, 3);
+    vec3_push_new(ctx, lhsx < rhsx ? rhsx : lhsx, lhsy < rhsy ? rhsy : lhsy, lhsz < rhsz ? rhsz : lhsz);
     return 1;
 }
 
@@ -1443,21 +1407,20 @@ DUK_INTERNAL void duk_unity_vector3_open(duk_context *ctx) {
         duk_unity_add_member(ctx, "Lerp", duk_unity_color_static_Lerp, -1);
         duk_unity_add_member(ctx, "LerpUnclamped", duk_unity_color_static_LerpUnclamped, -2);
         
-        duk_unity_color_add_const(ctx, -2, "red", 1F, 0F, 0F, 1F); 
-        duk_unity_color_add_const(ctx, -2, "green", 0F, 1F, 0F, 1F); 
-        duk_unity_color_add_const(ctx, -2, "blue", 0F, 0F, 1F, 1F); 
-        duk_unity_color_add_const(ctx, -2, "white", 1F, 1F, 1F, 1F); 
-        duk_unity_color_add_const(ctx, -2, "black", 0F, 0F, 0F, 1F); 
-        duk_unity_color_add_const(ctx, -2, "yellow", 1F, 235F / 255F, 4F / 255F, 1F); 
-        duk_unity_color_add_const(ctx, -2, "cyan", 0F, 1F, 1F, 1F); 
-        duk_unity_color_add_const(ctx, -2, "magenta", 1F, 0F, 1F, 1F); 
-        duk_unity_color_add_const(ctx, -2, "gray", .5F, .5F, .5F, 1F); 
-        duk_unity_color_add_const(ctx, -2, "grey", .5F, .5F, .5F, 1F); 
-        duk_unity_color_add_const(ctx, -2, "clear", 0F, 0F, 0F, 0F); 
+        duk_unity_color_add_const(ctx, -2, "red", 1.0F, 0.0F, 0.0F, 1.0F); 
+        duk_unity_color_add_const(ctx, -2, "green", 0.0F, 1.0F, 0.0F, 1.0F); 
+        duk_unity_color_add_const(ctx, -2, "blue", 0.0F, 0.0F, 1.0F, 1.0F); 
+        duk_unity_color_add_const(ctx, -2, "white", 1.0F, 1.0F, 1.0F, 1.0F); 
+        duk_unity_color_add_const(ctx, -2, "black", 0.0F, 0.0F, 0.0F, 1.0F); 
+        duk_unity_color_add_const(ctx, -2, "yellow", 1.0F, 235.0F / 255.0F, 4.0F / 255.0F, 1.0F); 
+        duk_unity_color_add_const(ctx, -2, "cyan", 0.0F, 1.0F, 1.0F, 1.0F); 
+        duk_unity_color_add_const(ctx, -2, "magenta", 1.0F, 0.0F, 1.0F, 1.0F); 
+        duk_unity_color_add_const(ctx, -2, "gray", 0.5F, 0.5F, 0.5F, 1.0F); 
+        duk_unity_color_add_const(ctx, -2, "grey", 0.5F, 0.5F, 0.5F, 1.0F); 
+        duk_unity_color_add_const(ctx, -2, "clear", 0.0F, 0.0F, 0.0F, 0.0F); 
 
         duk_unity_add_property(ctx, "grayscale", duk_unity_vector2_grayscale, NULL, -1);
         
-        duk_unity_color_add_const(ctx, )
         duk_unity_end_class(ctx);
     }
     {
