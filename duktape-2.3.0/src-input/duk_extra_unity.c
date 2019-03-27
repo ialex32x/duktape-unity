@@ -513,6 +513,104 @@ DUK_EXTERNAL duk_bool_t duk_unity_get4i(duk_context *ctx, duk_idx_t idx, duk_int
     // return 0;
 }
 
+DUK_EXTERNAL void duk_unity_put4x4f(duk_context *ctx, duk_idx_t idx, const float *c1, const float *c2, const float *c3, const float *c4) {
+    idx = duk_normalize_index(ctx, idx);
+
+    duk_push_number(ctx, c0[0]);
+    duk_put_prop_index(ctx, idx, 0);
+    duk_push_number(ctx, c0[1]);
+    duk_put_prop_index(ctx, idx, 1);
+    duk_push_number(ctx, c0[2]);
+    duk_put_prop_index(ctx, idx, 2);
+    duk_push_number(ctx, c0[3]);
+    duk_put_prop_index(ctx, idx, 3);
+
+    duk_push_number(ctx, c1[0]);
+    duk_put_prop_index(ctx, idx, 4);
+    duk_push_number(ctx, c1[1]);
+    duk_put_prop_index(ctx, idx, 5);
+    duk_push_number(ctx, c1[2]);
+    duk_put_prop_index(ctx, idx, 6);
+    duk_push_number(ctx, c1[3]);
+    duk_put_prop_index(ctx, idx, 7);
+
+    duk_push_number(ctx, c2[0]);
+    duk_put_prop_index(ctx, idx, 8);
+    duk_push_number(ctx, c2[1]);
+    duk_put_prop_index(ctx, idx, 9);
+    duk_push_number(ctx, c2[2]);
+    duk_put_prop_index(ctx, idx, 10);
+    duk_push_number(ctx, c2[3]);
+    duk_put_prop_index(ctx, idx, 11);
+
+    duk_push_number(ctx, c3[0]);
+    duk_put_prop_index(ctx, idx, 12);
+    duk_push_number(ctx, c3[1]);
+    duk_put_prop_index(ctx, idx, 13);
+    duk_push_number(ctx, c3[2]);
+    duk_put_prop_index(ctx, idx, 14);
+    duk_push_number(ctx, c3[3]);
+    duk_put_prop_index(ctx, idx, 15);
+}
+
+DUK_EXTERNAL duk_bool_t duk_unity_get4x4f(duk_context *ctx, duk_idx_t idx, float *c1, float *c2, float *c3, float *c4) {
+    idx = duk_normalize_index(ctx, idx);
+
+    if (duk_gut_prop_index(ctx, idx, 0)) {
+        *(c0[0]) = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_gut_prop_index(ctx, idx, 1)) {
+        *(c0[1]) = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_gut_prop_index(ctx, idx, 2)) {
+        *(c0[2]) = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_gut_prop_index(ctx, idx, 3)) {
+        *(c0[3]) = (float)duk_get_number_default(ctx, -1, 0);
+    }
+
+    if (duk_gut_prop_index(ctx, idx, 4)) {
+        *(c1[0]) = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_gut_prop_index(ctx, idx, 5)) {
+        *(c1[1]) = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_gut_prop_index(ctx, idx, 6)) {
+        *(c1[2]) = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_gut_prop_index(ctx, idx, 7)) {
+        *(c1[3]) = (float)duk_get_number_default(ctx, -1, 0);
+    }
+
+    if (duk_gut_prop_index(ctx, idx, 8)) {
+        *(c2[0]) = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_gut_prop_index(ctx, idx, 9)) {
+        *(c2[1]) = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_gut_prop_index(ctx, idx, 10)) {
+        *(c2[2]) = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_gut_prop_index(ctx, idx, 11)) {
+        *(c2[3]) = (float)duk_get_number_default(ctx, -1, 0);
+    }
+
+    if (duk_gut_prop_index(ctx, idx, 12)) {
+        *(c3[0]) = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_gut_prop_index(ctx, idx, 13)) {
+        *(c3[1]) = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_gut_prop_index(ctx, idx, 14)) {
+        *(c3[2]) = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_gut_prop_index(ctx, idx, 15)) {
+        *(c3[3]) = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    duk_pop_n(ctx, 16);
+    return 1;
+}
+
 DUK_EXTERNAL duk_bool_t duk_unity_set_prop_i(duk_context *ctx, duk_idx_t idx, const char *key, duk_int_t val) {
     idx = duk_normalize_index(ctx, idx);
     duk_push_int(ctx, val);

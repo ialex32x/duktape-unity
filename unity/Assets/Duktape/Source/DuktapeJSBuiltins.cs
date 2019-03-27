@@ -256,8 +256,8 @@ namespace Duktape
             replace_by_builtin(ctx, "Quaternion", DUK_UNITY_BUILTINS_QUATERNION);
             replace_by_builtin(ctx, "Color", DUK_UNITY_BUILTINS_COLOR);
             replace_by_builtin(ctx, "Color32", DUK_UNITY_BUILTINS_COLOR32);
-            replace_by_builtin(ctx, "Matrix3x3", DUK_UNITY_BUILTINS_MATRIX33);
-            // replace_by_builtin(ctx, "Matrix4x4");
+            // replace_by_builtin(ctx, "Matrix3x3", DUK_UNITY_BUILTINS_MATRIX33);
+            replace_by_builtin(ctx, "Matrix4x4", DUK_UNITY_BUILTINS_MATRIX44);
             duk_end_namespace(ctx);
         }
     }
