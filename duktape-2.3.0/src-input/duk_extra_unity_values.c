@@ -448,7 +448,7 @@ DUK_LOCAL duk_ret_t duk_unity_Color_grayscale(duk_context *ctx) {
 DUK_LOCAL duk_ret_t duk_unity_Color_linear(duk_context *ctx) {
     float a[4];
     duk_push_this(ctx);
-    duk_unity_get4f(ctx, -1, &a[0], &a[1], &a[2], a[3]);
+    duk_unity_get4f(ctx, -1, &a[0], &a[1], &a[2], &a[3]);
     duk_pop(ctx);
     color_push_new(ctx, 
         unitycg_GammaToLinearSpaceExact(a[0]),
@@ -462,7 +462,7 @@ DUK_LOCAL duk_ret_t duk_unity_Color_linear(duk_context *ctx) {
 DUK_LOCAL duk_ret_t duk_unity_Color_gamma(duk_context *ctx) {
     float a[4];
     duk_push_this(ctx);
-    duk_unity_get4f(ctx, -1, &a[0], &a[1], &a[2], a[3]);
+    duk_unity_get4f(ctx, -1, &a[0], &a[1], &a[2], &a[3]);
     duk_pop(ctx);
     color_push_new(ctx, 
         unitycg_LinearToGammaSpaceExact(a[0]),
@@ -1847,7 +1847,7 @@ DUK_EXTERNAL void duk_unity_push_color(duk_context *ctx, float r, float g, float
     color_push_new(ctx, r, g, b, a);
 }
 
-DUK_INTERNAL void duk_unity_Vector3_open(duk_context *ctx) {
+DUK_INTERNAL void duk_unity_valuetypes_open(duk_context *ctx) {
     duk_push_global_object(ctx);
     duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
     
@@ -1895,8 +1895,8 @@ DUK_INTERNAL void duk_unity_Vector3_open(duk_context *ctx) {
         duk_unity_Vector2_add_const(ctx, -2, "down", 0.0F, -1.0F);
         duk_unity_Vector2_add_const(ctx, -2, "left", -1.0F, 0.0F);
         duk_unity_Vector2_add_const(ctx, -2, "right", 1.0F, 0.0F);
-        duk_unity_Vector2_add_const(ctx, -2, "positiveInfinity", 1.0F / 0.0F, 1.0F / 0.0F);
-        duk_unity_Vector2_add_const(ctx, -2, "negativeInfinity", -1.0F / 0.0F, -1.0F / 0.0F);
+        // duk_unity_Vector2_add_const(ctx, -2, "positiveInfinity", 1.0F / 0.0F, 1.0F / 0.0F);
+        // duk_unity_Vector2_add_const(ctx, -2, "negativeInfinity", -1.0F / 0.0F, -1.0F / 0.0F);
 
         duk_unity_add_property(ctx, "x", duk_unity_Vector2_getx, duk_unity_Vector2_setx, -1);
         duk_unity_add_property(ctx, "y", duk_unity_Vector2_gety, duk_unity_Vector2_sety, -1);
@@ -1989,8 +1989,8 @@ DUK_INTERNAL void duk_unity_Vector3_open(duk_context *ctx) {
         duk_unity_Vector3_add_const(ctx, -2, "left", -1.0, 0.0, 0.0);
         duk_unity_Vector3_add_const(ctx, -2, "right", 1.0, 0.0, 0.0);
 
-        duk_unity_Vector3_add_const(ctx, -2, "positiveInfinity", 1.0F / 0.0F, 1.0F / 0.0F, 1.0F / 0.0F);
-        duk_unity_Vector3_add_const(ctx, -2, "negativeInfinity", -1.0F / 0.0F, -1.0F / 0.0F, -1.0F / 0.0F);
+        // duk_unity_Vector3_add_const(ctx, -2, "positiveInfinity", 1.0F / 0.0F, 1.0F / 0.0F, 1.0F / 0.0F);
+        // duk_unity_Vector3_add_const(ctx, -2, "negativeInfinity", -1.0F / 0.0F, -1.0F / 0.0F, -1.0F / 0.0F);
 
         duk_unity_add_const_number(ctx, -2, "kEpsilon", 1e-05);
         duk_unity_add_const_number(ctx, -2, "kEpsilonNormalSqrt", 1e-15);
