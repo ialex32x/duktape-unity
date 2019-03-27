@@ -6,6 +6,11 @@ namespace Duktape
 
     public class DuktapeArray : DuktapeValue
     {
+        public DuktapeArray(DuktapeContext context, uint refid)
+        : base(context, refid)
+        {
+        }
+
         public DuktapeArray(IntPtr ctx, uint refid)
         : base(ctx, refid)
         {
@@ -15,16 +20,17 @@ namespace Duktape
         {
             get
             {
-                this.Push(this._ctx);
+                var ctx = _context.rawValue;
+                this.Push(ctx);
                 var length_ = DuktapeDLL.duk_unity_get_length(ctx, -1);
-                DuktapeDLL.duk_pop(this._ctx);
+                DuktapeDLL.duk_pop(ctx);
                 return (int)length_;
             }
         }
 
         public void SetIntValue(int index, int value)
         {
-            var ctx = this._ctx;
+            var ctx = _context.rawValue;
             this.Push(ctx);
             DuktapeDLL.duk_push_int(ctx, value);
             DuktapeDLL.duk_put_prop_index(ctx, -2, (uint)index);
@@ -33,7 +39,7 @@ namespace Duktape
 
         public void SetFloatValue(int index, float value)
         {
-            var ctx = this._ctx;
+            var ctx = _context.rawValue;
             this.Push(ctx);
             DuktapeDLL.duk_push_number(ctx, value);
             DuktapeDLL.duk_put_prop_index(ctx, -2, (uint)index);
@@ -42,7 +48,7 @@ namespace Duktape
 
         public void SetDoubleValue(int index, double value)
         {
-            var ctx = this._ctx;
+            var ctx = _context.rawValue;
             this.Push(ctx);
             DuktapeDLL.duk_push_number(ctx, value);
             DuktapeDLL.duk_put_prop_index(ctx, -2, (uint)index);
@@ -51,7 +57,7 @@ namespace Duktape
 
         public void SetStringValue(int index, string value)
         {
-            var ctx = this._ctx;
+            var ctx = _context.rawValue;
             this.Push(ctx);
             DuktapeDLL.duk_push_string(ctx, value);
             DuktapeDLL.duk_put_prop_index(ctx, -2, (uint)index);
@@ -61,7 +67,7 @@ namespace Duktape
         //
         public int GetIntValue(int index)
         {
-            var ctx = this._ctx;
+            var ctx = _context.rawValue;
             this.Push(ctx);
             DuktapeDLL.duk_get_prop_index(ctx, -1, (uint)index);
             var res = 0;
@@ -75,7 +81,7 @@ namespace Duktape
 
         public float GetFloatValue(int index)
         {
-            var ctx = this._ctx;
+            var ctx = _context.rawValue;
             this.Push(ctx);
             DuktapeDLL.duk_get_prop_index(ctx, -1, (uint)index);
             var res = 0f;
@@ -89,7 +95,7 @@ namespace Duktape
 
         public double GetDoubleValue(int index)
         {
-            var ctx = this._ctx;
+            var ctx = _context.rawValue;
             this.Push(ctx);
             DuktapeDLL.duk_get_prop_index(ctx, -1, (uint)index);
             var res = 0.0;
@@ -103,7 +109,7 @@ namespace Duktape
 
         public string GetStringValue(int index)
         {
-            var ctx = this._ctx;
+            var ctx = _context.rawValue;
             this.Push(ctx);
             DuktapeDLL.duk_get_prop_index(ctx, -1, (uint)index);
             string res = null;

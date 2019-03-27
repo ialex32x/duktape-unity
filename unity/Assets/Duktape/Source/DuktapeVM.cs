@@ -50,14 +50,55 @@ namespace Duktape
 
         private Dictionary<Type, MethodInfo> _delegates = new Dictionary<Type, MethodInfo>(); // 委托对应的 duktape 绑定函数
 
+        // private static int _thread = 0;
+
+        private static Dictionary<IntPtr, DuktapeContext> _contexts = new Dictionary<IntPtr, DuktapeContext>();
+        private static IntPtr _lastContextPtr;
+        private static DuktapeContext _lastContext;
+
         public DuktapeContext context
         {
             get { return _ctx; }
         }
 
+        public IntPtr ctx
+        {
+            get { return _ctx != null ? _ctx.rawValue : IntPtr.Zero; }
+        }
+
         public DuktapeVM()
         {
         }
+
+        public static void addContext(DuktapeContext context)
+        {
+            var ctx = context.rawValue;
+            _contexts[ctx] = context;
+            _lastContext = context;
+            _lastContextPtr = ctx;
+        }
+
+        public static DuktapeContext GetContext(IntPtr ctx)
+        {
+            if (_lastContextPtr == ctx)
+            {
+                return _lastContext;
+            }
+            DuktapeContext context;
+            if (_contexts.TryGetValue(ctx, out context))
+            {
+                _lastContext = context;
+                _lastContextPtr = ctx;
+                return context;
+            }
+            // fixme 如果是 thread 则获取对应 main context
+            return null;
+        }
+
+        // public static DuktapeContext GetContext(IntPtr ctx)
+        // {
+        //     return DuktapeContext.GetContext(ctx);
+        // }
 
         public static DuktapeVM GetVM(IntPtr ctx)
         {
@@ -418,10 +459,12 @@ namespace Duktape
                 DuktapeRunner.Clear(_updateTimer);
                 _updateTimer = 0;
             }
-            
+
             if (_ctx != null)
             {
-                DuktapeDLL.duk_destroy_heap(_ctx.rawValue);
+                var ctx = _ctx.rawValue;
+                DuktapeDLL.duk_destroy_heap(ctx);
+                _ctx.OnDestroy();
                 _ctx = null;
             }
         }

@@ -28,6 +28,7 @@ namespace Duktape
             DuktapeFunction method = null;
             if (!_methodCache.TryGetValue(name, out method))
             {
+                var ctx = _context.rawValue;
                 this.PushProperty(ctx, name);
                 if (DuktapeDLL.duk_is_function(ctx, -1))
                 {
@@ -48,7 +49,7 @@ namespace Duktape
             var member = GetMember(name);
             if (member != null)
             {
-                var ctx = member.ctx;
+                var ctx = member.context.rawValue;
                 member.Push(ctx);
                 this.Push(ctx);
                 var ret = DuktapeDLL.duk_pcall_method(ctx, 0);
