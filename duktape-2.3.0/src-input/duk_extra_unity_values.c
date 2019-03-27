@@ -282,6 +282,15 @@ DUK_LOCAL duk_ret_t duk_unity_color_static_LerpUnclamped(duk_context *ctx) {
     return 1;
 }
 
+DUK_LOCAL duk_ret_t duk_unity_vector2_grayscale(duk_context *ctx) {
+    float a[3];
+    duk_push_this(ctx);
+    duk_unity_get3f(ctx, -1, &a[0], &a[1], &a[2]);
+    duk_pop(ctx);
+    duk_push_number(ctx, 0.299F * a[0] + 0.587F * a[1] + 0.114F * a[2]);
+    return 1;
+}
+
 DUK_LOCAL duk_ret_t duk_unity_quaternion_constructor(duk_context *ctx) {
     float x = (float)duk_get_number_default(ctx, 0, 0.0);
     float y = (float)duk_get_number_default(ctx, 1, 0.0);
@@ -1406,6 +1415,12 @@ DUK_EXTERNAL void duk_unity_push_quaternion(duk_context *ctx, float x, float y, 
     quaternion_push_new(ctx, x, y, z, w);
 }
 
+DUK_LOCAL void duk_unity_color_add_const(duk_context *ctx, duk_idx_t idx, const char *key, float r, float g, float b, float a) {
+    idx = duk_normalize_index(ctx, idx);
+    color_push_new(ctx, r, g, b, a);
+    duk_put_prop_string(ctx, idx, key);
+}
+
 DUK_EXTERNAL void duk_unity_push_color(duk_context *ctx, float r, float g, float b, float a) {
     color_push_new(ctx, r, g, b, a);
 }
@@ -1427,6 +1442,22 @@ DUK_INTERNAL void duk_unity_vector3_open(duk_context *ctx) {
 
         duk_unity_add_member(ctx, "Lerp", duk_unity_color_static_Lerp, -1);
         duk_unity_add_member(ctx, "LerpUnclamped", duk_unity_color_static_LerpUnclamped, -2);
+        
+        duk_unity_color_add_const(ctx, -2, "red", 1F, 0F, 0F, 1F); 
+        duk_unity_color_add_const(ctx, -2, "green", 0F, 1F, 0F, 1F); 
+        duk_unity_color_add_const(ctx, -2, "blue", 0F, 0F, 1F, 1F); 
+        duk_unity_color_add_const(ctx, -2, "white", 1F, 1F, 1F, 1F); 
+        duk_unity_color_add_const(ctx, -2, "black", 0F, 0F, 0F, 1F); 
+        duk_unity_color_add_const(ctx, -2, "yellow", 1F, 235F / 255F, 4F / 255F, 1F); 
+        duk_unity_color_add_const(ctx, -2, "cyan", 0F, 1F, 1F, 1F); 
+        duk_unity_color_add_const(ctx, -2, "magenta", 1F, 0F, 1F, 1F); 
+        duk_unity_color_add_const(ctx, -2, "gray", .5F, .5F, .5F, 1F); 
+        duk_unity_color_add_const(ctx, -2, "grey", .5F, .5F, .5F, 1F); 
+        duk_unity_color_add_const(ctx, -2, "clear", 0F, 0F, 0F, 0F); 
+
+        duk_unity_add_property(ctx, "grayscale", duk_unity_vector2_grayscale, NULL, -1);
+        
+        duk_unity_color_add_const(ctx, )
         duk_unity_end_class(ctx);
     }
     {
