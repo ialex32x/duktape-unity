@@ -26,7 +26,7 @@ namespace Duktape
             DuktapeVM.addContext(this);
         }
 
-        public void OnDestroy()
+        public void onDestroy()
         {
             _ctx = IntPtr.Zero;
         }

@@ -68,9 +68,14 @@ namespace Duktape
             }
         }
 
-        public void Push(IntPtr ctx)
+        public bool Push(IntPtr ctx)
         {
-            DuktapeDLL.duk_unity_getref(ctx, this._refid);
+            if (ctx != IntPtr.Zero)
+            {
+                DuktapeDLL.duk_unity_getref(ctx, this._refid);
+                return true;
+            }
+            return false;
         }
 
         public void PushProperty(IntPtr ctx, string property)

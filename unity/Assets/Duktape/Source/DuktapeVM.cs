@@ -452,20 +452,21 @@ namespace Duktape
             DuktapeDLL.duk_set_top(ctx, top);
         }
 
+        ~DuktapeVM()
+        {
+            var ctx = _ctx.rawValue;
+            _ctx.onDestroy();
+
+            DuktapeDLL.duk_destroy_heap(ctx);
+            // Debug.LogWarning("duk_destroy_heap");
+        }
+
         public void Destroy()
         {
             if (_updateTimer != 0)
             {
                 DuktapeRunner.Clear(_updateTimer);
                 _updateTimer = 0;
-            }
-
-            if (_ctx != null)
-            {
-                var ctx = _ctx.rawValue;
-                DuktapeDLL.duk_destroy_heap(ctx);
-                _ctx.OnDestroy();
-                _ctx = null;
             }
         }
     }

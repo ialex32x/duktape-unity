@@ -29,15 +29,18 @@ namespace Duktape
             if (!_methodCache.TryGetValue(name, out method))
             {
                 var ctx = _context.rawValue;
-                this.PushProperty(ctx, name);
-                if (DuktapeDLL.duk_is_function(ctx, -1))
+                if (ctx != IntPtr.Zero)
                 {
-                    var refid = DuktapeDLL.duk_unity_ref(ctx);
-                    method = new DuktapeFunction(ctx, refid);
-                }
-                else
-                {
-                    DuktapeDLL.duk_pop(ctx);
+                    this.PushProperty(ctx, name);
+                    if (DuktapeDLL.duk_is_function(ctx, -1))
+                    {
+                        var refid = DuktapeDLL.duk_unity_ref(ctx);
+                        method = new DuktapeFunction(ctx, refid);
+                    }
+                    else
+                    {
+                        DuktapeDLL.duk_pop(ctx);
+                    }
                 }
                 _methodCache[name] = method;
             }
@@ -50,15 +53,18 @@ namespace Duktape
             if (member != null)
             {
                 var ctx = member.context.rawValue;
-                member.Push(ctx);
-                this.Push(ctx);
-                var ret = DuktapeDLL.duk_pcall_method(ctx, 0);
-                if (ret != DuktapeDLL.DUK_EXEC_SUCCESS)
+                if (ctx != IntPtr.Zero)
                 {
-                    DuktapeAux.PrintError(ctx, -1);
-                    // throw new Exception(err); 
+                    member.Push(ctx);
+                    this.Push(ctx);
+                    var ret = DuktapeDLL.duk_pcall_method(ctx, 0);
+                    if (ret != DuktapeDLL.DUK_EXEC_SUCCESS)
+                    {
+                        DuktapeAux.PrintError(ctx, -1);
+                        // throw new Exception(err); 
+                    }
+                    DuktapeDLL.duk_pop(ctx);
                 }
-                DuktapeDLL.duk_pop(ctx);
             }
             // else
             // {
