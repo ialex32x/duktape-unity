@@ -156,9 +156,7 @@ namespace Duktape
                 .AddTSMethodDeclaration("Inverse(): Vector2")
             ;
 
-            TransformType(typeof(Renderer))
-                .SetMethodBlocked("UpdateGIMaterials")
-            ;
+            // SetTypeBlocked(typeof(RendererExtensions));
 
             // editor 使用的 .net 与 player 所用存在差异, 这里屏蔽不存在的成员
             TransformType(typeof(double))
@@ -213,6 +211,11 @@ namespace Duktape
             AddCSTypeNameMap(typeof(void), "void");
 
             Initialize();
+        }
+
+        public void SetTypeBlocked(Type type)
+        {
+            blacklist.Add(type);
         }
 
         public bool GetTSMethodDeclaration(MethodBase method, out string code)

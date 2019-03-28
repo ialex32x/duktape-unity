@@ -36,4 +36,6 @@ FIXME:
     ✔ duk_get_delegate 中缓存的 jsValue 存在gc问题 (js 层 DelegateBase 没有 Finalizer) @started(19-03-01 15:14) @done(19-03-07 17:31) @lasted(6d2h17m22s)
     ✔ 剔除重复的枚举值 @done(19-03-05 17:31)
     ✔ 嵌套类型 ts 定义修正 @done(19-03-06 06:12)
+    ☐ !!! 当使用扩展方法时 添加额外的 using 来启用扩展（或者直接按静态方式调用扩展方法） @started(19-03-28 15:52)
+    ☐ !!  处理类实现接口对应的 d.ts 声明
 

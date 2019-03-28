@@ -530,6 +530,7 @@ namespace Duktape
                 }
             }
             var arglist = this.AppendGetParameters(hasParams, nargs, parameters, parametersByRef);
+            //TODO: 扩展方法使用静态形式调用 （简化问题 避免没有导入命名空间导致扩展未启用）
             return $"{caller}.{method.Name}({arglist})";
         }
 
