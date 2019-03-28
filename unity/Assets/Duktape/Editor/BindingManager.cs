@@ -156,6 +156,10 @@ namespace Duktape
                 .AddTSMethodDeclaration("Inverse(): Vector2")
             ;
 
+            TransformType(typeof(Renderer))
+                .SetMethodBlocked("UpdateGIMaterials")
+            ;
+
             // editor 使用的 .net 与 player 所用存在差异, 这里屏蔽不存在的成员
             TransformType(typeof(double))
                 .SetMemberBlocked("IsFinite")

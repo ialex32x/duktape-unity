@@ -1724,9 +1724,9 @@ namespace Duktape
         public static extern duk_uint_t duk_unity_open(IntPtr ctx); // 初始化附加内容 (比如ref/unref的使用)
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_builtins_reg_put(IntPtr ctx, string key);
+        public static extern void duk_builtins_reg_put(IntPtr ctx, duk_uarridx_t key);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_builtins_reg_get(IntPtr ctx, string key);
+        public static extern void duk_builtins_reg_get(IntPtr ctx, duk_uarridx_t key);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_uint_t duk_unity_ref(IntPtr ctx);

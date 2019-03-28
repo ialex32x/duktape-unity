@@ -1,20 +1,36 @@
 
 #include "duk_internal.h"
 
+#define DUK_UNITY_STASH_REGISTRY 0
+#define DUK_UNITY_STASH_BUILTINS 1
+    #define DUK_UNITY_BUILTINS_VECTOR2 0
+    #define DUK_UNITY_BUILTINS_VECTOR2I 1
+    #define DUK_UNITY_BUILTINS_VECTOR3 2
+    #define DUK_UNITY_BUILTINS_VECTOR3I 3
+    #define DUK_UNITY_BUILTINS_VECTOR4 4
+    #define DUK_UNITY_BUILTINS_QUATERNION 5
+    #define DUK_UNITY_BUILTINS_COLOR 6
+    #define DUK_UNITY_BUILTINS_COLOR32 7
+    #define DUK_UNITY_BUILTINS_MATRIX33 8
+    #define DUK_UNITY_BUILTINS_MATRIX44 9
+    #define DUK_UNITY_BUILTINS_DISPATCHER 10
+    #define DUK_UNITY_BUILTINS_HANDLER 11
+    #define DUK_UNITY_BUILTINS_EVENTDISPATCHER 12
+    #define DUK_UNITY_BUILTINS_WEBSOCKET 13
 // #include <librws.h>
 
-DUK_EXTERNAL void duk_builtins_reg_put(duk_context *ctx, const char *key) {
+DUK_EXTERNAL void duk_builtins_reg_put(duk_context *ctx, duk_uarridx_t key) {
     duk_push_heap_stash(ctx);
-    duk_get_prop_string(ctx, -1, "c_builtins"); // obj, stash, builtins
+    duk_get_prop_index(ctx, -1, DUK_UNITY_STASH_BUILTINS); //duk_get_prop_string(ctx, -1, "c_builtins"); // obj, stash, builtins
     duk_dup(ctx, -3); // obj, stash, builtins, obj
-    duk_put_prop_string(ctx, -2, key); // obj, stash, builtins
+    duk_put_prop_index(ctx, -2, key); // obj, stash, builtins
     duk_pop_3(ctx);
 }
 
-DUK_EXTERNAL void duk_builtins_reg_get(duk_context *ctx, const char *key) {
+DUK_EXTERNAL void duk_builtins_reg_get(duk_context *ctx, duk_uarridx_t key) {
     duk_push_heap_stash(ctx);
-    duk_get_prop_string(ctx, -1, "c_builtins"); // stash, builtins
-    duk_get_prop_string(ctx, -1, key); // stash, builtins, obj
+    duk_get_prop_index(ctx, -1, DUK_UNITY_STASH_BUILTINS); //duk_get_prop_string(ctx, -1, "c_builtins"); // stash, builtins
+    duk_get_prop_index(ctx, -1, key); // stash, builtins, obj
     duk_remove(ctx, -2);
     duk_remove(ctx, -2);
 }
@@ -35,10 +51,10 @@ DUK_LOCAL void duk_unity_array_assign(duk_context *ctx, duk_idx_t obj_idx, duk_u
     duk_put_prop_index(ctx, obj_idx, dst);
 }
 
-DUK_LOCAL void duk_unity_begin_class(duk_context *ctx, const char *key, duk_c_function ctor, duk_c_function dtor) {
+DUK_LOCAL void duk_unity_begin_class(duk_context *ctx, const char *key, duk_uarridx_t reg_idx, duk_c_function ctor, duk_c_function dtor) {
     duk_push_c_function(ctx, ctor, DUK_VARARGS); // ctor
     duk_dup_top(ctx);
-    duk_builtins_reg_put(ctx, key);
+    duk_builtins_reg_put(ctx, reg_idx);
     duk_dup_top(ctx);
     duk_put_prop_string(ctx, -3, key);
     duk_push_object(ctx); // ctor, prototype
@@ -497,6 +513,104 @@ DUK_EXTERNAL duk_bool_t duk_unity_get4i(duk_context *ctx, duk_idx_t idx, duk_int
     // return 0;
 }
 
+DUK_EXTERNAL void duk_unity_put4x4f(duk_context *ctx, duk_idx_t idx, const float *c0, const float *c1, const float *c2, const float *c3) {
+    idx = duk_normalize_index(ctx, idx);
+
+    duk_push_number(ctx, c0[0]);
+    duk_put_prop_index(ctx, idx, 0);
+    duk_push_number(ctx, c0[1]);
+    duk_put_prop_index(ctx, idx, 1);
+    duk_push_number(ctx, c0[2]);
+    duk_put_prop_index(ctx, idx, 2);
+    duk_push_number(ctx, c0[3]);
+    duk_put_prop_index(ctx, idx, 3);
+
+    duk_push_number(ctx, c1[0]);
+    duk_put_prop_index(ctx, idx, 4);
+    duk_push_number(ctx, c1[1]);
+    duk_put_prop_index(ctx, idx, 5);
+    duk_push_number(ctx, c1[2]);
+    duk_put_prop_index(ctx, idx, 6);
+    duk_push_number(ctx, c1[3]);
+    duk_put_prop_index(ctx, idx, 7);
+
+    duk_push_number(ctx, c2[0]);
+    duk_put_prop_index(ctx, idx, 8);
+    duk_push_number(ctx, c2[1]);
+    duk_put_prop_index(ctx, idx, 9);
+    duk_push_number(ctx, c2[2]);
+    duk_put_prop_index(ctx, idx, 10);
+    duk_push_number(ctx, c2[3]);
+    duk_put_prop_index(ctx, idx, 11);
+
+    duk_push_number(ctx, c3[0]);
+    duk_put_prop_index(ctx, idx, 12);
+    duk_push_number(ctx, c3[1]);
+    duk_put_prop_index(ctx, idx, 13);
+    duk_push_number(ctx, c3[2]);
+    duk_put_prop_index(ctx, idx, 14);
+    duk_push_number(ctx, c3[3]);
+    duk_put_prop_index(ctx, idx, 15);
+}
+
+DUK_EXTERNAL duk_bool_t duk_unity_get4x4f(duk_context *ctx, duk_idx_t idx, float *c0, float *c1, float *c2, float *c3) {
+    idx = duk_normalize_index(ctx, idx);
+
+    if (duk_get_prop_index(ctx, idx, 0)) {
+        c0[0] = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_get_prop_index(ctx, idx, 1)) {
+        c0[1] = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_get_prop_index(ctx, idx, 2)) {
+        c0[2] = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_get_prop_index(ctx, idx, 3)) {
+        c0[3] = (float)duk_get_number_default(ctx, -1, 0);
+    }
+
+    if (duk_get_prop_index(ctx, idx, 4)) {
+        c1[0] = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_get_prop_index(ctx, idx, 5)) {
+        c1[1] = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_get_prop_index(ctx, idx, 6)) {
+        c1[2] = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_get_prop_index(ctx, idx, 7)) {
+        c1[3] = (float)duk_get_number_default(ctx, -1, 0);
+    }
+
+    if (duk_get_prop_index(ctx, idx, 8)) {
+        c2[0] = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_get_prop_index(ctx, idx, 9)) {
+        c2[1] = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_get_prop_index(ctx, idx, 10)) {
+        c2[2] = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_get_prop_index(ctx, idx, 11)) {
+        c2[3] = (float)duk_get_number_default(ctx, -1, 0);
+    }
+
+    if (duk_get_prop_index(ctx, idx, 12)) {
+        c3[0] = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_get_prop_index(ctx, idx, 13)) {
+        c3[1] = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_get_prop_index(ctx, idx, 14)) {
+        c3[2] = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    if (duk_get_prop_index(ctx, idx, 15)) {
+        c3[3] = (float)duk_get_number_default(ctx, -1, 0);
+    }
+    duk_pop_n(ctx, 16);
+    return 1;
+}
+
 DUK_EXTERNAL duk_bool_t duk_unity_set_prop_i(duk_context *ctx, duk_idx_t idx, const char *key, duk_int_t val) {
     idx = duk_normalize_index(ctx, idx);
     duk_push_int(ctx, val);
@@ -508,13 +622,13 @@ DUK_LOCAL void duk_refsys_open(duk_context *ctx) {
     
     duk_push_array(ctx); // [stash, array]
     duk_dup_top(ctx); // [stash, array, array]
-    duk_put_prop_string(ctx, -3, "c_registry"); // [stash, array]
+    duk_put_prop_index(ctx, -3, DUK_UNITY_STASH_REGISTRY); //duk_put_prop_string(ctx, -3, "c_registry"); // [stash, array]
     duk_push_int(ctx, 0); // [stash, array, 0]
     duk_put_prop_index(ctx, -2, 0); // [stash, array]
     duk_pop(ctx); // [stash]
 
     duk_push_object(ctx);
-    duk_put_prop_string(ctx, -2, "c_builtins"); // [stash, builtins]
+    duk_put_prop_index(ctx, -2, DUK_UNITY_STASH_BUILTINS);//duk_put_prop_string(ctx, -2, "c_builtins"); // [stash, builtins]
 
     duk_pop(ctx); // .
 }
@@ -525,7 +639,7 @@ DUK_EXTERNAL duk_uint_t duk_unity_ref(duk_context *ctx) {
         return 0;
     }
     duk_push_heap_stash(ctx); // obj, stash
-    duk_get_prop_string(ctx, -1, "c_registry"); // obj, stash, array
+    duk_get_prop_index(ctx, -1, DUK_UNITY_STASH_REGISTRY); //duk_get_prop_string(ctx, -1, "c_registry"); // obj, stash, array
     duk_get_prop_index(ctx, -1, 0); // obj, stash, array, array[0]
     duk_uint_t refid = duk_get_uint(ctx, -1); // obj, stash, array, array[0]
     if (refid > 0) {
@@ -551,7 +665,7 @@ DUK_EXTERNAL void duk_unity_getref(duk_context *ctx, duk_uint_t refid) {
         return;
     }
     duk_push_heap_stash(ctx); // stash
-    duk_get_prop_string(ctx, -1, "c_registry"); // stash, array
+    duk_get_prop_index(ctx, -1, DUK_UNITY_STASH_REGISTRY); //duk_get_prop_string(ctx, -1, "c_registry"); // stash, array
     duk_get_prop_index(ctx, -1, refid); // stash, array, array[refid]
     duk_remove(ctx, -2);
     duk_remove(ctx, -2);
@@ -564,7 +678,7 @@ DUK_EXTERNAL void duk_unity_unref(duk_context *ctx, duk_uint_t refid) {
         return;
     }
     duk_push_heap_stash(ctx); // stash
-    duk_get_prop_string(ctx, -1, "c_registry"); // stash, array
+    duk_get_prop_index(ctx, -1, DUK_UNITY_STASH_REGISTRY); //duk_get_prop_string(ctx, -1, "c_registry"); // stash, array
     duk_get_prop_index(ctx, -1, 0); // stash, array, array[0]
     duk_uint_t freeid = duk_get_int(ctx, -1); // stash, array, array[0]
     duk_push_uint(ctx, refid); // stash, array, array[0], refid
@@ -774,7 +888,7 @@ DUK_LOCAL duk_ret_t duk_events_dispatcher_on(duk_context *ctx) {
         return duk_generic_error(ctx, "fn not a function");
     }
     duk_bool_t once = duk_get_boolean_default(ctx, 2, 0);
-    duk_builtins_reg_get(ctx, "Handler");
+    duk_builtins_reg_get(ctx, DUK_UNITY_BUILTINS_HANDLER);
     duk_dup(ctx, 0);
     duk_dup(ctx, 1);
     duk_push_boolean(ctx, once);
@@ -926,7 +1040,7 @@ DUK_LOCAL duk_ret_t duk_events_eventdispatcher_on(duk_context *ctx) {
     }
     if (!duk_get_prop_string(ctx, -1, type)) { // this, events, events[type]
         duk_pop(ctx);
-        duk_builtins_reg_get(ctx, "Dispatcher"); 
+        duk_builtins_reg_get(ctx, DUK_UNITY_BUILTINS_DISPATCHER); 
         if (duk_pnew(ctx, 0) != 0) {
             return duk_throw(ctx);
         }
@@ -1063,17 +1177,17 @@ DUK_LOCAL duk_ret_t duk_events_eventdispatcher_dispatch(duk_context *ctx) {
 DUK_LOCAL void duk_events_open(duk_context *ctx) {
     duk_push_global_object(ctx);
     duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
-    duk_unity_begin_class(ctx, "Handler", duk_events_handler_constructor, NULL);
+    duk_unity_begin_class(ctx, "Handler", DUK_UNITY_BUILTINS_HANDLER, duk_events_handler_constructor, NULL);
     duk_unity_add_member(ctx, "equals", duk_events_handler_equals, -1);
     duk_unity_add_member(ctx, "invoke", duk_events_handler_invoke, -1);
     duk_unity_end_class(ctx);
-    duk_unity_begin_class(ctx, "Dispatcher", duk_events_dispatcher_constructor, NULL);
+    duk_unity_begin_class(ctx, "Dispatcher", DUK_UNITY_BUILTINS_DISPATCHER, duk_events_dispatcher_constructor, NULL);
     duk_unity_add_member(ctx, "on", duk_events_dispatcher_on, -1);
     duk_unity_add_member(ctx, "off", duk_events_dispatcher_off, -1);
     duk_unity_add_member(ctx, "clear", duk_events_dispatcher_clear, -1);
     duk_unity_add_member(ctx, "dispatch", duk_events_dispatcher_dispatch, -1);
     duk_unity_end_class(ctx);
-    duk_unity_begin_class(ctx, "EventDispatcher", duk_events_eventdispatcher_constructor, NULL);
+    duk_unity_begin_class(ctx, "EventDispatcher", DUK_UNITY_BUILTINS_EVENTDISPATCHER, duk_events_eventdispatcher_constructor, NULL);
     duk_unity_add_member(ctx, "on", duk_events_eventdispatcher_on, -1);
     duk_unity_add_member(ctx, "off", duk_events_eventdispatcher_off, -1);
     duk_unity_add_member(ctx, "clear", duk_events_eventdispatcher_clear, -1);
@@ -1399,7 +1513,7 @@ DUK_LOCAL void duk_rws_open(duk_context *ctx) {
     duk_push_global_object(ctx);
     duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
     //TODO: extends EventDispatcher
-    duk_unity_begin_class(ctx, "WebSocket", duk_rws_socket_constructor, duk_rws_socket_finalizer);
+    duk_unity_begin_class(ctx, "WebSocket", DUK_UNITY_BUILTINS_WEBSOCKET, duk_rws_socket_constructor, duk_rws_socket_finalizer);
     // add members of WebSocket
     duk_unity_add_member(ctx, "connect", duk_rws_socket_connect, -1);
     duk_unity_add_property(ctx, "connected", duk_rws_socket_is_connected, NULL, -1);
@@ -1411,11 +1525,11 @@ DUK_LOCAL void duk_rws_open(duk_context *ctx) {
 }
 */
 
-DUK_INTERNAL_DECL void duk_unity_vector3_open(duk_context *ctx);
+DUK_INTERNAL_DECL void duk_unity_valuetypes_open(duk_context *ctx);
 
 DUK_EXTERNAL void duk_unity_open(duk_context *ctx) {
     duk_refsys_open(ctx);
     // duk_rws_open(ctx);
     duk_events_open(ctx);
-    duk_unity_vector3_open(ctx);
+    duk_unity_valuetypes_open(ctx);
 }

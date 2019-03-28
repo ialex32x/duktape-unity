@@ -4,6 +4,6 @@ namespace Duktape
 {
     public interface IContextualValue
     {
-        IntPtr ctx { get; }
+        DuktapeContext context { get; }
     }
 }
