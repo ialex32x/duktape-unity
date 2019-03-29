@@ -51,7 +51,7 @@ namespace Duktape
             if (declaringType.IsValueType && !fieldInfo.IsStatic)
             {
                 // 非静态结构体字段修改, 尝试替换实例
-                this.cg.cs.AppendLine("duk_rebind_this(ctx, {0});", caller);
+                // this.cg.cs.AppendLine("duk_rebind_this(ctx, {0});", caller);
             }
             this.cg.cs.AppendLine("return 0;");
         }

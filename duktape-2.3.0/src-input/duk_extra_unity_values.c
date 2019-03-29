@@ -280,7 +280,7 @@ DUK_LOCAL duk_ret_t duk_unity_Matrix4x4_constructor(duk_context *ctx) {
     return 0;
 }
 
-DUK_LOCAL void duk_unity_Matrix4x4_add_const(duk_context *ctx, duk_idx_t idx, const float *c0, const float *c1, const float *c2, const float *c3) {
+DUK_LOCAL void duk_unity_Matrix4x4_add_const(duk_context *ctx, duk_idx_t idx, const char *key, const float *c0, const float *c1, const float *c2, const float *c3) {
     idx = duk_normalize_index(ctx, idx);
     matrix4x4_push_new(ctx, c0, c1, c2, c3);
     duk_put_prop_string(ctx, idx, key);
@@ -2124,22 +2124,38 @@ DUK_EXTERNAL void duk_unity_push_vector2(duk_context *ctx, float x, float y) {
     vec2_push_new(ctx, x, y);
 }
 
+DUK_EXTERNAL void duk_unity_push_vector2i(duk_context *ctx, duk_int_t x, duk_int_t y) {
+    vec2i_push_new(ctx, x, y);
+}
+
 DUK_EXTERNAL void duk_unity_push_vector3(duk_context *ctx, float x, float y, float z) {
     vec3_push_new(ctx, x, y, z);
+}
+
+DUK_EXTERNAL void duk_unity_push_vector3i(duk_context *ctx, duk_int_t x, duk_int_t y, duk_int_t z) {
+    vec3i_push_new(ctx, x, y, z);
+}
+
+DUK_EXTERNAL void duk_unity_push_vector4(duk_context *ctx, float x, float y, float z, float w) {
+    vec4_push_new(ctx, x, y, z, w);
 }
 
 DUK_EXTERNAL void duk_unity_push_quaternion(duk_context *ctx, float x, float y, float z, float w) {
     quaternion_push_new(ctx, x, y, z, w);
 }
 
+DUK_EXTERNAL void duk_unity_push_color(duk_context *ctx, float r, float g, float b, float a) {
+    color_push_new(ctx, r, g, b, a);
+}
+
+DUK_EXTERNAL void duk_unity_push_color32(duk_context *ctx, unsigned char r, unsigned char g, unsigned char b, unsigned char a) {
+    color32_push_new(ctx, r, g, b, a);
+}
+
 DUK_LOCAL void duk_unity_Color_add_const(duk_context *ctx, duk_idx_t idx, const char *key, float r, float g, float b, float a) {
     idx = duk_normalize_index(ctx, idx);
     color_push_new(ctx, r, g, b, a);
     duk_put_prop_string(ctx, idx, key);
-}
-
-DUK_EXTERNAL void duk_unity_push_color(duk_context *ctx, float r, float g, float b, float a) {
-    color_push_new(ctx, r, g, b, a);
 }
 
 DUK_INTERNAL void duk_unity_valuetypes_open(duk_context *ctx) {

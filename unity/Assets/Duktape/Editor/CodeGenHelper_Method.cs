@@ -394,7 +394,7 @@ namespace Duktape
                 {
                     if (method.IsDefined(typeof(JSMutableAttribute), false))
                     {
-                        cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
+                        // cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
                     }
                 }
                 cg.cs.AppendLine("return 0;");
