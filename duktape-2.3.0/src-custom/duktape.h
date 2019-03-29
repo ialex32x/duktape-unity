@@ -6,7 +6,7 @@
  *  comments.  Other parts of the header are Duktape internal and related to
  *  e.g. platform/compiler/feature detection.
  *
- *  Git commit 0bff56faa68ef9edcc35417c91261697b013adc6 (0bff56f-dirty).
+ *  Git commit e7e4d59c4d12f95582f6bc6c474fc521ef40e7be (e7e4d59-dirty).
  *  Git branch develop.
  *
  *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and
@@ -171,8 +171,8 @@
  * which Duktape snapshot was used.  Not available in the ECMAScript
  * environment.
  */
-#define DUK_GIT_COMMIT                    "0bff56faa68ef9edcc35417c91261697b013adc6"
-#define DUK_GIT_DESCRIBE                  "0bff56f-dirty"
+#define DUK_GIT_COMMIT                    "e7e4d59c4d12f95582f6bc6c474fc521ef40e7be"
+#define DUK_GIT_DESCRIBE                  "e7e4d59-dirty"
 #define DUK_GIT_BRANCH                    "develop"
 
 /* External duk_config.h provides platform/compiler/OS dependent
@@ -1475,12 +1475,14 @@ DUK_EXTERNAL_DECL duk_bool_t duk_unity_get4d(duk_context *ctx, duk_idx_t idx, do
 DUK_EXTERNAL_DECL void duk_unity_put4x4f(duk_context *ctx, duk_idx_t idx, const float *c0, const float *c1, const float *c2, const float *c3);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get4x4f(duk_context *ctx, duk_idx_t idx, float *c0, float *c1, float *c2, float *c3);
 
-// DUK_EXTERNAL_DECL void duk_unity_push_vector2i(duk_context *ctx, duk_int_t x, duk_int_t y);
-// DUK_EXTERNAL_DECL void duk_unity_push_vector3i(duk_context *ctx, duk_int_t x, duk_int_t y, duk_int_t z);
 DUK_EXTERNAL_DECL void duk_unity_push_vector2(duk_context *ctx, float x, float y);
+DUK_EXTERNAL_DECL void duk_unity_push_vector2i(duk_context *ctx, duk_int_t x, duk_int_t y);
 DUK_EXTERNAL_DECL void duk_unity_push_vector3(duk_context *ctx, float x, float y, float z);
+DUK_EXTERNAL_DECL void duk_unity_push_vector3i(duk_context *ctx, duk_int_t x, duk_int_t y, duk_int_t z);
+DUK_EXTERNAL_DECL void duk_unity_push_vector4(duk_context *ctx, float x, float y, float z, float w);
 DUK_EXTERNAL_DECL void duk_unity_push_quaternion(duk_context *ctx, float x, float y, float z, float w);
 DUK_EXTERNAL_DECL void duk_unity_push_color(duk_context *ctx, float r, float g, float b, float a);
+DUK_EXTERNAL_DECL void duk_unity_push_color32(duk_context *ctx, unsigned char r, unsigned char g, unsigned char b, unsigned char a);
 
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_prop_i(duk_context *ctx, duk_idx_t idx, const char *key, duk_int_t val);
 

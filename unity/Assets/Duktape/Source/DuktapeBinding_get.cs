@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using AOT;
 
 namespace Duktape
@@ -113,6 +114,14 @@ namespace Duktape
                     o[i] = e;
                     DuktapeDLL.duk_pop(ctx);
                 }
+                return true;
+            }
+            if (DuktapeDLL.duk_is_buffer_data(ctx, idx))
+            {
+                uint length;
+                var pointer = DuktapeDLL.duk_unity_get_buffer_data(ctx, idx, out length);
+                o = new byte[length];
+                Marshal.Copy(pointer, o, 0, (int)length);
                 return true;
             }
             duk_get_classvalue<byte[]>(ctx, idx, out o);

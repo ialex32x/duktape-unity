@@ -9,17 +9,6 @@ namespace Duktape
     // 处理特殊操作, 关联本地对象等
     public partial class DuktapeBinding
     {
-        // 返回当前 this 对应的 native object
-        public static bool duk_get_this<T>(IntPtr ctx, out T self)
-        {
-            DuktapeDLL.duk_push_this(ctx);
-            object o_t;
-            var ret = duk_get_object(ctx, -1, out o_t);
-            self = (T)o_t;
-            DuktapeDLL.duk_pop(ctx); // pop this 
-            return ret;
-        }
-
         public static void duk_bind_native(IntPtr ctx, object o)
         {
             DuktapeDLL.duk_push_this(ctx);

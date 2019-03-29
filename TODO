@@ -20,7 +20,7 @@
     ✔ protobufjs @done(19-03-29 09:32)
     ✔ !!! 索引访问 ($GetValue/$SetValue) @done(19-03-07 15:21)
     ✔ !!! 扩展方法 @started(19-03-07 14:10) @done(19-03-25 14:02) @lasted(2w3d23h52m10s)
-    ☐ Physcis.Raycast 等接口的调用优化
+    ☐ Physcis.Raycast 等接口的调用优化 (直接提供改写的扩展方法)
     ✔ push_delegate 尝试还原 js 对象 @done(19-03-07 14:10)
     ✔ 自动生成 Delegate 对应的 stub type var (== Dispatcher) @done(19-03-07 17:30)
     ☐ 识别属性 JSRawFunction, 直接传递 ctx
@@ -39,4 +39,6 @@ FIXME:
     ✔ !!! 当使用扩展方法时 添加额外的 using 来启用扩展（或者直接按静态方式调用扩展方法） @started(19-03-28 15:52) @done(19-03-29 09:11) @lasted(17h19m28s)
     ✔ !!  处理类实现接口对应的 d.ts 声明 @done(19-03-29 09:30)
     ☐ (C#)抽象类没有实现基类或接口方法时在 d.ts 仍需补充声明
+    ✔ get_this 取值方式优化 （与普通参数取值流程一致） @started(19-03-30 00:57) @done(19-03-30 00:57) @lasted(42s)
+    ✔ byte[] 取值兼容 Buffer @started(19-03-30 00:58) @done(19-03-30 00:58) @lasted(20s)
 
