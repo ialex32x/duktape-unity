@@ -360,18 +360,18 @@ namespace Duktape
         protected abstract Type GetReturnType(T method);
 
         // 获取方法调用
-        protected abstract string GetInvokeBinding(string caller, T method, bool hasParams, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef);
+        protected abstract string GetInvokeBinding(string caller, T method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef);
 
         protected virtual void BeginInvokeBinding() { }
 
         protected virtual void EndInvokeBinding() { }
 
         // 写入绑定代码
-        //TODO: 如果是扩展方法且第一参数不是本类型, 则是因为目标类没有导出而降级的普通静态方法, 按普通静态方法处理
         protected void WriteCSMethodBinding(T method, string argc, bool isVararg)
         {
             var parameters = method.GetParameters();
-            if (method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute)))
+            var isExtension = method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute));
+            if (isExtension)
             {
                 ArrayUtility.RemoveAt(ref parameters, 0);
             }
@@ -383,7 +383,7 @@ namespace Duktape
             {
                 // 方法本身没有返回值
                 this.BeginInvokeBinding();
-                cg.cs.AppendLine($"{this.GetInvokeBinding(caller, method, isVararg, argc, parameters, parametersByRef)};");
+                cg.cs.AppendLine($"{this.GetInvokeBinding(caller, method, isVararg, isExtension, argc, parameters, parametersByRef)};");
                 this.EndInvokeBinding();
                 if (parametersByRef.Count > 0)
                 {
@@ -403,7 +403,7 @@ namespace Duktape
             {
                 // 方法本身有返回值
                 this.BeginInvokeBinding();
-                cg.cs.AppendLine($"var ret = {this.GetInvokeBinding(caller, method, isVararg, argc, parameters, parametersByRef)};");
+                cg.cs.AppendLine($"var ret = {this.GetInvokeBinding(caller, method, isVararg, isExtension, argc, parameters, parametersByRef)};");
                 this.EndInvokeBinding();
                 if (parametersByRef.Count > 0)
                 {
@@ -441,7 +441,7 @@ namespace Duktape
             return null;
         }
 
-        protected override string GetInvokeBinding(string caller, ConstructorInfo method, bool hasParams, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
+        protected override string GetInvokeBinding(string caller, ConstructorInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
         {
             var arglist = this.AppendGetParameters(hasParams, nargs, parameters, parametersByRef);
             var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.bindingInfo.decalringType);
@@ -490,7 +490,7 @@ namespace Duktape
             return method.ReturnType;
         }
 
-        protected override string GetInvokeBinding(string caller, MethodInfo method, bool hasParams, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
+        protected override string GetInvokeBinding(string caller, MethodInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
         {
             if (bindingInfo.isIndexer)
             {
@@ -530,7 +530,15 @@ namespace Duktape
                 }
             }
             var arglist = this.AppendGetParameters(hasParams, nargs, parameters, parametersByRef);
-            //TODO: 扩展方法使用静态形式调用 （简化问题 避免没有导入命名空间导致扩展未启用）
+            if (isExtension)
+            {
+                var methodDeclType = this.cg.bindingManager.GetCSTypeFullName(method.DeclaringType);
+                if (arglist.Length > 0)
+                {
+                    arglist = ", " + arglist;
+                }
+                return $"{methodDeclType}.{method.Name}({caller}{arglist})";
+            }
             return $"{caller}.{method.Name}({arglist})";
         }
 
@@ -552,7 +560,7 @@ namespace Duktape
             return method.ReturnType;
         }
 
-        protected override string GetInvokeBinding(string caller, MethodInfo method, bool hasParams, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
+        protected override string GetInvokeBinding(string caller, MethodInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
         {
             return null;
         }
