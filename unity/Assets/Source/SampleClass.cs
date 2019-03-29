@@ -19,7 +19,7 @@ namespace SampleNamespace
     }
 
     [Duktape.JSType]
-    public class SampleClass
+    public class SampleClass : ISampleBase
     {
         public delegate void DelegateFoo(string a, string b);
         public delegate void DelegateFoo2(string a, string b);
