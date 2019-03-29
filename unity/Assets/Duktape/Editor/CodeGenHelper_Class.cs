@@ -69,6 +69,10 @@ namespace Duktape
                 {
                 }
             }
+            //TODO: C# 抽象类可以不提供方法实现, d.ts 需要补充声明
+            // if (this.bindingInfo.type.IsAbstract && !this.bindingInfo.type.IsInterface)
+            // {
+            // }
             // 静态成员方法
             foreach (var kv in this.bindingInfo.staticMethods)
             {
