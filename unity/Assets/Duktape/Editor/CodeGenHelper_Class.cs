@@ -18,13 +18,15 @@ namespace Duktape
             var transform = this.bindingInfo.transform;
             var prefix = this.bindingInfo.jsNamespace != null ? "" : "declare ";
             var super = this.cg.bindingManager.GetTSSuperName(this.bindingInfo);
+            var interfaces = this.cg.bindingManager.GetTSInterfacesName(this.bindingInfo);
             var extends = string.IsNullOrEmpty(super) ? "" : $" extends {super}";
+            var implements = string.IsNullOrEmpty(interfaces) ? "" : $" implements {interfaces}";
             var regName = this.bindingInfo.jsName;
             if (bindingInfo.type.IsAbstract)
             {
                 prefix += "abstract ";
             }
-            this.cg.tsDeclare.AppendLine($"{prefix}class {regName}{extends} {{");
+            this.cg.tsDeclare.AppendLine($"{prefix}class {regName}{extends}{implements} {{");
             this.cg.tsDeclare.AddTabLevel();
 
             // 生成函数体

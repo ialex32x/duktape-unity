@@ -604,6 +604,7 @@ namespace Duktape
             return name;
         }
 
+        // 获取父类的ts声明 (沿继承链上溯直到存在导出)
         public string GetTSSuperName(TypeBindingInfo typeBindingInfo)
         {
             var super = typeBindingInfo.super;
@@ -617,6 +618,27 @@ namespace Duktape
                 super = super.BaseType;
             }
             return "";
+        }
+
+        // 获取实现的接口的ts声明
+        public string GetTSInterfacesName(TypeBindingInfo typeBindingInfo)
+        {
+            var interfaces = typeBindingInfo.type.GetInterfaces();
+            var str = "";
+            foreach (var @interface in interfaces)
+            {
+                var interfaceBindingInfo = GetExportedType(@interface);
+                if (interfaceBindingInfo != null)
+                {
+                    // Debug.Log($"{typeBindingInfo.type.Name} implements {@interface.Name}");
+                    str += GetTSTypeFullName(interfaceBindingInfo.type) + ", ";
+                }
+            }
+            if (str.Length > 0)
+            {
+                str = str.Substring(0, str.Length - 2);
+            }
+            return str;
         }
 
         // 生成参数对应的字符串形式参数列表 (csharp)
