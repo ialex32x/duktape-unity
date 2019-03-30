@@ -6,9 +6,6 @@ declare namespace DuktapeJS {
     const COMPLETE: string
     const ERROR: string
 
-    class Behaviour extends UnityEngine.MonoBehaviour {
-    }
-
     /**
      * 封装 C# ref 传参约定
      */
@@ -94,15 +91,6 @@ declare namespace DuktapeJS {
         clear(type: string): void
     }
 
-    class WebSocket extends EventDispatcher {
-        readonly connected: boolean
-        constructor()
-
-        connect(scheme: string, host: string, port: number, path: string)
-        close()
-        send(data: any): boolean
-    }
-
     class Enum {
         static GetName(type: any, val: number): string
     }
@@ -115,23 +103,13 @@ declare namespace DuktapeJS {
     }
 
     /*
-    class Handler {
-        caller: any
-        method: Function
-        args: any[]
-        once: boolean
-        run(): void
-        runWith(...args: any[]): void
-    }
+    class WebSocket extends EventDispatcher {
+        readonly connected: boolean
+        constructor()
 
-    class Dispatcher {
-        on(type: string, caller: any, listener: Function, ...args: any[]): Dispatcher
-        once(type: string, caller: any, listener: Function, ...args: any[]): Dispatcher
-        off(type: string, caller: any, listener: Function): Dispatcher
-        offAll(type: string, caller: any): Dispatcher
-        offAll(type: string): Dispatcher
-        offAll(): Dispatcher
-        event(type: string, ...args: any[]): boolean
+        connect(scheme: string, host: string, port: number, path: string)
+        close()
+        send(data: any): boolean
     }
 
     class Socket extends Dispatcher {
