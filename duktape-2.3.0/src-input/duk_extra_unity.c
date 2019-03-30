@@ -17,6 +17,10 @@
     #define DUK_UNITY_BUILTINS_HANDLER 11
     #define DUK_UNITY_BUILTINS_EVENTDISPATCHER 12
     #define DUK_UNITY_BUILTINS_WEBSOCKET 13
+    #define DUK_UNITY_BUILTINS_TCPSERVER 14
+    #define DUK_UNITY_BUILTINS_TCPCLIENT 15
+    #define DUK_UNITY_BUILTINS_UDP 16
+    #define DUK_UNITY_BUILTINS_KCP 17
 // #include <librws.h>
 
 DUK_EXTERNAL void duk_builtins_reg_put(duk_context *ctx, duk_uarridx_t key) {
@@ -1527,9 +1531,10 @@ DUK_LOCAL void duk_rws_open(duk_context *ctx) {
 
 DUK_INTERNAL_DECL void duk_unity_valuetypes_open(duk_context *ctx);
 
-DUK_EXTERNAL void duk_unity_open(duk_context *ctx) {
+DUK_EXTERNAL duk_bool_t duk_unity_open(duk_context *ctx) {
     duk_refsys_open(ctx);
     // duk_rws_open(ctx);
     duk_events_open(ctx);
     duk_unity_valuetypes_open(ctx);
+    return 1;
 }
