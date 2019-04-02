@@ -241,6 +241,10 @@ namespace Duktape
         {
             DuktapeDLL.duk_builtins_reg_get(ctx, k);
             DuktapeDLL.duk_get_prop_string(ctx, -2, t);
+            DuktapeDLL.duk_get_prop_string(ctx, -2, "prototype");
+            DuktapeDLL.duk_get_prop_string(ctx, -2, "prototype");
+            DuktapeDLL.duk_set_prototype(ctx, -2);
+            DuktapeDLL.duk_pop(ctx);
             DuktapeDLL.duk_put_prop_string(ctx, -2, "_raw");
             DuktapeDLL.duk_put_prop_string(ctx, -2, t); 
         }

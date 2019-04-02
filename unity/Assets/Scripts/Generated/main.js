@@ -19,6 +19,8 @@ require("./mm/foo");
     console.log("v: " + v2.x + ", " + v2.y + ", " + v2.z + " (" + v2.magnitude + ")");
     v2.x += 10;
     console.log("v: " + v2.x + ", " + v2.y + ", " + v2.z + " (" + v2.magnitude + ")");
+    var q1 = new UnityEngine.Quaternion(1, 2, 3, 1);
+    console.log("q: " + q1.x + ", " + q1.y + ", " + q1.z + " eulerAngles: " + q1.eulerAngles.ToString());
 })();
 (function () {
     console.log("### Delegates begin");
