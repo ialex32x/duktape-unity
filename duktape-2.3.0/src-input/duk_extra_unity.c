@@ -1538,3 +1538,11 @@ DUK_EXTERNAL duk_bool_t duk_unity_open(duk_context *ctx) {
     duk_unity_valuetypes_open(ctx);
     return 1;
 }
+
+// DUK_EXTERNAL void duk_unity_suspend(duk_hthread *thr) {
+//     duk_suspend(thr, &thr->__state);
+// }
+
+// DUK_EXTERNAL void duk_unity_resume(duk_hthread *thr) {
+//     duk_resume(thr, &thr->__state);
+// }
