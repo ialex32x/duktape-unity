@@ -334,8 +334,6 @@ namespace Duktape
                     }
                 }
             }
-            DuktapeJSBuiltins.postreg(ctx);
-            DuktapeDLL.duk_pop(ctx);
             // Debug.LogFormat("exported {0} classes", _exported.Count);
 
             // 设置导出类的继承链
@@ -361,6 +359,10 @@ namespace Duktape
                 }
                 DuktapeDLL.duk_pop(ctx);
             }
+            
+            DuktapeJSBuiltins.postreg(ctx);
+            DuktapeDLL.duk_pop(ctx); // pop global 
+
             _updateTimer = DuktapeRunner.SetInterval(this.OnUpdate, 100f);
 
             if (listener != null)

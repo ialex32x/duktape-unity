@@ -1,4 +1,4 @@
 /build
 *.pyc
 
-.vscode/ipch
+**/.vscode/ipch
