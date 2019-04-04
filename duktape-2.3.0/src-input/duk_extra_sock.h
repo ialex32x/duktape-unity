@@ -34,6 +34,6 @@ typedef struct t_timeout_ {
 } t_timeout;
 
 DUK_INTERNAL_DECL double timeout_gettime(void);
-DUK_INTERNAL_DECL duk_bool_t duk_timeout_open(lua_State *L);
+DUK_INTERNAL_DECL duk_bool_t duk_timeout_open(duk_context *ctx);
 
 #endif // DUK_EXTRA_SOCK_H_INCLUDED

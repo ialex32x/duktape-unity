@@ -1,12 +1,15 @@
 //
 #include "duk_internal.h"
 
-// #include <winsock2.h>
-// #include <ws2tcpip.h>
 #include <time.h>
+#include <stdio.h>
+#include <limits.h>
+#include <float.h>
 
 #ifdef DUK_F_WINDOWS
 #   include <windows.h>
+// #include <winsock2.h>
+// #include <ws2tcpip.h>
 #else
 #   include <sys/time.h>
 #endif
@@ -71,7 +74,7 @@ DUK_LOCAL duk_ret_t duk_timeout_sleep(duk_context *ctx) {
     return 0;
 }
 
-DUK_INTERNAL duk_bool_t duk_timeout_open(lua_State *L) {
+DUK_INTERNAL duk_bool_t duk_timeout_open(duk_context *ctx) {
     duk_push_global_object(ctx);
     duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
 
