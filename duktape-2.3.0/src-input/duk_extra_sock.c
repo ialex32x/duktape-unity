@@ -171,12 +171,103 @@ DUK_LOCAL duk_ret_t duk_timeout_sleep(duk_context *ctx) {
     return 0;
 }
 
+DUK_LOCAL void collect_fd(duk_context *ctx, int tab, int itab, 
+        fd_set *set, t_socket *max_fd) {
+    int i = 1, n = 0;
+    /* nil is the same as an empty table */
+    if (duk_is_null_or_undefined(ctx, tab)) return;
+    /* otherwise we need it to be a table */
+    if (!duk_is_array(ctx, tab)) {
+        return duk_generic_error(ctx, "bad argument #%d", tab);
+    }
+//     for ( ;; ) {
+//         t_socket fd;
+//         lua_pushnumber(L, i);
+//         lua_gettable(L, tab);
+//         if (lua_isnil(L, -1)) {
+//             lua_pop(L, 1);
+//             break;
+//         }
+//         /* getfd figures out if this is a socket */
+//         fd = getfd(L);
+//         if (fd != SOCKET_INVALID) {
+//             /* make sure we don't overflow the fd_set */
+// #ifdef _WIN32
+//             if (n >= FD_SETSIZE) 
+//                 luaL_argerror(L, tab, "too many sockets");
+// #else
+//             if (fd >= FD_SETSIZE) 
+//                 luaL_argerror(L, tab, "descriptor too large for set size");
+// #endif
+//             FD_SET(fd, set);
+//             n++;
+//             /* keep track of the largest descriptor so far */
+//             if (*max_fd == SOCKET_INVALID || *max_fd < fd) 
+//                 *max_fd = fd;
+//             /* make sure we can map back from descriptor to the object */
+//             lua_pushnumber(L, (lua_Number) fd);
+//             lua_pushvalue(L, -2);
+//             lua_settable(L, itab);
+//         }
+//         lua_pop(L, 1);
+//         i = i + 1;
+//     }
+}
+
+DUK_LOCAL duk_ret_t duk_sock_select(duk_context *ctx) {
+    //TODO: TBD
+    duk_idx_t rtab, wtab, itab, ret, ndirty;
+    t_socket max_fd = SOCKET_INVALID;
+    fd_set rset, wset;
+    t_timeout tm;
+    duk_double_t t = duk_get_number_default(ctx, 2, -1);
+    FD_ZERO(&rset); FD_ZERO(&wset);
+    duk_set_top(ctx, 3); // lua_settop(L, 3);
+    duk_push_array(ctx); itab = duk_get_top(ctx) - 1;
+    duk_push_array(ctx); rtab = duk_get_top(ctx) - 1;
+    duk_push_array(ctx); wtab = duk_get_top(ctx) - 1;
+    collect_fd(ctx, 0, itab, &rset, &max_fd);
+    collect_fd(ctx, 1, itab, &wset, &max_fd);
+    /*
+    ndirty = check_dirty(L, 1, rtab, &rset);
+    t = ndirty > 0? 0.0: t;
+    timeout_init(&tm, t, -1);
+    timeout_markstart(&tm);
+    ret = socket_select(max_fd+1, &rset, &wset, NULL, &tm);
+    if (ret > 0 || ndirty > 0) {
+        return_fd(L, &rset, max_fd+1, itab, rtab, ndirty);
+        return_fd(L, &wset, max_fd+1, itab, wtab, 0);
+        make_assoc(L, rtab);
+        make_assoc(L, wtab);
+        return 2;
+    } else if (ret == 0) {
+        lua_pushstring(L, "timeout");
+        return 3;
+    } else {
+        luaL_error(L, "select failed");
+        return 3;
+    }
+    */
+    return 0;
+}
+
 DUK_INTERNAL duk_bool_t duk_timeout_open(duk_context *ctx) {
     duk_push_global_object(ctx);
     duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
 
     duk_unity_add_member(ctx, "gettime", duk_timeout_gettime, -1);
     duk_unity_add_member(ctx, "sleep", duk_timeout_sleep, -1);
+
+    duk_pop_2(ctx); // pop DuktapeJS and global    
+    return 1;
+}
+
+DUK_INTERNAL duk_bool_t duk_select_open(duk_context *ctx) {
+    duk_push_global_object(ctx);
+    duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
+
+    duk_unity_add_const_int(ctx, -1, "_SETSIZE", FD_SETSIZE);
+    duk_unity_add_member(ctx, "select", duk_sock_select, -1);
 
     duk_pop_2(ctx); // pop DuktapeJS and global    
     return 1;
