@@ -32,6 +32,9 @@ typedef struct t_timeout_ {
     double total;          /* total number of miliseconds for operation */
     double start;          /* time of start of operation */
 } t_timeout;
+typedef t_timeout *p_timeout;
+
+#define timeout_iszero(tm)   ((tm)->block == 0.0)
 
 DUK_INTERNAL_DECL double timeout_gettime(void);
 DUK_INTERNAL_DECL duk_bool_t duk_timeout_open(duk_context *ctx);

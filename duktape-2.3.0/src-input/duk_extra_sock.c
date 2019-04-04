@@ -14,6 +14,14 @@
 #   include <sys/time.h>
 #endif
 
+/* min and max macros */
+#ifndef MIN
+#define MIN(x, y) ((x) < (y) ? x : y)
+#endif
+#ifndef MAX
+#define MAX(x, y) ((x) > (y) ? x : y)
+#endif
+
 DUK_INTERNAL duk_bool_t duk_sock_open(duk_context *ctx) {
     // WSADATA wsaData;
     // WORD wVersionRequested = MAKEWORD(2, 0); 
@@ -44,6 +52,95 @@ DUK_INTERNAL double timeout_gettime(void) {
     /* Unix Epoch time (time since January 1, 1970 (UTC)) */
     return v.tv_sec + v.tv_usec / 1.0e6;
 #endif
+}
+
+/*-------------------------------------------------------------------------*\
+* Determines how much time we have left for the next system call,
+* if the previous call was successful 
+* Input
+*   tm: timeout control structure
+* Returns
+*   the number of ms left or -1 if there is no time limit
+\*-------------------------------------------------------------------------*/
+DUK_INTERNAL double timeout_get(p_timeout tm) {
+    if (tm->block < 0.0 && tm->total < 0.0) {
+        return -1;
+    } else if (tm->block < 0.0) {
+        double t = tm->total - timeout_gettime() + tm->start;
+        return MAX(t, 0.0);
+    } else if (tm->total < 0.0) {
+        return tm->block;
+    } else {
+        double t = tm->total - timeout_gettime() + tm->start;
+        return MIN(tm->block, MAX(t, 0.0));
+    }
+}
+
+/*-------------------------------------------------------------------------*\
+* Returns time since start of operation
+* Input
+*   tm: timeout control structure
+* Returns
+*   start field of structure
+\*-------------------------------------------------------------------------*/
+double timeout_getstart(p_timeout tm) {
+    return tm->start;
+}
+
+/*-------------------------------------------------------------------------*\
+* Determines how much time we have left for the next system call,
+* if the previous call was a failure
+* Input
+*   tm: timeout control structure
+* Returns
+*   the number of ms left or -1 if there is no time limit
+\*-------------------------------------------------------------------------*/
+double timeout_getretry(p_timeout tm) {
+    if (tm->block < 0.0 && tm->total < 0.0) {
+        return -1;
+    } else if (tm->block < 0.0) {
+        double t = tm->total - timeout_gettime() + tm->start;
+        return MAX(t, 0.0);
+    } else if (tm->total < 0.0) {
+        double t = tm->block - timeout_gettime() + tm->start;
+        return MAX(t, 0.0);
+    } else {
+        double t = tm->total - timeout_gettime() + tm->start;
+        return MIN(tm->block, MAX(t, 0.0));
+    }
+}
+
+/*-------------------------------------------------------------------------*\
+* Sets timeout values for IO operations
+* Lua Input: base, time [, mode]
+*   time: time out value in seconds
+*   mode: "b" for block timeout, "t" for total timeout. (default: b)
+\*-------------------------------------------------------------------------*/
+int timeout_meth_settimeout(duk_context *ctx, p_timeout tm) {
+    double t = duk_get_number_default(ctx, 0, -1);
+    const char *mode = duk_get_string_default(L, 1, "b");
+    switch (*mode) {
+        case 'b':
+            tm->block = t; 
+            break;
+        case 'r': case 't':
+            tm->total = t;
+            break;
+        default:
+        return duk_generic_error(ctx, "invalid timeout mode");
+    }
+    duk_push_number(ctx, 1);
+    return 1;
+}
+
+/*-------------------------------------------------------------------------*\
+* Marks the operation start time in structure 
+* Input
+*   tm: timeout control structure
+\*-------------------------------------------------------------------------*/
+p_timeout timeout_markstart(p_timeout tm) {
+    tm->start = timeout_gettime();
+    return tm;
 }
 
 DUK_LOCAL duk_ret_t duk_timeout_gettime(duk_context *ctx) {
