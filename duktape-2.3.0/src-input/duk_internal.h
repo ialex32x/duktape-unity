@@ -79,5 +79,7 @@ DUK_USE_USER_DECLARE()
 #include "duk_numconv.h"
 #include "duk_bi_protos.h"
 #include "duk_selftest.h"
+#include "duk_extra_unity.h"
+#include "duk_extra_sock.h"
 
 #endif  /* DUK_INTERNAL_H_INCLUDED */
