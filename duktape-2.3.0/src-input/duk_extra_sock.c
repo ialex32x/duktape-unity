@@ -173,21 +173,20 @@ DUK_LOCAL duk_ret_t duk_timeout_sleep(duk_context *ctx) {
 
 DUK_LOCAL void collect_fd(duk_context *ctx, int tab, int itab, 
         fd_set *set, t_socket *max_fd) {
-    int i = 1, n = 0;
+    int i = 0, n = 0;
     /* nil is the same as an empty table */
     if (duk_is_null_or_undefined(ctx, tab)) return;
     /* otherwise we need it to be a table */
     if (!duk_is_array(ctx, tab)) {
         return duk_generic_error(ctx, "bad argument #%d", tab);
     }
-//     for ( ;; ) {
-//         t_socket fd;
-//         lua_pushnumber(L, i);
-//         lua_gettable(L, tab);
-//         if (lua_isnil(L, -1)) {
-//             lua_pop(L, 1);
-//             break;
-//         }
+    for ( ;; ) {
+        t_socket fd;
+        duk_get_prop_index(ctx, tab, i);
+        if (duk_is_null_or_undefined(ctx, -1)) {
+            duk_pop(ctx);
+            break;
+        }
 //         /* getfd figures out if this is a socket */
 //         fd = getfd(L);
 //         if (fd != SOCKET_INVALID) {
@@ -209,9 +208,9 @@ DUK_LOCAL void collect_fd(duk_context *ctx, int tab, int itab,
 //             lua_pushvalue(L, -2);
 //             lua_settable(L, itab);
 //         }
-//         lua_pop(L, 1);
-//         i = i + 1;
-//     }
+        duk_pop(ctx);
+        i = i + 1;
+    }
 }
 
 DUK_LOCAL duk_ret_t duk_sock_select(duk_context *ctx) {
