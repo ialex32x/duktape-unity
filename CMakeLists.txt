@@ -36,3 +36,5 @@ else ()
 endif ()
 
 #target_link_libraries(duktape librws_static.lib)
+
+#target_link_libraries(duktape_scratch bcrypt)

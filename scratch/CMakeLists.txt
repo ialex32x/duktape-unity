@@ -34,4 +34,5 @@ ENDIF()
 
 #target_link_libraries(duktape_scratch rws_static)
 #target_link_libraries(duktape_scratch ${DUKTAPE_LIBRARY})
+target_link_libraries(duktape_scratch bcrypt)
 
