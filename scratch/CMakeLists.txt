@@ -5,14 +5,14 @@ set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set(DUKTAPE_SRC_DIR ${TOP_DIR}/duktape-2.3.0/src-scratch)
 set(DUKTAPE_SCRATCH_SRC_DIR ${TOP_DIR}/scratch/src)
 
-set(LIBWEBSOCKETS_DIR ${TOP_DIR}/thirdparty/libwebsockets)
-set(MBEDTLS_DIR ${TOP_DIR}/thirdparty/mbedtls)
-set(ZLIB_DIR ${TOP_DIR}/thirdparty/zlib)
-
 include_directories(${DUKTAPE_SRC_DIR})
 aux_source_directory(${DUKTAPE_SRC_DIR} DUKTAPE_SRCS)
 
 aux_source_directory(${DUKTAPE_SCRATCH_SRC_DIR} DUKTAPE_SCRATCH_SRCS)
+
+set(LIBWEBSOCKETS_DIR ${TOP_DIR}/thirdparty/libwebsockets)
+set(MBEDTLS_DIR ${TOP_DIR}/thirdparty/mbedtls)
+set(ZLIB_DIR ${TOP_DIR}/thirdparty/zlib)
 
 include_directories(${MBEDTLS_DIR}/include)
 aux_source_directory(${MBEDTLS_DIR}/library MBEDTLS_SRCS)

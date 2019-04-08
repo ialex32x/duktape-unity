@@ -5,14 +5,8 @@ set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(DUKTAPE_DIR ${TOP_DIR}/duktape-2.3.0)
 set(DUKTAPE_SRC_DIR ${DUKTAPE_DIR}/src-custom)
 
-set(LIBWEBSOCKETS_DIR ${TOP_DIR}/thirdparty/libwebsockets)
-set(MBEDTLS_DIR ${TOP_DIR}/thirdparty/mbedtls)
-
 include_directories(${DUKTAPE_SRC_DIR})
 aux_source_directory(${DUKTAPE_SRC_DIR} DUKTAPE_SRCS)
-
-include_directories(${MBEDTLS_DIR}/include)
-aux_source_directory(${MBEDTLS_DIR}/library MBEDTLS_SRCS)
 
 #IF(CMAKE_CL_64)
 #    link_directories(${TOP_DIR}/build/librws/x64/Release)
@@ -20,22 +14,41 @@ aux_source_directory(${MBEDTLS_DIR}/library MBEDTLS_SRCS)
 #    link_directories(${TOP_DIR}/build/librws/x86/Release)
 #ENDIF()
 
-if (APPLE) 
-    if (IOS)
-        add_library(duktape STATIC ${DUKTAPE_SRCS} ${MBEDTLS_SRCS})
-        set(CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)")
-        set_property(TARGET duktape PROPERTY XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "7.0")
-    else ()
-        add_library(duktape MODULE ${DUKTAPE_SRCS} ${MBEDTLS_SRCS})
-        set(CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD_64_BIT)")
-        set_target_properties(duktape PROPERTIES MACOSX_BUNDLE TRUE)
-        set_target_properties(duktape PROPERTIES BUNDLE TRUE)
-    endif ()
-else ()
-    add_library(duktape SHARED ${DUKTAPE_SRCS} ${MBEDTLS_SRCS})
-endif ()
+set(LIBWEBSOCKETS_DIR ${TOP_DIR}/thirdparty/libwebsockets)
+set(MBEDTLS_DIR ${TOP_DIR}/thirdparty/mbedtls)
+set(ZLIB_DIR ${TOP_DIR}/thirdparty/zlib)
 
-target_sources(duktape PRIVATE 
+include_directories(${MBEDTLS_DIR}/include)
+aux_source_directory(${MBEDTLS_DIR}/library MBEDTLS_SRCS)
+
+include_directories(${ZLIB_DIR})
+set(ZLIB_SRCS
+    ${ZLIB_DIR}/adler32.c
+    ${ZLIB_DIR}/compress.c
+    ${ZLIB_DIR}/crc32.c
+    ${ZLIB_DIR}/deflate.c
+    ${ZLIB_DIR}/infback.c
+    ${ZLIB_DIR}/inffast.c
+    ${ZLIB_DIR}/inflate.c
+    ${ZLIB_DIR}/inftrees.c
+    ${ZLIB_DIR}/trees.c
+    ${ZLIB_DIR}/uncompr.c
+    ${ZLIB_DIR}/zutil.c
+)
+
+include_directories(${LIBWEBSOCKETS_DIR})
+include_directories(${LIBWEBSOCKETS_DIR}/win32helpers)
+include_directories(${LIBWEBSOCKETS_DIR}/tls/mbedtls/wrapper/include)
+include_directories(${LIBWEBSOCKETS_DIR}/tls/mbedtls/wrapper/include/internal)
+include_directories(${LIBWEBSOCKETS_DIR}/tls/mbedtls/wrapper/include/openssl)
+include_directories(${LIBWEBSOCKETS_DIR}/tls/mbedtls/wrapper/include/platform)
+
+if (MSVC)
+	# Turn off stupid microsoft security warnings.
+	add_definitions(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE)
+endif(MSVC)
+
+set(LIBWEBSOCKETS_SRCS
     ${LIBWEBSOCKETS_DIR}/core/alloc.c
     ${LIBWEBSOCKETS_DIR}/core/context.c
     ${LIBWEBSOCKETS_DIR}/core/libwebsockets.c
@@ -85,6 +98,47 @@ target_sources(duktape PRIVATE
     ${LIBWEBSOCKETS_DIR}/tls/mbedtls/mbedtls-server.c
 )
 
+IF (WIN32)
+    MESSAGE("WIN32")
+    add_definitions(-DWINVER=0x0601 -D_WIN32_WINNT=0x0601)
+    add_definitions(-DWINDOWS_ENABLED)
+    list(APPEND LIBWEBSOCKETS_SRCS
+        ${LIBWEBSOCKETS_DIR}/plat/lws-plat-win.c
+        ${LIBWEBSOCKETS_DIR}/win32helpers/getopt.c
+        ${LIBWEBSOCKETS_DIR}/win32helpers/getopt_long.c
+        ${LIBWEBSOCKETS_DIR}/win32helpers/gettimeofday.c
+    )
+ELSE ()
+    MESSAGE("UNIX")
+    list(APPEND LIBWEBSOCKETS_SRCS
+        ${LIBWEBSOCKETS_DIR}/plat/lws-plat-unix.c
+    )
+ENDIF ()
+
+IF (ANDROID)
+    MESSAGE("ANDROID")
+    list(APPEND LIBWEBSOCKETS_SRCS
+        ${LIBWEBSOCKETS_DIR}/misc/getifaddrs.c
+    )
+ENDIF ()
+
+if (APPLE) 
+    if (IOS)
+        add_library(duktape STATIC ${DUKTAPE_SRCS} ${MBEDTLS_SRCS} ${LIBWEBSOCKETS_SRCS} ${ZLIB_SRCS})
+        set(CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)")
+        set_property(TARGET duktape PROPERTY XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "7.0")
+    else ()
+        add_library(duktape MODULE ${DUKTAPE_SRCS} ${MBEDTLS_SRCS} ${LIBWEBSOCKETS_SRCS} ${ZLIB_SRCS})
+        set(CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD_64_BIT)")
+        set_target_properties(duktape PROPERTIES MACOSX_BUNDLE TRUE)
+        set_target_properties(duktape PROPERTIES BUNDLE TRUE)
+    endif ()
+else ()
+    add_library(duktape SHARED ${DUKTAPE_SRCS} ${MBEDTLS_SRCS} ${LIBWEBSOCKETS_SRCS} ${ZLIB_SRCS})
+endif ()
+
 #target_link_libraries(duktape librws_static.lib)
 
-#target_link_libraries(duktape_scratch bcrypt)
+IF (WIN32)
+    target_link_libraries(duktape bcrypt)
+ENDIF ()
