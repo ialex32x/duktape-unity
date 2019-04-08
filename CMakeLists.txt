@@ -1,14 +1,18 @@
 cmake_minimum_required(VERSION 3.7.2)
 project(duktape)
 
-set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/)
+set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(DUKTAPE_DIR ${TOP_DIR}/duktape-2.3.0)
-set(LIBRWS_DIR ${TOP_DIR}/librws)
 set(DUKTAPE_SRC_DIR ${DUKTAPE_DIR}/src-custom)
 
+set(LIBWEBSOCKETS_DIR ${TOP_DIR}/thirdparty/libwebsockets)
+set(MBEDTLS_DIR ${TOP_DIR}/thirdparty/mbedtls)
+
 include_directories(${DUKTAPE_SRC_DIR})
-include_directories(${LIBRWS_DIR})
 aux_source_directory(${DUKTAPE_SRC_DIR} DUKTAPE_SRCS)
+
+include_directories(${MBEDTLS_DIR}/include)
+aux_source_directory(${MBEDTLS_DIR}/library MBEDTLS_SRCS)
 
 #IF(CMAKE_CL_64)
 #    link_directories(${TOP_DIR}/build/librws/x64/Release)
@@ -18,17 +22,17 @@ aux_source_directory(${DUKTAPE_SRC_DIR} DUKTAPE_SRCS)
 
 if (APPLE) 
     if (IOS)
-        add_library(duktape STATIC ${DUKTAPE_SRCS})
+        add_library(duktape STATIC ${DUKTAPE_SRCS} ${MBEDTLS_SRCS})
         set(CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)")
         set_property(TARGET duktape PROPERTY XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "7.0")
     else ()
-        add_library(duktape MODULE ${DUKTAPE_SRCS})
+        add_library(duktape MODULE ${DUKTAPE_SRCS} ${MBEDTLS_SRCS})
         set(CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD_64_BIT)")
         set_target_properties(duktape PROPERTIES MACOSX_BUNDLE TRUE)
         set_target_properties(duktape PROPERTIES BUNDLE TRUE)
     endif ()
 else ()
-    add_library(duktape SHARED ${DUKTAPE_SRCS})
+    add_library(duktape SHARED ${DUKTAPE_SRCS} ${MBEDTLS_SRCS})
 endif ()
 
 #target_link_libraries(duktape librws_static.lib)
