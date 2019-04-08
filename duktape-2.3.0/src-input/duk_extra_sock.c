@@ -118,7 +118,7 @@ double timeout_getretry(p_timeout tm) {
 \*-------------------------------------------------------------------------*/
 int timeout_meth_settimeout(duk_context *ctx, p_timeout tm) {
     double t = duk_get_number_default(ctx, 0, -1);
-    const char *mode = duk_get_string_default(L, 1, "b");
+    const char *mode = duk_get_string_default(ctx, 1, "b");
     switch (*mode) {
         case 'b':
             tm->block = t; 
