@@ -7,6 +7,7 @@ set(DUKTAPE_SCRATCH_SRC_DIR ${TOP_DIR}/scratch/src)
 
 set(LIBWEBSOCKETS_DIR ${TOP_DIR}/thirdparty/libwebsockets)
 set(MBEDTLS_DIR ${TOP_DIR}/thirdparty/mbedtls)
+set(ZLIB_DIR ${TOP_DIR}/thirdparty/zlib)
 
 include_directories(${DUKTAPE_SRC_DIR})
 aux_source_directory(${DUKTAPE_SRC_DIR} DUKTAPE_SRCS)
@@ -16,12 +17,32 @@ aux_source_directory(${DUKTAPE_SCRATCH_SRC_DIR} DUKTAPE_SCRATCH_SRCS)
 include_directories(${MBEDTLS_DIR}/include)
 aux_source_directory(${MBEDTLS_DIR}/library MBEDTLS_SRCS)
 
+include_directories(${ZLIB_DIR})
+set(ZLIB_SRCS
+    ${ZLIB_DIR}/adler32.c
+    ${ZLIB_DIR}/compress.c
+    ${ZLIB_DIR}/crc32.c
+    ${ZLIB_DIR}/deflate.c
+    ${ZLIB_DIR}/infback.c
+    ${ZLIB_DIR}/inffast.c
+    ${ZLIB_DIR}/inflate.c
+    ${ZLIB_DIR}/inftrees.c
+    ${ZLIB_DIR}/trees.c
+    ${ZLIB_DIR}/uncompr.c
+    ${ZLIB_DIR}/zutil.c
+)
+
 include_directories(${LIBWEBSOCKETS_DIR})
 include_directories(${LIBWEBSOCKETS_DIR}/win32helpers)
 include_directories(${LIBWEBSOCKETS_DIR}/tls/mbedtls/wrapper/include)
 include_directories(${LIBWEBSOCKETS_DIR}/tls/mbedtls/wrapper/include/internal)
 include_directories(${LIBWEBSOCKETS_DIR}/tls/mbedtls/wrapper/include/openssl)
 include_directories(${LIBWEBSOCKETS_DIR}/tls/mbedtls/wrapper/include/platform)
+
+if (MSVC)
+	# Turn off stupid microsoft security warnings.
+	add_definitions(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE)
+endif(MSVC)
 
 set(LIBWEBSOCKETS_SRCS
     ${LIBWEBSOCKETS_DIR}/core/alloc.c
@@ -75,6 +96,8 @@ set(LIBWEBSOCKETS_SRCS
 
 IF (WIN32)
     MESSAGE("WIN32")
+    add_definitions(-DWINVER=0x0601 -D_WIN32_WINNT=0x0601)
+    add_definitions(-DWINDOWS_ENABLED)
     list(APPEND LIBWEBSOCKETS_SRCS
         ${LIBWEBSOCKETS_DIR}/plat/lws-plat-win.c
         ${LIBWEBSOCKETS_DIR}/win32helpers/getopt.c
@@ -96,7 +119,7 @@ IF (ANDROID)
 ENDIF ()
 
 message("Source: ${DUKTAPE_SCRATCH_SRC_DIR}")
-add_executable(duktape_scratch ${DUKTAPE_SCRATCH_SRCS} ${DUKTAPE_SRCS} ${MBEDTLS_SRCS} ${LIBWEBSOCKETS_SRCS})
+add_executable(duktape_scratch ${DUKTAPE_SCRATCH_SRCS} ${DUKTAPE_SRCS} ${MBEDTLS_SRCS} ${LIBWEBSOCKETS_SRCS} ${ZLIB_SRCS})
 
 IF(CMAKE_CL_64)
     #link_directories(${TOP_DIR}/build/duktape/x64/Release)
