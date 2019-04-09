@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.7.2)
 project(duktape_scratch)
 
+IF (WIN32)
+    # the fucking windows
+    add_definitions(-D_WINSOCKAPI_)
+ENDIF ()
+
 set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set(DUKTAPE_SRC_DIR ${TOP_DIR}/duktape-2.3.0/src-scratch)
 set(DUKTAPE_SCRATCH_SRC_DIR ${TOP_DIR}/scratch/src)
