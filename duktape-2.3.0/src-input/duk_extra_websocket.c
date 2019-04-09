@@ -91,6 +91,7 @@ DUK_LOCAL void _on_connect(struct duk_websocket_t *websocket, const char *protoc
     duk_push_literal(ctx, "open");
     duk_push_string(ctx, protocol);
     if (duk_pcall_prop(ctx, -3, 2) != DUK_EXEC_SUCCESS) {
+        lwsl_warn("unable to dispatch open");
     }
     duk_pop_2(ctx);
 }
@@ -255,20 +256,20 @@ struct IP_Address {
 	duk_bool_t wildcard;
 };
 
-DUK_LOCAL void _IP_Address_clear(IP_Address *ip) {
+DUK_LOCAL void _IP_Address_clear(struct IP_Address *ip) {
 	memset(&(ip->field8[0]), 0, sizeof(ip->field8));
 	ip->valid = FALSE;
 	ip->wildcard = FALSE;
 }
 
-DUK_LOCAL void _IP_Address_set_ipv4(IP_Address *ip, const uint8_t *p_ip) {
+DUK_LOCAL void _IP_Address_set_ipv4(struct IP_Address *ip, const uint8_t *p_ip) {
     _IP_Address_clear(ip);
     ip->valid = TRUE;
 	ip->field16[5] = 0xffff;
 	ip->field32[3] = *((const uint32_t *)p_ip);
 }
 
-DUK_LOCAL void _IP_Address_set_ipv6(IP_Address *ip, const uint8_t *p_ip) {
+DUK_LOCAL void _IP_Address_set_ipv6(struct IP_Address *ip, const uint8_t *p_ip) {
 	_IP_Address_clear(ip);
 	ip->valid = TRUE;
 	for (int i = 0; i < 16; i++) {
@@ -276,7 +277,7 @@ DUK_LOCAL void _IP_Address_set_ipv6(IP_Address *ip, const uint8_t *p_ip) {
     }
 }
 
-DUK_LOCAL duk_bool_t _resolve_hostname(const char *p_hostname, int p_type, IP_Address *ip) {
+DUK_LOCAL duk_bool_t _resolve_hostname(const char *p_hostname, int p_type, struct IP_Address *ip) {
     if (!ip) {
         return FALSE;
     }
