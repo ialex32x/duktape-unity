@@ -6,7 +6,7 @@
  *  comments.  Other parts of the header are Duktape internal and related to
  *  e.g. platform/compiler/feature detection.
  *
- *  Git commit e7e4d59c4d12f95582f6bc6c474fc521ef40e7be (e7e4d59-dirty).
+ *  Git commit b5edd7ab8530a5f437591ed59ef5aafab4748b3c (b5edd7a-dirty).
  *  Git branch develop.
  *
  *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and
@@ -171,8 +171,8 @@
  * which Duktape snapshot was used.  Not available in the ECMAScript
  * environment.
  */
-#define DUK_GIT_COMMIT                    "e7e4d59c4d12f95582f6bc6c474fc521ef40e7be"
-#define DUK_GIT_DESCRIBE                  "e7e4d59-dirty"
+#define DUK_GIT_COMMIT                    "b5edd7ab8530a5f437591ed59ef5aafab4748b3c"
+#define DUK_GIT_DESCRIBE                  "b5edd7a-dirty"
 #define DUK_GIT_BRANCH                    "develop"
 
 /* External duk_config.h provides platform/compiler/OS dependent
@@ -1488,7 +1488,7 @@ DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_prop_i(duk_context *ctx, duk_idx_t id
 
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_put_target_i(duk_context *ctx, duk_idx_t idx);
 
-DUK_EXTERNAL_DECL void duk_unity_open(duk_context *ctx);
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_open(duk_context *ctx);
 
 DUK_EXTERNAL_DECL void duk_builtins_reg_put(duk_context *ctx, duk_uarridx_t key);
 DUK_EXTERNAL_DECL void duk_builtins_reg_get(duk_context *ctx, duk_uarridx_t key);
@@ -1501,6 +1501,12 @@ DUK_EXTERNAL_DECL void *duk_unity_push_buffer_raw(duk_context *ctx, duk_uint_t s
 DUK_EXTERNAL_DECL void duk_unity_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_uint_t byte_offset, duk_uint_t byte_length, duk_uint_t flags);
 
 DUK_EXTERNAL_DECL duk_idx_t duk_unity_push_error_object_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt);
+
+
+DUK_EXTERNAL_DECL duk_bool_t duk_sock_open(duk_context *ctx);
+
+// DUK_EXTERNAL_DECL void duk_unity_suspend(duk_context *ctx);
+// DUK_EXTERNAL_DECL void duk_unity_resume(duk_context *ctx);
 
 /*
  * debugger supported

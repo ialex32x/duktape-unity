@@ -102,16 +102,17 @@ declare namespace DuktapeJS {
         static on<R, T0, T1>(caller: any, fn: (arg0: T0, arg1: T1) => R): Delegate
     }
 
-    /*
     class WebSocket extends EventDispatcher {
         readonly connected: boolean
         constructor()
-
-        connect(scheme: string, host: string, port: number, path: string)
+        
+        connect(address: string, host: string, path: string, port: number, ssl: boolean, ssl_verify: boolean)
         close()
+        poll()
         send(data: any): boolean
     }
-
+    
+    /*
     class Socket extends Dispatcher {
         readonly connected: boolean
 

@@ -11,9 +11,15 @@
 #define UNITY_DEG2RAD 0.017453292519943295F
 #define UNITY_RAD2DEG 57.29577951308232F
 
-DUK_INTERNAL DUK_INLINE void duk_unity_add_const_number(duk_context *ctx, duk_idx_t idx, const char *key, duk_double_t num) {
+DUK_INTERNAL void duk_unity_add_const_number(duk_context *ctx, duk_idx_t idx, const char *key, duk_double_t num) {
     idx = duk_normalize_index(ctx, idx);
     duk_push_number(ctx, num);
+    duk_put_prop_string(ctx, idx, key);
+}
+
+DUK_INTERNAL void duk_unity_add_const_int(duk_context *ctx, duk_idx_t idx, const char *key, duk_int_t num) {
+    idx = duk_normalize_index(ctx, idx);
+    duk_push_int(ctx, num);
     duk_put_prop_string(ctx, idx, key);
 }
 

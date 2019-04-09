@@ -42,3 +42,5 @@ FIXME:
     ✔ get_this 取值方式优化 （与普通参数取值流程一致） @started(19-03-30 00:57) @done(19-03-30 00:57) @lasted(42s)
     ✔ byte[] 取值兼容 Buffer @started(19-03-30 00:58) @done(19-03-30 00:58) @lasted(20s)
 
+UNSUPPORTED： 
+    x 在C中可操作的协程 （duktape 目前无法支持）

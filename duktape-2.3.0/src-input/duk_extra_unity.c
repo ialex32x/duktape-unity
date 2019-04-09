@@ -1,28 +1,6 @@
 
 #include "duk_internal.h"
 
-#define DUK_UNITY_STASH_REGISTRY 0
-#define DUK_UNITY_STASH_BUILTINS 1
-    #define DUK_UNITY_BUILTINS_VECTOR2 0
-    #define DUK_UNITY_BUILTINS_VECTOR2I 1
-    #define DUK_UNITY_BUILTINS_VECTOR3 2
-    #define DUK_UNITY_BUILTINS_VECTOR3I 3
-    #define DUK_UNITY_BUILTINS_VECTOR4 4
-    #define DUK_UNITY_BUILTINS_QUATERNION 5
-    #define DUK_UNITY_BUILTINS_COLOR 6
-    #define DUK_UNITY_BUILTINS_COLOR32 7
-    #define DUK_UNITY_BUILTINS_MATRIX33 8
-    #define DUK_UNITY_BUILTINS_MATRIX44 9
-    #define DUK_UNITY_BUILTINS_DISPATCHER 10
-    #define DUK_UNITY_BUILTINS_HANDLER 11
-    #define DUK_UNITY_BUILTINS_EVENTDISPATCHER 12
-    #define DUK_UNITY_BUILTINS_WEBSOCKET 13
-    #define DUK_UNITY_BUILTINS_TCPSERVER 14
-    #define DUK_UNITY_BUILTINS_TCPCLIENT 15
-    #define DUK_UNITY_BUILTINS_UDP 16
-    #define DUK_UNITY_BUILTINS_KCP 17
-// #include <librws.h>
-
 DUK_EXTERNAL void duk_builtins_reg_put(duk_context *ctx, duk_uarridx_t key) {
     duk_push_heap_stash(ctx);
     duk_get_prop_index(ctx, -1, DUK_UNITY_STASH_BUILTINS); //duk_get_prop_string(ctx, -1, "c_builtins"); // obj, stash, builtins
@@ -39,7 +17,14 @@ DUK_EXTERNAL void duk_builtins_reg_get(duk_context *ctx, duk_uarridx_t key) {
     duk_remove(ctx, -2);
 }
 
-DUK_LOCAL void duk_unity_get_prop_object(duk_context *ctx, duk_idx_t idx, const char *key) {
+DUK_EXTERNAL void duk_unity_inherit(duk_context *ctx) {
+    duk_get_prop_string(ctx, -2, "prototype");
+    duk_get_prop_string(ctx, -2, "prototype");
+    duk_set_prototype(ctx, -2);
+    duk_pop(ctx);
+}
+
+DUK_INTERNAL void duk_unity_get_prop_object(duk_context *ctx, duk_idx_t idx, const char *key) {
     if (!duk_get_prop_string(ctx, idx, key)) {
         duk_pop(ctx);
         idx = duk_normalize_index(ctx, idx);
@@ -55,7 +40,7 @@ DUK_LOCAL void duk_unity_array_assign(duk_context *ctx, duk_idx_t obj_idx, duk_u
     duk_put_prop_index(ctx, obj_idx, dst);
 }
 
-DUK_LOCAL void duk_unity_begin_class(duk_context *ctx, const char *key, duk_uarridx_t reg_idx, duk_c_function ctor, duk_c_function dtor) {
+DUK_INTERNAL void duk_unity_begin_class(duk_context *ctx, const char *key, duk_uarridx_t reg_idx, duk_c_function ctor, duk_c_function dtor) {
     duk_push_c_function(ctx, ctor, DUK_VARARGS); // ctor
     duk_dup_top(ctx);
     duk_builtins_reg_put(ctx, reg_idx);
@@ -70,13 +55,13 @@ DUK_LOCAL void duk_unity_begin_class(duk_context *ctx, const char *key, duk_uarr
     duk_put_prop_string(ctx, -3, "prototype"); // ctor, prototype    
 }
 
-DUK_LOCAL void duk_unity_add_member(duk_context *ctx, const char *name, duk_c_function fn, duk_idx_t idx) {
+DUK_INTERNAL void duk_unity_add_member(duk_context *ctx, const char *name, duk_c_function fn, duk_idx_t idx) {
     idx = duk_normalize_index(ctx, idx);
     duk_push_c_function(ctx, fn, DUK_VARARGS);
     duk_put_prop_string(ctx, idx, name);
 }
 
-DUK_LOCAL void duk_unity_add_property(duk_context *ctx, const char *name, duk_c_function getter, duk_c_function setter, duk_idx_t idx) {
+DUK_INTERNAL void duk_unity_add_property(duk_context *ctx, const char *name, duk_c_function getter, duk_c_function setter, duk_idx_t idx) {
     idx = duk_normalize_index(ctx, idx);
     duk_uint_t flags = 0;
     duk_push_string(ctx, name);
@@ -94,7 +79,7 @@ DUK_LOCAL void duk_unity_add_property(duk_context *ctx, const char *name, duk_c_
     duk_def_prop(ctx, idx, flags | DUK_DEFPROP_SET_ENUMERABLE | DUK_DEFPROP_CLEAR_CONFIGURABLE);
 }
 
-DUK_LOCAL void duk_unity_end_class(duk_context *ctx) {
+DUK_INTERNAL void duk_unity_end_class(duk_context *ctx) {
     duk_pop_2(ctx);
 }
 
@@ -1024,7 +1009,7 @@ DUK_LOCAL duk_ret_t duk_events_eventdispatcher_constructor(duk_context *ctx) {
     return 0;
 }
 
-DUK_LOCAL duk_ret_t duk_events_eventdispatcher_on(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_events_eventdispatcher_on(duk_context *ctx) {
     // on(type, caller, fn, once?)
     duk_idx_t nargs = duk_get_top(ctx);
     if (nargs < 3) {
@@ -1070,7 +1055,7 @@ DUK_LOCAL duk_ret_t duk_events_eventdispatcher_on(duk_context *ctx) {
     return 1;
 }
 
-DUK_LOCAL duk_ret_t duk_events_eventdispatcher_off(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_events_eventdispatcher_off(duk_context *ctx) {
     // off(type, caller, fn)
     duk_idx_t nargs = duk_get_top(ctx);
     if (nargs < 2) {
@@ -1111,7 +1096,7 @@ DUK_LOCAL duk_ret_t duk_events_eventdispatcher_off(duk_context *ctx) {
     return 1;
 }
 
-DUK_LOCAL duk_ret_t duk_events_eventdispatcher_clear(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_events_eventdispatcher_clear(duk_context *ctx) {
     // clear(type)
     duk_idx_t nargs = duk_get_top(ctx);
     if (nargs < 1) {
@@ -1143,7 +1128,7 @@ DUK_LOCAL duk_ret_t duk_events_eventdispatcher_clear(duk_context *ctx) {
     return 1;
 }
 
-DUK_LOCAL duk_ret_t duk_events_eventdispatcher_dispatch(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_events_eventdispatcher_dispatch(duk_context *ctx) {
     // dispatch(type, ...args)
     duk_idx_t nargs = duk_get_top(ctx);
     if (nargs < 1) {
@@ -1200,342 +1185,13 @@ DUK_LOCAL void duk_events_open(duk_context *ctx) {
     duk_pop_2(ctx); // pop DuktapeJS and global
 }
 
-/**
- * websocket support (librws)
- */
-
-/*
-#define DUK_RWS_EVENT_CONNECTED 1
-#define DUK_RWS_EVENT_DISCONNECTED 2
-#define DUK_RWS_EVENT_BIN 3
-#define DUK_RWS_EVENT_TEXT 4
-
-struct duk_rws_event {
-    duk_uint_t event;
-    const void *data;
-    duk_size_t len;
-    duk_rws_event *next;
-};
-
-typedef duk_rws_event duk_rws_event;
-
-struct duk_rws_context {
-    duk_bool_t finalized;
-    rws_mutex mutex;
-    duk_rws_event *head;
-    duk_rws_event *tail;
-};
-
-typedef duk_rws_context duk_rws_context;
-
-DUK_LOCAL void duk_rws_context_push_event(duk_rws_context *context, duk_uint_t event, const void *data, duk_size_t len) {
-    if (context != NULL) {
-        rws_mutex_lock(context->mutex);
-        if (!context->finalized) {
-            duk_rws_event *ev = rws_malloc(sizeof(duk_rws_event));
-            void *buf = NULL;
-            if (data != NULL && len > 0) {
-                buf = rws_malloc(len);
-                memcpy(buf, data, len);
-            }
-            ev->event = event;
-            ev->data = buf;
-            ev->len = len;
-            ev->next = NULL;
-            if (context->head == NULL) {
-                context->head = context->tail = ev;
-            } else {
-                context->tail->next = ev;
-                context->tail = ev;
-            }
-        }
-        rws_mutex_unlock(context->mutex);
-    }
-}
-
-DUK_LOCAL duk_rws_event * duk_rws_context_pop_event(duk_rws_context *context) {
-    duk_rws_event *ev = NULL;
-    rws_mutex_lock(context->mutex);
-    if (context->head != NULL) {
-        ev = context->head;
-        if (context->head == context->tail) {
-            context->head = context->tail = NULL;
-        } else {
-            context->head = ev->next;
-        }
-        ev->next = NULL;
-    }
-    rws_mutex_unlock(context->mutex);
-    return ev;
-}
-
-DUK_LOCAL void duk_rws_context_destroy(duk_rws_context *context) {
-    if (context != NULL) {
-        rws_mutex mutex = context->mutex;
-        duk_rws_event *ev = NULL;
-        rws_mutex_lock(mutex);
-        context->mutex = NULL;
-        context->finalized = 1;
-        ev = context->head;
-        context->head = NULL;
-        rws_mutex_unlock(mutex);
-        while (ev != NULL) {
-            if (ev->data != NULL) {
-                rws_free(ev->data);
-            }
-            ev = ev->next;
-        }
-        rws_mutex_delete(mutex);
-        rws_free(context);
-    }
-}
-
-DUK_LOCAL void _rws_on_socket_connected(rws_socket sock) {
-    duk_rws_context *context = rws_socket_get_user_object(sock);
-    duk_rws_context_push_event(context, DUK_RWS_EVENT_CONNECTED, NULL, 0);
-}
-
-DUK_LOCAL void _rws_on_socket_disconnected(rws_socket sock) {
-    duk_rws_context *context = rws_socket_get_user_object(sock);
-    duk_rws_context_push_event(context, DUK_RWS_EVENT_DISCONNECTED, NULL, 0);
-}
-
-DUK_LOCAL void _rws_on_socket_received_bin(rws_socket sock, const void * data, const unsigned int data_size) {
-    duk_rws_context *context = rws_socket_get_user_object(sock);
-    duk_rws_context_push_event(context, DUK_RWS_EVENT_BIN, data, (duk_size_t)data_size);
-}
-
-DUK_LOCAL void _rws_on_socket_received_text(rws_socket sock, const char * text, const unsigned int text_size) {
-    duk_rws_context *context = rws_socket_get_user_object(sock);
-    duk_rws_context_push_event(context, DUK_RWS_EVENT_TEXT, text, (duk_size_t)text_size);
-}
-
-DUK_LOCAL duk_ret_t duk_rws_socket_constructor(duk_context *ctx) {
-    duk_push_this(ctx);
-    duk_rws_context *rws_context = rws_malloc(sizeof(duk_rws_context));
-    if (rws_context != NULL) {
-        rws_socket sock = rws_socket_create();
-        rws_context->mutex = rws_mutex_create_recursive();
-        rws_context->head = NULL;
-        rws_context->tail = NULL;
-        rws_context->finalized = 0;
-        rws_socket_set_on_connected(sock, _rws_on_socket_connected);
-        rws_socket_set_on_disconnected(sock, _rws_on_socket_disconnected);
-        rws_socket_set_on_received_bin(sock, _rws_on_socket_received_bin);
-        rws_socket_set_on_received_text(sock, _rws_on_socket_received_text);
-        duk_push_pointer(ctx, sock);
-        duk_put_prop_string(ctx, -2, DUK_HIDDEN_SYMBOL("__ptr"));
-        duk_pop(ctx);
-    } 
-    return 0;
-}
-
-DUK_LOCAL duk_ret_t duk_rws_socket_connect(duk_context *ctx) {
-    duk_push_this(ctx);
-    if (duk_get_prop_string(ctx, -1, DUK_HIDDEN_SYMBOL("__ptr"))) {
-        rws_socket sock = (rws_socket)duk_get_pointer_default(ctx, -1, NULL);
-        duk_pop_2(ctx);
-        if (sock != NULL) {
-            //TODO: socket.connect
-            // connect(scheme: string, host: string, port: number, path: string)
-            if (duk_get_top(ctx) >= 4) {
-                if (!duk_is_string(ctx, 0)) {
-                    return duk_generic_error(ctx, "scheme should be string");
-                }
-                if (!duk_is_string(ctx, 1)) {
-                    return duk_generic_error(ctx, "host should be string");
-                }
-                if (!duk_is_number(ctx, 2)) {
-                    return duk_generic_error(ctx, "port should be number");
-                }
-                if (!duk_is_string(ctx, 3)) {
-                    return duk_generic_error(ctx, "path should be string");
-                }
-                char *scheme = duk_get_string_default(ctx, 0, NULL);
-                if (scheme == NULL) {
-                    return duk_generic_error(ctx, "scheme is null");
-                }
-                char *host = duk_get_string_default(ctx, 1, NULL);
-                if (host == NULL) {
-                    return duk_generic_error(ctx, "host is null");
-                }
-                duk_int_t port = duk_get_int_default(ctx, 2, 0);
-                if (port <= 0 || port > 65535) {
-                    return duk_generic_error(ctx, "port is invalid");
-                }
-                char *path = duk_get_string_default(ctx, 3, NULL);
-                if (path == NULL) {
-                    return duk_generic_error(ctx, "path is null");
-                }
-                rws_socket_set_url(sock, scheme, host, port, path);
-                rws_socket_connect(sock);
-            } else {
-                return duk_generic_error(ctx, "4 arguments required");
-            }
-        }
-    }
-    return 0;
-}
-
-DUK_LOCAL duk_ret_t duk_rws_socket_send(duk_context *ctx) {
-    duk_push_this(ctx);
-    if (duk_get_prop_string(ctx, -1, DUK_HIDDEN_SYMBOL("__ptr"))) {
-        rws_socket sock = (rws_socket)duk_get_pointer_default(ctx, -1, NULL);
-        duk_pop_2(ctx);
-        if (sock != NULL) {
-            if (duk_is_string(ctx, 0)) {
-                char * text = duk_get_string_default(ctx, 0, NULL);
-                if (text != NULL) {
-                    rws_socket_send_text(sock, text);
-                    duk_push_boolean(ctx, 1);
-                } else {
-                    duk_push_boolean(ctx, 0);
-                }
-            } else {
-                size_t data_size;
-                void * data = duk_get_buffer_data(ctx, 0, &data_size);
-                if (data != NULL) {
-                    rws_socket_send_bin(sock, data, data_size);
-                    duk_push_boolean(ctx, 1);
-                } else {
-                    duk_push_boolean(ctx, 0);
-                }
-            }
-        } else {
-            duk_push_boolean(ctx, 0);
-        }
-    } else {
-        duk_push_boolean(ctx, 0);
-    }
-    return 1;
-}
-
-DUK_LOCAL duk_ret_t duk_rws_socket_is_connected(duk_context *ctx) {
-    duk_push_this(ctx);
-    if (duk_get_prop_string(ctx, -1, DUK_HIDDEN_SYMBOL("__ptr"))) {
-        rws_socket sock = (rws_socket)duk_get_pointer_default(ctx, -1, NULL);
-        duk_pop_2(ctx);
-        if (sock != NULL) {
-            duk_push_boolean(ctx, rws_socket_is_connected(sock));
-            return 1;
-        }
-    }
-    return 0;
-}
-
-DUK_LOCAL duk_ret_t duk_rws_socket_proc(duk_context *ctx) {
-    duk_push_this(ctx);
-    if (duk_get_prop_string(ctx, -1, DUK_HIDDEN_SYMBOL("__ptr"))) {
-        rws_socket sock = (rws_socket)duk_get_pointer_default(ctx, -1, NULL);
-        duk_pop(ctx);
-        if (sock != NULL) {
-            duk_rws_context *context = rws_socket_get_user_object(sock);
-            duk_rws_event *ev = duk_rws_context_pop_event(context);
-            if (ev != NULL) {
-                switch (ev->event) {
-                    case DUK_RWS_EVENT_CONNECTED:
-                        duk_push_string(ctx, "dispatch");
-                        duk_push_string(ctx, "connected");
-                        if (duk_pcall_prop(ctx, -3, 1) != DUK_EXEC_SUCCESS) {
-                            return duk_throw(ctx);
-                        }
-                        duk_pop(ctx);
-                        break;
-                    case DUK_RWS_EVENT_DISCONNECTED:
-                        duk_push_string(ctx, "dispatch");
-                        duk_push_string(ctx, "disconnected");
-                        if (duk_pcall_prop(ctx, -3, 1) != DUK_EXEC_SUCCESS) {
-                            return duk_throw(ctx);
-                        }
-                        duk_pop(ctx);
-                        break;
-                    case DUK_RWS_EVENT_TEXT:
-                        duk_push_string(ctx, "dispatch");
-                        duk_push_string(ctx, "text");
-                        // duk_push_lstring(ctx, ev->data, ev->len);
-                        void *buf = duk_push_fixed_buffer_nozero(ctx, ev->len);
-                        memcpy(buf, ev->data, ev->len);
-                        if (duk_pcall_prop(ctx, -3, 2) != DUK_EXEC_SUCCESS) {
-                            return duk_throw(ctx);
-                        }
-                        duk_pop(ctx);
-                        break;
-                    case DUK_RWS_EVENT_BIN:
-                        duk_push_string(ctx, "dispatch");
-                        duk_push_string(ctx, "data");
-                        void *buf = duk_push_fixed_buffer_nozero(ctx, ev->len);
-                        memcpy(buf, ev->data, ev->len);
-                        if (duk_pcall_prop(ctx, -3, 2) != DUK_EXEC_SUCCESS) {
-                            return duk_throw(ctx);
-                        }
-                        duk_pop(ctx);
-                        break;
-                    default: break;
-                }
-            }
-            return 0;
-        }
-    }
-    return 0;
-}
-
-DUK_LOCAL duk_ret_t duk_rws_socket_close(duk_context *ctx) {
-    duk_push_this(ctx);
-    if (duk_get_prop_string(ctx, -1, DUK_HIDDEN_SYMBOL("__ptr"))) {
-        rws_socket sock = (rws_socket)duk_get_pointer_default(ctx, -1, NULL);
-        duk_pop_2(ctx);
-        if (sock != NULL) {
-            duk_bool_t is_connected = rws_socket_is_connected(sock);
-            duk_rws_context *context = rws_socket_get_user_object(sock);
-            duk_rws_context_destroy(context);
-            rws_socket_disconnect_and_release(sock);
-            duk_del_prop_string(ctx, 0, DUK_HIDDEN_SYMBOL("__ptr"));
-            //TODO: dispatch 'close' event here 
-            if (is_connected) {
-                
-            }
-        }
-    }
-    return 0;
-}
-
-DUK_LOCAL duk_ret_t duk_rws_socket_finalizer(duk_context *ctx) {
-    if (duk_get_prop_string(ctx, 0, DUK_HIDDEN_SYMBOL("__ptr"))) {
-        rws_socket sock = (rws_socket)duk_get_pointer_default(ctx, -1, NULL);
-        duk_pop(ctx);
-        if (sock != NULL) {
-            duk_rws_context *context = rws_socket_get_user_object(sock);
-            duk_rws_context_destroy(context);
-            rws_socket_disconnect_and_release(sock);
-            duk_del_prop_string(ctx, 0, DUK_HIDDEN_SYMBOL("__ptr"));
-        }
-    }
-    return 0;
-}
-
-DUK_LOCAL void duk_rws_open(duk_context *ctx) {
-    duk_push_global_object(ctx);
-    duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
-    //TODO: extends EventDispatcher
-    duk_unity_begin_class(ctx, "WebSocket", DUK_UNITY_BUILTINS_WEBSOCKET, duk_rws_socket_constructor, duk_rws_socket_finalizer);
-    // add members of WebSocket
-    duk_unity_add_member(ctx, "connect", duk_rws_socket_connect, -1);
-    duk_unity_add_property(ctx, "connected", duk_rws_socket_is_connected, NULL, -1);
-    duk_unity_add_member(ctx, "send", duk_rws_socket_send, -1);
-    duk_unity_add_member(ctx, "close", duk_rws_socket_close, -1);
-    duk_unity_add_member(ctx, "_proc", duk_rws_socket_proc, -1);
-    duk_unity_end_class(ctx);
-    duk_pop_2(ctx); // pop DuktapeJS and global
-}
-*/
-
-DUK_INTERNAL_DECL void duk_unity_valuetypes_open(duk_context *ctx);
-
 DUK_EXTERNAL duk_bool_t duk_unity_open(duk_context *ctx) {
     duk_refsys_open(ctx);
     // duk_rws_open(ctx);
     duk_events_open(ctx);
     duk_unity_valuetypes_open(ctx);
+    duk_timeout_open(ctx);
+    duk_websocket_open(ctx);
     return 1;
 }
 
