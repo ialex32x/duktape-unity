@@ -156,7 +156,7 @@ DUK_LOCAL int _lws_receive(struct duk_websocket_t *websocket, struct lws *wsi, v
         lwsl_debug("receiving payload is too large");
         return -1;
     }
-    duk_memcpy(&(websocket->buf[websocket->len]), in, len);
+    duk_memcpy(&(((char *)(websocket->buf))[websocket->len]), in, len);
     websocket->len += len;
     if (lws_is_final_fragment(wsi)) {
         websocket->is_binary = lws_frame_is_binary(wsi);
@@ -174,7 +174,7 @@ DUK_LOCAL void _lws_send(struct duk_websocket_t *websocket, struct lws *wsi) {
         }
         payload->next = NULL;
         enum lws_write_protocol protocol = payload->is_binary ? LWS_WRITE_BINARY : LWS_WRITE_TEXT;
-        lws_write(wsi, &(payload->buf[LWS_PRE]), payload->len, protocol);
+        lws_write(wsi, &(((char *)(payload->buf))[LWS_PRE]), payload->len, protocol);
         _delete_payload(websocket, payload);
     }
 }
@@ -208,11 +208,11 @@ DUK_LOCAL int _lws_callback_function(struct lws *wsi,
             if (len > 2) {
                 utf8 = (const char *)&b[2];
             }
-            _on_close_request(websocket, code, reason);
+            _on_close_request(websocket, code, utf8);
 			return 0;
         } 
         case LWS_CALLBACK_CLIENT_CLOSED: {
-			peer->close();
+			_lws_close(websocket);
 			_lws_destroy(websocket);
 			_on_disconnect(websocket);
             return 0;
@@ -312,7 +312,7 @@ DUK_LOCAL duk_ret_t duk_WebSocket_finalizer(duk_context *ctx) {
     if (websocket != 0) {
         _lws_destroy(websocket);
         for (int i = 1; i < websocket->protocols_size; i++) {
-            struct lws_protocols *p = websocket->protocols[i];
+            struct lws_protocols *p = &(websocket->protocols[i]);
             if (p && p->name) {
                 duk_free(ctx, p->name);
                 p->name = NULL;
@@ -335,9 +335,9 @@ DUK_LOCAL duk_ret_t duk_WebSocket_finalizer(duk_context *ctx) {
 }
 
 DUK_LOCAL struct duk_websocket_t *duk_get_websocket(duk_context *ctx, duk_idx_t idx) {
-    struct duk_websocket_t *websocket = 0;
+    struct duk_websocket_t *websocket = NULL;
     if (duk_get_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("websocket"))) {
-        websocket = duk_get_pointer(ctx, -1);
+        websocket = (struct duk_websocket_t *)duk_get_pointer(ctx, -1);
     }
     duk_pop(ctx);
     return websocket;
@@ -364,7 +364,7 @@ DUK_LOCAL duk_ret_t duk_WebSocket_connect(duk_context *ctx) {
 	memset(&info, 0, sizeof(info));
 
 	info.port = CONTEXT_PORT_NO_LISTEN;
-	info.protocols = protocols;
+	info.protocols = websocket->protocols;
 	info.gid = -1;
 	info.uid = -1;
 	//info.ws_ping_pong_interval = 5;
@@ -384,7 +384,7 @@ DUK_LOCAL duk_ret_t duk_WebSocket_connect(duk_context *ctx) {
 		i.ssl_connection = 0;
 	}
 	i.address = p_address;
-	i.host = p_post;
+	i.host = p_host;
 	i.path = p_path;
 	i.port = p_port;
 
@@ -405,8 +405,8 @@ DUK_LOCAL duk_ret_t duk_WebSocket_send(duk_context *ctx) {
     
     if (websocket && !websocket->is_context_destroyed) {
         struct duk_websocket_payload_t *payload = _new_payload(websocket);
-        duk_memzero(payload.buf, LWS_PRE);
-        duk_memcpy(&(payload.buf[LWS_PRE]), buf, len);
+        duk_memzero(payload->buf, LWS_PRE);
+        duk_memcpy(&(((char *)(payload->buf))[LWS_PRE]), buf, len);
         struct duk_websocket_payload_t *tail = websocket->pending_tail;
         if (tail) {
             tail->next = payload;
@@ -419,15 +419,19 @@ DUK_LOCAL duk_ret_t duk_WebSocket_send(duk_context *ctx) {
     return 0;
 }
 
-DUK_LOCAL duk_ret_t duk_WebSocket_close(duk_context *ctx) {
-    duk_push_this(ctx);
-    struct duk_websocket_t *websocket = duk_get_websocket(ctx, -1);
-    duk_pop(ctx); // pop this
+DUK_LOCAL void _lws_close(struct duk_websocket_t *websocket) {
     if (websocket->wsi) {
         websocket->is_closing = TRUE;
         lws_callback_on_writable(websocket->wsi);
         websocket->wsi = NULL;
     }
+}
+
+DUK_LOCAL duk_ret_t duk_WebSocket_close(duk_context *ctx) {
+    duk_push_this(ctx);
+    struct duk_websocket_t *websocket = duk_get_websocket(ctx, -1);
+    duk_pop(ctx); // pop this
+    _lws_close(websocket);
     return 0;
 }
 
