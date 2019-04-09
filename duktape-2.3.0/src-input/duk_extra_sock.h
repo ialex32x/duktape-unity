@@ -39,14 +39,14 @@ typedef t_timeout *p_timeout;
 DUK_INTERNAL_DECL double timeout_gettime(void);
 DUK_INTERNAL_DECL duk_bool_t duk_timeout_open(duk_context *ctx);
 
-#ifdef DUK_F_WINDOWS
-typedef SOCKET t_socket;
-#define SOCKET_INVALID (INVALID_SOCKET)
-#else
-typedef int t_socket;
-#define SOCKET_INVALID (-1)
-#endif
+// #ifdef DUK_F_WINDOWS
+// typedef SOCKET t_socket;
+// #define SOCKET_INVALID (INVALID_SOCKET)
+// #else
+// typedef int t_socket;
+// #define SOCKET_INVALID (-1)
+// #endif
 
-DUK_INTERNAL_DECL duk_bool_t duk_select_open(duk_context *ctx);
+// DUK_INTERNAL_DECL duk_bool_t duk_select_open(duk_context *ctx);
 
 #endif // DUK_EXTRA_SOCK_H_INCLUDED

@@ -102,6 +102,7 @@ IF (WIN32)
     MESSAGE("WIN32")
     add_definitions(-DWINVER=0x0601 -D_WIN32_WINNT=0x0601)
     add_definitions(-DWINDOWS_ENABLED)
+    add_definitions(-DLWS_MINGW_SUPPORT)
     list(APPEND LIBWEBSOCKETS_SRCS
         ${LIBWEBSOCKETS_DIR}/plat/lws-plat-win.c
         ${LIBWEBSOCKETS_DIR}/win32helpers/getopt.c

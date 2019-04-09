@@ -17,6 +17,13 @@ DUK_EXTERNAL void duk_builtins_reg_get(duk_context *ctx, duk_uarridx_t key) {
     duk_remove(ctx, -2);
 }
 
+DUK_EXTERNAL void duk_unity_inherit(duk_context *ctx) {
+    duk_get_prop_string(ctx, -2, "prototype");
+    duk_get_prop_string(ctx, -2, "prototype");
+    duk_set_prototype(ctx, -2);
+    duk_pop(ctx);
+}
+
 DUK_INTERNAL void duk_unity_get_prop_object(duk_context *ctx, duk_idx_t idx, const char *key) {
     if (!duk_get_prop_string(ctx, idx, key)) {
         duk_pop(ctx);
@@ -1184,6 +1191,7 @@ DUK_EXTERNAL duk_bool_t duk_unity_open(duk_context *ctx) {
     duk_events_open(ctx);
     duk_unity_valuetypes_open(ctx);
     duk_timeout_open(ctx);
+    duk_websocket_open(ctx);
     return 1;
 }
 
