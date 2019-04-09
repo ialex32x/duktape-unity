@@ -176,6 +176,9 @@ DUK_LOCAL void _lws_send(struct duk_websocket_t *websocket, struct lws *wsi) {
         enum lws_write_protocol protocol = payload->is_binary ? LWS_WRITE_BINARY : LWS_WRITE_TEXT;
         lws_write(wsi, &(((char *)(payload->buf))[LWS_PRE]), payload->len, protocol);
         _delete_payload(websocket, payload);
+        if (websocket->pending_head) {
+            lws_callback_on_writable(websocket->wsi);
+        }
     }
 }
 
@@ -240,6 +243,80 @@ DUK_LOCAL int _lws_callback_function(struct lws *wsi,
             return 0;
         }
     }
+}
+
+struct IP_Address {
+	union {
+		uint8_t field8[16];
+		uint16_t field16[8];
+		uint32_t field32[4];
+	};
+	duk_bool_t valid;
+	duk_bool_t wildcard;
+};
+
+DUK_LOCAL void _IP_Address_clear(IP_Address *ip) {
+	memset(&(ip->field8[0]), 0, sizeof(ip->field8));
+	ip->valid = FALSE;
+	ip->wildcard = FALSE;
+}
+
+DUK_LOCAL void _IP_Address_set_ipv4(IP_Address *ip, const uint8_t *p_ip) {
+    _IP_Address_clear(ip);
+    ip->valid = TRUE;
+	ip->field16[5] = 0xffff;
+	ip->field32[3] = *((const uint32_t *)p_ip);
+}
+
+DUK_LOCAL void _IP_Address_set_ipv6(IP_Address *ip, const uint8_t *p_ip) {
+	_IP_Address_clear(ip);
+	ip->valid = TRUE;
+	for (int i = 0; i < 16; i++) {
+		ip->field8[i] = p_ip[i];
+    }
+}
+
+DUK_LOCAL duk_bool_t _resolve_hostname(const char *p_hostname, int p_type, IP_Address *ip) {
+    if (!ip) {
+        return FALSE;
+    }
+	struct addrinfo hints;
+	struct addrinfo *result;
+
+	duk_memzero(&hints, sizeof(struct addrinfo));
+	if (p_type == AF_INET) {
+		hints.ai_family = AF_INET;
+	} else if (p_type == AF_INET6) {
+		hints.ai_family = AF_INET6;
+		hints.ai_flags = 0;
+	} else {
+		hints.ai_family = AF_UNSPEC;
+		hints.ai_flags = AI_ADDRCONFIG;
+	};
+	hints.ai_flags &= ~AI_NUMERICHOST;
+
+	int s = getaddrinfo(p_hostname, NULL, &hints, &result);
+	if (s != 0) {
+		return FALSE;
+	};
+
+	if (result == NULL || result->ai_addr == NULL) {
+		if (result) {
+            freeaddrinfo(result);
+        }
+		return FALSE;
+	};
+
+	if (result->ai_addr->sa_family == AF_INET) {
+		struct sockaddr_in *addr = (struct sockaddr_in *)result->ai_addr;
+		_IP_Address_set_ipv4(ip, (uint8_t *)&(addr->sin_addr));
+	} else if (result->ai_addr->sa_family == AF_INET6) {
+		struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)result->ai_addr;
+		_IP_Address_set_ipv6(ip, addr6->sin6_addr.s6_addr);
+	};
+
+	freeaddrinfo(result);
+	return TRUE;
 }
 
 DUK_LOCAL struct duk_websocket_t *duk_get_websocket(duk_context *ctx, duk_idx_t idx) {
@@ -383,6 +460,7 @@ DUK_LOCAL duk_ret_t duk_WebSocket_connect(duk_context *ctx) {
     if (context == NULL) {
         return duk_generic_error(ctx, "lws_create_context failed");
     }
+    websocket->context = context;
 	i.context = context;
     i.protocol = websocket->protocol_names;
     if (p_ssl) {
@@ -413,7 +491,11 @@ DUK_LOCAL duk_ret_t duk_WebSocket_send(duk_context *ctx) {
     struct duk_websocket_t *websocket = duk_get_websocket(ctx, -1);
     duk_pop(ctx); // pop this
     
-    if (websocket && !websocket->is_context_destroyed) {
+    if (websocket) {
+        if (websocket->is_context_destroyed || websocket->is_closing) {
+            lwsl_warn("unable to send, websocket is closing");
+            return 0;
+        }
         struct duk_websocket_payload_t *payload = _new_payload(websocket);
         duk_memzero(payload->buf, LWS_PRE);
         duk_memcpy(&(((char *)(payload->buf))[LWS_PRE]), buf, len);
@@ -425,7 +507,7 @@ DUK_LOCAL duk_ret_t duk_WebSocket_send(duk_context *ctx) {
             websocket->pending_head = payload;
             websocket->pending_tail = payload;
         }
-    }
+    } 
     return 0;
 }
 

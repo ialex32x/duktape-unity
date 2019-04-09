@@ -2,7 +2,7 @@ var ws = new DuktapeJS.WebSocket()
 
 var address = "127.0.0.1"
 var host = "127.0.0.1"
-var path = "/echo"
+var path = "/websocket"
 var port = 8080
 var ssl = false
 var ssl_verify = false
