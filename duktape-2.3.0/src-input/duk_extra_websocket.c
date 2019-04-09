@@ -265,6 +265,8 @@ DUK_LOCAL duk_ret_t duk_WebSocket_constructor(duk_context *ctx) {
     }
     duk_memset(websocket, 0, sizeof(struct duk_websocket_t));
     duk_push_this(ctx);
+    duk_push_object(ctx);
+    duk_put_prop_string(ctx, -2, "events");
     duk_push_pointer(ctx, websocket);
     duk_put_prop_literal(ctx, -2, DUK_HIDDEN_SYMBOL("websocket"));
     websocket->buf = duk_alloc(ctx, LWS_PAYLOAD_SIZE);
