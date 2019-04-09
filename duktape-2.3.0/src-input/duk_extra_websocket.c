@@ -179,6 +179,14 @@ DUK_LOCAL void _lws_send(struct duk_websocket_t *websocket, struct lws *wsi) {
     }
 }
 
+DUK_LOCAL void _duk_lws_close(struct duk_websocket_t *websocket) {
+    if (websocket->wsi) {
+        websocket->is_closing = TRUE;
+        lws_callback_on_writable(websocket->wsi);
+        websocket->wsi = NULL;
+    }
+}
+
 DUK_LOCAL int _lws_callback_function(struct lws *wsi, 
                                     enum lws_callback_reasons reason,
 		                            void *user, 
@@ -417,14 +425,6 @@ DUK_LOCAL duk_ret_t duk_WebSocket_send(duk_context *ctx) {
         }
     }
     return 0;
-}
-
-DUK_LOCAL void _duk_lws_close(struct duk_websocket_t *websocket) {
-    if (websocket->wsi) {
-        websocket->is_closing = TRUE;
-        lws_callback_on_writable(websocket->wsi);
-        websocket->wsi = NULL;
-    }
 }
 
 DUK_LOCAL duk_ret_t duk_WebSocket_close(duk_context *ctx) {
