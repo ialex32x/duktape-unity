@@ -106,7 +106,7 @@ declare namespace DuktapeJS {
         readonly connected: boolean
         constructor()
         
-        connect(scheme: string, host: string, port: number, path: string)
+        connect(address: string, host: string, path: string, port: number, ssl: boolean, ssl_verify: boolean)
         close()
         poll()
         send(data: any): boolean

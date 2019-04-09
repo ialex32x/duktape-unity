@@ -8,6 +8,8 @@
 
 struct duk_websocket_t {
     struct lws_protocols *protocols;
+    duk_uarridx_t protocols_size;
+    const char *protocol_names;
     struct lws_context *context;
     duk_bool_t is_servicing;
     duk_bool_t is_polling;
@@ -73,30 +75,48 @@ DUK_LOCAL duk_ret_t duk_WebSocket_constructor(duk_context *ctx) {
         return duk_generic_error(ctx, "unable to alloc websocket protocols");
     }
     duk_memset(websocket->protocols, 0, sizeof(struct lws_protocols) * (protocols_size + 2));
-	websocket->protocols[0].name = "default";
-	websocket->protocols[0].callback = _lws_callback_function;
-	websocket->protocols[0].per_session_data_size = 0;
-	websocket->protocols[0].rx_buffer_size = LWS_BUF_SIZE;
-	websocket->protocols[0].tx_packet_size = LWS_PACKET_SIZE;
-    duk_push_literal(ctx, ",");
+    websocket->protocols_size = 0;
+	websocket->protocols[websocket->protocols_size].name = "default";
+	websocket->protocols[websocket->protocols_size].callback = _lws_callback_function;
+	websocket->protocols[websocket->protocols_size].per_session_data_size = 0;
+	websocket->protocols[websocket->protocols_size].rx_buffer_size = LWS_BUF_SIZE;
+	websocket->protocols[websocket->protocols_size].tx_packet_size = LWS_PACKET_SIZE;
+    websocket->protocols_size = 1;
     for (duk_size_t i = 0; i < protocols_size; i++) {
         duk_get_prop_index(ctx, 0, i);
-        const char *protocol_name = duk_get_string(ctx, -1);
-        //TODO: copy protocol_name
-        websocket->protocols[i + 1].name = protocol_name;
-        websocket->protocols[i + 1].callback = _lws_callback_function;
-        websocket->protocols[i + 1].per_session_data_size = 0;
-        websocket->protocols[i + 1].rx_buffer_size = LWS_BUF_SIZE;
-        websocket->protocols[i + 1].tx_packet_size = LWS_PACKET_SIZE;
+        duk_size_t protocol_name_length;
+        const char *protocol_name_ptr = duk_get_lstring(ctx, -1, &protocol_name_length);
+        if (protocol_name_ptr != NULL) {
+            char *protocol_name = duk_alloc(ctx, protocol_name_length + 1);
+            if (protocol_name != NULL) {
+                duk_memcpy(protocol_name, protocol_name_ptr, protocol_name_length);
+                protocol_name[protocol_name_length] = '\0';
+                websocket->protocols[websocket->protocols_size].name = protocol_name;
+                websocket->protocols[websocket->protocols_size].callback = _lws_callback_function;
+                websocket->protocols[websocket->protocols_size].per_session_data_size = 0;
+                websocket->protocols[websocket->protocols_size].rx_buffer_size = LWS_BUF_SIZE;
+                websocket->protocols[websocket->protocols_size].tx_packet_size = LWS_PACKET_SIZE;
+                websocket->protocols_size++;
+            }
+        }
+        duk_pop(ctx);
     }
-    duk_join(ctx, protocols_size);
-    const char *protocol_names = duk_get_string(ctx, -1);
-    //TODO: copy protocol_names
+    duk_push_literal(ctx, ",");
+    for (duk_size_t i = 0; i < websocket->protocols_size; i++) {
+        duk_push_string(ctx, websocket->protocols[i].name);
+    }
+    duk_join(ctx, websocket->protocols_size);
+    duk_size_t protocol_names_length;
+    const char *protocol_names_ptr = duk_get_lstring(ctx, -1, &protocol_names_length);
+    char *protocol_names = (char *)duk_alloc(ctx, protocol_names_length + 1);
+    duk_memcpy(protocol_names, protocol_names_ptr, protocol_names_length);
+    protocol_names[protocol_names_length] = '\0';
+    websocket->protocol_names = protocol_names;
     duk_pop(ctx); // pop join result
-	websocket->protocols[protocols_size + 1].name = NULL;
-	websocket->protocols[protocols_size + 1].callback = NULL;
-	websocket->protocols[protocols_size + 1].per_session_data_size = 0;
-	websocket->protocols[protocols_size + 1].rx_buffer_size = 0;
+	websocket->protocols[websocket->protocols_size].name = NULL;
+	websocket->protocols[websocket->protocols_size].callback = NULL;
+	websocket->protocols[websocket->protocols_size].per_session_data_size = 0;
+	websocket->protocols[websocket->protocols_size].rx_buffer_size = 0;
     return 0;
 }
 
@@ -119,7 +139,17 @@ DUK_LOCAL duk_ret_t duk_WebSocket_finalizer(duk_context *ctx) {
     struct duk_websocket_t *websocket = duk_get_websocket(ctx, 0);
     if (websocket != 0) {
         _lws_destroy(websocket);
+        for (int i = 1; i < websocket->protocols_size; i++) {
+            struct lws_protocols *p = websocket->protocols[i];
+            if (p && p->name) {
+                duk_free(ctx, p->name);
+                p->name = NULL;
+            }
+        }
         duk_free(ctx, websocket->protocols);
+        websocket->protocols = NULL;
+        duk_free(ctx, websocket->protocol_names);
+        websocket->protocol_names = NULL;
         duk_free(ctx, websocket);
     }
     return 0;
@@ -135,6 +165,13 @@ DUK_LOCAL struct duk_websocket_t *duk_get_websocket(duk_context *ctx, duk_idx_t 
 }
 
 DUK_LOCAL duk_ret_t duk_WebSocket_connect(duk_context *ctx) {
+    char *p_address = duk_require_string(ctx, 0);
+    char *p_host = duk_require_string(ctx, 1);
+    char *p_path = duk_require_string(ctx, 2);
+    duk_int_t p_port = duk_require_int(ctx, 3);
+    duk_bool_t p_ssl = duk_require_boolean(ctx, 4);
+    duk_bool_t p_allow_self_signed = duk_require_boolean(ctx, 5);
+
     duk_push_this(ctx);
     struct duk_websocket_t *websocket = duk_get_websocket(ctx, -1);
     duk_pop(ctx); // pop this
@@ -158,27 +195,21 @@ DUK_LOCAL duk_ret_t duk_WebSocket_connect(duk_context *ctx) {
         return duk_generic_error(ctx, "lws_create_context failed");
     }
 	i.context = context;
-    i.protocol = "default";
-
-	if (p_ssl) {
+    i.protocol = websocket->protocol_names;
+    if (p_ssl) {
 		i.ssl_connection = LCCSCF_USE_SSL;
-		if (!verify_ssl)
-			i.ssl_connection |= LCCSCF_ALLOW_SELFSIGNED;
+		if (p_allow_self_signed) {
+            i.ssl_connection |= LCCSCF_ALLOW_SELFSIGNED;
+        }
 	} else {
 		i.ssl_connection = 0;
 	}
-
-	// These CharStrings needs to survive till we call lws_client_connect_via_info
-	CharString addr_ch = ((String)addr).ascii();
-	CharString host_ch = p_host.utf8();
-	CharString path_ch = p_path.utf8();
-	i.address = addr_ch.get_data();
-	i.host = host_ch.get_data();
-	i.path = path_ch.get_data();
+	i.address = p_address;
+	i.host = p_post;
+	i.path = p_path;
 	i.port = p_port;
 
 	lws_client_connect_via_info(&i);
-
     return 0;
 }
 
