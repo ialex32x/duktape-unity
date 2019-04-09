@@ -1,36 +1,30 @@
-var e = new DuktapeJS.WebSocket()
+var ws = new DuktapeJS.WebSocket()
 
-e.on("test", this, function () {
-    print("test")
+var address = "127.0.0.1"
+var host = "127.0.0.1"
+var path = "/echo"
+var port = 8080
+var ssl = false
+var ssl_verify = false
+
+ws.on("open", this, function () {
+    print("open")
 })
-e.dispatch("test")
-// var ws = new DuktapeJS.WebSocket()
 
-// var address = "127.0.0.1"
-// var host = "127.0.0.1"
-// var path = "/echo"
-// var port = 8080
-// var ssl = false
-// var ssl_verify = false
+ws.on("close", this, function () {
+    print("close")
+})
 
-// ws.on("open", function () {
-//     print("open")
-// })
+ws.on("data", this, function (data) {
+    print("receiving", data)
+})
 
-// ws.on("close", function () {
-//     print("close")
-// })
+ws.connect(address, host, path, port, ssl, ssl_verify)
 
-// ws.on("data", function (data) {
-//     print("receiving", data)
-// })
-
-// ws.connect(address, host, path, port, ssl, ssl_verify)
-
-// while (true) {
-//     ws.poll()
-//     DuktapeJS.sleep(1)
-// }
+while (true) {
+    ws.poll()
+    DuktapeJS.sleep(1)
+}
 
 // var Vector3 = DuktapeJS.Vector3
 // var v1 = new Vector3(1, 2, 3)

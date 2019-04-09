@@ -33,4 +33,9 @@ DUK_INTERNAL_DECL void duk_unity_end_class(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_unity_add_const_number(duk_context *ctx, duk_idx_t idx, const char *key, duk_double_t num);
 DUK_INTERNAL_DECL void duk_unity_add_const_int(duk_context *ctx, duk_idx_t idx, const char *key, duk_int_t num);
 
+DUK_INTERNAL_DECL duk_ret_t duk_events_eventdispatcher_on(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_events_eventdispatcher_off(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_events_eventdispatcher_clear(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_events_eventdispatcher_dispatch(duk_context *ctx);
+
 #endif // DUK_EXTRA_UNITY_H_INCLUDED

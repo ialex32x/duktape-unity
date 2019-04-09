@@ -1009,7 +1009,7 @@ DUK_LOCAL duk_ret_t duk_events_eventdispatcher_constructor(duk_context *ctx) {
     return 0;
 }
 
-DUK_LOCAL duk_ret_t duk_events_eventdispatcher_on(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_events_eventdispatcher_on(duk_context *ctx) {
     // on(type, caller, fn, once?)
     duk_idx_t nargs = duk_get_top(ctx);
     if (nargs < 3) {
@@ -1055,7 +1055,7 @@ DUK_LOCAL duk_ret_t duk_events_eventdispatcher_on(duk_context *ctx) {
     return 1;
 }
 
-DUK_LOCAL duk_ret_t duk_events_eventdispatcher_off(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_events_eventdispatcher_off(duk_context *ctx) {
     // off(type, caller, fn)
     duk_idx_t nargs = duk_get_top(ctx);
     if (nargs < 2) {
@@ -1096,7 +1096,7 @@ DUK_LOCAL duk_ret_t duk_events_eventdispatcher_off(duk_context *ctx) {
     return 1;
 }
 
-DUK_LOCAL duk_ret_t duk_events_eventdispatcher_clear(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_events_eventdispatcher_clear(duk_context *ctx) {
     // clear(type)
     duk_idx_t nargs = duk_get_top(ctx);
     if (nargs < 1) {
@@ -1128,7 +1128,7 @@ DUK_LOCAL duk_ret_t duk_events_eventdispatcher_clear(duk_context *ctx) {
     return 1;
 }
 
-DUK_LOCAL duk_ret_t duk_events_eventdispatcher_dispatch(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_events_eventdispatcher_dispatch(duk_context *ctx) {
     // dispatch(type, ...args)
     duk_idx_t nargs = duk_get_top(ctx);
     if (nargs < 1) {

@@ -461,11 +461,12 @@ DUK_INTERNAL duk_bool_t duk_websocket_open(duk_context *ctx) {
     duk_push_global_object(ctx);
     duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
     duk_unity_begin_class(ctx, "WebSocket", DUK_UNITY_BUILTINS_WEBSOCKET, duk_WebSocket_constructor, duk_WebSocket_finalizer);
-    {
-        duk_builtins_reg_get(ctx, DUK_UNITY_BUILTINS_EVENTDISPATCHER);
-        duk_unity_inherit(ctx);
-        duk_pop(ctx);
-    }
+    
+    duk_unity_add_member(ctx, "on", duk_events_eventdispatcher_on, -1);
+    duk_unity_add_member(ctx, "off", duk_events_eventdispatcher_off, -1);
+    duk_unity_add_member(ctx, "clear", duk_events_eventdispatcher_clear, -1);
+    duk_unity_add_member(ctx, "dispatch", duk_events_eventdispatcher_dispatch, -1);
+
     duk_unity_add_member(ctx, "send", duk_WebSocket_send, -1);
     duk_unity_add_member(ctx, "connect", duk_WebSocket_connect, -1);
     duk_unity_add_member(ctx, "close", duk_WebSocket_close, -1);
