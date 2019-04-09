@@ -5,51 +5,233 @@
 
 #define LWS_BUF_SIZE 65536
 #define LWS_PACKET_SIZE 65536
+#define LWS_PAYLOAD_SIZE 4096
+
+struct duk_websocket_payload_t {
+    duk_bool_t is_binary;
+    void *buf;
+    duk_size_t len;
+
+    struct duk_websocket_payload_t *next;
+};
 
 struct duk_websocket_t {
+    duk_context *ctx;
+    void *heapptr;
+
+    struct duk_websocket_payload_t *pending_head;
+    struct duk_websocket_payload_t *pending_tail;
+    struct duk_websocket_payload_t *freelist;
+    
+    duk_bool_t is_binary;
+    void *buf;
+    duk_size_t len;
+
     struct lws_protocols *protocols;
     duk_uarridx_t protocols_size;
     const char *protocol_names;
+
     struct lws_context *context;
+    struct lws *wsi;
+
+    duk_bool_t is_closing;
     duk_bool_t is_servicing;
     duk_bool_t is_polling;
     duk_bool_t is_context_destroying;
     duk_bool_t is_context_destroyed;
 };
 
+DUK_LOCAL void _delete_payload(struct duk_websocket_t *websocket, struct duk_websocket_payload_t *payload) {
+    payload->next = websocket->freelist;
+    websocket->freelist = payload;
+}
+
+DUK_LOCAL struct duk_websocket_payload_t *_new_payload(struct duk_websocket_t *websocket) {
+    struct duk_websocket_payload_t *payload = websocket->freelist;
+    if (payload) {
+        websocket->freelist = payload->next;
+    } else {
+        payload = (struct duk_websocket_payload_t *)duk_alloc(websocket->ctx, sizeof(struct duk_websocket_payload_t));
+        duk_memzero(payload, sizeof(struct duk_websocket_payload_t));
+        payload->buf = duk_alloc(websocket->ctx, LWS_PAYLOAD_SIZE + LWS_PRE);
+        duk_memzero(payload->buf, LWS_PAYLOAD_SIZE + LWS_PRE);
+    }
+    payload->next = NULL;
+    payload->len = 0;
+    return payload;
+}
+
+DUK_LOCAL void _lws_destroy(struct duk_websocket_t *websocket) {
+    if (websocket == NULL || websocket->is_context_destroyed) {
+        return;
+    }
+    if (websocket->is_polling) {
+        websocket->is_context_destroying = TRUE;
+        return;
+    }
+    websocket->is_context_destroyed = TRUE;
+    if (websocket->context != NULL) {
+        lws_context_destroy(websocket->context);
+        websocket->context = NULL;
+    }
+    struct duk_websocket_payload_t *payload = websocket->pending_head;
+    while (payload) {
+        websocket->pending_head = payload->next;
+        payload->next = websocket->freelist;
+        websocket->freelist = payload;
+        payload = websocket->pending_head;
+    }
+    websocket->pending_tail = NULL;
+}
+
+DUK_LOCAL void _on_connect(struct duk_websocket_t *websocket, const char *protocol) {
+    duk_context *ctx = websocket->ctx;
+    duk_push_heapptr(ctx, websocket->heapptr);
+    duk_push_literal(ctx, "dispatch");
+    duk_push_literal(ctx, "open");
+    duk_push_string(ctx, protocol);
+    if (duk_pcall_prop(ctx, -3, 2) != DUK_EXEC_SUCCESS) {
+    }
+    duk_pop_2(ctx);
+}
+
+DUK_LOCAL void _on_error(struct duk_websocket_t *websocket) {
+    duk_context *ctx = websocket->ctx;
+    duk_push_heapptr(ctx, websocket->heapptr);
+    duk_push_literal(ctx, "dispatch");
+    duk_push_literal(ctx, "error");
+    if (duk_pcall_prop(ctx, -3, 1) != DUK_EXEC_SUCCESS) {
+    }
+    duk_pop_2(ctx);
+}
+
+DUK_LOCAL void _on_disconnect(struct duk_websocket_t *websocket) {
+    duk_context *ctx = websocket->ctx;
+    duk_push_heapptr(ctx, websocket->heapptr);
+    duk_push_literal(ctx, "dispatch");
+    duk_push_literal(ctx, "close");
+    if (duk_pcall_prop(ctx, -3, 1) != DUK_EXEC_SUCCESS) {
+    }
+    duk_pop_2(ctx);
+}
+
+DUK_LOCAL void _on_close_request(struct duk_websocket_t *websocket, int code, const char *reason) {
+    duk_context *ctx = websocket->ctx;
+    duk_push_heapptr(ctx, websocket->heapptr);
+    duk_push_literal(ctx, "dispatch");
+    duk_push_literal(ctx, "close_request");
+    duk_push_int(ctx, code);
+    if (reason) {
+        duk_push_string(ctx, reason);
+    } else {
+        duk_push_null(ctx);
+    }
+    if (duk_pcall_prop(ctx, -3, 3) != DUK_EXEC_SUCCESS) {
+    }
+    duk_pop_2(ctx);
+}
+
+DUK_LOCAL void _on_received(struct duk_websocket_t *websocket) {
+    duk_context *ctx = websocket->ctx;
+    duk_push_heapptr(ctx, websocket->heapptr);
+    duk_push_literal(ctx, "dispatch");
+    duk_push_literal(ctx, "data");
+    if (websocket->is_binary) {
+        duk_push_fixed_buffer(ctx, websocket->len);
+        void *buffer = duk_get_buffer_data(ctx, -1, NULL);
+        duk_memcpy(buffer, websocket->buf, websocket->len);
+    } else {
+        duk_push_lstring(ctx, (const char *)(websocket->buf), websocket->len);
+    }
+    if (duk_pcall_prop(ctx, -3, 2) != DUK_EXEC_SUCCESS) {
+    }
+    duk_pop_2(ctx);
+}
+
+DUK_LOCAL int _lws_receive(struct duk_websocket_t *websocket, struct lws *wsi, void *in, size_t len) {
+    if (lws_is_first_fragment(wsi)) {
+        websocket->len = 0;
+    }
+    if (websocket->len + len > LWS_PAYLOAD_SIZE) {
+        lwsl_debug("receiving payload is too large");
+        return -1;
+    }
+    duk_memcpy(&(websocket->buf[websocket->len]), in, len);
+    websocket->len += len;
+    if (lws_is_final_fragment(wsi)) {
+        websocket->is_binary = lws_frame_is_binary(wsi);
+        _on_received(websocket);
+    }
+    return 0;
+}
+
+DUK_LOCAL void _lws_send(struct duk_websocket_t *websocket, struct lws *wsi) {
+    struct duk_websocket_payload_t *payload = websocket->pending_head;
+    if (payload) {
+        websocket->pending_head = payload->next;
+        if (websocket->pending_head == NULL) {
+            websocket->pending_tail = NULL;
+        }
+        payload->next = NULL;
+        enum lws_write_protocol protocol = payload->is_binary ? LWS_WRITE_BINARY : LWS_WRITE_TEXT;
+        lws_write(wsi, &(payload->buf[LWS_PRE]), payload->len, protocol);
+        _delete_payload(websocket, payload);
+    }
+}
+
 DUK_LOCAL int _lws_callback_function(struct lws *wsi, 
                                     enum lws_callback_reasons reason,
 		                            void *user, 
                                     void *in, 
                                     size_t len) {
+    struct duk_websocket_t *websocket = (struct duk_websocket_t *)lws_context_user(lws_get_context(wsi));
+
     websocket->is_servicing = TRUE;
 	switch (reason) {
         case LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS: {
-            break;
+            return 0;
         } 
         case LWS_CALLBACK_CLIENT_ESTABLISHED: {
-            break;
+            websocket->wsi = wsi;
+			_on_connect(websocket, lws_get_protocol(wsi)->name);
+            return 0;
         } 
         case LWS_CALLBACK_CLIENT_CONNECTION_ERROR: {
-            break;
+            _on_error(websocket);
+			_lws_destroy(websocket);
+			return -1;
         } 
         case LWS_CALLBACK_WS_PEER_INITIATED_CLOSE: {
-            break;
+            const uint8_t *b = (const uint8_t *)in;
+            int code = b[0] << 8 | b[1];
+            const char *utf8 = NULL;
+            if (len > 2) {
+                utf8 = (const char *)&b[2];
+            }
+            _on_close_request(websocket, code, reason);
+			return 0;
         } 
         case LWS_CALLBACK_CLIENT_CLOSED: {
-            break;
+			peer->close();
+			_lws_destroy(websocket);
+			_on_disconnect(websocket);
+            return 0;
         } 
         case LWS_CALLBACK_CLIENT_RECEIVE: {
-            break;
+            return _lws_receive(websocket, wsi, in, len);
         } 
         case LWS_CALLBACK_CLIENT_WRITEABLE: {
-            break;
+            if (websocket->is_closing) {
+                lws_close_reason(wsi, LWS_CLOSE_STATUS_NORMAL, "", 0);
+                return -1;
+            }
+            _lws_send(websocket, wsi);
+            return 0;
         } 
         default:  {
-            break;
+            return 0;
         }
     }
-    return 0;
 }
 
 DUK_LOCAL duk_ret_t duk_WebSocket_constructor(duk_context *ctx) {
@@ -68,8 +250,13 @@ DUK_LOCAL duk_ret_t duk_WebSocket_constructor(duk_context *ctx) {
     duk_push_this(ctx);
     duk_push_pointer(ctx, websocket);
     duk_put_prop_literal(ctx, -2, DUK_HIDDEN_SYMBOL("websocket"));
-    duk_pop(ctx); // pop this
-    
+    websocket->buf = duk_alloc(ctx, LWS_PAYLOAD_SIZE);
+    websocket->len = 0;
+    duk_memzero(websocket->buf, LWS_PAYLOAD_SIZE);
+    websocket->heapptr = duk_get_heapptr(ctx, -1);
+    duk_pop(ctx);
+    websocket->ctx = ctx;
+    websocket->wsi = NULL;
     websocket->protocols = (struct lws_protocols *)duk_alloc(ctx, sizeof(struct lws_protocols) * (protocols_size + 2));
     if (websocket->protocols == NULL) {
         return duk_generic_error(ctx, "unable to alloc websocket protocols");
@@ -120,21 +307,6 @@ DUK_LOCAL duk_ret_t duk_WebSocket_constructor(duk_context *ctx) {
     return 0;
 }
 
-DUK_LOCAL void _lws_destroy(struct duk_websocket_t *websocket) {
-    if (websocket == NULL || websocket->is_context_destroyed) {
-        return;
-    }
-    if (websocket->is_polling) {
-        websocket->is_context_destroying = TRUE;
-        return;
-    }
-    websocket->is_context_destroyed = TRUE;
-    if (websocket->context != NULL) {
-        lws_context_destroy(websocket->context);
-        websocket->context = NULL;
-    }
-}
-
 DUK_LOCAL duk_ret_t duk_WebSocket_finalizer(duk_context *ctx) {
     struct duk_websocket_t *websocket = duk_get_websocket(ctx, 0);
     if (websocket != 0) {
@@ -150,6 +322,13 @@ DUK_LOCAL duk_ret_t duk_WebSocket_finalizer(duk_context *ctx) {
         websocket->protocols = NULL;
         duk_free(ctx, websocket->protocol_names);
         websocket->protocol_names = NULL;
+        struct duk_websocket_payload_t *payload = websocket->freelist;
+        while (payload) {
+            websocket->freelist = payload->next;
+            duk_free(ctx, payload->buf);
+            duk_free(ctx, payload);
+            payload = websocket->freelist;
+        }
         duk_free(ctx, websocket);
     }
     return 0;
@@ -189,7 +368,7 @@ DUK_LOCAL duk_ret_t duk_WebSocket_connect(duk_context *ctx) {
 	info.gid = -1;
 	info.uid = -1;
 	//info.ws_ping_pong_interval = 5;
-	info.user = NULL; 
+	info.user = websocket; 
 	struct lws_context *context = lws_create_context(&info);
     if (context == NULL) {
         return duk_generic_error(ctx, "lws_create_context failed");
@@ -214,9 +393,29 @@ DUK_LOCAL duk_ret_t duk_WebSocket_connect(duk_context *ctx) {
 }
 
 DUK_LOCAL duk_ret_t duk_WebSocket_send(duk_context *ctx) {
+    duk_size_t len;
+    void *buf = duk_require_buffer_data(ctx, 0, &len);
+    if (len > LWS_PAYLOAD_SIZE) {
+        return duk_generic_error(ctx, "payload is too large");
+    }
+
     duk_push_this(ctx);
     struct duk_websocket_t *websocket = duk_get_websocket(ctx, -1);
     duk_pop(ctx); // pop this
+    
+    if (websocket && !websocket->is_context_destroyed) {
+        struct duk_websocket_payload_t *payload = _new_payload(websocket);
+        duk_memzero(payload.buf, LWS_PRE);
+        duk_memcpy(&(payload.buf[LWS_PRE]), buf, len);
+        struct duk_websocket_payload_t *tail = websocket->pending_tail;
+        if (tail) {
+            tail->next = payload;
+            websocket->pending_tail = payload;
+        } else {
+            websocket->pending_head = payload;
+            websocket->pending_tail = payload;
+        }
+    }
     return 0;
 }
 
@@ -224,6 +423,11 @@ DUK_LOCAL duk_ret_t duk_WebSocket_close(duk_context *ctx) {
     duk_push_this(ctx);
     struct duk_websocket_t *websocket = duk_get_websocket(ctx, -1);
     duk_pop(ctx); // pop this
+    if (websocket->wsi) {
+        websocket->is_closing = TRUE;
+        lws_callback_on_writable(websocket->wsi);
+        websocket->wsi = NULL;
+    }
     return 0;
 }
 
