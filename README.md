@@ -12,13 +12,13 @@
 * delegate 操作接口 
 * 针对Vector3等常用值类型的绑定优化 (待细化)
 * 可使用 protobufjs
+* websocket
 
 # 特性支持 (未实现)
 * 支持在脚本层面扩展 MonoBehaviour 
 * 基本的 eventloop 支持
 * Android/iOS 支持 (热更)
 * socket (tcp/udp)
-* websocket ()
 * enable debugger support (vscode)
 
 # 依赖环境
@@ -104,9 +104,8 @@ export class A {
 
 # 状态 
 开发中, 修改调整幅度比较大, 暂不能用于生产环境.  <br/>
-Vector2/Matrix3x3/Matrix4x4/Quaternion 等类型的优化尚未写完, 无法正常使用. <br/>
-Vector3 基本写完, 还没测试正确性/差异性. <br/>
-## 由于 C# 中有些方法重载或其他定义在 d.ts 中无法产生直接对应的申明, 目前 d.ts 文件在 tsc 时会报错, 但不会实际影响脚本编译. 后续再考虑解决此问题.
+Vector2/Matrix3x3/Matrix4x4/Quaternion 值类型优化基本写完, 还没测试正确性/差异性. <br/>
+###### 由于 C# 中有些方法重载或其他定义在 d.ts 中无法产生直接对应的申明, 目前 d.ts 文件在 tsc 时会报错, 但不会实际影响脚本编译. 后续再考虑解决此问题.
 
 # 使用方法
 

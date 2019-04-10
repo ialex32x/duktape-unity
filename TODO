@@ -1,6 +1,7 @@
 
 v0.2:
     ✔ websocket 支持 (libwebsockets) @done(19-04-10 11:08)
+    ☐ websocket 传入服务器选择的 protocol
 
 v0.1:
     ✔ Unity 常用值类型优化 @done(19-04-10 10:19)
