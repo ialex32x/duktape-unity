@@ -1,11 +1,6 @@
 var ws = new DuktapeJS.WebSocket()
-
-var address = "127.0.0.1"
-var host = "127.0.0.1"
-var path = "/websocket"
-var port = 8080
-var ssl = false
-var ssl_verify = false
+var tick = 0
+var pc = 0
 
 ws.on("open", this, function () {
     print("open")
@@ -19,11 +14,17 @@ ws.on("data", this, function (data) {
     print("receiving", data)
 })
 
-ws.connect(address, host, path, port, ssl, ssl_verify)
+ws.connect("127.0.0.1", "127.0.0.1", "/websocket", 8080, false, false)
 
 while (true) {
     ws.poll()
     DuktapeJS.sleep(1)
+    tick += 1
+    if (tick > 3) {
+        tick = 0
+        pc += 1
+        ws.send("test message #" + pc)
+    }
 }
 
 // var Vector3 = DuktapeJS.Vector3
