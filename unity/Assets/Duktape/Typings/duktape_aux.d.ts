@@ -104,9 +104,9 @@ declare namespace DuktapeJS {
 
     class WebSocket extends EventDispatcher {
         readonly connected: boolean
-        constructor()
+        constructor(protocols?: Array<string>)
         
-        connect(address: string, host: string, path: string, port: number, ssl: boolean, ssl_verify: boolean)
+        connect(url: string, ssl_verify?: boolean)
         close()
         poll()
         send(data: any): boolean

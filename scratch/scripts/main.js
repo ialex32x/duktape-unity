@@ -14,7 +14,7 @@ ws.on("data", this, function (data) {
     print("receiving", data)
 })
 
-ws.connect("127.0.0.1", "127.0.0.1", "/websocket", 8080, false, false)
+ws.connect("ws://127.0.0.1:8080/websocket")
 
 while (true) {
     ws.poll()

@@ -1,48 +1,52 @@
 
-# 简介
-在 unity 中集成和封装 duktape.
-使你能动态执行 javascript. 
-也可以使用 typescript 编写脚本, 提供完整的类型检查, 以及代码提示.
+# brief
+integerate duktape (an embedded javascript engine) into unity, you can load and run javascript at runtime. <br/>
+typescript is a preferred choice, it provides type checks and code auto completion tips.
 
 
-# 特性支持 (已实现)
-* 支持 nodejs 风格的模块
-* 生成 C# to js 静态绑定, 自动生成对应 d.ts 声明 
-* setTimeout/setInterval/clearTimeout/clearInterval 兼容
-* delegate 操作接口 
-* 针对Vector3等常用值类型的绑定优化 (待细化)
-* 可使用 protobufjs
-* websocket
+# features (implemented)
+* support nodejs-like module
+* generate C# to js type binding code, and coresponding d.ts type definition files
+* setTimeout/setInterval/clearTimeout/clearInterval compatible
+* c# delegates
+* optimize unity common valuetypes (Vector2/3,Quaternion...)
+* websocket (libwebsockets)
 
-# 特性支持 (未实现)
-* 支持在脚本层面扩展 MonoBehaviour 
-* 基本的 eventloop 支持
-* Android/iOS 支持 (热更)
-* socket (tcp/udp)
+# features (not implemented)
 * enable debugger support (vscode)
+* Android/iOS support
+* tcp
+* udp with kcp
 
-# 依赖环境
-使用 typescript 编写脚本时, 需要安装 typescript
+# environments
+if you use typescript, install typescript at first
 ```shell
 npm install -g typescript
 ```
 
-如果重新生成 duktape 源代码, 需要安装 python, pip, 以及 pyyaml
+if you need to compile duktape source code, python/pip/pyyaml is prerequisites.
 ```shell
 pip install pyyaml
 
 # duktape-2.3.0/src-input: duktape source code
 # duktape-2.3.0/src-custom: combined duktape source code
 ./configure_duktape.bat 
+./make_duktape_<platform>
 ```
 
-# Example
+'./scratch' is a playground for duktape testing in a simple command line app.
+```shell
+./configure_duktape_scratch.bat
+./make_duktape_scratch.bat
+```
+
+# sample code
 
 ```ts
 
-// 导入模块
+// import module
 import { B } from "base/b"
-// 相对路径导入模块
+// import module with relative path (. or ..)
 import { C } from "./base/c"
 
 class MyPlayer {
@@ -63,28 +67,32 @@ export class A {
     private go: GameObject
     constructor () {
         this.go = new GameObject("test go")
-        this.go.transform.localPosition = new Vector3(1, 2, 3) // (not implemented)
-        // 可以使用 Bridge 将 Enable/Disable/Update 等 Unity 流程引入脚本控制
-        // 不建议大量使用, 可以作为一个入口, 然后由脚本进行更复杂的逻辑
+        this.go.transform.localPosition = new Vector3(1, 2, 3) 
+        // use Bridge to receive Enable/Disable/Update 
+        // don't use the approach a lot, it's better to dispatch futher logic in a single Bridge
         this.go.AddComponent(DuktapeJS.Bridge).SetBridge(new MyPlayer()) 
 
         let f = new Custom()
-        // delegate 操作 
-        f.onload = new DuktapeJS.Dispatcher() // 如果脚本需要注册多个监听, 用 Dispatcher
-        // f.onload = () => { ... }              // 也可以直接注册函数 (会覆盖原值)
-        f.onload.on(this, this.onload)  // 添加this.onload监听
-        f.onload.off(this, this.onload) // 移除this.onload监听
-        f.onload.off(this)              // 清空this监听
-        f.onload.clear()                // 清空所有监听
+        // you can assign function to c# delegate
+        f.onopen = function () {
+            // ...
+        }
+        // if you want to register multiple listener, use DuktapeJS.Dispather 
+        // you can also use typed Dispatcher generated in _DuktapeDelegates.d.ts, it provides type checks
+        f.onload = new DuktapeJS.Dispatcher1<void, string>() 
+        f.onload.on(this, this.onload)  // add listener
+        f.onload.off(this, this.onload) // remove listener
+        f.onload.off(this)              // clear all listeners of this
+        f.onload.clear()                // clear all
 
-        // out 取参
+        // 'out' parameter in c#
         let v = {}
         if (System.Int32.TryParse("123", v)) {
             console.log(v.target)
         }
     }
 
-    private onload() {
+    private onload(ev: string) {
         let timer1 = setInterval(() => {
             console.log("interval")
         }, 1000)
@@ -100,22 +108,42 @@ export class A {
     }
 }
 
+// websocket
+let ws = DuktapeJS.WebSocket()
+ws.on("open", () => {
+    console.log("connected")
+    setInterval(() => {
+        ws.send("hello, world") // string or buffer 
+    }, 1000)
+})
+ws.on("data", data => {
+    console.log("ws receive data", data) // string or buffer (depends on websocket message type you use)
+})
+ws.on("close", () => {
+    console.log("connection lost")
+})
+ws.connect("ws://127.0.0.1:8080/echo")
+setInterval(() => {
+    ws.poll()
+}, 50)
+
 ```
 
-# 状态 
-开发中, 修改调整幅度比较大, 暂不能用于生产环境.  <br/>
-Vector2/Matrix3x3/Matrix4x4/Quaternion 值类型优化基本写完, 还没测试正确性/差异性. <br/>
-###### 由于 C# 中有些方法重载或其他定义在 d.ts 中无法产生直接对应的申明, 目前 d.ts 文件在 tsc 时会报错, 但不会实际影响脚本编译. 后续再考虑解决此问题.
+# dev status 
+It's not stable enough, do not use it in production environment.  <br/>
+Vector2/Matrix3x3/Matrix4x4/Quaternion valuetypes optimization is partially written in c, and not fully tested. <br/>
 
-# 使用方法
+#### at present, tsc will report some errors in generated d.ts, you can ignore it, it will not prevent your typescript compile into javascript.
 
-Unity 执行菜单项 Duktape/Generate Bindings 可以生成静态绑定代码.
+# usage
+
+execute menu item [Duktape -> Generate Bindings] to generate binding code.
 
 
-## 定制导出类型
+## how to customize exported types
 
-* 通过配置
-创建/修改配置文件 ProjectSettings\duktape.json (具体可配置项参考 Assets\Duktape\Editor\Prefs.cs)
+* duktape.json
+modify the basic configuration at ProjectSettings\duktape.json (details in Assets\Duktape\Editor\Prefs.cs)
 ```json
 {
     "outDir": "Assets/Source/Generated",
@@ -128,14 +156,18 @@ Unity 执行菜单项 Duktape/Generate Bindings 可以生成静态绑定代码.
     "tab": "    "
 }
 ```
-* 通过实现 Duktape.IBindingProcess 接口或直接继承 AbstractBindingProcess 类
+* implements Duktape.IBindingProcess interface or extends AbstractBindingProcess class
 ```c#
 public class MyCustomBinding : AbstractBindingProcess
 {
     public override void OnPreCollectTypes(BindingManager bindingManager)
     {
-        // 添加导出
-        // bindingManager.AddExport(typeof(MyCustomClass));
+        /*
+        bindingManager.AddExportedType(typeof(MyCustomClass));
+        bindingManager.TransformType(typeof(MyCustomClass))
+            .SetMethodBlocked("AMethodName")
+            .SetMethodBlocked("AMethodNameWithParameters", typeof(string), typeof(int))
+        */
     }
 
     public override void OnCleanup(BindingManager bindingManager)
@@ -145,22 +177,18 @@ public class MyCustomBinding : AbstractBindingProcess
 }
 ```
 
-## 编写脚本
-基本用法可以参考 Assets/Scenes/main.unity (Sample.cs) <br/>
-使用 javascript 直接开发不需要额外配置, 如果使用 typescript 开发需要配置 tsconfig.json.  <br/>
-将自动生成的绑定代码目录配置到 typeRoots 中即可使用完整的代码提示. <br/>
-另外可以考虑开启 watch 自动编译 typescript. <br/>
+## sample scene
+Assets/Scenes/main.unity (Sample.cs) demonstrate the basic usage.<br/>
 
-(后续会详细补充 protobufjs 等的使用方法)<br/>
-
-# 使用及参考的库
+# referenced libraries
 
 * [duktape](https://github.com/svaarala/duktape)
 * [slua](https://github.com/pangweiwei/slua)
 * [xLua](https://github.com/Tencent/xLua)
 * [typescript-for-unity](https://github.com/SpiralP/typescript-for-unity)
+* [godot](https://github.com/godotengine/godot)
 
-# 其他
+# misc.
 
 * [vscode-duktape-debug](https://github.com/harold-b/vscode-duktape-debug)
 * [duktape-doc-debugger](https://github.com/svaarala/duktape/blob/master/doc/debugger.rst)

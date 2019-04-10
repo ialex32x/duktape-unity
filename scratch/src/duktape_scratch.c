@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define duk_memcmp memcmp
+#define duk_memcpy memcpy
+
 static duk_ret_t native_print(duk_context *ctx) {
 	duk_push_string(ctx, " ");
 	duk_insert(ctx, 0);
@@ -60,11 +63,11 @@ int main(int argc, char *argv[]) {
 			printf("source: %s\n", buf);
 		}
 		free(buf);
-		duk_pop(ctx);  /* pop eval result */
-	}
-	else {
+		duk_pop(ctx);  // pop eval result 
+	} else {
 		printf("can not read file\n");
 	}
+
 	duk_destroy_heap(ctx);
 	fflush(stdout);
 	system("pause");

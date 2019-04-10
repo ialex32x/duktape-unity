@@ -434,18 +434,110 @@ DUK_LOCAL duk_ret_t duk_WebSocket_finalizer(duk_context *ctx) {
     return 0;
 }
 
-DUK_LOCAL duk_ret_t duk_WebSocket_connect(duk_context *ctx) {
-    char *p_address = duk_require_string(ctx, 0);
-    char *p_host = duk_require_string(ctx, 1);
-    char *p_path = duk_require_string(ctx, 2);
-    duk_int_t p_port = duk_require_int(ctx, 3);
-    duk_bool_t p_ssl = duk_require_boolean(ctx, 4);
-    duk_bool_t p_allow_self_signed = duk_require_boolean(ctx, 5);
+DUK_LOCAL int _duk_ws_str_index_of(const char *str, size_t len, char c) {
+	int i = 0;
+	while (i < len) {
+		if (str[i] == c) {
+			return i;
+		}
+		++i;
+	}
+	return -1;
+}
 
+DUK_LOCAL int _duk_ws_str_to_int(const char *str, size_t len) {
+	if (len == 0) {
+		return 0;
+	}
+	int integer = 0;
+	int sign = 1;
+	for (int i = 0; i < len; i++) {
+		char c = str[i];
+		if (c >= '0' && c <= '9') {
+			integer *= 10;
+			integer += c - '0';
+		}
+		else if (integer == 0 && c == '-') {
+			sign = -sign;
+		}
+		else if (c == '.') {
+			break;
+		}
+	}
+	return integer * sign;
+}
+
+DUK_LOCAL duk_bool_t _parse_url(duk_context *ctx, const char *url, size_t len, const char **host, int *port, const char **path, duk_bool_t *ssl) {
+	if (!url || len <= 5 || len > 255) {
+		return 0;
+	}
+	char *buf = NULL;
+	const char *str = url;
+	size_t left = len;
+	if (len > 5 && !duk_memcmp(url, "ws://", 5)) {
+		*ssl = 0;
+		str += 5;
+		left -= 5;
+	} else if (len > 6 && !duk_memcmp(url, "wss://", 6)) {
+		*ssl = 1;
+		str += 6;
+		left -= 6;
+	} else {
+		return 0;
+	}
+	int path_idx = _duk_ws_str_index_of(str, left, '/');
+	if (path_idx < 0) {
+		path_idx = left;
+	}
+	int port_idx = _duk_ws_str_index_of(str, left, ':');
+	if (port_idx > path_idx) {
+		port_idx = -1;
+	}
+	int host_idx = port_idx < 0 || path_idx < port_idx ? path_idx : port_idx;
+	if (host_idx <= 0) {
+		return 0;
+	}
+	if (port_idx >= 0) {
+		*port = _duk_ws_str_to_int(str + port_idx + 1, left - port_idx);
+	} else {
+		*port = *ssl ? 443 : 80;
+	}
+	if (path_idx < 0 || path_idx >= left) {
+		buf = (char *)duk_alloc(ctx, 2);
+		*path = buf;
+		buf[0] = '/';
+		buf[1] = '\0';
+	} else {
+		path_idx--;
+		buf = (char *)duk_alloc(ctx, left - path_idx);
+		*path = buf;
+		duk_memcpy(*path, str + path_idx + 1, left - path_idx - 1);
+		buf[left - path_idx - 1] = '\0';
+	}
+	buf = (char *)duk_alloc(ctx, host_idx + 1);
+	*host = buf;
+	duk_memcpy(*host, str, host_idx);
+	buf[host_idx] = '\0';
+	return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_WebSocket_connect(duk_context *ctx) {
+    size_t p_url_len;
+    char *p_url = duk_require_lstring(ctx, 0, &p_url_len);
+    duk_bool_t p_allow_self_signed = duk_get_boolean_default(ctx, 1, FALSE);
+    const char *x_host = NULL;
+	int x_port;
+	const char *x_path = NULL;
+	duk_bool_t x_ssl;
+	if (!_parse_url(ctx, p_url, p_url_len, &x_host, &x_port, &x_path, &x_ssl)) {
+        return duk_generic_error(ctx, "invalid url");
+	}
     duk_push_this(ctx);
     struct duk_websocket_t *websocket = duk_get_websocket(ctx, -1);
     duk_pop(ctx); // pop this
     if (websocket == NULL) {
+        duk_free(ctx, x_host);
+        duk_free(ctx, x_path);
         return duk_generic_error(ctx, "no websocket");
     }
 	struct lws_context_creation_info info;
@@ -462,12 +554,14 @@ DUK_LOCAL duk_ret_t duk_WebSocket_connect(duk_context *ctx) {
 	info.user = websocket; 
 	struct lws_context *context = lws_create_context(&info);
     if (context == NULL) {
+        duk_free(ctx, x_host);
+        duk_free(ctx, x_path);
         return duk_generic_error(ctx, "lws_create_context failed");
     }
     websocket->context = context;
 	i.context = context;
     i.protocol = websocket->protocol_names;
-    if (p_ssl) {
+    if (x_ssl) {
 		i.ssl_connection = LCCSCF_USE_SSL;
 		if (p_allow_self_signed) {
             i.ssl_connection |= LCCSCF_ALLOW_SELFSIGNED;
@@ -475,12 +569,14 @@ DUK_LOCAL duk_ret_t duk_WebSocket_connect(duk_context *ctx) {
 	} else {
 		i.ssl_connection = 0;
 	}
-	i.address = p_address;
-	i.host = p_host;
-	i.path = p_path;
-	i.port = p_port;
+	i.address = x_host;
+	i.host = x_host;
+	i.path = x_path;
+	i.port = x_port;
 
 	lws_client_connect_via_info(&i);
+    duk_free(ctx, x_host);
+    duk_free(ctx, x_path);
     return 0;
 }
 
