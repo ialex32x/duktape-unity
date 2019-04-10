@@ -90,8 +90,8 @@ DUK_LOCAL void _on_connect(struct duk_websocket_t *websocket, const char *protoc
     duk_push_literal(ctx, "dispatch");
     duk_push_literal(ctx, "open");
     duk_push_string(ctx, protocol);
-    if (duk_pcall_prop(ctx, -3, 2) != DUK_EXEC_SUCCESS) {
-        lwsl_warn("unable to dispatch open");
+    if (duk_pcall_prop(ctx, -4, 2) != DUK_EXEC_SUCCESS) {
+        lwsl_warn("unable to dispatch: %s", duk_to_string(ctx, -1));
     }
     duk_pop_2(ctx);
 }
@@ -102,6 +102,7 @@ DUK_LOCAL void _on_error(struct duk_websocket_t *websocket) {
     duk_push_literal(ctx, "dispatch");
     duk_push_literal(ctx, "error");
     if (duk_pcall_prop(ctx, -3, 1) != DUK_EXEC_SUCCESS) {
+        lwsl_warn("unable to dispatch: %s", duk_to_string(ctx, -1));
     }
     duk_pop_2(ctx);
 }
@@ -127,7 +128,8 @@ DUK_LOCAL void _on_close_request(struct duk_websocket_t *websocket, int code, co
     } else {
         duk_push_null(ctx);
     }
-    if (duk_pcall_prop(ctx, -3, 3) != DUK_EXEC_SUCCESS) {
+    if (duk_pcall_prop(ctx, -5, 3) != DUK_EXEC_SUCCESS) {
+        lwsl_warn("unable to dispatch: %s", duk_to_string(ctx, -1));
     }
     duk_pop_2(ctx);
 }
@@ -144,7 +146,8 @@ DUK_LOCAL void _on_received(struct duk_websocket_t *websocket) {
     } else {
         duk_push_lstring(ctx, (const char *)(websocket->buf), websocket->len);
     }
-    if (duk_pcall_prop(ctx, -3, 2) != DUK_EXEC_SUCCESS) {
+    if (duk_pcall_prop(ctx, -4, 2) != DUK_EXEC_SUCCESS) {
+        lwsl_warn("unable to dispatch: %s", duk_to_string(ctx, -1));
     }
     duk_pop_2(ctx);
 }
@@ -482,8 +485,23 @@ DUK_LOCAL duk_ret_t duk_WebSocket_connect(duk_context *ctx) {
 }
 
 DUK_LOCAL duk_ret_t duk_WebSocket_send(duk_context *ctx) {
-    duk_size_t len;
-    void *buf = duk_require_buffer_data(ctx, 0, &len);
+    duk_size_t len = 0;
+    duk_bool_t is_binary = TRUE;
+    void *buf = NULL;
+    duk_idx_t top = duk_get_top(ctx);
+    if (top == 0) {
+        return 0;
+    }
+    if (duk_is_string(ctx, 0)) {
+        buf = duk_get_lstring(ctx, 0, &len);
+        is_binary = FALSE;
+    } else if (duk_is_buffer_data(ctx, 0)) {
+        buf = duk_get_buffer_data(ctx, 0, &len);
+    }
+    if (len == 0) {
+        lwsl_warn("invalid payload object");
+        return 0;
+    }
     if (len > LWS_PAYLOAD_SIZE) {
         return duk_generic_error(ctx, "payload is too large");
     }
@@ -500,6 +518,8 @@ DUK_LOCAL duk_ret_t duk_WebSocket_send(duk_context *ctx) {
         struct duk_websocket_payload_t *payload = _new_payload(websocket);
         duk_memzero(payload->buf, LWS_PRE);
         duk_memcpy(&(((char *)(payload->buf))[LWS_PRE]), buf, len);
+        payload->is_binary = is_binary;
+        payload->len = len;
         struct duk_websocket_payload_t *tail = websocket->pending_tail;
         if (tail) {
             tail->next = payload;
@@ -508,6 +528,7 @@ DUK_LOCAL duk_ret_t duk_WebSocket_send(duk_context *ctx) {
             websocket->pending_head = payload;
             websocket->pending_tail = payload;
         }
+        lws_callback_on_writable(websocket->wsi);
     } 
     return 0;
 }
