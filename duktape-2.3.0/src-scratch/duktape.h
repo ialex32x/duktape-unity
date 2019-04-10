@@ -6,7 +6,7 @@
  *  comments.  Other parts of the header are Duktape internal and related to
  *  e.g. platform/compiler/feature detection.
  *
- *  Git commit b5edd7ab8530a5f437591ed59ef5aafab4748b3c (b5edd7a-dirty).
+ *  Git commit ca7957896b61d12713f46976f55258e4de110309 (ca79578-dirty).
  *  Git branch develop.
  *
  *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and
@@ -171,8 +171,8 @@
  * which Duktape snapshot was used.  Not available in the ECMAScript
  * environment.
  */
-#define DUK_GIT_COMMIT                    "b5edd7ab8530a5f437591ed59ef5aafab4748b3c"
-#define DUK_GIT_DESCRIBE                  "b5edd7a-dirty"
+#define DUK_GIT_COMMIT                    "ca7957896b61d12713f46976f55258e4de110309"
+#define DUK_GIT_DESCRIBE                  "ca79578-dirty"
 #define DUK_GIT_BRANCH                    "develop"
 
 /* External duk_config.h provides platform/compiler/OS dependent
@@ -1492,6 +1492,9 @@ DUK_EXTERNAL_DECL duk_bool_t duk_unity_open(duk_context *ctx);
 
 DUK_EXTERNAL_DECL void duk_builtins_reg_put(duk_context *ctx, duk_uarridx_t key);
 DUK_EXTERNAL_DECL void duk_builtins_reg_get(duk_context *ctx, duk_uarridx_t key);
+
+// stack: [..., class_ctor, super_class_ctor]
+DUK_EXTERNAL_DECL void duk_unity_inherit(duk_context *ctx);
 
 DUK_EXTERNAL_DECL duk_uint_t duk_unity_ref(duk_context *ctx); /// Creates and returns a reference for the object at the top of the stack (and pops the object).
 DUK_EXTERNAL_DECL void duk_unity_unref(duk_context *ctx, duk_uint_t refid); /// push object referenced by refid to top of the stack
