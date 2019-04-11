@@ -1,8 +1,9 @@
 
 # brief
 integerate duktape (an embedded javascript engine) into unity, you can load and run javascript at runtime. <br/>
-typescript is a preferred choice, it provides type checks and code auto completion tips.
+typescript is a preferred choice, it provides type checks.
 
+![editing script](res/ts_editing_1.png "so brilliant!")
 
 # features (implemented)
 * support nodejs-like module
@@ -17,6 +18,16 @@ typescript is a preferred choice, it provides type checks and code auto completi
 * Android/iOS support
 * tcp
 * udp with kcp
+
+# type definition files
+The generated d.ts files will help a lot when coding. It will use the best approach to give the information of types.
+
+- delegate type information
+![type definition files](res/type_definition_1.png)
+- generic constraints for out/ref parameter
+![type definition files](res/type_definition_2.png)
+- friendly interface for AddComponent/GetComponent
+![type definition files](res/type_definition_3.png)
 
 # environments
 if you use typescript, install typescript at first
