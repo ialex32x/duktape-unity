@@ -23,7 +23,7 @@ v0.1:
     ☐ 支持 debugger @started(19-03-01 08:44)
     ✔ 具体泛型类支持 (待细化) @done(19-03-29 09:32)
     ☐ socket
-    ☐ websocket
+    ✔ websocket @done(19-04-11 10:06)
     ✔ protobufjs @done(19-03-29 09:32)
     ✔ !!! 索引访问 ($GetValue/$SetValue) @done(19-03-07 15:21)
     ✔ !!! 扩展方法 @started(19-03-07 14:10) @done(19-03-25 14:02) @lasted(2w3d23h52m10s)
