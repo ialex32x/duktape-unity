@@ -413,7 +413,7 @@ namespace Duktape
             DuktapeDLL.duk_push_string(ctx, filename);
             if (DuktapeDLL.duk_pcompile(ctx, 0) != 0)
             {
-                Debug.LogErrorFormat("compile error: {0}\n{1}", DuktapeDLL.duk_safe_to_string(ctx, -1), filename);
+                DuktapeAux.PrintError(ctx, -1, filename);
                 DuktapeDLL.duk_pop(ctx);
             }
             else
