@@ -1,6 +1,8 @@
 /* lws_config_private.h.in. Private compilation options. */
 #ifndef DEBUG_ENABLED
+#ifndef NDEBUG
 #define NDEBUG
+#endif
 #endif
 
 #ifndef NDEBUG
