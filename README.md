@@ -187,6 +187,8 @@ Assets/Scenes/main.unity (Sample.cs) demonstrate the basic usage.<br/>
 * [xLua](https://github.com/Tencent/xLua)
 * [typescript-for-unity](https://github.com/SpiralP/typescript-for-unity)
 * [godot](https://github.com/godotengine/godot)
+* [libwebsockets](https://github.com/warmcat/libwebsockets)
+* [mbedtls](https://github.com/ARMmbed/mbedtls)
 
 # misc.
 

@@ -3,6 +3,9 @@
 
 #include "libwebsockets.h"
 
+#define _DUK_WS_TRUE 1
+#define _DUK_WS_FALSE 0
+
 #define LWS_BUF_SIZE 65536
 #define LWS_PACKET_SIZE 65536
 #define LWS_PAYLOAD_SIZE 4096
@@ -66,10 +69,10 @@ DUK_LOCAL void _duk_lws_destroy(struct duk_websocket_t *websocket) {
         return;
     }
     if (websocket->is_polling) {
-        websocket->is_context_destroying = TRUE;
+        websocket->is_context_destroying = _DUK_WS_TRUE;
         return;
     }
-    websocket->is_context_destroyed = TRUE;
+    websocket->is_context_destroyed = _DUK_WS_TRUE;
     if (websocket->context != NULL) {
         lws_context_destroy(websocket->context);
         websocket->context = NULL;
@@ -188,7 +191,7 @@ DUK_LOCAL void _lws_send(struct duk_websocket_t *websocket, struct lws *wsi) {
 
 DUK_LOCAL void _duk_lws_close(struct duk_websocket_t *websocket) {
     if (websocket->wsi) {
-        websocket->is_closing = TRUE;
+        websocket->is_closing = _DUK_WS_TRUE;
         lws_callback_on_writable(websocket->wsi);
         websocket->wsi = NULL;
     }
@@ -201,7 +204,7 @@ DUK_LOCAL int _lws_callback_function(struct lws *wsi,
                                     size_t len) {
     struct duk_websocket_t *websocket = (struct duk_websocket_t *)lws_context_user(lws_get_context(wsi));
 
-    websocket->is_servicing = TRUE;
+    websocket->is_servicing = _DUK_WS_TRUE;
 	switch (reason) {
         case LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS: {
             return 0;
@@ -261,20 +264,20 @@ struct IP_Address {
 
 DUK_LOCAL void _IP_Address_clear(struct IP_Address *ip) {
 	memset(&(ip->field8[0]), 0, sizeof(ip->field8));
-	ip->valid = FALSE;
-	ip->wildcard = FALSE;
+	ip->valid = _DUK_WS_FALSE;
+	ip->wildcard = _DUK_WS_FALSE;
 }
 
 DUK_LOCAL void _IP_Address_set_ipv4(struct IP_Address *ip, const uint8_t *p_ip) {
     _IP_Address_clear(ip);
-    ip->valid = TRUE;
+    ip->valid = _DUK_WS_TRUE;
 	ip->field16[5] = 0xffff;
 	ip->field32[3] = *((const uint32_t *)p_ip);
 }
 
 DUK_LOCAL void _IP_Address_set_ipv6(struct IP_Address *ip, const uint8_t *p_ip) {
 	_IP_Address_clear(ip);
-	ip->valid = TRUE;
+	ip->valid = _DUK_WS_TRUE;
 	for (int i = 0; i < 16; i++) {
 		ip->field8[i] = p_ip[i];
     }
@@ -282,7 +285,7 @@ DUK_LOCAL void _IP_Address_set_ipv6(struct IP_Address *ip, const uint8_t *p_ip) 
 
 DUK_LOCAL duk_bool_t _resolve_hostname(const char *p_hostname, int p_type, struct IP_Address *ip) {
     if (!ip) {
-        return FALSE;
+        return _DUK_WS_FALSE;
     }
 	struct addrinfo hints;
 	struct addrinfo *result;
@@ -301,14 +304,14 @@ DUK_LOCAL duk_bool_t _resolve_hostname(const char *p_hostname, int p_type, struc
 
 	int s = getaddrinfo(p_hostname, NULL, &hints, &result);
 	if (s != 0) {
-		return FALSE;
+		return _DUK_WS_FALSE;
 	};
 
 	if (result == NULL || result->ai_addr == NULL) {
 		if (result) {
             freeaddrinfo(result);
         }
-		return FALSE;
+		return _DUK_WS_FALSE;
 	};
 
 	if (result->ai_addr->sa_family == AF_INET) {
@@ -320,7 +323,7 @@ DUK_LOCAL duk_bool_t _resolve_hostname(const char *p_hostname, int p_type, struc
 	};
 
 	freeaddrinfo(result);
-	return TRUE;
+	return _DUK_WS_TRUE;
 }
 
 DUK_LOCAL struct duk_websocket_t *duk_get_websocket(duk_context *ctx, duk_idx_t idx) {
@@ -524,7 +527,7 @@ DUK_LOCAL duk_bool_t _parse_url(duk_context *ctx, const char *url, size_t len, c
 DUK_LOCAL duk_ret_t duk_WebSocket_connect(duk_context *ctx) {
     size_t p_url_len;
     char *p_url = duk_require_lstring(ctx, 0, &p_url_len);
-    duk_bool_t p_allow_self_signed = duk_get_boolean_default(ctx, 1, FALSE);
+    duk_bool_t p_allow_self_signed = duk_get_boolean_default(ctx, 1, _DUK_WS_FALSE);
     const char *x_host = NULL;
 	int x_port;
 	const char *x_path = NULL;
@@ -582,7 +585,7 @@ DUK_LOCAL duk_ret_t duk_WebSocket_connect(duk_context *ctx) {
 
 DUK_LOCAL duk_ret_t duk_WebSocket_send(duk_context *ctx) {
     duk_size_t len = 0;
-    duk_bool_t is_binary = TRUE;
+    duk_bool_t is_binary = _DUK_WS_TRUE;
     void *buf = NULL;
     duk_idx_t top = duk_get_top(ctx);
     if (top == 0) {
@@ -590,7 +593,7 @@ DUK_LOCAL duk_ret_t duk_WebSocket_send(duk_context *ctx) {
     }
     if (duk_is_string(ctx, 0)) {
         buf = duk_get_lstring(ctx, 0, &len);
-        is_binary = FALSE;
+        is_binary = _DUK_WS_FALSE;
     } else if (duk_is_buffer_data(ctx, 0)) {
         buf = duk_get_buffer_data(ctx, 0, &len);
     }
@@ -644,12 +647,12 @@ DUK_LOCAL duk_ret_t duk_WebSocket_poll(duk_context *ctx) {
     if (websocket == NULL || websocket->context == NULL) {
         return 0;
     }
-    websocket->is_polling = TRUE;
+    websocket->is_polling = _DUK_WS_TRUE;
     do {
-        websocket->is_servicing = FALSE;
+        websocket->is_servicing = _DUK_WS_FALSE;
         lws_service(websocket->context, 0);
     } while (websocket->is_servicing);
-    websocket->is_polling = FALSE;
+    websocket->is_polling = _DUK_WS_FALSE;
 
     if (websocket->is_context_destroying) {
         _duk_lws_destroy(websocket);
