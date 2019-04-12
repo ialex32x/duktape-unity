@@ -132,6 +132,10 @@ namespace Duktape
                     "GetComponentsInParent", typeof(Type))
             ;
 
+            // fix d.ts, some C# classes use explicit implemented interface method
+            SetTypeBlocked(typeof(UnityEngine.ILogHandler));
+            SetTypeBlocked(typeof(UnityEngine.ISerializationCallbackReceiver));
+
             TransformType(typeof(Vector3))
                 .SetMethodBlocked("SqrMagnitude", typeof(Vector3))
                 .SetMethodBlocked("Magnitude", typeof(Vector3))
@@ -224,6 +228,17 @@ namespace Duktape
             if (transform != null)
             {
                 return transform.GetTSMethodDeclaration(method, out code);
+            }
+            code = null;
+            return false;
+        }
+
+        public bool GetTSMethodRename(MethodBase method, out string code)
+        {
+            var transform = GetTypeTransform(method.DeclaringType);
+            if (transform != null)
+            {
+                return transform.GetTSMethodRename(method, out code);
             }
             code = null;
             return false;

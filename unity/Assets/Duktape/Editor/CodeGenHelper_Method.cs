@@ -312,7 +312,15 @@ namespace Duktape
             {
                 prefix = "static ";
             }
-            this.cg.tsDeclare.Append($"{prefix}{bindingInfo.regName}(");
+            string tsMethodRename;
+            if (this.cg.bindingManager.GetTSMethodRename(method, out tsMethodRename))
+            {
+                this.cg.tsDeclare.Append($"{prefix}{tsMethodRename}(");
+            }
+            else
+            {
+                this.cg.tsDeclare.Append($"{prefix}{bindingInfo.regName}(");
+            }
             var parameters = method.GetParameters();
             if (isExtension)
             {

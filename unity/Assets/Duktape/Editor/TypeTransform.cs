@@ -21,6 +21,7 @@ namespace Duktape
 
         // 针对特定方法的 ts 声明优化
         private Dictionary<MethodBase, string> _tsMethodDeclarations = new Dictionary<MethodBase, string>();
+        private Dictionary<MethodBase, string> _tsMethodRenames = new Dictionary<MethodBase, string>();
 
         // d.ts 中额外输出附加方法声明 (例如 Vector3, js中需要通过方法调用进行 +-*/== 等运算)
         private List<string> _tsAdditionalMethodDeclarations = new List<string>();
@@ -104,6 +105,21 @@ namespace Duktape
         public bool GetTSMethodDeclaration(MethodBase method, out string code)
         {
             return _tsMethodDeclarations.TryGetValue(method, out code);
+        }
+
+        public TypeTransform RenameTSMethod(string spec, string name, params Type[] parameters)
+        {
+            var method = _type.GetMethod(name, parameters);
+            if (method != null)
+            {
+                _tsMethodRenames[method] = spec;
+            }
+            return this;
+        }
+
+        public bool GetTSMethodRename(MethodBase method, out string name)
+        {
+            return _tsMethodRenames.TryGetValue(method, out name);
         }
 
         public TypeTransform AddRedirectMethod(string from, string to)
