@@ -14,6 +14,8 @@ dofile("test.pb.js");
     let w = protos.Ping.encode(msg)
     let buf = w.finish()
 
+    // > go run examples\echoserver\src\main.go
+    // you need a simple echo server to run the code below
     let ws = new DuktapeJS.WebSocket()
     ws.connect("ws://127.0.0.1:8080/websocket")
     ws.on("open", this, () => {
