@@ -1,6 +1,18 @@
 
+/**
+ * 执行指定脚本
+ */
 declare function dofile(filename: string): void
+/**
+ * 执行指定脚本 （类似eval）
+ * @param source 脚本源码
+ * @param filename 为此脚本指定命名 
+ */
 declare function dostring(source: string, filename?: string): void
+/**
+ * 将指定路径添加到 duktape 加载脚本的搜索目录列表
+ */
+declare function addSearchPath(path: string): void
 
 declare namespace DuktapeJS {
     const COMPLETE: string
@@ -96,7 +108,6 @@ declare namespace DuktapeJS {
     }
 
     class Delegate {
-        // not implemented
         static on<R>(caller: any, fn: () => R): Delegate
         static on<R, T0>(caller: any, fn: (arg0: T0) => R): Delegate
         static on<R, T0, T1>(caller: any, fn: (arg0: T0, arg1: T1) => R): Delegate
