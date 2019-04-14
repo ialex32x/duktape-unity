@@ -92,6 +92,7 @@ namespace Duktape
             "UnityEngine.Experimental.",
             "Unity.IO.LowLevel.",
             "Unity.Burst.",
+            "UnityEngine.Assertions.",
         });
 
         public Prefs MarkAsDirty()
