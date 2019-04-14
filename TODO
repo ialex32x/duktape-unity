@@ -1,12 +1,12 @@
 
 v0.2:
     ✔ websocket 支持 (libwebsockets) @done(19-04-10 11:08)
-    ☐ websocket 传入服务器选择的 protocol
+    ☐ websocket.open 传入服务器选择的 protocol
 
 v0.1:
     ✔ Unity 常用值类型优化 @done(19-04-10 10:19)
 
-核心功能: 
+core: 
     ✔ nodejs-like module @done(19-02-28 16:06)
     ✔ auto generate C# types binding code @done(19-02-28 16:06)
     ✔ auto generate d.ts for exported C# types @done(19-02-28 16:07)
@@ -17,7 +17,7 @@ v0.1:
     ☐ extends MonoBehaviour (需要禁止 MonoBehaviour binding 中对构造方法调用的默认行为) @started(19-03-11 14:09)
     ✔ 将 ref/out 做成 ts 泛型调用约定 (DuktapeJS.Ref<T> & Out<T>) @started(19-03-11 14:09) @done(19-03-12 04:54) @lasted(14h45m29s)
     
-其他功能: 
+Misc: 
     ✔ 处理泛型 @started(19-03-01 08:44) @done(19-03-06 06:09) @lasted(4d21h25m8s)
     ✔ AddComponent/GetComponent @done(19-03-06 06:09)
     ☐ 支持 debugger @started(19-03-01 08:44)
@@ -32,7 +32,7 @@ v0.1:
     ✔ 自动生成 Delegate 对应的 stub type var (== Dispatcher) @done(19-03-07 17:30)
     ☐ 识别属性 JSRawFunction, 直接传递 ctx
 
-兼容性: 
+compatiblity: 
     ✔ setInterval/setTimeout @done(19-02-28 16:02)
     ☐ http.GET/POST/FORM
     
@@ -48,6 +48,7 @@ FIXME:
     ☐ (C#)抽象类没有实现基类或接口方法时在 d.ts 仍需补充声明
     ✔ get_this 取值方式优化 （与普通参数取值流程一致） @started(19-03-30 00:57) @done(19-03-30 00:57) @lasted(42s)
     ✔ byte[] 取值兼容 Buffer @started(19-03-30 00:58) @done(19-03-30 00:58) @lasted(20s)
+    ☐ websocket.close() does not actually close the connection
 
 UNSUPPORTED： 
     x 在C中可操作的协程 （duktape 目前无法支持）

@@ -5,7 +5,7 @@ Typescript is a preferred choice, it provides type checks.
 
 ![editing script](res/ts_editing_1.png "so brilliant!")
 
-# Features (implemented)
+# Features 
 * support nodejs-like module
 * generate C# to js type binding code, and coresponding d.ts type definition files
 * setTimeout/setInterval/clearTimeout/clearInterval compatible
