@@ -75,7 +75,7 @@ namespace Duktape
         [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         public static int duk_dofile(IntPtr ctx)
         {
-            var filename = DuktapeAux.duk_require_string(ctx, 1);
+            var filename = DuktapeAux.duk_require_string(ctx, 0);
             DuktapeVM.GetVM(ctx).EvalFile(filename);
             return 0;
         }
@@ -83,8 +83,8 @@ namespace Duktape
         [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         public static int duk_dostring(IntPtr ctx)
         {
-            var source = DuktapeDLL.duk_get_string(ctx, 1);
-            var filename = DuktapeDLL.duk_get_string(ctx, 2);
+            var source = DuktapeDLL.duk_get_string(ctx, 0);
+            var filename = DuktapeDLL.duk_get_string(ctx, 1);
             DuktapeVM.GetVM(ctx).EvalSource(source, filename);
             return 0;
         }

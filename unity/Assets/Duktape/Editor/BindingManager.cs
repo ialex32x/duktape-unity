@@ -136,6 +136,11 @@ namespace Duktape
             SetTypeBlocked(typeof(UnityEngine.ILogHandler));
             SetTypeBlocked(typeof(UnityEngine.ISerializationCallbackReceiver));
 
+            TransformType(typeof(object))
+                .RenameTSMethod("$Equals", "Equals", typeof(object))
+                .RenameTSMethod("$Equals", "Equals", typeof(object), typeof(object))
+            ;
+
             TransformType(typeof(Vector3))
                 .SetMethodBlocked("SqrMagnitude", typeof(Vector3))
                 .SetMethodBlocked("Magnitude", typeof(Vector3))

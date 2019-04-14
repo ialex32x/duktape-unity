@@ -107,12 +107,12 @@ namespace Duktape
             return _tsMethodDeclarations.TryGetValue(method, out code);
         }
 
-        public TypeTransform RenameTSMethod(string spec, string name, params Type[] parameters)
+        public TypeTransform RenameTSMethod(string newName, string oldName, params Type[] parameters)
         {
-            var method = _type.GetMethod(name, parameters);
+            var method = _type.GetMethod(oldName, parameters);
             if (method != null)
             {
-                _tsMethodRenames[method] = spec;
+                _tsMethodRenames[method] = newName;
             }
             return this;
         }

@@ -1,25 +1,26 @@
 
-# brief
-integerate duktape (an embedded javascript engine) into unity, you can load and run javascript at runtime. <br/>
-typescript is a preferred choice, it provides type checks.
+# Brief
+Integerate duktape (an embedded javascript engine) into unity, you can load and run javascript at runtime. <br/>
+Typescript is a preferred choice, it provides type checks.
 
 ![editing script](res/ts_editing_1.png "so brilliant!")
 
-# features (implemented)
+# Features (implemented)
 * support nodejs-like module
 * generate C# to js type binding code, and coresponding d.ts type definition files
 * setTimeout/setInterval/clearTimeout/clearInterval compatible
 * c# delegates
-* optimize unity common valuetypes (Vector2/3,Quaternion...)
+* optimized unity common valuetypes (Vector2/3,Quaternion...)
 * websocket (libwebsockets)
+* enable debugger support (vscode) (not implemented)
+* Android/iOS support (not implemented)
+* tcp (not implemented)
+* udp with kcp (not implemented)
 
-# features (not implemented)
-* enable debugger support (vscode)
-* Android/iOS support
-* tcp
-* udp with kcp
+You can use many pure js libraries in your scripts, such as protobufjs.
+![protobufjs](res/test_protobufjs.png)
 
-# type definition files
+# Type definition files
 The generated d.ts files will help a lot when coding. It will use the best approach to give the information of types.
 
 - delegate type information
@@ -29,13 +30,13 @@ The generated d.ts files will help a lot when coding. It will use the best appro
 - friendly interface for AddComponent/GetComponent
 ![type definition files](res/type_definition_3.png)
 
-# environments
-if you use typescript, install typescript at first
+# Environments
+If you use typescript, install typescript at first
 ```shell
 npm install -g typescript
 ```
 
-if you need to compile duktape source code, python/pip/pyyaml is prerequisites.
+If you need to compile duktape source code, python/pip/pyyaml is prerequisites.
 ```shell
 pip install pyyaml
 
@@ -51,7 +52,7 @@ pip install pyyaml
 ./make_duktape_scratch.bat
 ```
 
-# sample code
+# Sample code
 
 ```ts
 
@@ -140,18 +141,16 @@ setInterval(() => {
 
 ```
 
-# dev status 
+# Dev status 
 It's not stable enough, do not use it in production environment.  <br/>
 Vector2/Matrix3x3/Matrix4x4/Quaternion valuetypes optimization is partially written in c, and not fully tested. <br/>
 
-#### at present, tsc will report some errors in generated d.ts, you can ignore it, it will not prevent your typescript compile into javascript.
-
-# usage
+# Usage
 
 execute menu item [Duktape -> Generate Bindings] to generate binding code.
 
 
-## how to customize exported types
+## How to customize exported types
 
 * duktape.json
 modify the basic configuration at ProjectSettings\duktape.json (details in Assets\Duktape\Editor\Prefs.cs)
@@ -188,10 +187,10 @@ public class MyCustomBinding : AbstractBindingProcess
 }
 ```
 
-## sample scene
+## Sample scene
 Assets/Scenes/main.unity (Sample.cs) demonstrate the basic usage.<br/>
 
-# referenced libraries
+# Referenced libraries
 
 * [duktape](https://github.com/svaarala/duktape)
 * [slua](https://github.com/pangweiwei/slua)
@@ -201,7 +200,7 @@ Assets/Scenes/main.unity (Sample.cs) demonstrate the basic usage.<br/>
 * [libwebsockets](https://github.com/warmcat/libwebsockets)
 * [mbedtls](https://github.com/ARMmbed/mbedtls)
 
-# misc.
+# Misc.
 
 * [vscode-duktape-debug](https://github.com/harold-b/vscode-duktape-debug)
 * [duktape-doc-debugger](https://github.com/svaarala/duktape/blob/master/doc/debugger.rst)

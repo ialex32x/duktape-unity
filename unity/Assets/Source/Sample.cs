@@ -27,8 +27,8 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
     {
         // DuktapeDebugger.CreateDebugger(vm.context.rawValue);
         vm.AddSearchPath("Assets/Scripts/polyfills");
+        vm.AddSearchPath("Assets/Scripts/raw");
         vm.AddSearchPath("Assets/Scripts/Generated");
-        vm.EvalFile("console-minimal.js");
         vm.EvalMain("main.js");
     }
 

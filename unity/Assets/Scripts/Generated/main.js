@@ -1,6 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 require("./mm/foo");
+dofile("console-minimal.js");
+dofile("protobuf-library.js");
+dofile("test.pb.js");
+// test protobuf
+(function () {
+    // let writer = protobuf.Writer.create()
+    var msg = new protos.Ping();
+    msg.payload = "hello, protobuf";
+    msg.time = 123;
+    var w = protos.Ping.encode(msg);
+    var buf = w.finish();
+    var dmsg = protos.Ping.decode(buf);
+    console.log("msg.payload = " + dmsg.payload);
+    console.log("msg.time = " + dmsg.time);
+})();
 (function () {
     var Vector3 = UnityEngine.Vector3;
     var start = Date.now();
@@ -48,28 +63,43 @@ console.log(UnityEngine.Mathf.PI);
 var go = new UnityEngine.GameObject("testing");
 var hello = go.AddComponent(SampleNamespace.Hello);
 var bridge = go.AddComponent(DuktapeJS.Bridge);
-bridge.SetBridge({
-    OnEnable: function () {
+var MyBridge = /** @class */ (function () {
+    function MyBridge() {
+        this.hitInfo = {};
+    }
+    MyBridge.prototype.OnEnable = function () {
         console.log("bridge.OnEnable");
-    },
-    Start: function () {
+    };
+    MyBridge.prototype.Start = function () {
         console.log("bridge.Start");
-    },
-    OnDisable: function () {
+    };
+    MyBridge.prototype.OnDisable = function () {
         console.log("bridge.OnDisable");
-    },
-    OnDestroy: function () {
+    };
+    MyBridge.prototype.Update = function () {
+        if (UnityEngine.Input.GetMouseButtonUp(0)) {
+            if (UnityExtensions.RaycastMousePosition(this.hitInfo, 1000, 1)) {
+                console.log("you clicked " + this.hitInfo.collider.name);
+            }
+            else {
+                console.log("you clicked nothing");
+            }
+        }
+    };
+    MyBridge.prototype.OnDestroy = function () {
         console.log("bridge.OnDestroy");
-    },
-});
+    };
+    return MyBridge;
+}());
+bridge.SetBridge(new MyBridge());
 console.log("hello.name = ", hello.gameObject.name);
-// let go2 = new UnityEngine.GameObject("testing2")
-console.log("go.activeSelf", go.activeSelf);
-console.log("go.activeSelf", go.activeSelf);
+var go2 = new UnityEngine.GameObject("testing2_wait_destroy");
+console.log("go2.activeSelf", go2.activeSelf);
+console.log("go2.activeSelf", go2.activeSelf);
 setTimeout(function () {
-    go.SetActive(false);
+    go2.SetActive(false);
 }, 3500);
 setTimeout(function () {
-    UnityEngine.Object.Destroy(go);
+    UnityEngine.Object.Destroy(go2);
 }, 30000);
 //# sourceMappingURL=main.js.map

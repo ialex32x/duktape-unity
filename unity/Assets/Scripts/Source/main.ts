@@ -1,6 +1,23 @@
 
 import "./mm/foo"
 
+dofile("console-minimal.js");
+dofile("protobuf-library.js");
+dofile("test.pb.js");
+
+// test protobuf
+(function () {
+    // let writer = protobuf.Writer.create()
+    let msg = new protos.Ping()
+    msg.payload = "hello, protobuf"
+    msg.time = 123
+    let w = protos.Ping.encode(msg)
+    let buf = w.finish()
+    let dmsg = protos.Ping.decode(buf)
+    console.log(`msg.payload = ${dmsg.payload}`)
+    console.log(`msg.time = ${dmsg.time}`)
+})();
+
 (function () {
     let Vector3 = UnityEngine.Vector3
     let start = Date.now()
@@ -54,33 +71,46 @@ let go = new UnityEngine.GameObject("testing")
 let hello = go.AddComponent(SampleNamespace.Hello)
 let bridge = go.AddComponent(DuktapeJS.Bridge)
 
-bridge.SetBridge({
-    OnEnable: () => {
+class MyBridge {
+    hitInfo: any = {}
+
+    OnEnable() {
         console.log("bridge.OnEnable")
-    }, 
+    }
 
-    Start: () => {
+    Start() {
         console.log("bridge.Start")
-    }, 
+    }
 
-    OnDisable: () => {
+    OnDisable() {
         console.log("bridge.OnDisable")
-    }, 
+    }
 
-    OnDestroy: () => {
+    Update() {
+        if (UnityEngine.Input.GetMouseButtonUp(0)) {
+            if (UnityExtensions.RaycastMousePosition(this.hitInfo, 1000, 1)) {
+                console.log("you clicked " + this.hitInfo.collider.name)
+            } else {
+                console.log("you clicked nothing")
+            }
+        }
+    }
+
+    OnDestroy() {
         console.log("bridge.OnDestroy")
-    }, 
-})
+    }
+}
+bridge.SetBridge(new MyBridge())
 
 console.log("hello.name = ", hello.gameObject.name)
-// let go2 = new UnityEngine.GameObject("testing2")
-console.log("go.activeSelf", go.activeSelf)
-console.log("go.activeSelf", go.activeSelf)
+let go2 = new UnityEngine.GameObject("testing2_wait_destroy")
+console.log("go2.activeSelf", go2.activeSelf)
+console.log("go2.activeSelf", go2.activeSelf)
 
 setTimeout(() => {
-    go.SetActive(false)
+    go2.SetActive(false)
 }, 3500)
 
 setTimeout(() => {
-    UnityEngine.Object.Destroy(go)
+    UnityEngine.Object.Destroy(go2)
 }, 30000)
