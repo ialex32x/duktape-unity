@@ -111,14 +111,15 @@ namespace Duktape
 
         private IEnumerator _Timeout(int id, DuktapeFunction fn, float seconds)
         {
-            yield return new WaitForSeconds(seconds);
+            var wait = seconds > 0 ? new WaitForSeconds(seconds) : null;
+            yield return wait;
             _timers.Remove(id);
             fn.Invoke();
         }
 
         private IEnumerator _Interval(int id, DuktapeFunction fn, float seconds)
         {
-            var wait = new WaitForSeconds(seconds);
+            var wait = seconds > 0 ? new WaitForSeconds(seconds) : null;
             while (true)
             {
                 yield return wait;
@@ -128,7 +129,7 @@ namespace Duktape
 
         private IEnumerator _Interval(int id, Action fn, float seconds)
         {
-            var wait = new WaitForSeconds(seconds);
+            var wait = seconds > 0 ? new WaitForSeconds(seconds) : null;
             while (true)
             {
                 yield return wait;
