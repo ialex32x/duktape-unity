@@ -12,9 +12,30 @@ dofile("test.pb.js");
     msg.time = 123;
     var w = protos.Ping.encode(msg);
     var buf = w.finish();
-    var dmsg = protos.Ping.decode(buf);
-    console.log("msg.payload = " + dmsg.payload);
-    console.log("msg.time = " + dmsg.time);
+    var ws = new DuktapeJS.WebSocket();
+    ws.connect("ws://127.0.0.1:8080/websocket");
+    ws.on("open", this, function () {
+        console.log("ws opened");
+        ws.send(buf);
+    });
+    ws.on("close", this, function () {
+        console.log("ws closed");
+    });
+    ws.on("data", this, function (data) {
+        var dmsg = protos.Ping.decode(data);
+        console.log("msg.payload = " + dmsg.payload);
+        console.log("msg.time = " + dmsg.time);
+    });
+    var go = new UnityEngine.GameObject("ws");
+    go.AddComponent(DuktapeJS.Bridge).SetBridge({
+        Update: function () {
+            ws.poll();
+        },
+        OnDestroy: function () {
+            console.log("ws close");
+            ws.close();
+        },
+    });
 })();
 (function () {
     var Vector3 = UnityEngine.Vector3;

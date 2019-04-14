@@ -13,19 +13,41 @@ dofile("test.pb.js");
     msg.time = 123
     let w = protos.Ping.encode(msg)
     let buf = w.finish()
-    let dmsg = protos.Ping.decode(buf)
-    console.log(`msg.payload = ${dmsg.payload}`)
-    console.log(`msg.time = ${dmsg.time}`)
+
+    let ws = new DuktapeJS.WebSocket()
+    ws.connect("ws://127.0.0.1:8080/websocket")
+    ws.on("open", this, () => {
+        console.log("ws opened")
+        ws.send(buf)
+    })
+    ws.on("close", this, () => {
+        console.log("ws closed")
+    })
+    ws.on("data", this, data => {
+        let dmsg = protos.Ping.decode(data)
+        console.log(`msg.payload = ${dmsg.payload}`)
+        console.log(`msg.time = ${dmsg.time}`)
+    })
+    let go = new UnityEngine.GameObject("ws")
+    go.AddComponent(DuktapeJS.Bridge).SetBridge({
+        Update: () => {
+            ws.poll()
+        },
+        OnDestroy: () => {
+            console.log("ws close")
+            ws.close()
+        },
+    })
 })();
 
 (function () {
     let Vector3 = UnityEngine.Vector3
     let start = Date.now()
-	for (let i = 1; i < 200000; i++) {
-		let v = new Vector3(i, i, i)
-		v.Normalize()
+    for (let i = 1; i < 200000; i++) {
+        let v = new Vector3(i, i, i)
+        v.Normalize()
     }
-	console.log("vector3/js ", (Date.now() - start) / 1000);
+    console.log("vector3/js ", (Date.now() - start) / 1000);
 })();
 
 (function () {
