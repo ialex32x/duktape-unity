@@ -151,6 +151,7 @@ namespace Duktape
                 .AddTSMethodDeclaration("static Equals(a: Vector3, b: Vector3): boolean")
                 .AddTSMethodDeclaration("Equals(b: Vector3): boolean")
                 .AddTSMethodDeclaration("Inverse(): Vector3")
+                .AddTSMethodDeclaration("Clone(): Vector3")
             ;
 
             TransformType(typeof(Vector2))
@@ -163,8 +164,12 @@ namespace Duktape
                 .AddTSMethodDeclaration("static Equals(a: Vector2, b: Vector2): boolean")
                 .AddTSMethodDeclaration("Equals(b: Vector2): boolean")
                 .AddTSMethodDeclaration("Inverse(): Vector2")
+                .AddTSMethodDeclaration("Clone(): Vector2")
             ;
 
+            TransformType(typeof(Quaternion))
+                .AddTSMethodDeclaration("Clone(): Quaternion")
+            ;
             // SetTypeBlocked(typeof(RendererExtensions));
 
             // editor 使用的 .net 与 player 所用存在差异, 这里屏蔽不存在的成员

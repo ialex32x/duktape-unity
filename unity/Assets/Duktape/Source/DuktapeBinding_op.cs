@@ -50,6 +50,87 @@ namespace Duktape
             return ret;
         }
 
+        public static bool duk_rebind_this(IntPtr ctx, LayerMask o)
+        {
+            DuktapeDLL.duk_push_this(ctx);
+            DuktapeDLL.duk_push_int(ctx, o);
+            DuktapeDLL.duk_put_prop_index(ctx, -2, 0);
+            DuktapeDLL.duk_pop(ctx);
+            return true;
+        }
+
+        public static bool duk_rebind_this(IntPtr ctx, Vector2 o)
+        {
+            DuktapeDLL.duk_push_this(ctx);
+            DuktapeDLL.duk_unity_put2f(ctx, -1, o.x, o.y);
+            DuktapeDLL.duk_pop(ctx);
+            return true;
+        }
+
+        public static bool duk_rebind_this(IntPtr ctx, Vector2Int o)
+        {
+            DuktapeDLL.duk_push_this(ctx);
+            DuktapeDLL.duk_unity_put2i(ctx, -1, o.x, o.y);
+            DuktapeDLL.duk_pop(ctx);
+            return true;
+        }
+
+        public static bool duk_rebind_this(IntPtr ctx, Color o)
+        {
+            DuktapeDLL.duk_push_this(ctx);
+            DuktapeDLL.duk_unity_put4f(ctx, -1, o.r, o.g, o.b, o.a);
+            DuktapeDLL.duk_pop(ctx);
+            return true;
+        }
+
+        public static bool duk_rebind_this(IntPtr ctx, Color32 o)
+        {
+            DuktapeDLL.duk_push_this(ctx);
+            DuktapeDLL.duk_unity_put4i(ctx, -1, o.r, o.g, o.b, o.a);
+            DuktapeDLL.duk_pop(ctx);
+            return true;
+        }
+
+        public static bool duk_rebind_this(IntPtr ctx, Vector3 o)
+        {
+            DuktapeDLL.duk_push_this(ctx);
+            DuktapeDLL.duk_unity_put3f(ctx, -1, o.x, o.y, o.z);
+            DuktapeDLL.duk_pop(ctx);
+            return true;
+        }
+
+        public static bool duk_rebind_this(IntPtr ctx, Vector3Int o)
+        {
+            DuktapeDLL.duk_push_this(ctx);
+            DuktapeDLL.duk_unity_put3i(ctx, -1, o.x, o.y, o.z);
+            DuktapeDLL.duk_pop(ctx);
+            return true;
+        }
+
+        public static bool duk_rebind_this(IntPtr ctx, Vector4 o)
+        {
+            DuktapeDLL.duk_push_this(ctx);
+            DuktapeDLL.duk_unity_put4f(ctx, -1, o.x, o.y, o.z, o.w);
+            DuktapeDLL.duk_pop(ctx);
+            return true;
+        }
+
+        public static bool duk_rebind_this(IntPtr ctx, Quaternion o)
+        {
+            DuktapeDLL.duk_push_this(ctx);
+            DuktapeDLL.duk_unity_put4f(ctx, -1, o.x, o.y, o.z, o.w);
+            DuktapeDLL.duk_pop(ctx);
+            return true;
+        }
+
+        // public static bool duk_rebind_this(IntPtr ctx, Matrix4x4 o)
+        // {
+        //     DuktapeDLL.duk_push_this(ctx);
+        //     DuktapeDLL.duk_unity_put16f(ctx, -1, ...);
+        //     DuktapeDLL.duk_pop(ctx);
+        //     return true;
+        // }
+
         public static bool duk_get_native_refid(IntPtr ctx, int idx, out int id)
         {
             if (!DuktapeDLL.duk_is_null_or_undefined(ctx, idx))
