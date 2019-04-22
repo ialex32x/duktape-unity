@@ -400,7 +400,7 @@ namespace Duktape
                 }
                 if (!method.IsStatic && method.DeclaringType.IsValueType) // struct 非静态方法 检查 Mutable 属性
                 {
-                    if (method.IsDefined(typeof(JSMutableAttribute), false))
+                    if (!string.IsNullOrEmpty(caller))
                     {
                         cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
                     }
