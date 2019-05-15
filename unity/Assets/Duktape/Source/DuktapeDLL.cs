@@ -74,6 +74,21 @@ namespace Duktape
         DUK_TYPE_MASK_PROMOTE = (1U << 11),  /* internal flag value: promote to object if mask matches */
     }
 
+    [Flags]
+    public enum duk_enum_flags : System.UInt32
+    {
+        /* Enumeration flags for duk_enum() */
+        DUK_ENUM_INCLUDE_NONENUMERABLE = (1U << 0), /* enumerate non-numerable properties in addition to enumerable */
+        DUK_ENUM_INCLUDE_HIDDEN = (1U << 1), /* enumerate hidden symbols too (in Duktape 1.x called internal properties) */
+        DUK_ENUM_INCLUDE_SYMBOLS = (1U << 2), /* enumerate symbols */
+        DUK_ENUM_EXCLUDE_STRINGS = (1U << 3), /* exclude strings */
+        DUK_ENUM_OWN_PROPERTIES_ONLY = (1U << 4), /* don't walk prototype chain, only check own properties */
+        DUK_ENUM_ARRAY_INDICES_ONLY = (1U << 5), /* only enumerate array indices */
+        /* XXX: misleading name */
+        DUK_ENUM_SORT_ARRAY_INDICES = (1U << 6), /* sort array indices (applied to full enumeration result, including inherited array indices); XXX: misleading name */
+        DUK_ENUM_NO_PROXY_BEHAVIOR = (1U << 7), /* enumerate a proxy object itself without invoking proxy behavior */
+    }
+
     public class DuktapeDLL
     {
         public static readonly duk_int_t DUK_LINE_MACRO = 0;
@@ -1366,7 +1381,7 @@ namespace Duktape
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void duk_compact(IntPtr ctx, duk_idx_t obj_idx);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_enum(IntPtr ctx, duk_idx_t obj_idx, duk_uint_t enum_flags);
+        public static extern void duk_enum(IntPtr ctx, duk_idx_t obj_idx, duk_enum_flags enum_flags);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_next(IntPtr ctx, duk_idx_t enum_idx, duk_bool_t get_value);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]

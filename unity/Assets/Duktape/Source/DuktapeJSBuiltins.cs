@@ -248,16 +248,34 @@ namespace Duktape
         private const uint DUK_UNITY_BUILTINS_MATRIX33 = 8;
         private const uint DUK_UNITY_BUILTINS_MATRIX44 = 9;
 
-        private static void replace_by_builtin(IntPtr ctx, string t, uint k) 
+        private static void replace_by_builtin(IntPtr ctx, string t, uint k)
         {
-            DuktapeDLL.duk_builtins_reg_get(ctx, k);
-            DuktapeDLL.duk_get_prop_string(ctx, -2, t);
-            DuktapeDLL.duk_get_prop_string(ctx, -2, "prototype");
-            DuktapeDLL.duk_get_prop_string(ctx, -2, "prototype");
-            DuktapeDLL.duk_set_prototype(ctx, -2);
-            DuktapeDLL.duk_pop(ctx);
-            DuktapeDLL.duk_put_prop_string(ctx, -2, "_raw");
-            DuktapeDLL.duk_put_prop_string(ctx, -2, t); 
+            DuktapeDLL.duk_builtins_reg_get(ctx, k);    // c
+            DuktapeDLL.duk_get_prop_string(ctx, -2, t); // cs
+
+            // copy static fields from c# to c
+            DuktapeDLL.duk_enum(ctx, -1, 0);
+            while (DuktapeDLL.duk_next(ctx, -1, true))
+            {
+                DuktapeDLL.duk_dup(ctx, -2);
+                if (!DuktapeDLL.duk_has_prop(ctx, -6))
+                {
+                    DuktapeDLL.duk_put_prop(ctx, -5);
+                }
+                else
+                {
+                    DuktapeDLL.duk_pop_2(ctx); // pop key and value
+                }
+            }
+            DuktapeDLL.duk_pop(ctx); // pop enum
+
+            DuktapeDLL.duk_get_prop_string(ctx, -2, "prototype"); // c  prototype
+            DuktapeDLL.duk_get_prop_string(ctx, -2, "prototype"); // cs prototype   <stack> [c, cs, c.prototype, cs.prototype]
+
+            DuktapeDLL.duk_set_prototype(ctx, -2);  // c.prototype = cs.prototype   <stack> [c, cs, c.prototype]
+            DuktapeDLL.duk_pop(ctx); // pop c.prototype
+            DuktapeDLL.duk_put_prop_string(ctx, -2, "_raw"); // cs._raw = c
+            DuktapeDLL.duk_put_prop_string(ctx, -2, t); // <global>
         }
 
         public static void postreg(IntPtr ctx)

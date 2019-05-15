@@ -100,7 +100,8 @@ let bridge = go.AddComponent(DuktapeJS.Bridge)
 class MyBridge {
     hitInfo: any = {}
     gameObject: UnityEngine.GameObject
-    private rotx = 30
+    private rotx = 10
+    private roty = 20
 
     constructor (gameObject: UnityEngine.GameObject) {
         this.gameObject = gameObject
@@ -120,8 +121,9 @@ class MyBridge {
     }
 
     Update() {
-        this.gameObject.transform.localRotation = UnityEngine.Quaternion._raw.Euler(this.rotx % 360, 0, 0)
+        this.gameObject.transform.localRotation = UnityEngine.Quaternion.Euler(this.rotx, this.roty, 0)
         this.rotx += UnityEngine.Time.deltaTime * 30
+        this.roty += UnityEngine.Time.deltaTime * 15
         if (UnityEngine.Input.GetMouseButtonUp(0)) {
             if (UnityExtensions.RaycastMousePosition(this.hitInfo, 1000, 1)) {
                 console.log("you clicked " + this.hitInfo.collider.name)

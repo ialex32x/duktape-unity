@@ -90,7 +90,8 @@ var bridge = go.AddComponent(DuktapeJS.Bridge);
 var MyBridge = /** @class */ (function () {
     function MyBridge(gameObject) {
         this.hitInfo = {};
-        this.rotx = 30;
+        this.rotx = 10;
+        this.roty = 20;
         this.gameObject = gameObject;
     }
     MyBridge.prototype.OnEnable = function () {
@@ -104,8 +105,9 @@ var MyBridge = /** @class */ (function () {
         console.log("bridge.OnDisable");
     };
     MyBridge.prototype.Update = function () {
-        this.gameObject.transform.localRotation = UnityEngine.Quaternion._raw.Euler(this.rotx % 360, 0, 0);
+        this.gameObject.transform.localRotation = UnityEngine.Quaternion.Euler(this.rotx, this.roty, 0);
         this.rotx += UnityEngine.Time.deltaTime * 30;
+        this.roty += UnityEngine.Time.deltaTime * 15;
         if (UnityEngine.Input.GetMouseButtonUp(0)) {
             if (UnityExtensions.RaycastMousePosition(this.hitInfo, 1000, 1)) {
                 console.log("you clicked " + this.hitInfo.collider.name);
