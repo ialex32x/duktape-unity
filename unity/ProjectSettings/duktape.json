@@ -1,5 +1,5 @@
 {
-    "outDir": "Assets/Duktape/Generated",
+    "outDir": "Assets/Generated",
     "extraExt": "",
     "newLineStyle": 0,
     "implicitAssemblies": [

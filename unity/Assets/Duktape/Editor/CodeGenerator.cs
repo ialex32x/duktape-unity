@@ -14,8 +14,8 @@ namespace Duktape
         public BindingManager bindingManager;
         public TextGenerator cs;
         public TextGenerator tsDeclare;
-        public TextGenerator tsSource;
-        public TextGenerator jsSource;
+        // public TextGenerator tsSource;
+        // public TextGenerator jsSource;
 
         public CodeGenerator(BindingManager bindingManager)
         {
@@ -24,16 +24,16 @@ namespace Duktape
             var newline = this.bindingManager.prefs.newline;
             cs = new TextGenerator(newline, tab);
             tsDeclare = new TextGenerator(newline, tab);
-            tsSource = new TextGenerator(newline, tab);
-            jsSource = new TextGenerator(newline, tab);
+            // tsSource = new TextGenerator(newline, tab);
+            // jsSource = new TextGenerator(newline, tab);
         }
 
         public void Clear()
         {
             cs.Clear();
             tsDeclare.Clear();
-            tsSource.Clear();
-            jsSource.Clear();
+            // tsSource.Clear();
+            // jsSource.Clear();
         }
 
         // 生成委托绑定
@@ -185,37 +185,37 @@ namespace Duktape
                 this.bindingManager.Error("write typescript declaration file failed [{0}]: {1}", filename, exception.Message);
             }
 
-            try
-            {
-                if (this.tsSource.enabled && this.tsSource.size > 0)
-                {
-                    var tsName = filename + ".ts" + tx;
-                    var tsPath = Path.Combine(outDir, tsName);
-                    this.bindingManager.AddOutputFile(tsPath);
-                    WriteAllText(tsPath, this.tsSource.ToString());
-                    CopyFile(tsPath, bindingManager.prefs.tsDir, tsName);
-                }
-            }
-            catch (Exception exception)
-            {
-                this.bindingManager.Error("write typescript source failed [{0}]: {1}", filename, exception.Message);
-            }
+            // try
+            // {
+            //     if (this.tsSource.enabled && this.tsSource.size > 0)
+            //     {
+            //         var tsName = filename + ".ts" + tx;
+            //         var tsPath = Path.Combine(outDir, tsName);
+            //         this.bindingManager.AddOutputFile(tsPath);
+            //         WriteAllText(tsPath, this.tsSource.ToString());
+            //         CopyFile(tsPath, bindingManager.prefs.tsDir, tsName);
+            //     }
+            // }
+            // catch (Exception exception)
+            // {
+            //     this.bindingManager.Error("write typescript source failed [{0}]: {1}", filename, exception.Message);
+            // }
 
-            try
-            {
-                if (this.jsSource.enabled && this.jsSource.size > 0)
-                {
-                    var jsName = filename + ".js" + tx;
-                    var jsPath = Path.Combine(outDir, jsName);
-                    this.bindingManager.AddOutputFile(jsPath);
-                    WriteAllText(jsPath, this.jsSource.ToString());
-                    CopyFile(jsPath, bindingManager.prefs.jsDir, jsName);
-                }
-            }
-            catch (Exception exception)
-            {
-                this.bindingManager.Error("write javascript source failed [{0}]: {1}", filename, exception.Message);
-            }
+            // try
+            // {
+            //     if (this.jsSource.enabled && this.jsSource.size > 0)
+            //     {
+            //         var jsName = filename + ".js" + tx;
+            //         var jsPath = Path.Combine(outDir, jsName);
+            //         this.bindingManager.AddOutputFile(jsPath);
+            //         WriteAllText(jsPath, this.jsSource.ToString());
+            //         CopyFile(jsPath, bindingManager.prefs.jsDir, jsName);
+            //     }
+            // }
+            // catch (Exception exception)
+            // {
+            //     this.bindingManager.Error("write javascript source failed [{0}]: {1}", filename, exception.Message);
+            // }
         }
 
         public void AppendPushValue(Type type, string value)
