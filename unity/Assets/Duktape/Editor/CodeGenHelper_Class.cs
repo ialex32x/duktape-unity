@@ -108,33 +108,73 @@ namespace Duktape
             foreach (var kv in this.bindingInfo.properties)
             {
                 var propertyBindingInfo = kv.Value;
-                // 可读属性
-                if (propertyBindingInfo.getterName != null)
+                // 静态
+                if (propertyBindingInfo.staticPair.IsValid())
                 {
-                    using (new PInvokeGuardCodeGen(cg))
+                    // 可读属性
+                    if (propertyBindingInfo.staticPair.getterName != null)
                     {
-                        using (new BindingFuncDeclareCodeGen(cg, propertyBindingInfo.getterName))
+                        using (new PInvokeGuardCodeGen(cg))
                         {
-                            using (new TryCatchGuradCodeGen(cg))
+                            using (new BindingFuncDeclareCodeGen(cg, propertyBindingInfo.staticPair.getterName))
                             {
-                                using (new PropertyGetterCodeGen(cg, propertyBindingInfo))
+                                using (new TryCatchGuradCodeGen(cg))
                                 {
+                                    using (new PropertyGetterCodeGen(cg, propertyBindingInfo))
+                                    {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // 可写属性
+                    if (propertyBindingInfo.staticPair.setterName != null)
+                    {
+                        using (new PInvokeGuardCodeGen(cg))
+                        {
+                            using (new BindingFuncDeclareCodeGen(cg, propertyBindingInfo.staticPair.setterName))
+                            {
+                                using (new TryCatchGuradCodeGen(cg))
+                                {
+                                    using (new PropertySetterCodeGen(cg, propertyBindingInfo))
+                                    {
+                                    }
                                 }
                             }
                         }
                     }
                 }
-                // 可写属性
-                if (propertyBindingInfo.setterName != null)
+                // 非静态
+                if (propertyBindingInfo.instancePair.IsValid())
                 {
-                    using (new PInvokeGuardCodeGen(cg))
+                    // 可读属性
+                    if (propertyBindingInfo.instancePair.getterName != null)
                     {
-                        using (new BindingFuncDeclareCodeGen(cg, propertyBindingInfo.setterName))
+                        using (new PInvokeGuardCodeGen(cg))
                         {
-                            using (new TryCatchGuradCodeGen(cg))
+                            using (new BindingFuncDeclareCodeGen(cg, propertyBindingInfo.instancePair.getterName))
                             {
-                                using (new PropertySetterCodeGen(cg, propertyBindingInfo))
+                                using (new TryCatchGuradCodeGen(cg))
                                 {
+                                    using (new PropertyGetterCodeGen(cg, propertyBindingInfo))
+                                    {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // 可写属性
+                    if (propertyBindingInfo.instancePair.setterName != null)
+                    {
+                        using (new PInvokeGuardCodeGen(cg))
+                        {
+                            using (new BindingFuncDeclareCodeGen(cg, propertyBindingInfo.instancePair.setterName))
+                            {
+                                using (new TryCatchGuradCodeGen(cg))
+                                {
+                                    using (new PropertySetterCodeGen(cg, propertyBindingInfo))
+                                    {
+                                    }
                                 }
                             }
                         }
@@ -223,17 +263,40 @@ namespace Duktape
                         foreach (var kv in bindingInfo.properties)
                         {
                             var bindingInfo = kv.Value;
-                            var bStatic = false;
-                            var tsPropertyVar = BindingManager.GetTSVariable(bindingInfo.regName);
-                            cg.cs.AppendLine("duk_add_property(ctx, \"{0}\", {1}, {2}, {3});",
-                                tsPropertyVar,
-                                bindingInfo.getterName != null ? bindingInfo.getterName : "null",
-                                bindingInfo.setterName != null ? bindingInfo.setterName : "null",
-                                bStatic ? -2 : -1);
+                            if (bindingInfo.staticPair.IsValid())
+                            {
+                                var tsPropertyVar = BindingManager.GetTSVariable(bindingInfo.regName);
+                                cg.cs.AppendLine("duk_add_property(ctx, \"{0}\", {1}, {2}, {3});",
+                                    tsPropertyVar,
+                                    bindingInfo.staticPair.getterName != null ? bindingInfo.staticPair.getterName : "null",
+                                    bindingInfo.staticPair.setterName != null ? bindingInfo.staticPair.setterName : "null",
+                                    -2);
 
-                            var tsPropertyPrefix = bindingInfo.setterName != null ? "" : "readonly ";
-                            var tsPropertyType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.propertyInfo.PropertyType);
-                            cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
+                                var tsPropertyPrefix = "static ";
+                                if (bindingInfo.staticPair.setterName == null)
+                                {
+                                    tsPropertyPrefix += "readonly ";
+                                }
+                                var tsPropertyType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.propertyInfo.PropertyType);
+                                cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
+                            }
+                            if (bindingInfo.instancePair.IsValid())
+                            {
+                                var tsPropertyVar = BindingManager.GetTSVariable(bindingInfo.regName);
+                                cg.cs.AppendLine("duk_add_property(ctx, \"{0}\", {1}, {2}, {3});",
+                                    tsPropertyVar,
+                                    bindingInfo.instancePair.getterName != null ? bindingInfo.instancePair.getterName : "null",
+                                    bindingInfo.instancePair.setterName != null ? bindingInfo.instancePair.setterName : "null",
+                                    -1);
+
+                                var tsPropertyPrefix = "";
+                                if (bindingInfo.instancePair.setterName == null)
+                                {
+                                    tsPropertyPrefix += "readonly ";
+                                }
+                                var tsPropertyType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.propertyInfo.PropertyType);
+                                cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
+                            }
                         }
                         foreach (var kv in bindingInfo.fields)
                         {
@@ -253,7 +316,7 @@ namespace Duktape
                                     bindingInfo.setterName != null ? bindingInfo.setterName : "null",
                                     bStatic ? -2 : -1);
                             }
-                            var tsFieldPrefix = bindingInfo.isStatic ? "static " : "";
+                            var tsFieldPrefix = bStatic ? "static " : "";
                             if (bindingInfo.setterName == null)
                             {
                                 tsFieldPrefix += "readonly ";

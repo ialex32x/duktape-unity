@@ -2,13 +2,13 @@
     "compilerOptions": {
         "module": "commonjs",
         "target": "es5",
-        "sourceRoot": "Assets/Scripts/Source",
-        "outDir": "Assets/Scripts/Generated",
+        "sourceRoot": "Assets/Examples/Scripts/Source",
+        "outDir": "Assets/Examples/Scripts/Generated",
         "typeRoots": [
-            "Assets/Source/Generated",
             "Assets/Duktape/Generated",
             "Assets/Duktape/Typings",
-            "Assets/Scripts/Typings"
+            "Assets/Examples/Source/Generated",
+            "Assets/Examples/Scripts/Typings"
         ],
         "moduleResolution": "node",
         "types": [
