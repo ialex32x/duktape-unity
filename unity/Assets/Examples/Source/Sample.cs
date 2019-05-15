@@ -27,7 +27,7 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
 
     public void OnLoaded(DuktapeVM vm)
     {
-        vm.AddSearchPath("Assets/Examples/Scripts/Generated");
+        vm.AddSearchPath("Assets/Examples/Scripts/out");
         vm.EvalMain(launchScript);
     }
 

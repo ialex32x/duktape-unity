@@ -2,13 +2,12 @@
     "compilerOptions": {
         "module": "commonjs",
         "target": "es5",
-        "sourceRoot": "Assets/Examples/Scripts/Source",
-        "outDir": "Assets/Examples/Scripts/Generated",
+        "sourceRoot": "Assets/Examples/Scripts/src",
+        "outDir": "Assets/Examples/Scripts/out",
         "typeRoots": [
-            "Assets/Duktape/Generated",
             "Assets/Duktape/Typings",
-            "Assets/Examples/Source/Generated",
-            "Assets/Examples/Scripts/Typings"
+            "Assets/Generated",
+            "Assets/Examples/Scripts/types"
         ],
         "moduleResolution": "node",
         "types": [
@@ -20,7 +19,5 @@
         "inlineSourceMap": false,
         "sourceMap": true
     },
-    "exclude": [
-        "Assets/Generated/**/*"
-    ]
+    "exclude": []
 }

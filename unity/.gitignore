@@ -1,5 +1,7 @@
 # Assets/StreamingAssets/AssetBundles/
 # Assets/StreamingAssets/AssetBundles.meta
+/Assets/Generated
+/Assets/Generated.meta
 /Assets/Source/Generated
 /Assets/Source/Generated.meta
 /Assets/Duktape/Generated

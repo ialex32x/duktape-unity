@@ -1165,7 +1165,7 @@ namespace Duktape
 
                     cg.Clear();
                     cg.Generate(exportedDelegatesArray);
-                    cg.tsSource.enabled = false;
+                    // cg.tsSource.enabled = false;
                     cg.WriteTo(outDir, DuktapeVM._DuktapeDelegates, tx);
                 }
                 catch (Exception exception)
