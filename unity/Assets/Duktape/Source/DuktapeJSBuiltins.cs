@@ -198,6 +198,17 @@ namespace Duktape
             DuktapeDLL.duk_push_global_object(ctx);
             DuktapeDLL.duk_put_global_string(ctx, "window");
 
+            {
+                duk_begin_namespace(ctx, "console");
+                DuktapeDLL.duk_push_c_function(ctx, DuktapeAux.duk_print, DuktapeDLL.DUK_VARARGS);
+                DuktapeDLL.duk_put_prop_string(ctx, -2, "log");
+                DuktapeDLL.duk_push_c_function(ctx, DuktapeAux.duk_print, DuktapeDLL.DUK_VARARGS);
+                DuktapeDLL.duk_put_prop_string(ctx, -2, "warn");
+                DuktapeDLL.duk_push_c_function(ctx, DuktapeAux.duk_print, DuktapeDLL.DUK_VARARGS);
+                DuktapeDLL.duk_put_prop_string(ctx, -2, "error");
+                duk_end_namespace(ctx);
+            }
+
             duk_begin_namespace(ctx, "DuktapeJS");
             {
                 duk_begin_special(ctx, DuktapeVM.SPECIAL_ENUM);

@@ -1,42 +1,45 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 require("./mm/foo");
-dofile("console-minimal.js");
+addSearchPath("Assets/Scripts/libs");
+// dofile("console-minimal.js");
 dofile("protobuf-library.js");
 dofile("test.pb.js");
 // test protobuf
-(function () {
-    // let writer = protobuf.Writer.create()
-    var msg = new protos.Ping();
-    msg.payload = "hello, protobuf";
-    msg.time = 123;
-    var w = protos.Ping.encode(msg);
-    var buf = w.finish();
-    var ws = new DuktapeJS.WebSocket();
-    ws.connect("ws://127.0.0.1:8080/websocket");
-    ws.on("open", this, function () {
-        console.log("ws opened");
-        ws.send(buf);
-    });
-    ws.on("close", this, function () {
-        console.log("ws closed");
-    });
-    ws.on("data", this, function (data) {
-        var dmsg = protos.Ping.decode(data);
-        console.log("msg.payload = " + dmsg.payload);
-        console.log("msg.time = " + dmsg.time);
-    });
-    var go = new UnityEngine.GameObject("ws");
-    go.AddComponent(DuktapeJS.Bridge).SetBridge({
-        Update: function () {
-            ws.poll();
-        },
-        OnDestroy: function () {
-            console.log("ws close");
-            ws.close();
-        },
-    });
-})();
+// (function () {
+//     // let writer = protobuf.Writer.create()
+//     let msg = new protos.Ping()
+//     msg.payload = "hello, protobuf"
+//     msg.time = 123
+//     let w = protos.Ping.encode(msg)
+//     let buf = w.finish()
+//     // > go run examples\echoserver\src\main.go
+//     // you need a simple echo server to run the code below
+//     let ws = new DuktapeJS.WebSocket()
+//     ws.connect("ws://127.0.0.1:8080/websocket")
+//     ws.on("open", this, () => {
+//         console.log("ws opened")
+//         ws.send(buf)
+//     })
+//     ws.on("close", this, () => {
+//         console.log("ws closed")
+//     })
+//     ws.on("data", this, data => {
+//         let dmsg = protos.Ping.decode(data)
+//         console.log(`msg.payload = ${dmsg.payload}`)
+//         console.log(`msg.time = ${dmsg.time}`)
+//     })
+//     let go = new UnityEngine.GameObject("ws")
+//     go.AddComponent(DuktapeJS.Bridge).SetBridge({
+//         Update: () => {
+//             ws.poll()
+//         },
+//         OnDestroy: () => {
+//             console.log("ws close")
+//             ws.close()
+//         },
+//     })
+// })();
 (function () {
     var Vector3 = UnityEngine.Vector3;
     var start = Date.now();

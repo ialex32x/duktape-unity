@@ -25,9 +25,6 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
 
     public void OnLoaded(DuktapeVM vm)
     {
-        // DuktapeDebugger.CreateDebugger(vm.context.rawValue);
-        vm.AddSearchPath("Assets/Scripts/polyfills");
-        vm.AddSearchPath("Assets/Scripts/raw");
         vm.AddSearchPath("Assets/Scripts/Generated");
         vm.EvalMain("main.js");
     }
