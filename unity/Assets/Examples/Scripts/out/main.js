@@ -137,4 +137,9 @@ setTimeout(function () {
 setTimeout(function () {
     UnityEngine.Object.Destroy(go2);
 }, 30000);
+console.log(UnityEngine.UI.Text);
+var textui = UnityEngine.GameObject.Find("/Canvas/Text").GetComponent(UnityEngine.UI.Text);
+if (textui) {
+    textui.text = "hello, javascript";
+}
 //# sourceMappingURL=main.js.map
