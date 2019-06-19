@@ -310,6 +310,7 @@ namespace Duktape
             }
             var exportedTypes = this.GetType().Assembly.GetExportedTypes();
             var ctx_t = new object[] { ctx };
+            var numRegInvoked = 0;
             for (int i = 0, size = exportedTypes.Length; i < size; i++)
             {
                 var type = exportedTypes[i];
@@ -323,6 +324,7 @@ namespace Duktape
                         if (reg != null)
                         {
                             reg.Invoke(null, ctx_t);
+                            ++numRegInvoked;
                         }
                     }
                     else
@@ -333,6 +335,10 @@ namespace Duktape
                         }
                     }
                 }
+            }
+            if (listener != null)
+            {
+                listener.OnBinded(this, numRegInvoked);
             }
             // Debug.LogFormat("exported {0} classes", _exported.Count);
 
@@ -359,7 +365,7 @@ namespace Duktape
                 }
                 DuktapeDLL.duk_pop(ctx);
             }
-            
+
             DuktapeJSBuiltins.postreg(ctx);
             DuktapeDLL.duk_pop(ctx); // pop global 
 

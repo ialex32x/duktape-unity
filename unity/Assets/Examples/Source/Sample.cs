@@ -10,6 +10,14 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
 
     DuktapeVM vm = new DuktapeVM();
 
+    public void OnBinded(DuktapeVM vm, int numRegs)
+    {
+        if (numRegs == 0) 
+        {
+            throw new Exception("no type binding registered, please run <MENU>/Duktape/Generate Bindings in Unity Editor Mode before the first running of this project.");
+        }
+    }
+
     public void OnTypesBinding(DuktapeVM vm)
     {
         // 此处进行手工导入
