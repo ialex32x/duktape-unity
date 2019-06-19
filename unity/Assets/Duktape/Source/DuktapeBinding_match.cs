@@ -38,8 +38,8 @@ namespace Duktape
             if (type == typeof(Type))
             {
                 Type otype;
-                duk_get_type(ctx, idx, out otype);
-                return otype == type;
+                return duk_get_type(ctx, idx, out otype); // 只要求匹配 Type 本身, 不比较具体 Type
+                // return otype == type;
             }
             var jstype = DuktapeDLL.duk_get_type(ctx, idx);
             switch (jstype)
