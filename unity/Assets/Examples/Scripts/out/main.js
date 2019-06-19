@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 require("./mm/foo");
+console.log("hello, javascript! (no stacktrace)");
+// enable js stacktrace in print (= console.log)
+enableStacktrace(true);
+console.log("hello, javascript! again!! (with stacktrace)");
 addSearchPath("Assets/Examples/Scripts/libs");
 dofile("protobuf-library.js");
 dofile("test.pb.js");

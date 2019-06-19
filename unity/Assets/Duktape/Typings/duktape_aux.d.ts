@@ -3,16 +3,23 @@
  * 执行指定脚本
  */
 declare function dofile(filename: string): void
+
 /**
  * 执行指定脚本 （类似eval）
  * @param source 脚本源码
  * @param filename 为此脚本指定命名 
  */
 declare function dostring(source: string, filename?: string): void
+
 /**
  * 将指定路径添加到 duktape 加载脚本的搜索目录列表
  */
 declare function addSearchPath(path: string): void
+
+/**
+ * 是否开启 print 函数的 stacktrace 输出 (默认关闭)
+ */
+declare function enableStacktrace(enabled: boolean): void
 
 declare namespace DuktapeJS {
     const COMPLETE: string
