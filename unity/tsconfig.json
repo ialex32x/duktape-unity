@@ -19,5 +19,13 @@
         "inlineSourceMap": false,
         "sourceMap": true
     },
-    "exclude": []
+    "include": [
+        "Assets/Duktape/Typings",
+        "Assets/Generated",
+        "Assets/Examples/Scripts/types", 
+        "Assets/Examples/Scripts/src"
+    ],
+    "exclude": [
+        "Assets/Examples/Scripts/out/**/*"
+    ]
 }
