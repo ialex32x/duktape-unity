@@ -104,6 +104,7 @@ namespace Duktape
                 this.cg.cs.AppendLine("[{0}(typeof({1}))]",
                     this.cg.bindingManager.GetCSTypeFullName(typeof(JSDelegateAttribute)),
                     this.cg.bindingManager.GetCSTypeFullName(target));
+                this.cg.bindingManager.log.AppendLine("emitting delegate decl: {0}", target);
             }
             if (!string.IsNullOrEmpty(arglist))
             {
