@@ -156,3 +156,10 @@ setTimeout(() => {
 setTimeout(() => {
     UnityEngine.Object.Destroy(go2)
 }, 30000)
+
+console.log(UnityEngine.UI.Text)
+
+let textui = UnityEngine.GameObject.Find("/Canvas/Text").GetComponent(UnityEngine.UI.Text)
+if (textui) {
+    textui.text = "hello, javascript"
+}

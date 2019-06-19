@@ -3,7 +3,10 @@
     "extraExt": "",
     "newLineStyle": 0,
     "implicitAssemblies": [
-        "UnityEngine.CoreModule"
+        "UnityEngine",
+        "UnityEngine.CoreModule", 
+        "UnityEngine.UI", 
+        "UnityEngine.UIModule"
     ], 
     "explicitAssemblies": [
         "Assembly-CSharp"

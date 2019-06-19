@@ -171,6 +171,14 @@ namespace Duktape
                 .AddTSMethodDeclaration("Clone(): Quaternion")
             ;
             // SetTypeBlocked(typeof(RendererExtensions));
+            SetTypeBlocked(typeof(UnityEngine.UI.ILayoutGroup));
+            SetTypeBlocked(typeof(UnityEngine.UI.ILayoutSelfController));
+            TransformType(typeof(UnityEngine.UI.PositionAsUV1))
+                .SetMemberBlocked("ModifyMesh");
+            TransformType(typeof(UnityEngine.UI.Shadow))
+                .SetMemberBlocked("ModifyMesh");
+            TransformType(typeof(UnityEngine.UI.Outline))
+                .SetMemberBlocked("ModifyMesh");
 
             // editor 使用的 .net 与 player 所用存在差异, 这里屏蔽不存在的成员
             TransformType(typeof(double))
@@ -704,7 +712,18 @@ namespace Duktape
             // Debug.LogFormat("{0} Array {1} ByRef {2} GetElementType {3}", type, type.IsArray, type.IsByRef, type.GetElementType());
             if (type.IsGenericType)
             {
-                var purename = GetCSNamespace(type) + type.Name.Substring(0, type.Name.Length - 2);
+                var @namespace = string.Empty;
+                var classname = type.Name.Substring(0, type.Name.Length - 2);
+                if (type.IsNested)
+                {
+                    var indexOf = type.FullName.IndexOf("+");
+                    @namespace = type.FullName.Substring(0, indexOf) + ".";
+                }
+                else
+                {
+                    @namespace = GetCSNamespace(type);
+                }
+                var purename = @namespace + classname;
                 var gargs = type.GetGenericArguments();
                 purename += "<";
                 for (var i = 0; i < gargs.Length; i++)

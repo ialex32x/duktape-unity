@@ -230,7 +230,16 @@ namespace Duktape
                         var constructor = bindingInfo.constructors.available ? bindingInfo.constructors.name : "object_private_ctor";
                         if (!bindingInfo.constructors.available && !bindingInfo.type.IsAbstract)
                         {
-                            cg.tsDeclare.AppendLine("protected constructor()");
+                            if (bindingInfo.type.IsSubclassOf(typeof(Component)))
+                            {
+                                // 因为 ts 泛型约束需要 new() 形式, 所以在定义中产生一个 public 定义
+                                // 例如: GetComponent<T extends Component>(type: { new(): T }): T
+                                cg.tsDeclare.AppendLine("/*protected*/ constructor()");
+                            }
+                            else
+                            {
+                                cg.tsDeclare.AppendLine("protected constructor()");
+                            }
                         }
                         cg.cs.AppendLine("duk_begin_class(ctx, \"{0}\", typeof({1}), {2});",
                             bindingInfo.jsName,

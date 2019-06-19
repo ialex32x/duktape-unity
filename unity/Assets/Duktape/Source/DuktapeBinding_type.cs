@@ -15,7 +15,7 @@ namespace Duktape
             {
                 var name = DuktapeDLL.duk_get_string(ctx, idx);
                 o = DuktapeAux.GetType(name);
-                return true;
+                return o != null;
             }
             else
             {
@@ -27,7 +27,7 @@ namespace Duktape
                     DuktapeDLL.duk_pop(ctx);
                     o = vm.GetExportedType(refid);
                     // Debug.Log($"get type from exported registry {o}:{refid}");
-                    return true;
+                    return o != null;
                 }
                 else if (DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE))
                 {
@@ -36,13 +36,13 @@ namespace Duktape
                     DuktapeDLL.duk_pop(ctx);
                     cache.TryGetTypedObject(refid, out o);
                     // Debug.Log($"get type from objectcache registry {o}:{refid}");
-                    return true;
+                    return o != null;
                 }
             }
             o = null;
             return false;
         }
-        
+
         public static bool duk_get_type_array(IntPtr ctx, int idx, out Type[] o)
         {
             if (DuktapeDLL.duk_is_array(ctx, idx))
