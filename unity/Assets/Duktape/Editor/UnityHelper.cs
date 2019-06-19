@@ -23,7 +23,7 @@ namespace Duktape
             AssetDatabase.Refresh();
         }
 
-        [MenuItem("Duktape/Compile TypeScript (tsc)")]
+        // [MenuItem("Duktape/Compile TypeScript (tsc)")]
         public static void ExecTypeScriptCompilation()
         {
             var tsc = Application.platform == RuntimePlatform.WindowsEditor ? "tsc.cmd" : "tsc";
