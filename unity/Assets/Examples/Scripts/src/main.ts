@@ -108,7 +108,7 @@ class MyBridge {
     private rotx = 10
     private roty = 20
 
-    constructor (gameObject: UnityEngine.GameObject) {
+    constructor(gameObject: UnityEngine.GameObject) {
         this.gameObject = gameObject
     }
 
@@ -132,9 +132,7 @@ class MyBridge {
         if (UnityEngine.Input.GetMouseButtonUp(0)) {
             if (UnityExtensions.RaycastMousePosition(this.hitInfo, 1000, 1)) {
                 console.log("you clicked " + this.hitInfo.collider.name)
-            } else {
-                console.log("you clicked nothing")
-            }
+            } 
         }
     }
 
@@ -157,9 +155,23 @@ setTimeout(() => {
     UnityEngine.Object.Destroy(go2)
 }, 30000)
 
-console.log(UnityEngine.UI.Text)
-
+// console.log(UnityEngine.UI.Text)
 let textui = UnityEngine.GameObject.Find("/Canvas/Text").GetComponent(UnityEngine.UI.Text)
 if (textui) {
     textui.text = "hello, javascript"
+}
+
+let buttonui = UnityEngine.GameObject.Find("/Canvas/Button").GetComponent(UnityEngine.UI.Button)
+if (buttonui) {
+    let delegate = new DuktapeJS.Delegate0<void>()
+    delegate.on(buttonui, () => {
+        if (textui) {
+            textui.color = UnityEngine.Color.Lerp(UnityEngine.Color.black, UnityEngine.Color.green, UnityEngine.Random.value)
+        }
+        console.log("you clicked the button")
+    })
+    delegate.on(buttonui, function () {
+        console.log("another listener", this == buttonui)
+    })
+    buttonui.onClick.AddListener(delegate)
 }

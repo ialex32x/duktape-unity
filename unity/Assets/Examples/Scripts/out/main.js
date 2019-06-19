@@ -116,9 +116,6 @@ var MyBridge = /** @class */ (function () {
             if (UnityExtensions.RaycastMousePosition(this.hitInfo, 1000, 1)) {
                 console.log("you clicked " + this.hitInfo.collider.name);
             }
-            else {
-                console.log("you clicked nothing");
-            }
         }
     };
     MyBridge.prototype.OnDestroy = function () {
@@ -137,9 +134,23 @@ setTimeout(function () {
 setTimeout(function () {
     UnityEngine.Object.Destroy(go2);
 }, 30000);
-console.log(UnityEngine.UI.Text);
+// console.log(UnityEngine.UI.Text)
 var textui = UnityEngine.GameObject.Find("/Canvas/Text").GetComponent(UnityEngine.UI.Text);
 if (textui) {
     textui.text = "hello, javascript";
+}
+var buttonui = UnityEngine.GameObject.Find("/Canvas/Button").GetComponent(UnityEngine.UI.Button);
+if (buttonui) {
+    var delegate = new DuktapeJS.Delegate0();
+    delegate.on(buttonui, function () {
+        if (textui) {
+            textui.color = UnityEngine.Color.Lerp(UnityEngine.Color.black, UnityEngine.Color.green, UnityEngine.Random.value);
+        }
+        console.log("you clicked the button");
+    });
+    delegate.on(buttonui, function () {
+        console.log("another listener", this == buttonui);
+    });
+    buttonui.onClick.AddListener(delegate);
 }
 //# sourceMappingURL=main.js.map
