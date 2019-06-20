@@ -12,8 +12,10 @@ import Quaternion = UnityEngine.Quaternion
 import Time = UnityEngine.Time
 
 let cube = GameObject.Find("/Cube")
-let root = new GameObject("cube instances")
-root.transform.localPosition = Vector3.zero
+let root_cw = new GameObject("cube instances cw")
+root_cw.transform.localPosition = Vector3.zero
+let root_ccw = new GameObject("cube instances ccw")
+root_ccw.transform.localPosition = Vector3.zero
 
 class MyBridge {
     gameObject: GameObject
@@ -31,14 +33,20 @@ class MyBridge {
         // copy.transform.localPosition = UnityExtensions.Vector3Rot(up, Quaternion.Euler(0, 0, 45))
         for (let i = 0; i < secs; i++) {
             let slice = i * 360 / secs
-            let copy = <GameObject>UObject.Instantiate(cube, root.transform)
+            let copy = <GameObject>UObject.Instantiate(cube, root_cw.transform)
+            copy.transform.localPosition = UnityExtensions.Vector3Rot(up, Quaternion.Euler(0, 0, slice))
+        }
+        for (let i = 0; i < secs; i++) {
+            let slice = i * 360 / secs
+            let copy = <GameObject>UObject.Instantiate(cube, root_ccw.transform)
             copy.transform.localPosition = UnityExtensions.Vector3Rot(up, Quaternion.Euler(0, 0, slice))
         }
     }
 
     Update() {
         this.rot += Time.deltaTime * 50
-        root.transform.localRotation = Quaternion.Euler(0, 0, this.rot)
+        root_cw.transform.localRotation = Quaternion.Euler(0, 0, this.rot)
+        root_ccw.transform.localRotation = Quaternion.Euler(0, 0, -this.rot)
     }
 }
 
