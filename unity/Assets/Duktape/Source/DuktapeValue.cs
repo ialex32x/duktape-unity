@@ -78,6 +78,17 @@ namespace Duktape
             return false;
         }
 
+        public void SetProperty(IntPtr ctx, string name, Object value)
+        {
+            if (ctx != IntPtr.Zero)
+            {
+                DuktapeDLL.duk_unity_getref(ctx, this._refid);
+                DuktapeBinding.duk_push_any(ctx, value);
+                DuktapeDLL.duk_put_prop_string(ctx, -2, name);
+                DuktapeDLL.duk_pop(ctx);
+            }
+        }
+
         public void PushProperty(IntPtr ctx, string property)
         {
             this.Push(ctx); // push this

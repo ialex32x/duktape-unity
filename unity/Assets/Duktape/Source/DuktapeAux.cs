@@ -86,7 +86,15 @@ namespace Duktape
             var str = string.Empty;
             for (int i = 0; i < narg; i++)
             {
-                str += DuktapeDLL.duk_safe_to_string(ctx, i) + " ";
+                object o;
+                if (DuktapeBinding.duk_get_object(ctx, i, out o))
+                {
+                    str += (o == null ? "(null)" : o.ToString()) + " ";
+                }
+                else
+                {
+                    str += DuktapeDLL.duk_safe_to_string(ctx, i) + " ";
+                }
             }
             if (printStacktrace)
             {

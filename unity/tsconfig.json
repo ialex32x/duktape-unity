@@ -20,10 +20,10 @@
         "sourceMap": true
     },
     "include": [
-        "Assets/Duktape/Typings",
-        "Assets/Generated",
-        "Assets/Examples/Scripts/types", 
-        "Assets/Examples/Scripts/src"
+        "Assets/Duktape/Typings/**/*.ts",
+        "Assets/Generated/**/*.ts",
+        "Assets/Examples/Scripts/types/**/*.ts", 
+        "Assets/Examples/Scripts/src/**/*.ts"
     ],
     "exclude": [
         "Assets/Examples/Scripts/out/**/*"
