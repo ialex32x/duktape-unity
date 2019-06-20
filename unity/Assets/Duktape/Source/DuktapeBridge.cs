@@ -16,6 +16,9 @@ namespace Duktape
         public void SetBridge(DuktapeObject obj)
         {
             _instance = obj;
+            _instance.SetProperty(_instance.ctx, "gameObject", gameObject);
+            _instance.SetProperty(_instance.ctx, "transform", transform);
+            _instance.InvokeMember("Awake");
             if (enabled)
             {
                 _instance.InvokeMember("OnEnable");
