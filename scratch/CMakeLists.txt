@@ -16,8 +16,12 @@ aux_source_directory(${DUKTAPE_SRC_DIR} DUKTAPE_SRCS)
 aux_source_directory(${DUKTAPE_SCRATCH_SRC_DIR} DUKTAPE_SCRATCH_SRCS)
 
 set(LIBWEBSOCKETS_DIR ${TOP_DIR}/thirdparty/libwebsockets)
+set(LIBFIXMATH_DIR ${TOP_DIR}/thirdparty/libfixmath)
 set(MBEDTLS_DIR ${TOP_DIR}/thirdparty/mbedtls)
 set(ZLIB_DIR ${TOP_DIR}/thirdparty/zlib)
+
+include_directories(${LIBFIXMATH_DIR})
+aux_source_directory(${LIBFIXMATH_DIR} LIBFIXMATH_SRCS)
 
 include_directories(${MBEDTLS_DIR}/include)
 aux_source_directory(${MBEDTLS_DIR}/library MBEDTLS_SRCS)
@@ -125,7 +129,7 @@ IF (ANDROID)
 ENDIF ()
 
 message("Source: ${DUKTAPE_SCRATCH_SRC_DIR}")
-add_executable(duktape_scratch ${DUKTAPE_SCRATCH_SRCS} ${DUKTAPE_SRCS} ${MBEDTLS_SRCS} ${LIBWEBSOCKETS_SRCS} ${ZLIB_SRCS})
+add_executable(duktape_scratch ${DUKTAPE_SCRATCH_SRCS} ${DUKTAPE_SRCS} ${LIBFIXMATH_SRCS} ${MBEDTLS_SRCS} ${LIBWEBSOCKETS_SRCS} ${ZLIB_SRCS})
 
 IF(CMAKE_CL_64)
     #link_directories(${TOP_DIR}/build/duktape/x64/Release)

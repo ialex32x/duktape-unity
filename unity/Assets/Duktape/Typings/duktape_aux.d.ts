@@ -21,6 +21,42 @@ declare function addSearchPath(path: string): void
  */
 declare function enableStacktrace(enabled: boolean): void
 
+declare namespace FMath {
+    function to_int(v: number): number
+    function to_number(v: number): number
+    function from_int(v: number): number
+    function from_number(v: number): number
+    function add(a: number, b: number): number
+    function sadd(a: number, b: number): number
+    function sub(a: number, b: number): number
+    function ssub(a: number, b: number): number
+    function div(a: number, b: number): number
+    function sdiv(a: number, b: number): number
+    function mul(a: number, b: number): number
+    function smul(a: number, b: number): number
+    function mod(a: number, b: number): number
+    function abs(v: number): number
+    function floor(v: number): number
+    function ceil(v: number): number
+    function min(a: number, b: number): number
+    function max(a: number, b: number): number
+    function clamp(a: number, lo: number, hi: number): number
+    function clamp01(v: number): number
+    function sq(v: number): number
+    function sqrt(v: number): number
+    function magnitude(x: number, y: number): number
+    function lerp(a: number, b: number, t: number): number
+    function rad2deg(v: number): number
+    function deg2rad(v: number): number
+    function sin(v: number): number
+    function cos(v: number): number
+    function tan(v: number): number
+    function asin(v: number): number
+    function acos(v: number): number
+    function atan(v: number): number
+    function atan2(a: number, b: number): number
+}
+
 declare namespace DuktapeJS {
     const COMPLETE: string
     const ERROR: string

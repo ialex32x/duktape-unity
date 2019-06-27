@@ -44,4 +44,10 @@ var MyBridge = /** @class */ (function () {
 }());
 var bridge = UnityEngine.Camera.main.gameObject.AddComponent(DuktapeJS.Bridge);
 bridge.SetBridge(new MyBridge());
+var f1 = FMath.from_int(2);
+var f2 = FMath.from_int(5000);
+for (var i = 0; i < 5; i++) {
+    f2 = FMath.div(f2, f1);
+    console.log(FMath.to_number(f2), FMath.to_number(FMath.sin(f2)));
+}
 //# sourceMappingURL=circle.js.map
