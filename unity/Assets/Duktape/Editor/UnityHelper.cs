@@ -23,32 +23,17 @@ namespace Duktape
             AssetDatabase.Refresh();
         }
 
-        // [MenuItem("Duktape/Compile TypeScript (tsc)")]
-        public static void ExecTypeScriptCompilation()
+        [MenuItem("Duktape/Compile TypeScript")]
+        public static void CompileScripts()
         {
-            var tsc = Application.platform == RuntimePlatform.WindowsEditor ? "tsc.cmd" : "tsc";
-            var proc = new System.Diagnostics.Process();
-            proc.StartInfo.UseShellExecute = false;
-            proc.StartInfo.RedirectStandardOutput = true;
-            proc.StartInfo.RedirectStandardError = true;
-            proc.StartInfo.FileName = tsc;
-            proc.StartInfo.Arguments = "";
-            proc.StartInfo.CreateNoWindow = true;
+#if UNITY_EDITOR_WIN
+            string command = "tsc.cmd";
+#else
+            string command = "tsc";
+#endif
 
-            proc.Start();
-            proc.WaitForExit();
-
-            var output = proc.StandardOutput.ReadToEnd();
-            var error = proc.StandardError.ReadToEnd();
-
-            if (!string.IsNullOrEmpty(error))
-            {
-                Debug.LogErrorFormat("tsc: {0}", error);
-            }
-            else
-            {
-                Debug.Log("tsc: done");
-            }
+            var exitCode = ShellHelper.Run(command, "", 30);
+            Debug.Log($"{command}: {exitCode}");
         }
 
         [MenuItem("Duktape/Clear")]
@@ -64,5 +49,40 @@ namespace Duktape
             EditorWindow.GetWindow<PrefsEditor>().Show();
         }
         #endregion
+
+        public class TypeScriptPostProcessor : AssetPostprocessor
+        {
+            private static bool IsScriptSourceFile(string filename)
+            {
+                return filename.EndsWith(".ts") || filename.EndsWith(".js") || filename.EndsWith(".js.txt");
+            }
+
+            private static bool CheckAssets(string[] assetPaths)
+            {
+                foreach (var assetPath in assetPaths)
+                {
+                    if (IsScriptSourceFile(assetPath))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            private static void OnPostprocessAllAssets(
+                string[] importedAssets,
+                string[] deletedAssets,
+                string[] movedAssets,
+                string[] movedFromAssetPaths)
+            {
+                if (CheckAssets(importedAssets) ||
+                    CheckAssets(deletedAssets) ||
+                    CheckAssets(movedAssets) ||
+                    CheckAssets(movedFromAssetPaths))
+                {
+                    UnityHelper.CompileScripts();
+                }
+            }
+        }
     }
 }

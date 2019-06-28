@@ -14,11 +14,13 @@
             "node"
         ],
         // "listEmittedFiles": true,
+        "experimentalDecorators": true,
         "noImplicitAny": false,
         "allowJs": false,
         "inlineSourceMap": false,
         "sourceMap": true
     },
+    // "compileOnSave": true,
     "include": [
         "Assets/Duktape/Typings/**/*.ts",
         "Assets/Generated/**/*.ts",
