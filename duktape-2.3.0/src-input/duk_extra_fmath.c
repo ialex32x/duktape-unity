@@ -216,6 +216,18 @@ DUK_INTERNAL duk_bool_t duk_fmath_open(duk_context *ctx) {
     duk_unity_add_member(ctx, "atan", duk_fmath_atan, -1);
     duk_unity_add_member(ctx, "atan2", duk_fmath_atan2, -1);
 
-    duk_pop_2(ctx); // pop DuktapeJS and global    
+    duk_push_int(ctx, 0); duk_put_prop_string(ctx, -2, "zero");
+
+    duk_push_int(ctx, 0x7FFFFFFF); duk_put_prop_string(ctx, -2, "maxValue");
+    duk_push_int(ctx, 0x80000000); duk_put_prop_string(ctx, -2, "minValue");
+    duk_push_int(ctx, 0x80000000); duk_put_prop_string(ctx, -2, "overflow");
+
+    duk_push_int(ctx, 205887); duk_put_prop_string(ctx, -2, "pi");
+    duk_push_int(ctx, 178145); duk_put_prop_string(ctx, -2, "e");
+    duk_push_int(ctx, 65536); duk_put_prop_string(ctx, -2, "one");
+    duk_push_int(ctx, 655); duk_put_prop_string(ctx, -2, "percent"); // 0.01
+    duk_push_int(ctx, 642253); duk_put_prop_string(ctx, -2, "gravity"); // 9.8
+
+    duk_pop_2(ctx); // pop DuktapeJS and global
     return 1;
 }

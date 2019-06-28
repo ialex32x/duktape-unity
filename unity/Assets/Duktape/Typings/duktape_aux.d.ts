@@ -55,6 +55,16 @@ declare namespace FMath {
     function acos(v: number): number
     function atan(v: number): number
     function atan2(a: number, b: number): number
+
+    const zero: number
+    const maxValue: number
+    const minValue: number
+    const overflow: number
+    const pi: number
+    const e: number
+    const one: number
+    const percent: number
+    const gravity: number
 }
 
 declare namespace DuktapeJS {
