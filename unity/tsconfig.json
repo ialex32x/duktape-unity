@@ -4,6 +4,7 @@
         "target": "es5",
         "sourceRoot": "Assets/Examples/Scripts/src",
         "outDir": "Assets/Examples/Scripts/out",
+        // "outFile": "Assets/Examples/Scripts/out/code.js",
         "typeRoots": [
             "Assets/Duktape/Typings",
             "Assets/Generated",
@@ -16,7 +17,7 @@
         // "listEmittedFiles": true,
         "experimentalDecorators": true,
         "noImplicitAny": false,
-        "allowJs": false,
+        "allowJs": true,
         "inlineSourceMap": false,
         "sourceMap": true
     },
