@@ -13,7 +13,7 @@ Typescript is a preferred choice, it provides type checks.
 * optimized unity common valuetypes (Vector2/3,Quaternion...)
 * websocket (libwebsockets)
 * enable debugger support (vscode) (not implemented)
-* Android/iOS support (not implemented)
+* Android/iOS support
 * tcp (not implemented)
 * udp with kcp (not implemented)
 
