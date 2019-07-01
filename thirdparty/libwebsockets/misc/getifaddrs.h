@@ -2,7 +2,7 @@
 #define LWS_HAVE_GETIFADDRS 0
 #endif
 
-#if LWS_HAVE_GETIFADDRS
+#ifdef LWS_HAVE_GETIFADDRS
 #include <sys/types.h>
 #include <ifaddrs.h>
 #else
