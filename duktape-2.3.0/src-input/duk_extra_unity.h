@@ -21,6 +21,7 @@
     #define DUK_UNITY_BUILTINS_TCPCLIENT 15
     #define DUK_UNITY_BUILTINS_UDP 16
     #define DUK_UNITY_BUILTINS_KCP 17
+    #define DUK_UNITY_BUILTINS_RNG 18
 
 DUK_INTERNAL_DECL void duk_unity_valuetypes_open(duk_context *ctx);
 

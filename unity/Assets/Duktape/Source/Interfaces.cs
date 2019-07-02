@@ -13,11 +13,4 @@ namespace Duktape
         void OnProgress(DuktapeVM vm, int step, int total);
         void OnLoaded(DuktapeVM vm);
     }
-
-    // 编辑器运行时监听
-    public interface IDuktapeEditorListener
-    {
-        // 源代码发生变更
-        void OnSourceModified();
-    }
 }

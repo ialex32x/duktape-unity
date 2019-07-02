@@ -65,6 +65,12 @@ declare namespace FMath {
     const one: number
     const percent: number
     const gravity: number
+
+    class Random {
+        constructor(seed?: number)
+        next(): number
+        range(min?: number, max?: number): number
+    }
 }
 
 declare namespace DuktapeJS {
