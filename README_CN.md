@@ -1,46 +1,44 @@
 
-[中文说明](README_CN.md)
-
-# Brief
-Integerate duktape (an embedded javascript engine) into unity, you can load and run javascript at runtime. <br/>
-Typescript is a preferred choice, it provides type checks.
+# 简介
+将[duktape](https://github.com/svaarala/duktape)集成到Unity中, 使您可以在运行时动态加载执行javascript脚本. <br/>
+另外也提供了对typescript的集成支持, 建议使用typescript进行脚本编写.
 
 ![editing script](res/ts_editing_1.png "so brilliant!")
 
-# Features 
-* nodejs-like module or browser-like singular js depends on you
-* generate C# to js type binding code, and coresponding d.ts type definition files
-* setTimeout/setInterval/clearTimeout/clearInterval compatible
-* c# delegates
-* optimized unity common valuetypes (Vector2/3,Quaternion,Color...)
-* fixed-point math support ([libfixmath](https://github.com/PetteriAimonen/libfixmath))
-* websocket ([libwebsockets](https://github.com/warmcat/libwebsockets))
+# 特点 
+* nodejs形式的模块系统 或者 单一脚本 (根据不同的 tsconfig 配置)
+* 生成静态绑定代码以及对应的d.ts声明文件
+* setTimeout/setInterval/clearTimeout/clearInterval 写法基本兼容
+* c# delegates 封装
+* Unity常用值类型优化 (无GC) (Vector2/3,Quaternion,Color...)
+* 集成定点数运算支持 ([libfixmath](https://github.com/PetteriAimonen/libfixmath))
+* 集成 websocket ([libwebsockets](https://github.com/warmcat/libwebsockets))
 * iOS (64bit, bitcode)
 * Android (v7a, v8a, x86)
-* live debugger (vscode) (not implemented)
+* 调试器支持 (vscode) (not implemented)
 * tcp (not implemented)
 * udp with kcp (not implemented)
 
-You can use lots of pure js libraries in your project, such as protobufjs.
+您可以在项目中使用大部分纯js实现的的库, 比如 protobufjs.
 ![protobufjs](res/test_protobufjs.png)
 
-# Type definition files
-The generated d.ts files will improve *auto-complete*. It will give the information of exposed types from *C#* and *C*.
+# 类型定义文件 (d.ts)
+自动生成的 d.ts 声明文件将提供完整的类型信息, 使您可以使用代码提示/重构/定义跳转/引用查询等各种方便有用的辅助功能!
 
-- delegate type information
+- delegate 类型信息
 ![type definition files](res/type_definition_1.png)
-- generic constraints for out/ref parameter
+- out/ref 参数的泛型约束
 ![type definition files](res/type_definition_2.png)
-- friendly interface for AddComponent/GetComponent
+- Unity 常用泛型接口(AddComponent/GetComponent)的泛型约束
 ![type definition files](res/type_definition_3.png)
 
-# Environments
-If you use typescript, install typescript at first
+# 开发环境
+如果您使用typescript编写脚本, 则需要在系统中安装 typescript (以便在 Unity 中调用 tsc)
 ```shell
 npm install -g typescript
 ```
 
-If you need to compile duktape source code, python/pip/pyyaml is prerequisites.
+如果您需要从 duktape 源代码进行编译, 必须先安装 python/pip/pyyaml.
 ```shell
 pip install pyyaml
 
@@ -50,18 +48,21 @@ pip install pyyaml
 ./make_duktape_<platform>
 ```
 
-'./scratch' is a playground for duktape testing in a simple command line app.
+'./scratch' 是一个简单的功能测试命令行工程, 可以在一个简单的环境中运行测试一些 duktape 的功能, 方便调试.
 ```shell
 ./configure_duktape_scratch.bat
 ./make_duktape_scratch.bat
 ```
 
-# Sample code
+# 基本例子
 
 ```ts
 
-// if your tsconfig.json defined {"module": "commonjs"}, you can 'import' modules like node-js. 
+// 如果在 tsconfig.json 中定义了 {"module": "commonjs"}, 那么就可以在脚本中使用类似 nodejs 的模块系统
+// 否则可以像一般的 H5 工程类似, 将代码编译为单一js脚本, 进而可以进行 uglify 等操作.
 
+
+// 以下代码是模块形式组织的 
 // import module
 import { B } from "base/b"
 // import module with relative path (. or ..)
@@ -147,20 +148,18 @@ setInterval(() => {
 
 ```
 
-# Dev status 
-It's not stable enough, do not use it in production environment.  <br/>
-Vector2/Matrix3x3/Matrix4x4/Quaternion valuetypes optimization is partially written in c, and not fully tested. <br/>
+# 开发进度
+目前还没有充分测试, 请不要用于生产环境!!! <br/>
+Vector2/Matrix3x3/Matrix4x4/Quaternion 等值类型一部分在*C*中实现, 尚未经过完整测试. <br/>
 
-# Usage
+# 基本使用流程
+首次打开需要执行菜单 [Duktape -> Generate Bindings] 生成绑定代码.
+如果检测到工程目录中存在 tsconfig.json, Unity 编辑器将自动尝试在 typescript 脚本变更时进行编译.
 
-Execute menu item [Duktape -> Generate Bindings] to generate binding code.
-Typescript source files will be compiled into js after your modification and switch back to Unity Editor.
-
-
-## How to customize exported types
+## 如何自定义导出
 
 * duktape.json
-modify the basic configuration at ProjectSettings\duktape.json (details in Assets\Duktape\Editor\Prefs.cs)
+可以修改 ProjectSettings\duktape.json 配置文件 (详细可配置项可以参考 Assets\Duktape\Editor\Prefs.cs 中的定义及注释说明)
 ```json
 {
     "outDir": "Assets/Source/Generated",
@@ -173,7 +172,7 @@ modify the basic configuration at ProjectSettings\duktape.json (details in Asset
     "tab": "    "
 }
 ```
-* implements Duktape.IBindingProcess interface or extends AbstractBindingProcess class
+* 自定义一个编辑器运行时的类型并实现接口 Duktape.IBindingProcess (或者直接继承抽象类 AbstractBindingProcess)
 ```c#
 public class MyCustomBinding : AbstractBindingProcess
 {
@@ -194,8 +193,8 @@ public class MyCustomBinding : AbstractBindingProcess
 }
 ```
 
-## Sample scene
-Assets/Scenes/main.unity (Sample.cs) demonstrate the basic usage.<br/>
+## 例子场景
+Assets/Scenes/main.unity 展示了一些基本的使用情况.<br/>
 
 # Referenced libraries
 
