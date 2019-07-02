@@ -65,22 +65,31 @@ var ut;
     ut.ComponentSystem = ComponentSystem;
 })(ut || (ut = {}));
 /// <reference path="./ut/component_system.ts" />
-console.log("hello, javascript! (no stacktrace)");
-// enable js stacktrace in print (= console.log)
-enableStacktrace(true);
-console.log("hello, javascript! again!! (with stacktrace)");
-addSearchPath("Assets/Examples/Scripts/libs");
-dofile("protobuf-library.js");
-dofile("test.pb.js");
 var UObject = UnityEngine.Object;
 var GameObject = UnityEngine.GameObject;
 var Transform = UnityEngine.Transform;
 var Vector3 = UnityEngine.Vector3;
 var Quaternion = UnityEngine.Quaternion;
 var Time = UnityEngine.Time;
-sample();
-circle();
-new ut.ComponentSystem();
+if (!window["__reloading"]) {
+    console.log("hello, javascript! (no stacktrace)");
+    // enable js stacktrace in print (= console.log)
+    enableStacktrace(true);
+    console.log("hello, javascript! again!! (with stacktrace)");
+    addSearchPath("Assets/Examples/Scripts/libs");
+    dofile("protobuf-library.js");
+    dofile("test.pb.js");
+    sample();
+    circle();
+    new ut.ComponentSystem();
+}
+window["OnBeforeSourceReload"] = function () {
+    console.log("before source reload");
+    window["__reloading"] = true;
+};
+window["OnAfterSourceReload"] = function () {
+    console.log("after source reload !!!");
+};
 function sample() {
     // test protobuf
     // (function () {

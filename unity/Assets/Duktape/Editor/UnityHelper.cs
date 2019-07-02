@@ -100,6 +100,7 @@ namespace Duktape
                     {
                         if (IsScriptSourceFile(assetPath))
                         {
+                            // Debug.Log(assetPath);
                             return true;
                         }
                     }

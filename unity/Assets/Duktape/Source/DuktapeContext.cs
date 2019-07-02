@@ -35,5 +35,20 @@ namespace Duktape
         {
             return DuktapeVM.GetContext(ctx)._vm;
         }
+
+        // 获取全局函数并调用 (do not cache it)
+        public void Invoke(string funcName)
+        {
+            DuktapeDLL.duk_push_global_object(_ctx);
+            DuktapeDLL.duk_get_prop_string(_ctx, -1, funcName);
+            if (DuktapeDLL.duk_is_function(_ctx, -1))
+            {
+                if (DuktapeDLL.duk_pcall(_ctx, 0) != DuktapeDLL.DUK_EXEC_SUCCESS)
+                {
+                    DuktapeAux.PrintError(_ctx, -1);
+                }
+            }
+            DuktapeDLL.duk_pop_2(_ctx);
+        }
     }
 }
