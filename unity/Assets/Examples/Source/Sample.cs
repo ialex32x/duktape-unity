@@ -4,7 +4,7 @@ using UnityEngine;
 using Duktape;
 using System;
 
-public class Sample : MonoBehaviour, Duktape.IDuktapeListener
+public class Sample : MonoBehaviour, IDuktapeListener, IDuktapeEditorListener
 {
     public string launchScript = "main.js";
 
@@ -37,6 +37,14 @@ public class Sample : MonoBehaviour, Duktape.IDuktapeListener
     {
         vm.AddSearchPath("Assets/Examples/Scripts/out");
         vm.EvalMain(launchScript);
+        DuktapeEditorBridge.SetListener(this);
+    }
+
+    public void OnSourceModified()
+    {
+        vm.context.Invoke("OnBeforeSourceReload");
+        vm.EvalMain(launchScript);
+        vm.context.Invoke("OnAfterSourceReload");
     }
 
     void Awake()

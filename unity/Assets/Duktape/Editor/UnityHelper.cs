@@ -67,6 +67,13 @@ namespace Duktape
 #endif
                     var exitCode = ShellHelper.Run(command, "", 30);
                     Debug.Log($"{command}: {exitCode}");
+                    if (exitCode == 0) 
+                    {
+                        if (EditorApplication.isPlaying)
+                        {
+                            DuktapeEditorBridge.OnSourceModified();
+                        }
+                    }
                 };
             };
         }
@@ -100,6 +107,7 @@ namespace Duktape
                     {
                         if (IsScriptSourceFile(assetPath))
                         {
+                            // Debug.Log(assetPath);
                             return true;
                         }
                     }
