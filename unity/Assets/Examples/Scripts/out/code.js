@@ -132,18 +132,24 @@ function sample() {
     (function () {
         var Vector3 = UnityEngine.Vector3;
         var start = Date.now();
-        var v = new Vector3(0, 0, 0);
+        var v1 = new Vector3(0, 0, 0);
         for (var i = 1; i < 200000; i++) {
-            v.Set(i, i, i);
-            v.Normalize();
+            v1.Set(i, i, i);
+            v1.Normalize();
         }
-        console.log("js/vector3/normailize ", (Date.now() - start) / 1000);
+        console.log("js/vector3/normailize", (Date.now() - start) / 1000);
+        var v = Vector3.zero;
+        var w = Vector3.one;
+        for (var i = 1; i < 200000; i++) {
+            v.Scale(w);
+        }
+        console.log("js/vector3/scale", (Date.now() - start) / 1000);
         start = Date.now();
         var sum = 0;
-        for (var i = 1; i < 200000; i++) {
+        for (var i = 1; i < 2000000; i++) {
             sum += i;
         }
-        console.log("js/number/add {0}", (Date.now() - start) / 1000);
+        console.log("js/number/add", (Date.now() - start) / 1000, sum);
     })();
     (function () {
         console.log("### Vector3 (replaced)");
