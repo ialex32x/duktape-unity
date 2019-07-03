@@ -48,11 +48,13 @@ function circle() {
     var bridge = UnityEngine.Camera.main.gameObject.AddComponent(DuktapeJS.Bridge);
     bridge.SetBridge(new MyCircleBridge());
 }
-var f1 = FMath.from_int(2);
-var f2 = FMath.from_int(5000);
-for (var i = 0; i < 5; i++) {
-    f2 = FMath.div(f2, f1);
-    console.log(FMath.to_number(f2), FMath.to_number(FMath.sin(f2)));
+function fmathtest() {
+    var f1 = FMath.from_int(2);
+    var f2 = FMath.from_int(5000);
+    for (var i = 0; i < 5; i++) {
+        f2 = FMath.div(f2, f1);
+        console.log(FMath.to_number(f2), FMath.to_number(FMath.sin(f2)));
+    }
 }
 var ut;
 (function (ut) {
@@ -81,6 +83,7 @@ if (!window["__reloading"]) {
     dofile("test.pb.js");
     sample();
     circle();
+    fmathtest();
     new ut.ComponentSystem();
 }
 window["OnBeforeSourceReload"] = function () {
@@ -129,11 +132,18 @@ function sample() {
     (function () {
         var Vector3 = UnityEngine.Vector3;
         var start = Date.now();
+        var v = new Vector3(0, 0, 0);
         for (var i = 1; i < 200000; i++) {
-            var v = new Vector3(i, i, i);
+            v.Set(i, i, i);
             v.Normalize();
         }
-        console.log("vector3/js ", (Date.now() - start) / 1000);
+        console.log("js/vector3/normailize ", (Date.now() - start) / 1000);
+        start = Date.now();
+        var sum = 0;
+        for (var i = 1; i < 200000; i++) {
+            sum += i;
+        }
+        console.log("js/number/add {0}", (Date.now() - start) / 1000);
     })();
     (function () {
         console.log("### Vector3 (replaced)");

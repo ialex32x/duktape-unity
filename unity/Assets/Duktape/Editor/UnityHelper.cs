@@ -52,7 +52,7 @@ namespace Duktape
             AssetDatabase.Refresh();
         }
 
-        //[MenuItem("Duktape/Compile TypeScript")]
+        [MenuItem("Duktape/Compile TypeScript")]
         public static void CompileScripts()
         {
             Debug.Log("compiling typescript source...");
@@ -152,6 +152,10 @@ namespace Duktape
                 string[] movedAssets,
                 string[] movedFromAssetPaths)
             {
+                if (EditorApplication.isPlaying || EditorApplication.isPaused)
+                {
+                    return;
+                }
                 if (!File.Exists("tsconfig.json"))
                 {
                     // no typescript context

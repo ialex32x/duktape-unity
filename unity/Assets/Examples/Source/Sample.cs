@@ -54,6 +54,25 @@ public class Sample : MonoBehaviour, IDuktapeListener
     void Awake()
     {
         vm.Initialize(new FakeFileSystem(), this);
+        {
+            var start = DateTime.Now;
+            var v = new Vector3(0, 0, 0);
+            for (var i = 1; i < 200000; i++)
+            {
+                v.Set(i, i, i);
+                v.Normalize();
+            }
+            Debug.LogFormat("c#/vector3/normalize {0}", (DateTime.Now - start).TotalSeconds);
+        }
+        {
+            var start = DateTime.Now;
+            var sum = 0;
+            for (var i = 1; i < 200000; i++)
+            {
+                sum += i;
+            }
+            Debug.LogFormat("c#/number/add {0}", (DateTime.Now - start).TotalSeconds);
+        }
     }
 
     void OnDestroy()

@@ -20,15 +20,16 @@ if (!window["__reloading"]) {
 
     sample();
     circle();
+    fmathtest();
 
     new ut.ComponentSystem();
 }
 
 window["OnBeforeSourceReload"] = function () {
-    console.log("before source reload")
-    window["__reloading"] = true
+    console.log("before source reload");
+    window["__reloading"] = true;
 }
 
 window["OnAfterSourceReload"] = function () {
-    console.log("after source reload !!!")
+    console.log("after source reload !!!");
 }
