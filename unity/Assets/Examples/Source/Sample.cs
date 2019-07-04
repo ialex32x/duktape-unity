@@ -36,24 +36,14 @@ public class Sample : MonoBehaviour, IDuktapeListener
 
     public void OnLoaded(DuktapeVM vm)
     {
+        tests();
         vm.AddSearchPath("Assets/Examples/Scripts/out");
         vm.EvalMain(launchScript);
         _loaded = true;
     }
 
-    public void OnSourceModified()
+    private void tests()
     {
-        if (_loaded)
-        {
-            vm.context.Invoke("OnBeforeSourceReload");
-            vm.EvalMain(launchScript);
-            vm.context.Invoke("OnAfterSourceReload");
-        }
-    }
-
-    void Awake()
-    {
-        vm.Initialize(new FakeFileSystem(), this);
         {
             var start = DateTime.Now;
             var v = new Vector3(0, 0, 0);
@@ -83,6 +73,21 @@ public class Sample : MonoBehaviour, IDuktapeListener
             }
             Debug.LogFormat("c#/number/add {0} {1}", (DateTime.Now - start).TotalSeconds, sum);
         }
+    }
+
+    public void OnSourceModified()
+    {
+        if (_loaded)
+        {
+            vm.context.Invoke("OnBeforeSourceReload");
+            vm.EvalMain(launchScript);
+            vm.context.Invoke("OnAfterSourceReload");
+        }
+    }
+
+    void Awake()
+    {
+        vm.Initialize(new FakeFileSystem(), this);
     }
 
     void OnDestroy()

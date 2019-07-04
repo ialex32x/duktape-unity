@@ -146,7 +146,7 @@ function sample() {
         console.log("js/vector3/scale", (Date.now() - start) / 1000);
         start = Date.now();
         var sum = 0;
-        for (var i = 1; i < 2000000; i++) {
+        for (var i = 1; i < 20000000; i++) {
             sum += i;
         }
         console.log("js/number/add", (Date.now() - start) / 1000, sum);
