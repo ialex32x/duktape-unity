@@ -413,6 +413,8 @@ def main():
         'duk_extra_websocket.c',
         'duk_extra_unity.c',
         'duk_extra_unity_values.c',
+        'duk_extra_unity_debugger.c',
+        'duk_extra_unity_dispatcher.c',
         'duk_extra_sock.c',
         'duk_extra_sock_socket.c',
         'duk_extra_sock_tcp.c',

@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 			duk_get_prop_string(ctx, -1, "stack");
 			const char *err = duk_safe_to_string(ctx, -1);
 			printf("peval error: %s\n", err);
-			printf("source: %s\n", buf);
+			//printf("source: %s\n", buf);
 		}
 		free(buf);
 		duk_pop(ctx);  // pop eval result 

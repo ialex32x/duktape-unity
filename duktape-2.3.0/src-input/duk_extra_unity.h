@@ -24,6 +24,7 @@
     #define DUK_UNITY_BUILTINS_RNG 18
 
 DUK_INTERNAL_DECL void duk_unity_valuetypes_open(duk_context *ctx);
+DUK_INTERNAL_DECL void duk_events_open(duk_context *ctx);
 
 DUK_INTERNAL_DECL void duk_unity_get_prop_object(duk_context *ctx, duk_idx_t idx, const char *key);
 DUK_INTERNAL_DECL void duk_unity_begin_class(duk_context *ctx, const char *key, duk_uarridx_t reg_idx, duk_c_function ctor, duk_c_function dtor);
