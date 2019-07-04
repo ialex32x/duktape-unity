@@ -152,30 +152,30 @@ namespace Duktape
                 string[] movedAssets,
                 string[] movedFromAssetPaths)
             {
-                if (EditorApplication.isPlaying || EditorApplication.isPaused)
-                {
-                    return;
-                }
-                if (!File.Exists("tsconfig.json"))
-                {
-                    // no typescript context
-                    return;
-                }
-                string outDir = null;
-                try
-                {
-                    var text = NormalizeJson(File.ReadAllText("tsconfig.json"));
-                    var tsconfig = JsonUtility.FromJson<TSConfig>(text);
-                    outDir = tsconfig.compilerOptions.outDir;
-                }
-                catch (Exception exception) { Debug.LogWarning(exception); }
-                if (CheckAssets(outDir, importedAssets) ||
-                    CheckAssets(outDir, deletedAssets) ||
-                    CheckAssets(outDir, movedAssets) ||
-                    CheckAssets(outDir, movedFromAssetPaths))
-                {
-                    UnityHelper.CompileScripts();
-                }
+                // if (EditorApplication.isPlaying || EditorApplication.isPaused)
+                // {
+                //     return;
+                // }
+                // if (!File.Exists("tsconfig.json"))
+                // {
+                //     // no typescript context
+                //     return;
+                // }
+                // string outDir = null;
+                // try
+                // {
+                //     var text = NormalizeJson(File.ReadAllText("tsconfig.json"));
+                //     var tsconfig = JsonUtility.FromJson<TSConfig>(text);
+                //     outDir = tsconfig.compilerOptions.outDir;
+                // }
+                // catch (Exception exception) { Debug.LogWarning(exception); }
+                // if (CheckAssets(outDir, importedAssets) ||
+                //     CheckAssets(outDir, deletedAssets) ||
+                //     CheckAssets(outDir, movedAssets) ||
+                //     CheckAssets(outDir, movedFromAssetPaths))
+                // {
+                //     UnityHelper.CompileScripts();
+                // }
             }
         }
     }

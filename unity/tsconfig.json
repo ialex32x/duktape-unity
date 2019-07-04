@@ -17,11 +17,12 @@
         // "listEmittedFiles": true,
         "experimentalDecorators": true,
         "noImplicitAny": false,
+        // "strictNullChecks": true,
         "allowJs": true,
         "inlineSourceMap": false,
         "sourceMap": true
     },
-    // "compileOnSave": true,
+    "compileOnSave": true,
     "include": [
         "Assets/Duktape/Typings/**/*.ts",
         "Assets/Generated/**/*.ts",
