@@ -35,7 +35,8 @@ namespace Duktape
         public string[] exclude;
     }
 
-    public class UnityHelper
+    [InitializeOnLoad]
+    public static class UnityHelper
     {
         #region All Menu Items
         [MenuItem("Duktape/Generate Bindings")]
@@ -84,6 +85,26 @@ namespace Duktape
             EditorWindow.GetWindow<PrefsEditor>().Show();
         }
         #endregion
+
+        static UnityHelper()
+        {
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+        }
+
+        private static void OnPlayModeStateChanged(PlayModeStateChange playModeStateChange)
+        {
+            if (playModeStateChange == PlayModeStateChange.ExitingPlayMode)
+            {
+                EditorApplication.delayCall += () =>
+                {
+                    var vm = DuktapeVM.GetInstance();
+                    if (vm != null)
+                    {
+                        vm.Destroy();
+                    }
+                };
+            }
+        }
 
         public class TypeScriptPostProcessor : AssetPostprocessor
         {

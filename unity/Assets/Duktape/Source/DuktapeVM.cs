@@ -33,6 +33,7 @@ namespace Duktape
         public const string SPECIAL_DELEGATE = "Delegate";
         public const string SPECIAL_CSHARP = "CSharp";
 
+        private static DuktapeVM _instance;
         private int _updateTimer;
         private DuktapeContext _ctx;
         private IFileSystem _fileManager;
@@ -68,6 +69,12 @@ namespace Duktape
 
         public DuktapeVM()
         {
+            _instance = this;
+        }
+
+        public static DuktapeVM GetInstance()
+        {
+            return _instance;
         }
 
         public static void addContext(DuktapeContext context)
@@ -460,17 +467,18 @@ namespace Duktape
             DuktapeDLL.duk_set_top(ctx, top);
         }
 
-        ~DuktapeVM()
-        {
-            var ctx = _ctx.rawValue;
-            _ctx.onDestroy();
-
-            DuktapeDLL.duk_destroy_heap(ctx);
-            // Debug.LogWarning("duk_destroy_heap");
-        }
-
         public void Destroy()
         {
+            _instance = null;
+            if (_ctx != null)
+            {
+                var ctx = _ctx.rawValue;
+                _ctx.onDestroy();
+                _ctx = null;
+                DuktapeDLL.duk_destroy_heap(ctx);
+                // Debug.LogWarning("duk_destroy_heap");
+            }
+
             if (_updateTimer != 0)
             {
                 DuktapeRunner.Clear(_updateTimer);
