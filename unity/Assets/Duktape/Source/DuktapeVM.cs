@@ -234,6 +234,10 @@ namespace Duktape
         public string ResolvePath(string filename)
         {
             filename = EnsureExtension(filename);
+            if (_fileManager.Exists(filename))
+            {
+                return filename;
+            }
             for (int i = 0, count = _searchPaths.Count; i < count; i++)
             {
                 var path = _searchPaths[i];
@@ -259,7 +263,9 @@ namespace Duktape
                 // 显式相对路径直接从 parent 模块路径拼接
                 var parent_path = PathUtils.GetDirectoryName(parent_id);
                 resolve_to = PathUtils.GetFullPath(PathUtils.Combine(parent_path, module_id), '/');
+                // Debug.LogFormat("1resolve_cb: id:{0}', parent-id:'{1}', resolve-to:'{2}'", module_id, parent_id, resolve_to);
                 resolve_to = GetVM(ctx).ResolvePath(resolve_to);
+                // Debug.LogFormat("2resolve_cb: id:{0}', parent-id:'{1}', resolve-to:'{2}'", module_id, parent_id, resolve_to);
             }
             else
             {
@@ -270,7 +276,6 @@ namespace Duktape
             if (resolve_to != null)
             {
                 DuktapeDLL.duk_push_string(ctx, resolve_to);
-                // Debug.LogFormat("resolve_cb: id:{0}', parent-id:'{1}', resolve-to:'{2}'", module_id, parent_id, resolve_to);
             }
             else
             {
@@ -456,7 +461,7 @@ namespace Duktape
             var path = ResolvePath(filename);
             var source = _fileManager.ReadAllText(path);
             DuktapeDLL.duk_push_string(ctx, source);
-            var err = DuktapeDLL.duk_module_node_peval_main(ctx, filename);
+            var err = DuktapeDLL.duk_module_node_peval_main(ctx, path);
             // var err = DuktapeDLL.duk_peval(ctx);
             // var err = DuktapeDLL.duk_peval_string_noresult(ctx, source);
             if (err != 0)
