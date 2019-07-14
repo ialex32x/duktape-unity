@@ -40,11 +40,24 @@ function sample() {
     (function () {
         let Vector3 = UnityEngine.Vector3
         let start = Date.now()
+        let v1 = new Vector3(0, 0, 0)
         for (let i = 1; i < 200000; i++) {
-            let v = new Vector3(i, i, i)
-            v.Normalize()
+            v1.Set(i, i, i)
+            v1.Normalize()
         }
-        console.log("vector3/js ", (Date.now() - start) / 1000);
+        console.log("js/vector3/normailize", (Date.now() - start) / 1000);
+        let v = Vector3.zero
+        let w = Vector3.one
+        for (let i = 1; i < 200000; i++) {
+            v.Scale(w);
+        }
+        console.log("js/vector3/scale", (Date.now() - start) / 1000);
+        start = Date.now();
+        let sum = 0;
+        for (let i = 1; i < 20000000; i++) {
+            sum += i;
+        }
+        console.log("js/number/add", (Date.now() - start) / 1000, sum);
     })();
 
     (function () {

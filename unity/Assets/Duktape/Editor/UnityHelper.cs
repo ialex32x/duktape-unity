@@ -35,7 +35,8 @@ namespace Duktape
         public string[] exclude;
     }
 
-    public class UnityHelper
+    [InitializeOnLoad]
+    public static class UnityHelper
     {
         #region All Menu Items
         [MenuItem("Duktape/Generate Bindings")]
@@ -52,7 +53,7 @@ namespace Duktape
             AssetDatabase.Refresh();
         }
 
-        //[MenuItem("Duktape/Compile TypeScript")]
+        [MenuItem("Duktape/Compile TypeScript")]
         public static void CompileScripts()
         {
             Debug.Log("compiling typescript source...");
@@ -84,6 +85,26 @@ namespace Duktape
             EditorWindow.GetWindow<PrefsEditor>().Show();
         }
         #endregion
+
+        static UnityHelper()
+        {
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+        }
+
+        private static void OnPlayModeStateChanged(PlayModeStateChange playModeStateChange)
+        {
+            if (playModeStateChange == PlayModeStateChange.ExitingPlayMode)
+            {
+                EditorApplication.delayCall += () =>
+                {
+                    var vm = DuktapeVM.GetInstance();
+                    if (vm != null)
+                    {
+                        vm.Destroy();
+                    }
+                };
+            }
+        }
 
         public class TypeScriptPostProcessor : AssetPostprocessor
         {
@@ -152,26 +173,30 @@ namespace Duktape
                 string[] movedAssets,
                 string[] movedFromAssetPaths)
             {
-                if (!File.Exists("tsconfig.json"))
-                {
-                    // no typescript context
-                    return;
-                }
-                string outDir = null;
-                try
-                {
-                    var text = NormalizeJson(File.ReadAllText("tsconfig.json"));
-                    var tsconfig = JsonUtility.FromJson<TSConfig>(text);
-                    outDir = tsconfig.compilerOptions.outDir;
-                }
-                catch (Exception exception) { Debug.LogWarning(exception); }
-                if (CheckAssets(outDir, importedAssets) ||
-                    CheckAssets(outDir, deletedAssets) ||
-                    CheckAssets(outDir, movedAssets) ||
-                    CheckAssets(outDir, movedFromAssetPaths))
-                {
-                    UnityHelper.CompileScripts();
-                }
+                // if (EditorApplication.isPlaying || EditorApplication.isPaused)
+                // {
+                //     return;
+                // }
+                // if (!File.Exists("tsconfig.json"))
+                // {
+                //     // no typescript context
+                //     return;
+                // }
+                // string outDir = null;
+                // try
+                // {
+                //     var text = NormalizeJson(File.ReadAllText("tsconfig.json"));
+                //     var tsconfig = JsonUtility.FromJson<TSConfig>(text);
+                //     outDir = tsconfig.compilerOptions.outDir;
+                // }
+                // catch (Exception exception) { Debug.LogWarning(exception); }
+                // if (CheckAssets(outDir, importedAssets) ||
+                //     CheckAssets(outDir, deletedAssets) ||
+                //     CheckAssets(outDir, movedAssets) ||
+                //     CheckAssets(outDir, movedFromAssetPaths))
+                // {
+                //     UnityHelper.CompileScripts();
+                // }
             }
         }
     }

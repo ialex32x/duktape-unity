@@ -36,9 +36,43 @@ public class Sample : MonoBehaviour, IDuktapeListener
 
     public void OnLoaded(DuktapeVM vm)
     {
+        tests();
         vm.AddSearchPath("Assets/Examples/Scripts/out");
         vm.EvalMain(launchScript);
         _loaded = true;
+    }
+
+    private void tests()
+    {
+        {
+            var start = DateTime.Now;
+            var v = new Vector3(0, 0, 0);
+            for (var i = 1; i < 200000; i++)
+            {
+                v.Set(i, i, i);
+                v.Normalize();
+            }
+            Debug.LogFormat("c#/vector3/normalize {0}", (DateTime.Now - start).TotalSeconds);
+        }
+        {
+            var start = DateTime.Now;
+            var v = Vector3.zero;
+            var w = Vector3.one;
+            for (var i = 1; i < 200000; i++)
+            {
+                v.Scale(w);
+            }
+            Debug.LogFormat("c#/vector3/scale {0}", (DateTime.Now - start).TotalSeconds);
+        }
+        {
+            var start = DateTime.Now;
+            var sum = 0;
+            for (var i = 1; i < 20000000; i++)
+            {
+                sum += i;
+            }
+            Debug.LogFormat("c#/number/add {0} {1}", (DateTime.Now - start).TotalSeconds, sum);
+        }
     }
 
     public void OnSourceModified()
