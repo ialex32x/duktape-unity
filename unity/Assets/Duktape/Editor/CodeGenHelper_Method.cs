@@ -43,7 +43,7 @@ namespace Duktape
             return $"typeof({typename})";
         }
 
-        // 生成定参部分 type 列表
+        // 生成定参部分 type 列表 (首参前也会补",")
         public string GetFixedMatchTypes(T method)
         {
             var snippet = "";
@@ -51,6 +51,11 @@ namespace Duktape
             for (int i = 0, length = parameters.Length; i < length; i++)
             {
                 var parameter = parameters[i];
+                if (parameter.IsDefined(typeof(ParamArrayAttribute), false))
+                {
+                    break;
+                }
+                snippet += ", ";
                 if (parameter.ParameterType.IsByRef)
                 {
                     //TODO: 检查 ref/out 参数有效请 (null undefined 或者 符合 Ref/Out 约定)
@@ -60,14 +65,6 @@ namespace Duktape
                 {
                     var typename = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType);
                     snippet += $"typeof({typename})";
-                }
-                if (parameter.IsDefined(typeof(ParamArrayAttribute), false))
-                {
-                    break;
-                }
-                if (i != length - 1)
-                {
-                    snippet += ", ";
                 }
             }
             return snippet;
@@ -249,7 +246,7 @@ namespace Duktape
                         {
                             foreach (var method in variant.plainMethods)
                             {
-                                cg.cs.AppendLine($"if (duk_match_types(ctx, argc, {GetFixedMatchTypes(method)}))");
+                                cg.cs.AppendLine($"if (duk_match_types(ctx, argc{GetFixedMatchTypes(method)}))");
                                 cg.cs.AppendLine("{");
                                 cg.cs.AddTabLevel();
                                 this.WriteCSMethodBinding(method, argc, false);
@@ -272,7 +269,7 @@ namespace Duktape
                     {
                         foreach (var method in variant.varargMethods)
                         {
-                            cg.cs.AppendLine($"if (duk_match_types(ctx, argc, {GetFixedMatchTypes(method)})");
+                            cg.cs.AppendLine($"if (duk_match_types(ctx, argc{GetFixedMatchTypes(method)})");
                             cg.cs.AppendLine($" && duk_match_param_types(ctx, {args}, argc, {GetParamArrayMatchType(method)}))");
                             cg.cs.AppendLine("{");
                             cg.cs.AddTabLevel();
