@@ -21,12 +21,17 @@ namespace Duktape
 
         //
         void OnPostCollectAssemblies(BindingManager bindingManager);
+        
+        void OnPostExporting(BindingManager bindingManager);
 
         // 收集类型阶段开始, 可在该阶段 AddExportedType 增加导出类型
         void OnPreCollectTypes(BindingManager bindingManager);
 
         //
         void OnPostCollectTypes(BindingManager bindingManager);
+
+        // 是否要导出指定类型
+        bool OnExportingType(BindingManager bindingManager, Type type);
 
         // 生成指定类型绑定代码前
         void OnPreGenerateType(BindingManager bindingManager, TypeBindingInfo bindingInfo);
@@ -42,48 +47,5 @@ namespace Duktape
         
         // 完成默认清理行为后 
         void OnCleanup(BindingManager bindingManager);
-    }
-
-    public abstract class AbstractBindingProcess : IBindingProcess
-    {
-        public virtual void OnInitialize(BindingManager bindingManager)
-        {
-        }
-
-        public virtual void OnPreCollectAssemblies(BindingManager bindingManager)
-        {
-        }
-
-        public virtual void OnPostCollectAssemblies(BindingManager bindingManager)
-        {
-        }
-
-        public virtual void OnPreCollectTypes(BindingManager bindingManager)
-        {
-        }
-
-        public virtual void OnPostCollectTypes(BindingManager bindingManager)
-        {
-        }
-
-        public virtual void OnPreGenerateType(BindingManager bindingManager, TypeBindingInfo bindingInfo)
-        {
-        }
-
-        public virtual void OnPostGenerateType(BindingManager bindingManager, TypeBindingInfo bindingInfo)
-        {
-        }
-
-        public virtual void OnPreGenerateDelegate(BindingManager bindingManager, DelegateBindingInfo bindingInfo)
-        {
-        }
-
-        public virtual void OnPostGenerateDelegate(BindingManager bindingManager, DelegateBindingInfo bindingInfo)
-        {
-        }
-
-        public virtual void OnCleanup(BindingManager bindingManager)
-        {
-        }
     }
 }
