@@ -212,6 +212,11 @@ namespace Duktape
             duk_add_property(ctx, name, getter, setter, idx);
         }
 
+        protected static void duk_add_event(IntPtr ctx, string name, DuktapeDLL.duk_c_function adder, DuktapeDLL.duk_c_function remover, int idx)
+        {
+            //TODO: 事件操作封装
+        }
+
         protected static void duk_add_property(IntPtr ctx, string name, DuktapeDLL.duk_c_function getter, DuktapeDLL.duk_c_function setter, int idx)
         {
             // [ctor, prototype]

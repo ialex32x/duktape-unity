@@ -261,6 +261,38 @@ namespace Duktape
         }
     }
 
+    public class EventBindingInfo
+    {
+        public string adderName = null; // 绑定代码名
+        public string removerName = null;
+        public string regName = null; // js 注册名
+
+        public Type declaringType;
+        public EventInfo eventInfo;
+
+        public bool isStatic { get { return eventInfo.GetAddMethod().IsStatic; } }
+
+        public EventBindingInfo(Type declaringType, EventInfo eventInfo)
+        {
+            this.declaringType = declaringType;
+            this.eventInfo = eventInfo;
+            do
+            {
+                if (this.isStatic)
+                {
+                    this.adderName = "BindStaticAdd_" + eventInfo.Name;
+                    this.removerName = "BindStaticRemove_" + eventInfo.Name;
+                }
+                else
+                {
+                    this.adderName = "BindAdd_" + eventInfo.Name;
+                    this.removerName = "BindRemove_" + eventInfo.Name;
+                }
+            } while (false);
+            this.regName = TypeBindingInfo.GetNamingAttribute(eventInfo);
+        }
+    }
+
     public class TypeBindingInfo
     {
         public BindingManager bindingManager;
@@ -283,6 +315,7 @@ namespace Duktape
         public Dictionary<string, MethodBindingInfo> staticMethods = new Dictionary<string, MethodBindingInfo>();
         public Dictionary<string, PropertyBindingInfo> properties = new Dictionary<string, PropertyBindingInfo>();
         public Dictionary<string, FieldBindingInfo> fields = new Dictionary<string, FieldBindingInfo>();
+        public Dictionary<string, EventBindingInfo> events = new Dictionary<string, EventBindingInfo>();
         public ConstructorBindingInfo constructors;
 
         public Assembly Assembly
@@ -370,6 +403,20 @@ namespace Duktape
             }
             var filename = type.FullName.Replace(".", "_").Replace("<", "_").Replace(">", "_").Replace("`", "_");
             return filename;
+        }
+
+        public void AddEvent(EventInfo eventInfo)
+        {
+            try
+            {
+                bindingManager.CollectDelegate(eventInfo.EventHandlerType);
+                events.Add(eventInfo.Name, new EventBindingInfo(type, eventInfo));
+                bindingManager.Info("[AddEvent] {0}.{1}", type, eventInfo.Name);
+            }
+            catch (Exception exception)
+            {
+                bindingManager.Error("AddEvent failed {0} @ {1}: {2}", eventInfo, type, exception.Message);
+            }
         }
 
         public void AddField(FieldInfo fieldInfo)
@@ -486,6 +533,31 @@ namespace Duktape
                     continue;
                 }
                 AddField(field);
+            }
+            var events = type.GetEvents(bindingFlags);
+            foreach (var evt in events)
+            {
+                if (evt.IsSpecialName)
+                {
+                    bindingManager.Info("skip special event: {0}", evt.Name);
+                    continue;
+                }
+                if (evt.EventHandlerType.IsPointer)
+                {
+                    bindingManager.Info("skip pointer event: {0}", evt.Name);
+                    continue;
+                }
+                if (evt.IsDefined(typeof(ObsoleteAttribute), false))
+                {
+                    bindingManager.Info("skip obsolete event: {0}", evt.Name);
+                    continue;
+                }
+                if (transform != null && transform.IsMemberBlocked(evt.Name))
+                {
+                    bindingManager.Info("skip blocked event: {0}", evt.Name);
+                    continue;
+                }
+                AddEvent(evt);
             }
             var properties = type.GetProperties(bindingFlags);
             foreach (var property in properties)

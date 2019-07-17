@@ -49,14 +49,16 @@ namespace Duktape
                 DuktapeDLL.duk_pop(ctx);
 
                 var cache = DuktapeVM.GetObjectCache(ctx);
-                if (cache.TryGetTypedWeakObject(refid, out o) && o != null)
+                DuktapeDelegate fn;
+                if (cache.TryGetTypedWeakObject(refid, out fn) && fn != null)
                 {
+                    o = fn.target as T;
                     return true;
                 }
                 // 默认赋值操作
                 DuktapeDLL.duk_dup(ctx, idx);
                 var heapptr = DuktapeDLL.duk_get_heapptr(ctx, idx);
-                var fn = new DuktapeDelegate(ctx, DuktapeDLL.duk_unity_ref(ctx));
+                fn = new DuktapeDelegate(ctx, DuktapeDLL.duk_unity_ref(ctx));
                 var vm = DuktapeVM.GetVM(ctx);
                 o = vm.CreateDelegate(typeof(T), fn) as T;
 

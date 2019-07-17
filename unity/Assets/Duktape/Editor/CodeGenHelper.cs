@@ -18,9 +18,7 @@ namespace Duktape
             this.cg = cg;
             this.cg.cs.AppendLine("// Assembly: {0}", type.Assembly.GetName());
             this.cg.cs.AppendLine("// Type: {0}", type.FullName);
-            this.cg.cs.AppendLine("using System;");
-            this.cg.cs.AppendLine("using System.Collections.Generic;");
-            this.cg.cs.AppendLine();
+            this.AppendCommon();
 
             // this.cg.typescript.AppendLine("// {0} {1}", Environment.UserName, this.cg.bindingManager.dateTime);
         }
@@ -29,6 +27,12 @@ namespace Duktape
         {
             this.cg = cg;
             this.cg.cs.AppendLine("// Special: {0}", name);
+            this.AppendCommon();
+        }
+
+        private void AppendCommon()
+        {
+            this.cg.cs.AppendLine("// Unity: {0}", Application.unityVersion);
             this.cg.cs.AppendLine("using System;");
             this.cg.cs.AppendLine("using System.Collections.Generic;");
             this.cg.cs.AppendLine();
