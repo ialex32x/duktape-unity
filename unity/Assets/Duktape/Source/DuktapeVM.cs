@@ -17,7 +17,7 @@ namespace Duktape
     public class DuktapeVM // : Scripting.ScriptEngine
     {
         // duktape-unity 版本, 生成规则发生无法兼容的改变时增加版本号
-        public const int VERSION = 0x10001;
+        public const int VERSION = 0x10002;
         public const string HEAP_STASH_PROPS_REGISTRY = "registry";
         // 在jsobject实例上记录关联的本地对象 object cache refid
         public static readonly string OBJ_PROP_NATIVE = DuktapeDLL.DUK_HIDDEN_SYMBOL("1");
