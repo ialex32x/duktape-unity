@@ -392,7 +392,7 @@ namespace Duktape
                 this.EndInvokeBinding();
                 if (parametersByRef.Count > 0)
                 {
-                    _WriteBackParametersByRef(parametersByRef);
+                    _WriteBackParametersByRef(isExtension, parametersByRef);
 
                 }
                 if (!method.IsStatic && method.DeclaringType.IsValueType) // struct 非静态方法 检查 Mutable 属性
@@ -412,7 +412,7 @@ namespace Duktape
                 this.EndInvokeBinding();
                 if (parametersByRef.Count > 0)
                 {
-                    _WriteBackParametersByRef(parametersByRef);
+                    _WriteBackParametersByRef(isExtension, parametersByRef);
                 }
                 cg.AppendPushValue(returnType, "ret");
                 cg.cs.AppendLine("return 1;");
@@ -420,17 +420,19 @@ namespace Duktape
         }
 
         // 回填 ref/out 参数
-        protected void _WriteBackParametersByRef(List<ParameterInfo> parametersByRef)
+        //TODO: !!! 扩展方法参数索引需要偏移
+        protected void _WriteBackParametersByRef(bool isExtension, List<ParameterInfo> parametersByRef)
         {
             for (var i = 0; i < parametersByRef.Count; i++)
             {
                 var parameter = parametersByRef[i];
-                cg.cs.AppendLine($"if (!DuktapeDLL.duk_is_null_or_undefined(ctx, {parameter.Position}))");
+                var position = isExtension ? parameter.Position -1 : parameter.Position;
+                cg.cs.AppendLine($"if (!DuktapeDLL.duk_is_null_or_undefined(ctx, {position}))");
                 cg.cs.AppendLine("{");
                 cg.cs.AddTabLevel();
-                var argname = $"arg{parameter.Position}";
+                var argname = $"arg{position}";
                 cg.AppendPushValue(parameter.ParameterType, argname);
-                cg.cs.AppendLine($"DuktapeDLL.duk_unity_put_target_i(ctx, {parameter.Position});");
+                cg.cs.AppendLine($"DuktapeDLL.duk_unity_put_target_i(ctx, {position});");
                 cg.cs.DecTabLevel();
                 cg.cs.AppendLine("}");
             }
