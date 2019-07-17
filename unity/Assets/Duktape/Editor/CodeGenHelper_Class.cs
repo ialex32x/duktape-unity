@@ -217,6 +217,35 @@ namespace Duktape
                     }
                 }
             }
+            // 所有事件 (当做field相似处理)
+            foreach (var kv in this.bindingInfo.events)
+            {
+                var eventBindingInfo = kv.Value;
+                using (new PInvokeGuardCodeGen(cg))
+                {
+                    using (new BindingFuncDeclareCodeGen(cg, eventBindingInfo.adderName))
+                    {
+                        using (new TryCatchGuradCodeGen(cg))
+                        {
+                            using (new EventAdderCodeGen(cg, eventBindingInfo))
+                            {
+                            }
+                        }
+                    }
+                }
+                using (new PInvokeGuardCodeGen(cg))
+                {
+                    using (new BindingFuncDeclareCodeGen(cg, eventBindingInfo.removerName))
+                    {
+                        using (new TryCatchGuradCodeGen(cg))
+                        {
+                            using (new EventRemoverCodeGen(cg, eventBindingInfo))
+                            {
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public override void Dispose()
@@ -331,6 +360,20 @@ namespace Duktape
                                 tsFieldPrefix += "readonly ";
                             }
                             var tsFieldType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.fieldInfo.FieldType);
+                            cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
+                        }
+                        foreach (var kv in bindingInfo.events)
+                        {
+                            var bindingInfo = kv.Value;
+                            var bStatic = bindingInfo.isStatic;
+                            var tsFieldVar = BindingManager.GetTSVariable(bindingInfo.regName);
+                            cg.cs.AppendLine("duk_add_event(ctx, \"{0}\", {1}, {2}, {3});",
+                                tsFieldVar,
+                                bindingInfo.adderName,
+                                bindingInfo.removerName,
+                                bStatic ? -2 : -1);
+                            var tsFieldPrefix = bStatic ? "static " : "";
+                            var tsFieldType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.eventInfo.EventHandlerType);
                             cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
                         }
                         cg.cs.AppendLine("duk_end_class(ctx);");

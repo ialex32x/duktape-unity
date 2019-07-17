@@ -235,6 +235,11 @@ namespace Duktape
             return AppendGetThisCS(bindingInfo.isStatic, bindingInfo.fieldInfo.DeclaringType);
         }
 
+        public string AppendGetThisCS(EventBindingInfo bindingInfo)
+        {
+            return AppendGetThisCS(bindingInfo.isStatic, bindingInfo.declaringType);
+        }
+
         public string AppendGetThisCS(MethodBase method)
         {
             if (method.IsConstructor)

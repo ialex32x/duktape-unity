@@ -263,30 +263,30 @@ namespace Duktape
 
     public class EventBindingInfo
     {
-        public string getterName = null; // 绑定代码名
-        public string setterName = null;
+        public string adderName = null; // 绑定代码名
+        public string removerName = null;
         public string regName = null; // js 注册名
 
+        public Type declaringType;
         public EventInfo eventInfo;
-
-        public string constantValue;
 
         public bool isStatic { get { return eventInfo.GetAddMethod().IsStatic; } }
 
-        public EventBindingInfo(EventInfo eventInfo)
+        public EventBindingInfo(Type declaringType, EventInfo eventInfo)
         {
+            this.declaringType = declaringType;
             this.eventInfo = eventInfo;
             do
             {
                 if (this.isStatic)
                 {
-                    this.getterName = "BindStaticAdd_" + eventInfo.Name;
-                    this.setterName = "BindStaticRemove_" + eventInfo.Name;
+                    this.adderName = "BindStaticAdd_" + eventInfo.Name;
+                    this.removerName = "BindStaticRemove_" + eventInfo.Name;
                 }
                 else
                 {
-                    this.getterName = "BindAdd_" + eventInfo.Name;
-                    this.setterName = "BindRemove_" + eventInfo.Name;
+                    this.adderName = "BindAdd_" + eventInfo.Name;
+                    this.removerName = "BindRemove_" + eventInfo.Name;
                 }
             } while (false);
             this.regName = TypeBindingInfo.GetNamingAttribute(eventInfo);
@@ -410,7 +410,7 @@ namespace Duktape
             try
             {
                 bindingManager.CollectDelegate(eventInfo.EventHandlerType);
-                events.Add(eventInfo.Name, new EventBindingInfo(eventInfo));
+                events.Add(eventInfo.Name, new EventBindingInfo(type, eventInfo));
                 bindingManager.Info("[AddEvent] {0}.{1}", type, eventInfo.Name);
             }
             catch (Exception exception)
