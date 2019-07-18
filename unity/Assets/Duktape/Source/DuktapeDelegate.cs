@@ -51,6 +51,7 @@ namespace Duktape
                 this.Push(ctx); // push this
                 if (!DuktapeDLL.duk_is_function(ctx, -1))
                 {
+                    // Debug.Log("DuktapeDelegate based on Dispatcher");
                     DuktapeDLL.duk_get_prop_string(ctx, -1, "dispatch");
                     DuktapeDLL.duk_remove(ctx, -2); // remove this
                 }
@@ -65,12 +66,16 @@ namespace Duktape
         public void EndInvoke(IntPtr ctx)
         {
             var nargs = DuktapeDLL.duk_get_top(ctx) - _savedState;
-            // Debug.Log($"EndInvoke: {nargs}");
             var ret = DuktapeDLL.duk_pcall_method(ctx, nargs);
             if (ret != DuktapeDLL.DUK_EXEC_SUCCESS)
             {
                 DuktapeAux.PrintError(ctx, -1);
+                DuktapeDLL.duk_pop(ctx);
                 // throw new Exception(err); 
+            }
+            else
+            {
+                DuktapeDLL.duk_pop(ctx);
             }
         }
     }
