@@ -201,7 +201,7 @@ Assets/Scenes/main.unity 展示了一些基本的使用情况.<br/>
 可以通过调试器进行断点调试. 目前还有问题:
 * 无法正确sourceMap
 * 必须配置"stopOnEntry":true, 否则无法进入后续断点
-
+## 目前仅编译了 windows x64 的 duktape.dll 支持 debugger.
 ![debugger](res/debugger.png)
 
 调试插件为:
