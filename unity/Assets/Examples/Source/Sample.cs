@@ -43,6 +43,7 @@ public class Sample : MonoBehaviour, IDuktapeListener
         {
             DuktapeDLL.duk_example_attach_debugger(vm.context.rawValue);
         }
+        // vm.EvalFile("test.js");
         vm.EvalMain(launchScript);
         _loaded = true;
     }
