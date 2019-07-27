@@ -17,7 +17,7 @@ namespace Duktape
     public class DuktapeVM // : Scripting.ScriptEngine
     {
         // duktape-unity 版本, 生成规则发生无法兼容的改变时增加版本号
-        public const int VERSION = 0x10002;
+        public const int VERSION = 0x10001;
         public const string HEAP_STASH_PROPS_REGISTRY = "registry";
         // 在jsobject实例上记录关联的本地对象 object cache refid
         public static readonly string OBJ_PROP_NATIVE = DuktapeDLL.DUK_HIDDEN_SYMBOL("1");
@@ -233,7 +233,6 @@ namespace Duktape
 
         public string ResolvePath(string filename)
         {
-            filename = EnsureExtension(filename);
             if (_fileManager.Exists(filename))
             {
                 return filename;
@@ -255,23 +254,30 @@ namespace Duktape
         {
             var module_id = EnsureExtension(DuktapeAux.duk_require_string(ctx, 0));
             var parent_id = DuktapeAux.duk_require_string(ctx, 1);
-            string resolve_to = null;
+            var resolve_to = module_id;
             // Debug.LogFormat("cb_resolve_module module_id:'{0}', parent_id:'{1}'\n", module_id, parent_id);
 
-            if (module_id.StartsWith("./") || module_id.StartsWith("../"))
+            if (module_id.StartsWith("./") || module_id.StartsWith("../") || module_id.Contains("/./") || module_id.Contains("/../"))
             {
                 // 显式相对路径直接从 parent 模块路径拼接
                 var parent_path = PathUtils.GetDirectoryName(parent_id);
-                resolve_to = PathUtils.GetFullPath(PathUtils.Combine(parent_path, module_id), '/');
-                // Debug.LogFormat("1resolve_cb: id:{0}', parent-id:'{1}', resolve-to:'{2}'", module_id, parent_id, resolve_to);
-                resolve_to = GetVM(ctx).ResolvePath(resolve_to);
-                // Debug.LogFormat("2resolve_cb: id:{0}', parent-id:'{1}', resolve-to:'{2}'", module_id, parent_id, resolve_to);
+                try
+                {
+                    resolve_to = PathUtils.ExtractPath(PathUtils.Combine(parent_path, module_id), '/');
+                }
+                catch
+                {
+                    // 不能提升到源代码目录外面
+                    DuktapeDLL.duk_type_error(ctx, "invalid module path (out of sourceRoot): %s", module_id);
+                    return 1;
+                }
             }
-            else
-            {
-                // 默认路径使用 searchPaths 查找
-                resolve_to = GetVM(ctx).ResolvePath(module_id);
-            }
+            // Debug.LogFormat("resolve_cb(1): id:{0}', parent-id:'{1}', resolve-to:'{2}'", module_id, parent_id, resolve_to);
+            // if (GetVM(ctx).ResolvePath(resolve_to) == null)
+            // {
+            //     DuktapeDLL.duk_type_error(ctx, "cannot find module: %s", module_id);
+            //     return 1;
+            // }
 
             if (resolve_to != null)
             {
@@ -290,9 +296,10 @@ namespace Duktape
             var module_id = DuktapeAux.duk_require_string(ctx, 0);
             DuktapeDLL.duk_get_prop_string(ctx, 2, "filename");
             var filename = DuktapeAux.duk_require_string(ctx, -1);
-            // Debug.LogFormat("cb_load_module module_id:'{0}', filename:'{1}'\n", module_id, filename);
+            var resolvedPath = GetVM(ctx).ResolvePath(filename);
+            // Debug.LogFormat("cb_load_module module_id:'{0}', filename:'{1}', resolved:'{2}'\n", module_id, filename, resolvedPath);
 
-            var source = GetVM(ctx)._fileManager.ReadAllText(filename);
+            var source = GetVM(ctx)._fileManager.ReadAllText(resolvedPath);
             if (source != null)
             {
                 DuktapeDLL.duk_push_string(ctx, source);
@@ -448,22 +455,25 @@ namespace Duktape
 
         public void EvalFile(string filename)
         {
+            filename = EnsureExtension(filename);
             var ctx = _ctx.rawValue;
-            var path = ResolvePath(filename);
-            var source = _fileManager.ReadAllText(path);
+            var resolvedPath = ResolvePath(filename);
+            var source = _fileManager.ReadAllText(resolvedPath);
             EvalSource(source, filename);
         }
 
         public void EvalMain(string filename)
         {
+            filename = EnsureExtension(filename);
             var ctx = _ctx.rawValue;
             var top = DuktapeDLL.duk_get_top(ctx);
-            var path = ResolvePath(filename);
-            var source = _fileManager.ReadAllText(path);
+            var resolvedPath = ResolvePath(filename);
+            var source = _fileManager.ReadAllText(resolvedPath);
             DuktapeDLL.duk_push_string(ctx, source);
-            var err = DuktapeDLL.duk_module_node_peval_main(ctx, path);
+            var err = DuktapeDLL.duk_module_node_peval_main(ctx, filename);
             // var err = DuktapeDLL.duk_peval(ctx);
             // var err = DuktapeDLL.duk_peval_string_noresult(ctx, source);
+            Debug.Log($"load main module: {filename} ({resolvedPath})");
             if (err != 0)
             {
                 DuktapeAux.PrintError(ctx, -1, filename);

@@ -30,7 +30,8 @@ namespace Duktape
             return System.IO.Path.Combine(paths).Replace('\\', '/');
         }
 
-        public static string GetFullPath(string path, char sp)
+        /// 展开路径中的 ./..
+        public static string ExtractPath(string path, char sp)
         {
             var items = path.Split(sp);
             if (items.Length < 2)
