@@ -6,7 +6,8 @@ using System;
 
 public class Sample : MonoBehaviour, IDuktapeListener
 {
-    public string launchScript = "main.js";
+    public string launchScript = "code.js";
+    public bool experimentalDebugger = false;
 
     private bool _loaded;
     DuktapeVM vm = new DuktapeVM();
@@ -38,6 +39,10 @@ public class Sample : MonoBehaviour, IDuktapeListener
     {
         tests();
         vm.AddSearchPath("Assets/Examples/Scripts/out");
+        if (experimentalDebugger)
+        {
+            DuktapeDLL.duk_example_attach_debugger(vm.context.rawValue);
+        }
         vm.EvalMain(launchScript);
         _loaded = true;
     }
@@ -93,6 +98,7 @@ public class Sample : MonoBehaviour, IDuktapeListener
     void OnDestroy()
     {
         // DuktapeDebugger.Shutdown();
+        DuktapeDLL.duk_example_detach_debugger(vm.context.rawValue, IntPtr.Zero);
         vm.Destroy();
         vm = null;
     }
