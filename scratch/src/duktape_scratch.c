@@ -46,7 +46,9 @@ int main(int argc, char *argv[]) {
 	duk_push_c_function(ctx, native_change, DUK_VARARGS);
 	duk_put_global_string(ctx, "change");
 
-	FILE *fp = fopen("../../../scratch/scripts/main.js", "r");
+	duk_example_attach_debugger(ctx);
+
+	FILE *fp = fopen("scripts/main.js", "r");
 	if (fp) {
 		fseek(fp, 0, SEEK_END);
 		long length = ftell(fp);
@@ -56,7 +58,10 @@ int main(int argc, char *argv[]) {
 		fread(buf, length, 1, fp);
 		fclose(fp);
 		//printf("source(%d): %s\n", length, buf);
-		if (duk_peval_string(ctx, buf) != 0) {
+		duk_push_string(ctx, buf);
+		duk_push_string(ctx, "scripts/main.js");
+		duk_compile(ctx, 0);
+		if (duk_pcall(ctx, 0) != 0) {
 			duk_get_prop_string(ctx, -1, "stack");
 			const char *err = duk_safe_to_string(ctx, -1);
 			printf("peval error: %s\n", err);

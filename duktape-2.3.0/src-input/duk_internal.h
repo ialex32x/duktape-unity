@@ -82,5 +82,6 @@ DUK_USE_USER_DECLARE()
 #include "duk_extra_unity.h"
 #include "duk_extra_sock.h"
 #include "duk_extra_websocket.h"
+#include "duk_trans_socket.h"
 
 #endif  /* DUK_INTERNAL_H_INCLUDED */

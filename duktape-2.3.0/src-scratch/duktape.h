@@ -6,7 +6,7 @@
  *  comments.  Other parts of the header are Duktape internal and related to
  *  e.g. platform/compiler/feature detection.
  *
- *  Git commit 5de666110867b91d7c3f8d911b9e911d5d2a1a8a (5de6661-dirty).
+ *  Git commit 1f077ef7d6b15ddbf9a6a1c2287d44c2e1a228b2 (1f077ef-dirty).
  *  Git branch develop.
  *
  *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and
@@ -171,8 +171,8 @@
  * which Duktape snapshot was used.  Not available in the ECMAScript
  * environment.
  */
-#define DUK_GIT_COMMIT                    "5de666110867b91d7c3f8d911b9e911d5d2a1a8a"
-#define DUK_GIT_DESCRIBE                  "5de6661-dirty"
+#define DUK_GIT_COMMIT                    "1f077ef7d6b15ddbf9a6a1c2287d44c2e1a228b2"
+#define DUK_GIT_DESCRIBE                  "1f077ef-dirty"
 #define DUK_GIT_BRANCH                    "develop"
 
 /* External duk_config.h provides platform/compiler/OS dependent
@@ -1533,6 +1533,9 @@ DUK_EXTERNAL_DECL void *duk_unity_attach_debugger(duk_context *ctx,
                                            duk_unity_debug_detached_function detached_cb, 
 										   duk_int_t udata);
 DUK_EXTERNAL_DECL void duk_unity_detach_debugger(duk_context *ctx, void *debugger);
+
+DUK_EXTERNAL_DECL void *duk_example_attach_debugger(duk_context *ctx);
+DUK_EXTERNAL_DECL void duk_example_deattach_debugger(duk_context *ctx, void *debugger);
 
 /*
  *  C++ name mangling

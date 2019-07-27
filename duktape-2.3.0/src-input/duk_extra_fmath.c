@@ -279,6 +279,9 @@ DUK_INTERNAL duk_bool_t duk_fmath_open(duk_context *ctx) {
     duk_push_int(ctx, 205887); duk_put_prop_string(ctx, -2, "pi");
     duk_push_int(ctx, 178145); duk_put_prop_string(ctx, -2, "e");
     duk_push_int(ctx, 65536); duk_put_prop_string(ctx, -2, "one");
+    duk_push_int(ctx, 655360); duk_put_prop_string(ctx, -2, "ten");
+    duk_push_int(ctx, 6553600); duk_put_prop_string(ctx, -2, "hundred");
+    duk_push_int(ctx, 65536000); duk_put_prop_string(ctx, -2, "thousand");
     duk_push_int(ctx, 655); duk_put_prop_string(ctx, -2, "percent"); // 0.01
     duk_push_int(ctx, 642253); duk_put_prop_string(ctx, -2, "gravity"); // 9.8
 
