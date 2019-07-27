@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define RUN_AS_MODULE
 #define duk_memcmp memcmp
 #define duk_memcpy memcpy
 
@@ -59,6 +60,10 @@ int main(int argc, char *argv[]) {
 		fclose(fp);
 		//printf("source(%d): %s\n", length, buf);
 		duk_push_string(ctx, buf);
+
+#if defined(RUN_AS_MODULE)
+		duk_module_node_peval_main(ctx, "scripts/main.js");
+#else
 		duk_push_string(ctx, "scripts/main.js");
 		duk_compile(ctx, 0);
 		if (duk_pcall(ctx, 0) != 0) {
@@ -67,6 +72,7 @@ int main(int argc, char *argv[]) {
 			printf("peval error: %s\n", err);
 			//printf("source: %s\n", buf);
 		}
+#endif
 		free(buf);
 		duk_pop(ctx);  // pop eval result 
 	} else {

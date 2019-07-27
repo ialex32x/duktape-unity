@@ -8,7 +8,7 @@
             "name"        : "Duk Attach",
             "type"        : "duk",
             "request"     : "attach",
-            "stopOnEntry" : false,
+            "stopOnEntry" : true,
 
             "address"     : "localhost",
             "port"        : 9091,
@@ -16,7 +16,7 @@
             "localRoot"  : "${workspaceRoot}",
 
             "sourceMaps"  : false,
-            "outDir"      : "${workspaceRoot}/bin"
+            "outDir"      : null
         }
     ]
 }

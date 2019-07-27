@@ -68,10 +68,10 @@
             "stopOnEntry" : true,
             "address"     : "localhost",
             "port"        : 9091,
-            "localRoot"   : "${workspaceRoot}/Assets/Examples/Scripts/out",
+            "localRoot"   : "${workspaceRoot}",
             "sourceMaps"  : false,
             "debugLog"    : true,
-            "outDir"      : "${workspaceRoot}/bin"
+            "outDir"      : null
         }
     ]
 }
