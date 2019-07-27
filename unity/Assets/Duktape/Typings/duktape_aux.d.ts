@@ -63,6 +63,9 @@ declare namespace FMath {
     const pi: number
     const e: number
     const one: number
+    const ten: number
+    const hundred: number
+    const thousand: number
     const percent: number
     const gravity: number
 

@@ -108,3 +108,27 @@ DUK_EXTERNAL void duk_unity_detach_debugger(duk_context *ctx, void *debugger) {
     duk_debugger_detach(ctx);
     duk_free(ctx, debugger);
 }
+
+DUK_EXTERNAL void *duk_example_attach_debugger(duk_context *ctx) {
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+    duk_trans_socket_init();
+    duk_trans_socket_waitconn();
+    
+    duk_debugger_attach(ctx, 
+                        duk_trans_socket_read_cb,     /* read callback */
+                        duk_trans_socket_write_cb,    /* write callback */
+                        duk_trans_socket_peek_cb,     /* peek callback (optional) */
+                        duk_trans_socket_read_flush_cb,    /* read flush callback (optional) */
+                        duk_trans_socket_write_flush_cb,   /* write flush callback (optional) */
+                        0,       /* app request callback (optional) */
+                        duk_trans_socket_finish,    /* debugger detached callback */
+                        0);                              /* debug udata */
+#else
+    return NULL;
+#endif
+}
+
+DUK_EXTERNAL void duk_example_detach_debugger(duk_context *ctx, void *debugger) {
+    duk_debugger_detach(ctx);
+    duk_free(ctx, debugger);
+}

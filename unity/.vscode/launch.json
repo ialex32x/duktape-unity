@@ -50,7 +50,7 @@
             "showDebugVariables": false
         },
         {
-            "name": "Duk Attach",
+            "name": "Duk Attach (1)",
             "type": "duk",
             "request": "attach",
             "stopOnEntry": false,
@@ -60,6 +60,18 @@
             "sourceMaps": false,
             "debugLog": true,
             "outDir": "./Assets/Scripts/Generated" // /Assets/Scripts/Generated
+        }, 
+        {
+            "name"        : "Duk Attach (2)",
+            "type"        : "duk",
+            "request"     : "attach",
+            "stopOnEntry" : true,
+            "address"     : "localhost",
+            "port"        : 9091,
+            "localRoot"   : "${workspaceRoot}",
+            "sourceMaps"  : false,
+            "debugLog"    : true,
+            "outDir"      : null
         }
     ]
 }

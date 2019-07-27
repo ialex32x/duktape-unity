@@ -4,3 +4,8 @@ for (var i = 0; i < 1; i++) {
     v.Normalize();
 }
 print("js/perf", (Date.now() - start) / 1000);
+
+(function () {
+    print("in anonymous function");
+    print("here?");
+})();

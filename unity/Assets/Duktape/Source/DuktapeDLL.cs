@@ -1778,5 +1778,13 @@ namespace Duktape
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void duk_unity_detach_debugger(IntPtr ctx, IntPtr debugger);
 
+        
+        /// debugger support
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr duk_example_attach_debugger(IntPtr ctx);
+
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void duk_example_detach_debugger(IntPtr ctx, IntPtr debugger);
+
     }
 }
