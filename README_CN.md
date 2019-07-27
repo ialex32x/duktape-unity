@@ -196,6 +196,24 @@ public class MyCustomBinding : AbstractBindingProcess
 ## 例子场景
 Assets/Scenes/main.unity 展示了一些基本的使用情况.<br/>
 
+# 调试
+
+可以通过调试器进行断点调试. 目前还有问题:
+* 无法正确sourceMap
+* 必须配置"stopOnEntry":true, 否则无法进入后续断点
+
+![debugger](res/debugger.png)
+
+调试插件为:
+```yml
+Name: Duktape Debugger
+Id: haroldbrenes.duk-debug
+Description: Debug Adapter for Duktape runtimes.
+Version: 0.5.0
+Publisher: HaroldBrenes
+VS Marketplace Link: https://marketplace.visualstudio.com/items?itemName=HaroldBrenes.duk-debug
+```
+
 # Referenced libraries
 
 * [duktape](https://github.com/svaarala/duktape)
