@@ -13,7 +13,14 @@ namespace Duktape
     {
     }
 
-    [AttributeUsage(AttributeTargets.Class,
+    [AttributeUsage(AttributeTargets.Class | 
+                    AttributeTargets.Struct |
+                    AttributeTargets.Interface | 
+                    AttributeTargets.Field |
+                    AttributeTargets.Method |
+                    AttributeTargets.Event |
+                    AttributeTargets.Constructor |
+                    AttributeTargets.Property,
                     AllowMultiple = false,
                     Inherited = false)]
     public class JSOmitAttribute : Attribute
