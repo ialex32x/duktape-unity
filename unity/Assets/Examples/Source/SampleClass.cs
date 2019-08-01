@@ -52,12 +52,25 @@ namespace SampleNamespace
         private string _name;
         private SampleEnum _sampleEnum;
 
+        public event Action testEvent;
+        public static event Action staticTestEvent;
+
         public string name
         {
             get { return _name; }
         }
 
         public SampleEnum sampleEnum { get { return _sampleEnum; } }
+
+        public void DispatchTestEvent()
+        {
+            testEvent?.Invoke();
+        }
+
+        public static void DispatchStaticTestEvent()
+        {
+            staticTestEvent?.Invoke();
+        }
 
         public void TestDelegate1()
         {

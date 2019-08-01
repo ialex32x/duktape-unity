@@ -237,7 +237,23 @@ namespace Duktape
 
         public string AppendGetThisCS(EventBindingInfo bindingInfo)
         {
-            return AppendGetThisCS(bindingInfo.isStatic, bindingInfo.declaringType);
+            var isStatic = bindingInfo.isStatic;
+            var declaringType = bindingInfo.declaringType;
+            var caller = "";
+            if (isStatic)
+            {
+                caller = this.bindingManager.GetCSTypeFullName(declaringType, false);
+            }
+            else
+            {
+                caller = "self";
+                this.cs.AppendLine($"{this.bindingManager.GetCSTypeFullName(declaringType)} {caller};");
+                this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
+                this.cs.AppendLine($"DuktapeDLL.duk_get_prop_string(ctx, -1, DuktapeVM.EVENT_PROP_THIS);");
+                this.cs.AppendLine($"{this.bindingManager.GetDuktapeGetter(declaringType)}(ctx, -1, out {caller});");
+                this.cs.AppendLine($"DuktapeDLL.duk_pop_2(ctx);");
+            }
+            return caller;
         }
 
         public string AppendGetThisCS(MethodBase method)

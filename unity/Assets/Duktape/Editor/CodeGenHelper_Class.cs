@@ -39,7 +39,7 @@ namespace Duktape
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {
-                            using (new ConstructorCodeGen(cg, this.bindingInfo.constructors))
+                            using (new ConstructorCodeGen(cg, this.bindingInfo))
                             {
                             }
                         }
@@ -364,17 +364,18 @@ namespace Duktape
                         }
                         foreach (var kv in bindingInfo.events)
                         {
-                            var bindingInfo = kv.Value;
-                            var bStatic = bindingInfo.isStatic;
-                            var tsFieldVar = BindingManager.GetTSVariable(bindingInfo.regName);
-                            cg.cs.AppendLine("duk_add_event(ctx, \"{0}\", {1}, {2}, {3});",
-                                tsFieldVar,
-                                bindingInfo.adderName,
-                                bindingInfo.removerName,
-                                bStatic ? -2 : -1);
-                            var tsFieldPrefix = bStatic ? "static " : "";
-                            var tsFieldType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.eventInfo.EventHandlerType);
-                            cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
+                            var eventBindingInfo = kv.Value;
+                            var bStatic = eventBindingInfo.isStatic;
+                            //NOTE: 静态事件在绑定过程直接定义， 非静态事件推迟到构造时直接赋值创建
+                            var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
+                            var tsFieldType = this.cg.bindingManager.GetTSTypeFullName(eventBindingInfo.eventInfo.EventHandlerType);
+                            var tsFieldPrefix = "";
+                            if (bStatic)
+                            {
+                                tsFieldPrefix += "static ";
+                                cg.cs.AppendLine($"duk_add_event(ctx, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName}, -2);");
+                            }
+                            cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: DuktapeJS.event<{tsFieldType}>");
                         }
                         cg.cs.AppendLine("duk_end_class(ctx);");
                     }

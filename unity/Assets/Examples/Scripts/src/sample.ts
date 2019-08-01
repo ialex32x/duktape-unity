@@ -87,6 +87,16 @@ function sample() {
     })();
 
     (function () {
+        SampleNamespace.SampleClass.staticTestEvent.on(function () {
+            console.log("sampleClass.staticTestEvent invoked!!!!")
+        })
+        SampleNamespace.SampleClass.DispatchStaticTestEvent()
+        let sampleClass = new SampleNamespace.SampleClass("sampleclass.constructor");
+        sampleClass.testEvent.on(function () {
+            console.log("sampleClass.testEvent invoked!!!!")
+        })
+        sampleClass.DispatchTestEvent();
+
         SampleNamespace.SampleClass.TestDelegate(function () {
             console.log(this, "TestDelegate")
         })

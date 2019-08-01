@@ -346,6 +346,11 @@ namespace Duktape
         //NOTE: editor mscorlib 与 runtime 存在差异, 需要手工 block 差异
         public TypeTransform AddExportedType(Type type)
         {
+            if (type.IsGenericTypeDefinition)
+            {
+                whitelist.Add(type);
+                return null;
+            }
             if (!exportedTypes.ContainsKey(type))
             {
                 var typeBindingInfo = new TypeBindingInfo(this, type);
@@ -884,6 +889,22 @@ namespace Duktape
             }
         }
 
+        private void OnPostExporting()
+        {
+            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            {
+                var bp = _bindingProcess[i];
+                try
+                {
+                    bp.OnPostExporting(this);
+                }
+                catch (Exception exception)
+                {
+                    this.Error($"process failed [{bp}][OnPostExporting]: {exception}");
+                }
+            }
+        }
+
         private void OnPreCollectTypes()
         {
             for (int i = 0, size = _bindingProcess.Count; i < size; i++)
@@ -1009,6 +1030,7 @@ namespace Duktape
             ExportAssemblies(_explicitAssemblies, false);
             ExportAssemblies(_implicitAssemblies, true);
             ExportBuiltins();
+            OnPostExporting();
 
             log.AppendLine("collecting members");
             log.AddTabLevel();

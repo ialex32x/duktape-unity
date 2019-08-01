@@ -426,7 +426,7 @@ namespace Duktape
             for (var i = 0; i < parametersByRef.Count; i++)
             {
                 var parameter = parametersByRef[i];
-                var position = isExtension ? parameter.Position -1 : parameter.Position;
+                var position = isExtension ? parameter.Position - 1 : parameter.Position;
                 cg.cs.AppendLine($"if (!DuktapeDLL.duk_is_null_or_undefined(ctx, {position}))");
                 cg.cs.AppendLine("{");
                 cg.cs.AddTabLevel();
@@ -460,10 +460,11 @@ namespace Duktape
             this.cg.cs.AppendLine("duk_bind_native(ctx, o);");
         }
 
-        public ConstructorCodeGen(CodeGenerator cg, ConstructorBindingInfo bindingInfo)
+        public ConstructorCodeGen(CodeGenerator cg, TypeBindingInfo bindingInfo)
         : base(cg)
         {
-            this.bindingInfo = bindingInfo;
+            WriteInstanceEvents(bindingInfo);
+            this.bindingInfo = bindingInfo.constructors;
             if (this.bindingInfo.count > 0)
             {
                 WriteAllVariants(this.bindingInfo);
@@ -472,6 +473,31 @@ namespace Duktape
             else
             {
                 WriteDefaultConstructorBinding();
+            }
+        }
+
+        private void WriteInstanceEvents(TypeBindingInfo bindingInfo)
+        {
+            var eventBindingInfos = new List<EventBindingInfo>();
+            foreach (var kv in bindingInfo.events)
+            {
+                var eventBindingInfo = kv.Value;
+                var bStatic = eventBindingInfo.isStatic;
+                if (!bStatic)
+                {
+                    eventBindingInfos.Add(eventBindingInfo);
+                }
+            }
+            if (eventBindingInfos.Count > 0)
+            {
+                Debug.Log($"Writing instance events... {bindingInfo.type}");
+                this.cg.cs.AppendLine("DuktapeDLL.duk_push_this(ctx);");
+                foreach (var eventBindingInfo in eventBindingInfos)
+                {
+                    var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
+                    cg.cs.AppendLine($"duk_add_event(ctx, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName}, -1);");
+                }
+                this.cg.cs.AppendLine("DuktapeDLL.duk_pop(ctx);");
             }
         }
 
