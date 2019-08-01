@@ -145,7 +145,7 @@ public class CodeSnippets : MonoBehaviour
     }
 
     public static void testTypeByRefMethod(ref string p)
-    {}
+    { }
 
     void testTypeByRef(MethodInfo method)
     {
@@ -160,19 +160,37 @@ public class CodeSnippets : MonoBehaviour
         }
     }
 
+    void testConcreteSubType()
+    {
+        var gb = new StringGB();
+        gb.Foo("fff");
+        var type = typeof(StringGB);
+        var bindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
+        var methods = type.GetMethods(bindingFlags);
+        foreach (var m in methods)
+        {
+            Debug.Log($"Method: {m} ({m.DeclaringType})");
+        }
+        var baseType = type.BaseType;
+        Debug.Log($"IsConstructedGenericType: {baseType.IsConstructedGenericType}");
+        var jsTypeAttr = baseType.GetGenericTypeDefinition().IsDefined(typeof(Duktape.JSTypeAttribute), false);
+        Debug.Log($"GetGenericTypeDefinition: {baseType.GetGenericTypeDefinition()} ({jsTypeAttr})");
+    }
+
     void Awake()
     {
-        testTypeByRef(GetType().GetMethod("testTypeByRefMethod"));
-        testConstant(GetType().GetField("constant"));
-        testConstant(GetType().GetField("constantInt"));
-        testConstant(GetType().GetField("constantSingle"));
-        testPointer(typeof(long*));
-        testPointer(typeof(IntPtr));
-        testInnerType(typeof(InnerType));
-        testVarargs(null);
-        testEmptyArray();
-        testTypes();
-        testDelegates();
-        testGenericTypes();
+        // testTypeByRef(GetType().GetMethod("testTypeByRefMethod"));
+        // testConstant(GetType().GetField("constant"));
+        // testConstant(GetType().GetField("constantInt"));
+        // testConstant(GetType().GetField("constantSingle"));
+        // testPointer(typeof(long*));
+        // testPointer(typeof(IntPtr));
+        // testInnerType(typeof(InnerType));
+        // testVarargs(null);
+        // testEmptyArray();
+        // testTypes();
+        // testDelegates();
+        // testGenericTypes();
+        testConcreteSubType();
     }
 }
