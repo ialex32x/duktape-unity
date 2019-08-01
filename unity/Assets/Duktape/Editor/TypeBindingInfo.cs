@@ -522,6 +522,11 @@ namespace Duktape
                     bindingManager.Info("skip pointer field: {0}", field.Name);
                     continue;
                 }
+                if (field.IsDefined(typeof(JSOmitAttribute), false))
+                {
+                    bindingManager.Info("skip omitted field: {0}", field.Name);
+                    continue;
+                }
                 if (field.IsDefined(typeof(ObsoleteAttribute), false))
                 {
                     bindingManager.Info("skip obsolete field: {0}", field.Name);
@@ -552,6 +557,11 @@ namespace Duktape
                     bindingManager.Info("skip obsolete event: {0}", evt.Name);
                     continue;
                 }
+                if (evt.IsDefined(typeof(JSOmitAttribute), false))
+                {
+                    bindingManager.Info("skip omitted event: {0}", evt.Name);
+                    continue;
+                }
                 if (transform != null && transform.IsMemberBlocked(evt.Name))
                 {
                     bindingManager.Info("skip blocked event: {0}", evt.Name);
@@ -570,6 +580,11 @@ namespace Duktape
                 if (property.PropertyType.IsPointer)
                 {
                     bindingManager.Info("skip pointer property: {0}", property.Name);
+                    continue;
+                }
+                if (property.IsDefined(typeof(JSOmitAttribute), false))
+                {
+                    bindingManager.Info("skip omitted property: {0}", property.Name);
                     continue;
                 }
                 if (property.IsDefined(typeof(ObsoleteAttribute), false))
@@ -613,6 +628,11 @@ namespace Duktape
                 var constructors = type.GetConstructors();
                 foreach (var constructor in constructors)
                 {
+                    if (constructor.IsDefined(typeof(JSOmitAttribute), false))
+                    {
+                        bindingManager.Info("skip omitted constructor: {0}", constructor);
+                        continue;
+                    }
                     if (constructor.IsDefined(typeof(ObsoleteAttribute), false))
                     {
                         bindingManager.Info("skip obsolete constructor: {0}", constructor);
@@ -642,6 +662,11 @@ namespace Duktape
                 if (method.IsSpecialName)
                 {
                     bindingManager.Info("skip special method: {0}", method);
+                    continue;
+                }
+                if (method.IsDefined(typeof(JSOmitAttribute), false))
+                {
+                    bindingManager.Info("skip omitted method: {0}", method);
                     continue;
                 }
                 if (method.IsDefined(typeof(ObsoleteAttribute), false))
