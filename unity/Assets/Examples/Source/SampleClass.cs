@@ -10,6 +10,22 @@ public enum SampleEnum
     a, b, c
 }
 
+// 泛型类本身不能导出
+// 但 从泛型类具体化继承的类 导出时将据此判断是否自动导出 具体化的泛型类
+[Duktape.JSType]
+public class GB<T>
+{
+    public void Foo(T t)
+    {
+        Debug.Log($"{t.GetType()}: {t.ToString()}");
+    }
+}
+
+[Duktape.JSType]
+public class StringGB : GB<string>
+{
+}
+
 namespace SampleNamespace
 {
     [Duktape.JSType]

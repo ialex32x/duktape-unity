@@ -351,6 +351,16 @@ namespace Duktape
                 var typeBindingInfo = new TypeBindingInfo(this, type);
                 exportedTypes.Add(type, typeBindingInfo);
                 log.AppendLine($"AddExportedType: {type} Assembly: {type.Assembly}");
+
+                // 检查具体化泛型基类 (如果基类泛型定义在显式导出清单中, 那么导出此具体化类)
+                var baseType = type.BaseType;
+                if (baseType != null && baseType.IsConstructedGenericType)
+                {
+                    if (!IsExportingBlocked(baseType) && IsExportingExplicit(baseType.GetGenericTypeDefinition()))
+                    {
+                        AddExportedType(baseType);
+                    }
+                }
             }
             return TransformType(type);
         }
@@ -785,7 +795,7 @@ namespace Duktape
             {
                 return true;
             }
-            if (type.IsGenericType)
+            if (type.IsGenericType && !type.IsConstructedGenericType)
             {
                 return true;
             }
