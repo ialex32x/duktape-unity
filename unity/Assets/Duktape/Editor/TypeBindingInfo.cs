@@ -265,7 +265,6 @@ namespace Duktape
     {
         public string adderName = null; // 绑定代码名
         public string removerName = null;
-        public string setterName = null;
         public string regName = null; // js 注册名
 
         public Type declaringType;
@@ -283,13 +282,11 @@ namespace Duktape
                 {
                     this.adderName = "BindStaticAdd_" + eventInfo.Name;
                     this.removerName = "BindStaticRemove_" + eventInfo.Name;
-                    this.setterName = "BindStaticSet_" + eventInfo.Name;
                 }
                 else
                 {
                     this.adderName = "BindAdd_" + eventInfo.Name;
                     this.removerName = "BindRemove_" + eventInfo.Name;
-                    this.setterName = "BindSet_" + eventInfo.Name;
                 }
             } while (false);
             this.regName = TypeBindingInfo.GetNamingAttribute(eventInfo);

@@ -495,7 +495,7 @@ namespace Duktape
                 foreach (var eventBindingInfo in eventBindingInfos)
                 {
                     var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
-                    cg.cs.AppendLine($"duk_add_event(ctx, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName}, {eventBindingInfo.setterName}, -1);");
+                    cg.cs.AppendLine($"duk_add_event(ctx, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName}, -1);");
                 }
                 this.cg.cs.AppendLine("DuktapeDLL.duk_pop(ctx);");
             }

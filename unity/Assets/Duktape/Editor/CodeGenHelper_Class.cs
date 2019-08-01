@@ -245,18 +245,6 @@ namespace Duktape
                         }
                     }
                 }
-                using (new PInvokeGuardCodeGen(cg))
-                {
-                    using (new BindingFuncDeclareCodeGen(cg, eventBindingInfo.setterName))
-                    {
-                        using (new TryCatchGuradCodeGen(cg))
-                        {
-                            using (new EventSetterCodeGen(cg, eventBindingInfo))
-                            {
-                            }
-                        }
-                    }
-                }
             }
         }
 
@@ -385,7 +373,7 @@ namespace Duktape
                             if (bStatic)
                             {
                                 tsFieldPrefix += "static ";
-                                cg.cs.AppendLine($"duk_add_event(ctx, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName}, {eventBindingInfo.setterName}, -2);");
+                                cg.cs.AppendLine($"duk_add_event(ctx, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName}, -2);");
                             }
                             cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: DuktapeJS.event<{tsFieldType}>");
                         }

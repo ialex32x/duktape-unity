@@ -212,16 +212,16 @@ namespace Duktape
             duk_add_property(ctx, name, getter, setter, idx);
         }
 
-        protected static void duk_add_event(IntPtr ctx, string name, DuktapeDLL.duk_c_function add_op, DuktapeDLL.duk_c_function remove_op, DuktapeDLL.duk_c_function set_op, int idx)
+        protected static void duk_add_event(IntPtr ctx, string name, DuktapeDLL.duk_c_function add_op, DuktapeDLL.duk_c_function remove_op, int idx)
         {
             idx = DuktapeDLL.duk_normalize_index(ctx, idx);
             DuktapeDLL.duk_push_object(ctx);
+            DuktapeDLL.duk_dup(ctx, idx);
+            DuktapeDLL.duk_put_prop_string(ctx, -2, DuktapeVM.EVENT_PROP_THIS);
             DuktapeDLL.duk_push_c_function(ctx, add_op, 1);
             DuktapeDLL.duk_put_prop_string(ctx, -2, "on");
             DuktapeDLL.duk_push_c_function(ctx, remove_op, 1);
             DuktapeDLL.duk_put_prop_string(ctx, -2, "off");
-            DuktapeDLL.duk_push_c_function(ctx, set_op, 1);
-            DuktapeDLL.duk_put_prop_string(ctx, -2, "set");
             DuktapeDLL.duk_put_prop_string(ctx, idx, name);
         }
 

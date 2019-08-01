@@ -19,6 +19,8 @@ namespace Duktape
         // duktape-unity 版本, 生成规则发生无法兼容的改变时增加版本号
         public const int VERSION = 0x10001;
         public const string HEAP_STASH_PROPS_REGISTRY = "registry";
+        // duk_add_event 生成的 object 中存储 this 的属性名
+        public static readonly string EVENT_PROP_THIS = DuktapeDLL.DUK_HIDDEN_SYMBOL("this");
         // 在jsobject实例上记录关联的本地对象 object cache refid
         public static readonly string OBJ_PROP_NATIVE = DuktapeDLL.DUK_HIDDEN_SYMBOL("1");
         public static readonly string OBJ_PROP_NATIVE_WEAK = DuktapeDLL.DUK_HIDDEN_SYMBOL("2");
