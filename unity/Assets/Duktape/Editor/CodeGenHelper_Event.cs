@@ -63,4 +63,35 @@ namespace Duktape
         {
         }
     }
+
+    public class EventSetterCodeGen : IDisposable
+    {
+        protected CodeGenerator cg;
+        protected EventBindingInfo bindingInfo;
+
+        public EventSetterCodeGen(CodeGenerator cg, EventBindingInfo bindingInfo)
+        {
+            this.cg = cg;
+            this.bindingInfo = bindingInfo;
+
+            //TODO: 没完成
+            // var caller = this.cg.AppendGetThisCS(bindingInfo);
+            // var eventInfo = bindingInfo.eventInfo;
+            // var declaringType = bindingInfo.declaringType;
+            // this.cg.cs.AppendLine("{0} value;", this.cg.bindingManager.GetCSTypeFullName(eventInfo.EventHandlerType));
+            // this.cg.cs.AppendLine("{0}(ctx, 0, out value);", this.cg.bindingManager.GetDuktapeGetter(eventInfo.EventHandlerType));
+            // this.cg.cs.AppendLine("{0}.{1} = value;", caller, eventInfo.Name);
+            // if (declaringType.IsValueType && !bindingInfo.isStatic)
+            // {
+            //     // 非静态结构体字段修改, 尝试替换实例
+            //     this.cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
+            // }
+            this.cg.cs.AppendLine("//TODO: 没完成");
+            this.cg.cs.AppendLine("return 0;");
+        }
+
+        public virtual void Dispose()
+        {
+        }
+    }
 }

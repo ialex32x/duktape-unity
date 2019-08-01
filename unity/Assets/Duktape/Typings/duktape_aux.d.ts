@@ -80,6 +80,12 @@ declare namespace DuktapeJS {
     const COMPLETE: string
     const ERROR: string
 
+    interface event<T> {
+        on(fn: T): void
+        off(fn: T): void
+        set(fn: T): void
+    }
+
     /**
      * 封装 C# ref 传参约定
      */
