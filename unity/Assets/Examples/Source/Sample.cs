@@ -8,7 +8,6 @@ public class Sample : MonoBehaviour, IDuktapeListener
 {
     public string launchScript = "code.js";
     public bool experimentalDebugger = false;
-    public bool sourceMap = false;
 
     private bool _loaded;
     DuktapeVM vm = new DuktapeVM();
@@ -94,7 +93,6 @@ public class Sample : MonoBehaviour, IDuktapeListener
 
     void Awake()
     {
-        SourceMapHelper.Enable(sourceMap);
         vm.Initialize(new FakeFileSystem(), this);
     }
 

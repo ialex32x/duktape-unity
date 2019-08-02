@@ -13,9 +13,9 @@ namespace Duktape
     {
     }
 
-    [AttributeUsage(AttributeTargets.Class | 
+    [AttributeUsage(AttributeTargets.Class |
                     AttributeTargets.Struct |
-                    AttributeTargets.Interface | 
+                    AttributeTargets.Interface |
                     AttributeTargets.Field |
                     AttributeTargets.Method |
                     AttributeTargets.Event |
@@ -121,5 +121,11 @@ namespace Duktape
         {
             this.lines = lines;
         }
+    }
+
+    // DuktapeVM 启动时 (仅编辑器环境生效)
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    public class JSAutoRunAttribute : Attribute
+    {
     }
 }

@@ -7,17 +7,14 @@ using System.Collections.Generic;
 namespace Duktape
 {
     using UnityEngine;
-    using UnityEditor;
 
-#if UNITY_EDITOR
     using SourcePosition = SourcemapToolkit.SourcemapParser.SourcePosition;
     using SourceMap = SourcemapToolkit.SourcemapParser.SourceMap;
     using SourceMapParser = SourcemapToolkit.SourcemapParser.SourceMapParser;
-#endif
 
+    [JSAutoRun]
     public static class SourceMapHelper
     {
-#if UNITY_EDITOR
         [Serializable]
         public class TSConfig
         {
@@ -98,7 +95,7 @@ namespace Duktape
                             {
                                 funcName = "anonymous";
                             }
-                            return $"typescript:{funcName}() (at {resolvedOriginal}:{entryPos.ZeroBasedLineNumber})\n";
+                            return $"typescript:{funcName}() (at {resolvedOriginal}:{entryPos.ZeroBasedLineNumber + 1})\n";
                         }
                     }
                 }
@@ -157,7 +154,7 @@ namespace Duktape
             return outstr.ToString();
         }
 
-        public static void Enable(bool enabled = true)
+        public static void Run()
         {
             if (File.Exists("tsconfig.json"))
             {
@@ -165,25 +162,13 @@ namespace Duktape
                 var tsconfig = JsonUtility.FromJson<TSConfig>(text);
 
                 _sourceRoot = tsconfig.compilerOptions.sourceRoot;
-                if (enabled)
-                {
-                    DuktapeAux.duk_source_position = duk_source_position;
-                }
-                else
-                {
-                    DuktapeAux.duk_source_position = null;
-                }
+                DuktapeAux.duk_source_position = duk_source_position;
+                Debug.Log($"[SourceMapHelper] enabled {_sourceRoot}");
             }
             else
             {
                 Debug.LogWarning("no tsconfig.json found");
             }
         }
-#else
-        public static void Enable(bool enabled = true)
-        {
-            // editor only
-        }
-#endif
     }
 }
