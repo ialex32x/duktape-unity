@@ -3,10 +3,13 @@ using UnityEngine;
 
 namespace Duktape
 {
+    public delegate string duk_source_position_cb(IntPtr ctx, string funcName, string fileName, int lineNumber);
+
     // 基础环境
     public static partial class DuktapeAux
     {
         public static bool printStacktrace = false;
+        public static duk_source_position_cb duk_source_position = default_duk_source_position;
 
         public static Type GetType(string name)
         {
@@ -112,18 +115,7 @@ namespace Duktape
                         DuktapeDLL.duk_get_prop_string(ctx, -2, "fileName");
                         var fileName = DuktapeDLL.duk_safe_to_string(ctx, -1);
                         DuktapeDLL.duk_pop_n(ctx, 4);
-                        if (lineNumber != 0)
-                        {
-                            if (string.IsNullOrEmpty(funcName))
-                            {
-                                funcName = "[anonymous]";
-                            }
-                            stacktrace += $"{funcName} ({fileName}:{lineNumber})\n";
-                        }
-                        else
-                        {
-                            stacktrace += $"{funcName} (<native code>)\n";
-                        }
+                        stacktrace += (duk_source_position ?? default_duk_source_position)(ctx, funcName, fileName, lineNumber);
                     }
                     else
                     {
@@ -135,6 +127,19 @@ namespace Duktape
             }
             Debug.Log(str);
             return 0;
+        }
+
+        public static string default_duk_source_position(IntPtr ctx, string funcName, string fileName, int lineNumber)
+        {
+            if (lineNumber != 0)
+            {
+                if (string.IsNullOrEmpty(funcName))
+                {
+                    funcName = "[anonymous]";
+                }
+                return $"{funcName} ({fileName}:{lineNumber})\n";
+            }
+            return $"{funcName} (<native code>)\n";
         }
 
         [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
