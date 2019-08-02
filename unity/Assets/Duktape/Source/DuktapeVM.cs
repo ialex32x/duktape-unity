@@ -335,6 +335,28 @@ namespace Duktape
             for (int i = 0, size = exportedTypes.Length; i < size; i++)
             {
                 var type = exportedTypes[i];
+#if UNITY_EDITOR
+                if (type.IsDefined(typeof(JSAutoRunAttribute), false))
+                {
+                    try
+                    {
+                        var run = type.GetMethod("Run", BindingFlags.Static | BindingFlags.Public);
+                        if (run != null)
+                        {
+                            run.Invoke(null, null);
+                        }
+                        else
+                        {
+                            Debug.LogError("???");
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        Debug.LogWarning(exception);
+                    }
+                    continue;
+                }
+#endif
                 var attributes = type.GetCustomAttributes(typeof(JSBindingAttribute), false);
                 if (attributes.Length == 1)
                 {
