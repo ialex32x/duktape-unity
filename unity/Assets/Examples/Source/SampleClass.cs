@@ -92,6 +92,16 @@ namespace SampleNamespace
             return ret;
         }
 
+        public static byte[] GetBytes()
+        {
+            return System.Text.Encoding.UTF8.GetBytes("hello");
+        }
+
+        public static string InputBytes(byte[] bytes)
+        {
+            return System.Text.Encoding.UTF8.GetString(bytes);
+        }
+
         [JSType]
         public class SampleInnerClass
         {

@@ -496,6 +496,10 @@ namespace Duktape
             }
             if (type.IsArray)
             {
+                if (type.GetElementType() == typeof(byte))
+                {
+                    return "Buffer";
+                }
                 var elementType = type.GetElementType();
                 return GetTSTypeFullName(elementType) + "[]";
             }
