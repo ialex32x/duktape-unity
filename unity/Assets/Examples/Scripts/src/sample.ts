@@ -194,4 +194,12 @@ function sample() {
             buttonui.onClick.AddListener(delegate)
         }
     })();
+
+    (function () {
+        console.log("[Buffer] tests");
+        let buffer = SampleNamespace.SampleClass.GetBytes();
+        console.log(buffer);
+        let str = SampleNamespace.SampleClass.InputBytes(buffer);
+        console.log(str);
+    })();
 }

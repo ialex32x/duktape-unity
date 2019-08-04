@@ -267,6 +267,13 @@ function sample() {
             buttonui.onClick.AddListener(delegate);
         }
     })();
+    (function () {
+        console.log("[Buffer] tests");
+        var buffer = SampleNamespace.SampleClass.GetBytes();
+        console.log(buffer);
+        var str = SampleNamespace.SampleClass.InputBytes(buffer);
+        console.log(str);
+    })();
 }
 /*
 class ContentType {

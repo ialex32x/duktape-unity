@@ -490,7 +490,7 @@ namespace Duktape
             }
             if (eventBindingInfos.Count > 0)
             {
-                Debug.Log($"Writing instance events... {bindingInfo.type}");
+                // Debug.Log($"Writing instance events... {bindingInfo.type}");
                 this.cg.cs.AppendLine("DuktapeDLL.duk_push_this(ctx);");
                 foreach (var eventBindingInfo in eventBindingInfos)
                 {

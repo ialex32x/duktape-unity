@@ -135,6 +135,15 @@ namespace Duktape
             duk_push_object(ctx, (object)o);
         }
 
+        public static void duk_push_any(IntPtr ctx, byte[] o)
+        {
+            var mem_ptr = DuktapeDLL.duk_push_fixed_buffer(ctx, (uint)o.Length);
+            if (mem_ptr != IntPtr.Zero)
+            {
+                System.Runtime.InteropServices.Marshal.Copy(o, 0, mem_ptr, o.Length);
+            }
+        }
+
         public static void duk_push_any(IntPtr ctx, Array o)
         {
             duk_push_any(ctx, (object)o);
