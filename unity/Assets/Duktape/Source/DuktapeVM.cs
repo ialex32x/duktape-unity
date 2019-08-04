@@ -497,7 +497,7 @@ namespace Duktape
             var err = DuktapeDLL.duk_module_node_peval_main(ctx, filename);
             // var err = DuktapeDLL.duk_peval(ctx);
             // var err = DuktapeDLL.duk_peval_string_noresult(ctx, source);
-            Debug.Log($"load main module: {filename} ({resolvedPath})");
+            // Debug.Log($"load main module: {filename} ({resolvedPath})");
             if (err != 0)
             {
                 DuktapeAux.PrintError(ctx, -1, filename);
