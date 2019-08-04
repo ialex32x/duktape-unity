@@ -215,9 +215,13 @@ namespace Duktape
         protected static void duk_add_event(IntPtr ctx, string name, DuktapeDLL.duk_c_function add_op, DuktapeDLL.duk_c_function remove_op, int idx)
         {
             idx = DuktapeDLL.duk_normalize_index(ctx, idx);
+            
+            DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE); // 直接在 event object 上复制主对象的引用id
+            var refid = DuktapeDLL.duk_get_int(ctx, -1);
+            DuktapeDLL.duk_pop(ctx);
+
             DuktapeDLL.duk_push_object(ctx);
-            DuktapeDLL.duk_dup(ctx, idx);
-            DuktapeDLL.duk_put_prop_string(ctx, -2, DuktapeVM.EVENT_PROP_THIS);
+            DuktapeDLL.duk_unity_set_prop_i(ctx, -1, DuktapeVM.OBJ_PROP_NATIVE, refid);
             DuktapeDLL.duk_push_c_function(ctx, add_op, 1);
             DuktapeDLL.duk_put_prop_string(ctx, -2, "on");
             DuktapeDLL.duk_push_c_function(ctx, remove_op, 1);
@@ -228,11 +232,15 @@ namespace Duktape
         protected static void duk_add_event_instanced(IntPtr ctx, string name, DuktapeDLL.duk_c_function add_op, DuktapeDLL.duk_c_function remove_op, int idx)
         {
             idx = DuktapeDLL.duk_normalize_index(ctx, idx);
+
+            DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE); // 直接在 event object 上复制主对象的引用id
+            var refid = DuktapeDLL.duk_get_int(ctx, -1);
+            DuktapeDLL.duk_pop(ctx);
+
             DuktapeDLL.duk_push_object(ctx); // [evtobj]
+            DuktapeDLL.duk_unity_set_prop_i(ctx, -1, DuktapeVM.OBJ_PROP_NATIVE, refid); 
             DuktapeDLL.duk_push_string(ctx, name); // [evtobj, name]
             DuktapeDLL.duk_dup(ctx, -2); // [evtobj, name, evtobj]
-            DuktapeDLL.duk_dup(ctx, idx); // [evtobj, name, evtobj, instance]
-            DuktapeDLL.duk_put_prop_string(ctx, -2, DuktapeVM.EVENT_PROP_THIS); // [evtobj, name, evtobj]
             DuktapeDLL.duk_push_c_function(ctx, add_op, 1);
             DuktapeDLL.duk_put_prop_string(ctx, -2, "on");
             DuktapeDLL.duk_push_c_function(ctx, remove_op, 1);
