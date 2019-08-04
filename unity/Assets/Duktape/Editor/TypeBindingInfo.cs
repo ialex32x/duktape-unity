@@ -265,6 +265,7 @@ namespace Duktape
     {
         public string adderName = null; // 绑定代码名
         public string removerName = null;
+        public string proxyName = null; // 非静态event需要一个property.getter在实例上创建一个event object实例
         public string regName = null; // js 注册名
 
         public Type declaringType;
@@ -287,6 +288,7 @@ namespace Duktape
                 {
                     this.adderName = "BindAdd_" + eventInfo.Name;
                     this.removerName = "BindRemove_" + eventInfo.Name;
+                    this.proxyName = "BindProxy_" + eventInfo.Name;
                 }
             } while (false);
             this.regName = TypeBindingInfo.GetNamingAttribute(eventInfo);

@@ -463,7 +463,7 @@ namespace Duktape
         public ConstructorCodeGen(CodeGenerator cg, TypeBindingInfo bindingInfo)
         : base(cg)
         {
-            WriteInstanceEvents(bindingInfo);
+            // WriteInstanceEvents(bindingInfo);
             this.bindingInfo = bindingInfo.constructors;
             if (this.bindingInfo.count > 0)
             {
@@ -476,30 +476,30 @@ namespace Duktape
             }
         }
 
-        private void WriteInstanceEvents(TypeBindingInfo bindingInfo)
-        {
-            var eventBindingInfos = new List<EventBindingInfo>();
-            foreach (var kv in bindingInfo.events)
-            {
-                var eventBindingInfo = kv.Value;
-                var bStatic = eventBindingInfo.isStatic;
-                if (!bStatic)
-                {
-                    eventBindingInfos.Add(eventBindingInfo);
-                }
-            }
-            if (eventBindingInfos.Count > 0)
-            {
-                // Debug.Log($"Writing instance events... {bindingInfo.type}");
-                this.cg.cs.AppendLine("DuktapeDLL.duk_push_this(ctx);");
-                foreach (var eventBindingInfo in eventBindingInfos)
-                {
-                    var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
-                    cg.cs.AppendLine($"duk_add_event(ctx, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName}, -1);");
-                }
-                this.cg.cs.AppendLine("DuktapeDLL.duk_pop(ctx);");
-            }
-        }
+        // private void WriteInstanceEvents(TypeBindingInfo bindingInfo)
+        // {
+        //     var eventBindingInfos = new List<EventBindingInfo>();
+        //     foreach (var kv in bindingInfo.events)
+        //     {
+        //         var eventBindingInfo = kv.Value;
+        //         var bStatic = eventBindingInfo.isStatic;
+        //         if (!bStatic)
+        //         {
+        //             eventBindingInfos.Add(eventBindingInfo);
+        //         }
+        //     }
+        //     if (eventBindingInfos.Count > 0)
+        //     {
+        //         // Debug.Log($"Writing instance events... {bindingInfo.type}");
+        //         this.cg.cs.AppendLine("DuktapeDLL.duk_push_this(ctx);");
+        //         foreach (var eventBindingInfo in eventBindingInfos)
+        //         {
+        //             var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
+        //             cg.cs.AppendLine($"duk_add_event(ctx, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName}, -1);");
+        //         }
+        //         this.cg.cs.AppendLine("DuktapeDLL.duk_pop(ctx);");
+        //     }
+        // }
 
         // 写入默认构造函数 (struct 无参构造)
         private void WriteDefaultConstructorBinding()

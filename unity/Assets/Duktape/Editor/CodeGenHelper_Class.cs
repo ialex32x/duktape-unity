@@ -245,6 +245,21 @@ namespace Duktape
                         }
                     }
                 }
+                if (!eventBindingInfo.isStatic)
+                {
+                    using (new PInvokeGuardCodeGen(cg))
+                    {
+                        using (new BindingFuncDeclareCodeGen(cg, eventBindingInfo.proxyName))
+                        {
+                            using (new TryCatchGuradCodeGen(cg))
+                            {
+                                using (new EventProxyCodeGen(cg, eventBindingInfo))
+                                {
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -374,6 +389,10 @@ namespace Duktape
                             {
                                 tsFieldPrefix += "static ";
                                 cg.cs.AppendLine($"duk_add_event(ctx, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName}, -2);");
+                            }
+                            else
+                            {
+                                cg.cs.AppendLine($"duk_add_property(ctx, \"{tsFieldVar}\", {eventBindingInfo.proxyName}, null, -1);");
                             }
                             cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: DuktapeJS.event<{tsFieldType}>");
                         }
