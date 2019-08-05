@@ -66,10 +66,28 @@ namespace Duktape
                     DuktapeDLL.duk_pop(ctx);
                 }
             }
-            // else
-            // {
-            //     Debug.LogWarning($"no such member {name}");
-            // }
+        }
+
+        public void InvokeMember(string name, float arg0)
+        {
+            var member = GetMember(name);
+            if (member != null)
+            {
+                var ctx = member.context.rawValue;
+                if (ctx != IntPtr.Zero)
+                {
+                    member.Push(ctx);
+                    this.Push(ctx);
+                    DuktapeDLL.duk_push_number(ctx, arg0);
+                    var ret = DuktapeDLL.duk_pcall_method(ctx, 1);
+                    if (ret != DuktapeDLL.DUK_EXEC_SUCCESS)
+                    {
+                        DuktapeAux.PrintError(ctx, -1);
+                        // throw new Exception(err); 
+                    }
+                    DuktapeDLL.duk_pop(ctx);
+                }
+            }
         }
 
         protected override void Dispose(bool bManaged)

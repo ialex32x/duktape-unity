@@ -16,25 +16,26 @@ namespace Duktape
         public void SetBridge(DuktapeObject obj)
         {
             _instance = obj;
-            _instance.SetProperty(_instance.ctx, "gameObject", gameObject);
-            _instance.SetProperty(_instance.ctx, "transform", transform);
             _instance.InvokeMember("Awake");
             if (enabled)
             {
                 _instance.InvokeMember("OnEnable");
             }
-            if (_instance.GetMember("Update") != null)
+        }
+
+        void Update()
+        {
+            if (_instance != null)
             {
-                StartCoroutine(_Update());
+                _instance.InvokeMember("Update", Time.deltaTime);
             }
         }
 
-        IEnumerator _Update()
+        void LateUpdate()
         {
-            while (true)
+            if (_instance != null)
             {
-                _instance.InvokeMember("Update");
-                yield return null;
+                _instance.InvokeMember("LateUpdate");
             }
         }
 
@@ -59,6 +60,30 @@ namespace Duktape
             if (_instance != null)
             {
                 _instance.InvokeMember("OnDisable");
+            }
+        }
+
+        void OnApplicationFocus()
+        {
+            if (_instance != null)
+            {
+                _instance.InvokeMember("OnApplicationFocus");
+            }
+        }
+
+        void OnApplicationPause()
+        {
+            if (_instance != null)
+            {
+                _instance.InvokeMember("OnApplicationPause");
+            }
+        }
+
+        void OnApplicationQuit()
+        {
+            if (_instance != null)
+            {
+                _instance.InvokeMember("OnApplicationQuit");
             }
         }
 

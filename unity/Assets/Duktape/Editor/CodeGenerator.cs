@@ -249,9 +249,8 @@ namespace Duktape
                 caller = "self";
                 this.cs.AppendLine($"{this.bindingManager.GetCSTypeFullName(declaringType)} {caller};");
                 this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
-                this.cs.AppendLine($"DuktapeDLL.duk_get_prop_string(ctx, -1, DuktapeVM.EVENT_PROP_THIS);");
                 this.cs.AppendLine($"{this.bindingManager.GetDuktapeGetter(declaringType)}(ctx, -1, out {caller});");
-                this.cs.AppendLine($"DuktapeDLL.duk_pop_2(ctx);");
+                this.cs.AppendLine($"DuktapeDLL.duk_pop(ctx);");
             }
             return caller;
         }
