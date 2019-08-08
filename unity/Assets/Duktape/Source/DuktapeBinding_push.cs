@@ -135,6 +135,16 @@ namespace Duktape
             duk_push_object(ctx, (object)o);
         }
 
+        public static void duk_push_any(IntPtr ctx, TrackedReference o)
+        {
+            if (o == null)
+            {
+                DuktapeDLL.duk_push_null(ctx);
+                return;
+            }
+            duk_push_object(ctx, (object)o);
+        }
+
         public static void duk_push_any(IntPtr ctx, byte[] o)
         {
             var mem_ptr = DuktapeDLL.duk_push_fixed_buffer(ctx, (uint)o.Length);
