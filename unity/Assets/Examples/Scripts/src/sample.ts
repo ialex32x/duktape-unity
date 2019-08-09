@@ -202,4 +202,10 @@ function sample() {
         let str = SampleNamespace.SampleClass.InputBytes(buffer);
         console.log(str);
     })();
+
+    // (function () {
+    //     console.log("[error] tests");
+    //     let u = null;
+    //     console.log(u.value);
+    // })();
 }
