@@ -62,7 +62,7 @@ namespace Duktape
                             var parser = new SourceMapParser();
                             var reader = new StreamReader(stream);
                             sourceMap = parser.ParseSourceMap(reader);
-                            Debug.Log($"[SourceMapHelper] parse sourceMap: {sourceMap.File} ({resolvedPath})");
+                            // Debug.Log($"[SourceMapHelper] parse sourceMap: {sourceMap.File} ({resolvedPath})");
                         }
                     }
                 }
@@ -163,7 +163,7 @@ namespace Duktape
 
                 _sourceRoot = tsconfig.compilerOptions.sourceRoot;
                 DuktapeAux.duk_source_position = duk_source_position;
-                Debug.Log($"[SourceMapHelper] enabled {_sourceRoot}");
+                // Debug.Log($"[SourceMapHelper] enabled {_sourceRoot}");
             }
             else
             {
