@@ -9,6 +9,8 @@ namespace Duktape
     // 基础环境
     public static partial class DuktapeAux
     {
+        // 用于提取 error.stack 中的 stacktrace 信息
+        private static Regex _stRegex;
         public static bool printStacktrace = false;
         public static duk_source_position_cb duk_source_position = default_duk_source_position;
 
@@ -45,11 +47,14 @@ namespace Duktape
             {
                 var errlines = err.Split('\n');
                 err = "";
-                var reg = new Regex(@"^\s+at\s(.+)\s\((.+\.js):(\d+)\)(.*)$", RegexOptions.Compiled);
+                if (_stRegex == null)
+                {
+                    _stRegex = new Regex(@"^\s+at\s(.+)\s\((.+\.js):(\d+)\)(.*)$", RegexOptions.Compiled);
+                }
                 for (var i = 0; i < errlines.Length; i++)
                 {
                     var line = errlines[i];
-                    var matches = reg.Matches(line);
+                    var matches = _stRegex.Matches(line);
                     if (matches.Count == 1)
                     {
                         var match = matches[0];
