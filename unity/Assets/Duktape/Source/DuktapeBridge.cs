@@ -13,7 +13,7 @@ namespace Duktape
     {
         private DuktapeObject _instance;
 
-        public void SetBridge(DuktapeObject obj)
+        public DuktapeObject SetBridge(DuktapeObject obj)
         {
             _instance = obj;
             _instance.InvokeMember("Awake");
@@ -21,6 +21,7 @@ namespace Duktape
             {
                 _instance.InvokeMember("OnEnable");
             }
+            return obj;
         }
 
         void Update()

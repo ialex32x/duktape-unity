@@ -68,6 +68,9 @@ namespace Duktape
             }
         }
 
+        /// <summary>
+        /// 将自身压到栈上, 失败时不会压栈!!!
+        /// </summary>
         public bool Push(IntPtr ctx)
         {
             if (ctx != IntPtr.Zero)
@@ -83,7 +86,7 @@ namespace Duktape
             if (ctx != IntPtr.Zero)
             {
                 DuktapeDLL.duk_unity_getref(ctx, this._refid);
-                DuktapeBinding.duk_push_any(ctx, value);
+                DuktapeBinding.duk_push_classvalue(ctx, value);
                 DuktapeDLL.duk_put_prop_string(ctx, -2, name);
                 DuktapeDLL.duk_pop(ctx);
             }

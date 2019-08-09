@@ -618,7 +618,23 @@ namespace Duktape
             {
                 return "duk_push_delegate";
             }
-            return "duk_push_any";
+            if (type.IsValueType)
+            {
+                if (type.IsPrimitive)
+                {
+                    return "duk_push_primitive";
+                }
+                if (type.IsEnum)
+                {
+                    return "duk_push_enumvalue";
+                }
+                return "duk_push_structvalue";
+            }
+            if (type == typeof(string))
+            {
+                return "duk_push_primitive";
+            }
+            return "duk_push_classvalue";
         }
 
         public static string GetTSVariable(string name)

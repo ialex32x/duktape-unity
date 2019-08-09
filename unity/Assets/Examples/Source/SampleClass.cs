@@ -22,6 +22,20 @@ public class GB<T>
 }
 
 [Duktape.JSType]
+public class SomeImplicit
+{
+    public static SomeImplicit Accept(SomeImplicit si)
+    {
+        return si;
+    }
+
+    public static implicit operator int(SomeImplicit si)
+    {
+        return 123;
+    }
+}
+
+[Duktape.JSType]
 public class StringGB : GB<string>
 {
 }

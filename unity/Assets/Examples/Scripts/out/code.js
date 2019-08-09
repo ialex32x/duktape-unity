@@ -46,7 +46,10 @@ var MyCircleBridge = /** @class */ (function () {
 }());
 function circle() {
     var bridge = UnityEngine.Camera.main.gameObject.AddComponent(DuktapeJS.Bridge);
-    bridge.SetBridge(new MyCircleBridge());
+    var target = new MyCircleBridge();
+    target.gameObject = bridge.gameObject;
+    target.transform = bridge.transform;
+    bridge.SetBridge(target);
 }
 function fmathtest() {
     var f1 = FMath.from_int(2);
