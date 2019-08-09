@@ -29,7 +29,7 @@ namespace Duktape
                     if (DuktapeDLL.duk_is_number(ctx, 1) && duk_get_primitive(ctx, 1, out size))
                     {
                         var o = Array.CreateInstance(type, size);
-                        duk_push_any(ctx, (object)o);
+                        duk_push_classvalue(ctx, o);
                         return 1;
                     }
                     else
@@ -143,7 +143,7 @@ namespace Duktape
                     if (ctor.GetParameters().Length == 0)
                     {
                         var instance = ctor.Invoke(Type.EmptyTypes);
-                        duk_push_any(ctx, instance);
+                        duk_push_classvalue(ctx, instance);
                         return 1;
                     }
                 }
@@ -159,7 +159,7 @@ namespace Duktape
             //TODO: type 缓存
             //TODO: 从 jsobject hidden property 中读 refid
             var type = DuktapeAux.GetType(name);
-            duk_push_any(ctx, type);
+            duk_push_classvalue(ctx, type);
             return 1;
         }
 

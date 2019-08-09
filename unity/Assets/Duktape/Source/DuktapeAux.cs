@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace Duktape
@@ -40,6 +41,33 @@ namespace Duktape
                 err = DuktapeDLL.duk_safe_to_string(ctx, idx);
             }
 
+            if (duk_source_position != default_duk_source_position)
+            {
+                var errlines = err.Split('\n');
+                err = "";
+                var reg = new Regex(@"^\s+at\s(.+)\s\((.+\.js):(\d+)\)(.*)$", RegexOptions.Compiled);
+                for (var i = 0; i < errlines.Length; i++)
+                {
+                    var line = errlines[i];
+                    var matches = reg.Matches(line);
+                    if (matches.Count == 1)
+                    {
+                        var match = matches[0];
+                        if (match.Groups.Count >= 4)
+                        {
+                            var funcName = match.Groups[1].Value;
+                            var fileName = match.Groups[2].Value;
+                            var lineNumber = 0;
+                            int.TryParse(match.Groups[3].Value, out lineNumber);
+                            var extra = match.Groups.Count >= 5 ? match.Groups[4].Value : "";
+                            var sroucePosition = duk_source_position(ctx, funcName, fileName, lineNumber);
+                            err += $"    at {sroucePosition}{extra}\n";
+                            continue;
+                        }
+                    }
+                    err += line + "\n";
+                }
+            }
             if (filename != null)
             {
                 Debug.LogError($"[JSError][{filename}] {err}");
@@ -116,6 +144,7 @@ namespace Duktape
                         var fileName = DuktapeDLL.duk_safe_to_string(ctx, -1);
                         DuktapeDLL.duk_pop_n(ctx, 4);
                         stacktrace += (duk_source_position ?? default_duk_source_position)(ctx, funcName, fileName, lineNumber);
+                        stacktrace += "\n";
                     }
                     else
                     {
@@ -137,9 +166,9 @@ namespace Duktape
                 {
                     funcName = "[anonymous]";
                 }
-                return $"{funcName} ({fileName}:{lineNumber})\n";
+                return $"{funcName} ({fileName}:{lineNumber})";
             }
-            return $"{funcName} (<native code>)\n";
+            return $"{funcName} (<native code>)";
         }
 
         [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]

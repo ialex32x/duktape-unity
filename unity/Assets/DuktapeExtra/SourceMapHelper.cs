@@ -62,7 +62,7 @@ namespace Duktape
                             var parser = new SourceMapParser();
                             var reader = new StreamReader(stream);
                             sourceMap = parser.ParseSourceMap(reader);
-                            Debug.Log($"[SourceMapHelper] parse sourceMap: {sourceMap.File} ({resolvedPath})");
+                            // Debug.Log($"[SourceMapHelper] parse sourceMap: {sourceMap.File} ({resolvedPath})");
                         }
                     }
                 }
@@ -95,7 +95,7 @@ namespace Duktape
                             {
                                 funcName = "anonymous";
                             }
-                            return $"typescript:{funcName}() (at {resolvedOriginal}:{entryPos.ZeroBasedLineNumber + 1})\n";
+                            return $"typescript:{funcName}() (at {resolvedOriginal}:{entryPos.ZeroBasedLineNumber + 1})";
                         }
                     }
                 }
@@ -107,13 +107,13 @@ namespace Duktape
                 {
                     funcName = "[anonymous]";
                 }
-                return $"{funcName} ({fileName}:{lineNumber})\n";
+                return $"{funcName} ({fileName}:{lineNumber})";
             }
             if (string.IsNullOrEmpty(funcName))
             {
                 funcName = "[anonymous]";
             }
-            return $"{funcName} (<native code>)\n";
+            return $"{funcName} (<native code>)";
         }
 
         // 剔除行注释
@@ -163,7 +163,7 @@ namespace Duktape
 
                 _sourceRoot = tsconfig.compilerOptions.sourceRoot;
                 DuktapeAux.duk_source_position = duk_source_position;
-                Debug.Log($"[SourceMapHelper] enabled {_sourceRoot}");
+                // Debug.Log($"[SourceMapHelper] enabled {_sourceRoot}");
             }
             else
             {

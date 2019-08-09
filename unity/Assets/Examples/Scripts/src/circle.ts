@@ -41,5 +41,8 @@ class MyCircleBridge {
 
 function circle() {
     let bridge = UnityEngine.Camera.main.gameObject.AddComponent(DuktapeJS.Bridge)
-    bridge.SetBridge(new MyCircleBridge())
+    let target = new MyCircleBridge();
+    target.gameObject = bridge.gameObject;
+    target.transform = bridge.transform;
+    bridge.SetBridge(target)
 }
