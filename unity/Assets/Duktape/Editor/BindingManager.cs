@@ -614,6 +614,10 @@ namespace Duktape
 
         public string GetDuktapePusher(Type type)
         {
+            if (type.IsByRef)
+            {
+                return GetDuktapePusher(type.GetElementType());
+            }
             if (type.BaseType == typeof(MulticastDelegate))
             {
                 return "duk_push_delegate";
