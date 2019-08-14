@@ -200,12 +200,18 @@ namespace Duktape
 
             {
                 duk_begin_namespace(ctx, "console");
-                DuktapeDLL.duk_push_c_function(ctx, DuktapeAux.duk_print, DuktapeDLL.DUK_VARARGS);
+                DuktapeDLL.duk_push_c_function(ctx, DuktapeAux.duk_print_log, DuktapeDLL.DUK_VARARGS);
                 DuktapeDLL.duk_put_prop_string(ctx, -2, "log");
-                DuktapeDLL.duk_push_c_function(ctx, DuktapeAux.duk_print, DuktapeDLL.DUK_VARARGS);
+                DuktapeDLL.duk_push_c_function(ctx, DuktapeAux.duk_print_log, DuktapeDLL.DUK_VARARGS);
+                DuktapeDLL.duk_put_prop_string(ctx, -2, "info");
+                DuktapeDLL.duk_push_c_function(ctx, DuktapeAux.duk_print_log, DuktapeDLL.DUK_VARARGS);
+                DuktapeDLL.duk_put_prop_string(ctx, -2, "debug");
+                DuktapeDLL.duk_push_c_function(ctx, DuktapeAux.duk_print_warn, DuktapeDLL.DUK_VARARGS);
                 DuktapeDLL.duk_put_prop_string(ctx, -2, "warn");
-                DuktapeDLL.duk_push_c_function(ctx, DuktapeAux.duk_print, DuktapeDLL.DUK_VARARGS);
+                DuktapeDLL.duk_push_c_function(ctx, DuktapeAux.duk_print_err, DuktapeDLL.DUK_VARARGS);
                 DuktapeDLL.duk_put_prop_string(ctx, -2, "error");
+                DuktapeDLL.duk_push_c_function(ctx, DuktapeAux.duk_assert, DuktapeDLL.DUK_VARARGS);
+                DuktapeDLL.duk_put_prop_string(ctx, -2, "assert");
                 duk_end_namespace(ctx);
             }
 
