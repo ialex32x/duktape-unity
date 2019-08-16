@@ -672,7 +672,13 @@ namespace Duktape
         public static extern duk_bool_t duk_get_boolean(IntPtr ctx, duk_idx_t idx);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_get_boolean_default(IntPtr ctx, duk_idx_t idx, duk_bool_t def_value);
+
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_double_t duk_get_number(IntPtr ctx, duk_idx_t idx);
+
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_double_t duk_get_number_default(IntPtr ctx, duk_idx_t idx, duk_double_t def_value);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_int_t duk_get_int(IntPtr ctx, duk_idx_t idx);

@@ -33,7 +33,7 @@ namespace Duktape
 
         public static DuktapeVM GetVM(IntPtr ctx)
         {
-            return DuktapeVM.GetContext(ctx)._vm;
+            return DuktapeVM.GetContext(ctx)?._vm;
         }
 
         // 获取全局函数并调用 (do not cache it)

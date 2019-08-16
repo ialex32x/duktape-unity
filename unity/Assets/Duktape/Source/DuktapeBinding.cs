@@ -15,7 +15,7 @@ namespace Duktape
             if (DuktapeDLL.duk_get_prop_string(ctx, 0, DuktapeVM.OBJ_PROP_NATIVE))
             {
                 var id = DuktapeDLL.duk_get_int(ctx, -1);
-                DuktapeVM.GetObjectCache(ctx).RemoveObject(id);
+                DuktapeVM.GetObjectCache(ctx)?.RemoveObject(id);
             }
             DuktapeDLL.duk_pop(ctx); // pop native 
             return 0;

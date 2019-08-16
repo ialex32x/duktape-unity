@@ -116,7 +116,7 @@ namespace Duktape
 
         public static ObjectCache GetObjectCache(IntPtr ctx)
         {
-            return DuktapeContext.GetVM(ctx)._objectCache;
+            return DuktapeContext.GetVM(ctx)?._objectCache;
         }
 
         public void AddSearchPath(string path)
@@ -514,6 +514,10 @@ namespace Duktape
                 var ctx = _ctx.rawValue;
                 _ctx.onDestroy();
                 _ctx = null;
+                _lastContextPtr = IntPtr.Zero;
+                _lastContext = null;
+                _contexts.Clear();
+                _objectCache.Clear();
                 DuktapeDLL.duk_destroy_heap(ctx);
                 // Debug.LogWarning("duk_destroy_heap");
             }

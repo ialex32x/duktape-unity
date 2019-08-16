@@ -86,7 +86,7 @@ namespace Duktape
         public static void duk_open(IntPtr ctx)
         {
             DuktapeDLL.duk_push_global_object(ctx);
-            DuktapeDLL.duk_push_c_function(ctx, duk_print, DuktapeDLL.DUK_VARARGS);
+            DuktapeDLL.duk_push_c_function(ctx, duk_print_log, DuktapeDLL.DUK_VARARGS);
             DuktapeDLL.duk_put_prop_string(ctx, -2, "print");
 
             DuktapeDLL.duk_push_c_function(ctx, duk_dofile, 1);
@@ -116,11 +116,46 @@ namespace Duktape
         }
 
         [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
-        public static int duk_print(IntPtr ctx)
+        public static int duk_print_log(IntPtr ctx)
+        {
+            Debug.Log(duk_print_string(ctx, 0, printStacktrace));
+            return 0;
+        }
+
+        [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+        public static int duk_print_warn(IntPtr ctx)
+        {
+            Debug.LogWarning(duk_print_string(ctx, 0, printStacktrace));
+            return 0;
+        }
+
+        [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+        public static int duk_print_err(IntPtr ctx)
+        {
+            Debug.LogError(duk_print_string(ctx, 0, printStacktrace));
+            return 0;
+        }
+
+        [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
+        public static int duk_assert(IntPtr ctx)
+        {
+            if (!DuktapeDLL.duk_get_boolean(ctx, 0))
+            {
+                var msg = string.Empty;
+                if (DuktapeDLL.duk_get_top(ctx) > 1)
+                {
+                    msg = duk_print_string(ctx, 1, false);
+                }
+                return DuktapeDLL.duk_generic_error(ctx, "assertion failed: " + msg);
+            }
+            return 0;
+        }
+
+        private static string duk_print_string(IntPtr ctx, int startIndex, bool withStacktrace)
         {
             var narg = DuktapeDLL.duk_get_top(ctx);
             var str = string.Empty;
-            for (int i = 0; i < narg; i++)
+            for (int i = startIndex; i < narg; i++)
             {
                 object o;
                 if (DuktapeBinding.duk_get_object(ctx, i, out o))
@@ -132,35 +167,39 @@ namespace Duktape
                     str += DuktapeDLL.duk_safe_to_string(ctx, i) + " ";
                 }
             }
-            if (printStacktrace)
+            if (withStacktrace)
             {
-                var stacktrace = "stacktrace:\n";
-                for (int i = -2; ; i--)
-                {
-                    DuktapeDLL.duk_inspect_callstack_entry(ctx, i);
-                    if (!DuktapeDLL.duk_is_undefined(ctx, -1))
-                    {
-                        DuktapeDLL.duk_get_prop_string(ctx, -1, "lineNumber");
-                        var lineNumber = DuktapeDLL.duk_to_int(ctx, -1);
-                        DuktapeDLL.duk_get_prop_string(ctx, -2, "function");
-                        DuktapeDLL.duk_get_prop_string(ctx, -1, "name");
-                        var funcName = DuktapeDLL.duk_safe_to_string(ctx, -1);
-                        DuktapeDLL.duk_get_prop_string(ctx, -2, "fileName");
-                        var fileName = DuktapeDLL.duk_safe_to_string(ctx, -1);
-                        DuktapeDLL.duk_pop_n(ctx, 4);
-                        stacktrace += (duk_source_position ?? default_duk_source_position)(ctx, funcName, fileName, lineNumber);
-                        stacktrace += "\n";
-                    }
-                    else
-                    {
-                        DuktapeDLL.duk_pop(ctx);
-                        break;
-                    }
-                }
-                str += $"\n{stacktrace}";
+                str += $"\n{duk_get_stacktrace(ctx)}";
             }
-            Debug.Log(str);
-            return 0;
+            return str;
+        }
+
+        private static string duk_get_stacktrace(IntPtr ctx)
+        {
+            var stacktrace = "stacktrace:\n";
+            for (int i = -2; ; i--)
+            {
+                DuktapeDLL.duk_inspect_callstack_entry(ctx, i);
+                if (!DuktapeDLL.duk_is_undefined(ctx, -1))
+                {
+                    DuktapeDLL.duk_get_prop_string(ctx, -1, "lineNumber");
+                    var lineNumber = DuktapeDLL.duk_to_int(ctx, -1);
+                    DuktapeDLL.duk_get_prop_string(ctx, -2, "function");
+                    DuktapeDLL.duk_get_prop_string(ctx, -1, "name");
+                    var funcName = DuktapeDLL.duk_safe_to_string(ctx, -1);
+                    DuktapeDLL.duk_get_prop_string(ctx, -2, "fileName");
+                    var fileName = DuktapeDLL.duk_safe_to_string(ctx, -1);
+                    DuktapeDLL.duk_pop_n(ctx, 4);
+                    stacktrace += (duk_source_position ?? default_duk_source_position)(ctx, funcName, fileName, lineNumber);
+                    stacktrace += "\n";
+                }
+                else
+                {
+                    DuktapeDLL.duk_pop(ctx);
+                    break;
+                }
+            }
+            return stacktrace;
         }
 
         public static string default_duk_source_position(IntPtr ctx, string funcName, string fileName, int lineNumber)
