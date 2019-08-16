@@ -28,6 +28,13 @@ namespace Duktape
         // host object => jsvalue heapptr (dangerous)
         private Dictionary<object, IntPtr> _rmap = new Dictionary<object, IntPtr>(EqualityComparer.Default);
 
+        public void Clear()
+        {
+            _index = 0;
+            _map.Clear();
+            _rmap.Clear();
+        }
+
         public void AddJSValue(object o, IntPtr heapptr)
         {
             if (o != null)
