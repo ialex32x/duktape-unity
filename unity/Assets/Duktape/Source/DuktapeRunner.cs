@@ -18,11 +18,11 @@ namespace Duktape
         {
             if (_runner == null)
             {
-                var go = new GameObject();
-                go.hideFlags = HideFlags.HideAndDontSave;
+                var go = new GameObject {hideFlags = HideFlags.HideAndDontSave};
                 GameObject.DontDestroyOnLoad(go);
                 _runner = go.AddComponent<DuktapeRunner>();
             }
+
             return _runner;
         }
 
@@ -35,7 +35,7 @@ namespace Duktape
 
         public static int SetTimeout(DuktapeFunction fn, double ms)
         {
-            return SetTimeout(fn, (float)ms);
+            return SetTimeout(fn, (float) ms);
         }
 
         public static int SetTimeout(DuktapeFunction fn, float ms)
@@ -47,7 +47,7 @@ namespace Duktape
 
         public static int SetInterval(DuktapeFunction fn, double ms)
         {
-            return SetInterval(fn, (float)ms);
+            return SetInterval(fn, (float) ms);
         }
 
         public static int SetInterval(DuktapeFunction fn, float ms)
@@ -97,6 +97,7 @@ namespace Duktape
                 StopCoroutine(coroutine);
                 return _timers.Remove(id);
             }
+
             return false;
         }
 

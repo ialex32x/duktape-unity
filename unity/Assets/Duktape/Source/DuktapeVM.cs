@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Reflection;
 using System.Collections.Generic;
 
@@ -314,24 +315,20 @@ namespace Duktape
             return 1;
         }
 
-        public void Initialize(IFileSystem fs, IDuktapeListener listener)
+        private IEnumerator _InitializeStep(IDuktapeListener listener, int step)
         {
-            this._fileManager = fs;
             var ctx = DuktapeDLL.duk_create_heap_default();
-            this._ctx = new DuktapeContext(this, ctx);
+            
+            _ctx = new DuktapeContext(this, ctx);
             DuktapeAux.duk_open(ctx);
             DuktapeVM.duk_open_module(ctx);
             DuktapeDLL.duk_unity_open(ctx);
-
             DuktapeDLL.duk_push_global_object(ctx);
             DuktapeJSBuiltins.reg(ctx);
-            if (listener != null)
-            {
-                listener.OnTypesBinding(this);
-            }
+            listener?.OnTypesBinding(this);
             var exportedTypes = this.GetType().Assembly.GetExportedTypes();
-            var ctx_t = new object[] { ctx };
-            var numRegInvoked = 0;
+            var bindingTypes = new List<Type>(exportedTypes.Length);
+            var ctxAsArgs = new object[] { ctx };
             for (int i = 0, size = exportedTypes.Length; i < size; i++)
             {
                 var type = exportedTypes[i];
@@ -345,14 +342,10 @@ namespace Duktape
                         {
                             run.Invoke(null, null);
                         }
-                        else
-                        {
-                            Debug.LogError("???");
-                        }
                     }
                     catch (Exception exception)
                     {
-                        Debug.LogWarning(exception);
+                        Debug.LogWarning($"JSAutoRun failed: {exception}");
                     }
                     continue;
                 }
@@ -363,12 +356,7 @@ namespace Duktape
                     var jsBinding = attributes[0] as JSBindingAttribute;
                     if (jsBinding.Version == 0 || jsBinding.Version == VERSION)
                     {
-                        var reg = type.GetMethod("reg");
-                        if (reg != null)
-                        {
-                            reg.Invoke(null, ctx_t);
-                            ++numRegInvoked;
-                        }
+                        bindingTypes.Add(type);
                     }
                     else
                     {
@@ -376,6 +364,26 @@ namespace Duktape
                         {
                             listener.OnBindingError(this, type);
                         }
+                    }
+                }
+            }
+
+            var numRegInvoked = bindingTypes.Count;
+            for (var i = 0; i < numRegInvoked; ++i)
+            {
+                var type = bindingTypes[i];
+                var reg = type.GetMethod("reg");
+                if (reg != null)
+                {
+                    reg.Invoke(null, ctxAsArgs);
+                    if (listener != null)
+                    {
+                        listener.OnProgress(this, i, numRegInvoked);
+                    }
+
+                    if (i % step == 0)
+                    {
+                        yield return null;
                     }
                 }
             }
@@ -418,6 +426,12 @@ namespace Duktape
             {
                 listener.OnLoaded(this);
             }
+        }
+
+        public void Initialize(IFileSystem fs, IDuktapeListener listener, int step = 30)
+        {
+            _fileManager = fs;
+            DuktapeRunner.GetRunner().StartCoroutine(_InitializeStep(listener, step));
         }
 
         // 将 type 的 prototype 压栈 （未导出则向父类追溯）
