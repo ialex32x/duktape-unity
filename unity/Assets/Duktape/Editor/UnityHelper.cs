@@ -106,98 +106,98 @@ namespace Duktape
             }
         }
 
-        public class TypeScriptPostProcessor : AssetPostprocessor
-        {
-            private static bool IsScriptSourceFile(string filename)
-            {
-                return filename.EndsWith(".ts") || filename.EndsWith(".js") || filename.EndsWith(".js.txt");
-            }
+        // public class TypeScriptPostProcessor : AssetPostprocessor
+        // {
+        //     private static bool IsScriptSourceFile(string filename)
+        //     {
+        //         return filename.EndsWith(".ts") || filename.EndsWith(".js") || filename.EndsWith(".js.txt");
+        //     }
 
-            private static bool CheckAssets(string outDir, string[] assetPaths)
-            {
-                foreach (var assetPath in assetPaths)
-                {
-                    if (outDir == null || !assetPath.StartsWith(outDir, StringComparison.OrdinalIgnoreCase)) // skip output files
-                    {
-                        if (IsScriptSourceFile(assetPath))
-                        {
-                            // Debug.Log(assetPath);
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }
+        //     private static bool CheckAssets(string outDir, string[] assetPaths)
+        //     {
+        //         foreach (var assetPath in assetPaths)
+        //         {
+        //             if (outDir == null || !assetPath.StartsWith(outDir, StringComparison.OrdinalIgnoreCase)) // skip output files
+        //             {
+        //                 if (IsScriptSourceFile(assetPath))
+        //                 {
+        //                     // Debug.Log(assetPath);
+        //                     return true;
+        //                 }
+        //             }
+        //         }
+        //         return false;
+        //     }
 
-            // 剔除行注释
-            private static string NormalizeJson(string json)
-            {
-                var outstr = new StringBuilder();
-                var state = 0;
-                for (int i = 0; i < json.Length; i++)
-                {
-                    if (state == 0)
-                    {
-                        if (json[i] == '/')
-                        {
-                            state = 1;
-                            continue;
-                        }
-                    }
-                    else if (state == 1)
-                    {
-                        if (json[i] == '/')
-                        {
-                            state = 2;
-                            continue;
-                        }
-                        state = 0;
-                        outstr.Append('/');
-                    }
-                    else if (state == 2)
-                    {
-                        if (json[i] != '\n')
-                        {
-                            continue;
-                        }
-                        state = 0;
-                    }
-                    outstr.Append(json[i]);
-                }
-                return outstr.ToString();
-            }
+        //     // 剔除行注释
+        //     private static string NormalizeJson(string json)
+        //     {
+        //         var outstr = new StringBuilder();
+        //         var state = 0;
+        //         for (int i = 0; i < json.Length; i++)
+        //         {
+        //             if (state == 0)
+        //             {
+        //                 if (json[i] == '/')
+        //                 {
+        //                     state = 1;
+        //                     continue;
+        //                 }
+        //             }
+        //             else if (state == 1)
+        //             {
+        //                 if (json[i] == '/')
+        //                 {
+        //                     state = 2;
+        //                     continue;
+        //                 }
+        //                 state = 0;
+        //                 outstr.Append('/');
+        //             }
+        //             else if (state == 2)
+        //             {
+        //                 if (json[i] != '\n')
+        //                 {
+        //                     continue;
+        //                 }
+        //                 state = 0;
+        //             }
+        //             outstr.Append(json[i]);
+        //         }
+        //         return outstr.ToString();
+        //     }
 
-            private static void OnPostprocessAllAssets(
-                string[] importedAssets,
-                string[] deletedAssets,
-                string[] movedAssets,
-                string[] movedFromAssetPaths)
-            {
-                // if (EditorApplication.isPlaying || EditorApplication.isPaused)
-                // {
-                //     return;
-                // }
-                // if (!File.Exists("tsconfig.json"))
-                // {
-                //     // no typescript context
-                //     return;
-                // }
-                // string outDir = null;
-                // try
-                // {
-                //     var text = NormalizeJson(File.ReadAllText("tsconfig.json"));
-                //     var tsconfig = JsonUtility.FromJson<TSConfig>(text);
-                //     outDir = tsconfig.compilerOptions.outDir;
-                // }
-                // catch (Exception exception) { Debug.LogWarning(exception); }
-                // if (CheckAssets(outDir, importedAssets) ||
-                //     CheckAssets(outDir, deletedAssets) ||
-                //     CheckAssets(outDir, movedAssets) ||
-                //     CheckAssets(outDir, movedFromAssetPaths))
-                // {
-                //     UnityHelper.CompileScripts();
-                // }
-            }
-        }
+        //     private static void OnPostprocessAllAssets(
+        //         string[] importedAssets,
+        //         string[] deletedAssets,
+        //         string[] movedAssets,
+        //         string[] movedFromAssetPaths)
+        //     {
+        //         // if (EditorApplication.isPlaying || EditorApplication.isPaused)
+        //         // {
+        //         //     return;
+        //         // }
+        //         // if (!File.Exists("tsconfig.json"))
+        //         // {
+        //         //     // no typescript context
+        //         //     return;
+        //         // }
+        //         // string outDir = null;
+        //         // try
+        //         // {
+        //         //     var text = NormalizeJson(File.ReadAllText("tsconfig.json"));
+        //         //     var tsconfig = JsonUtility.FromJson<TSConfig>(text);
+        //         //     outDir = tsconfig.compilerOptions.outDir;
+        //         // }
+        //         // catch (Exception exception) { Debug.LogWarning(exception); }
+        //         // if (CheckAssets(outDir, importedAssets) ||
+        //         //     CheckAssets(outDir, deletedAssets) ||
+        //         //     CheckAssets(outDir, movedAssets) ||
+        //         //     CheckAssets(outDir, movedFromAssetPaths))
+        //         // {
+        //         //     UnityHelper.CompileScripts();
+        //         // }
+        //     }
+        // }
     }
 }
