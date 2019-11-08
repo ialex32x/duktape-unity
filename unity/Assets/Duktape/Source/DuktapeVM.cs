@@ -318,7 +318,7 @@ namespace Duktape
         private IEnumerator _InitializeStep(IDuktapeListener listener, int step)
         {
             var ctx = DuktapeDLL.duk_create_heap_default();
-            
+
             _ctx = new DuktapeContext(this, ctx);
             DuktapeAux.duk_open(ctx);
             DuktapeVM.duk_open_module(ctx);
@@ -326,48 +326,63 @@ namespace Duktape
             DuktapeDLL.duk_push_global_object(ctx);
             DuktapeJSBuiltins.reg(ctx);
             listener?.OnTypesBinding(this);
-            var exportedTypes = this.GetType().Assembly.GetExportedTypes();
-            var bindingTypes = new List<Type>(exportedTypes.Length);
             var ctxAsArgs = new object[] { ctx };
-            for (int i = 0, size = exportedTypes.Length; i < size; i++)
+            var bindingTypes = new List<Type>();
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            for (int assemblyIndex = 0, assemblyCount = assemblies.Length; assemblyIndex < assemblyCount; assemblyIndex++)
             {
-                var type = exportedTypes[i];
+                var assembly = assemblies[assemblyIndex];
+                try
+                {
+                    if (assembly.IsDynamic)
+                    {
+                        continue;
+                    }
+                    var exportedTypes = assembly.GetExportedTypes();
+                    for (int i = 0, size = exportedTypes.Length; i < size; i++)
+                    {
+                        var type = exportedTypes[i];
 #if UNITY_EDITOR
-                if (type.IsDefined(typeof(JSAutoRunAttribute), false))
-                {
-                    try
-                    {
-                        var run = type.GetMethod("Run", BindingFlags.Static | BindingFlags.Public);
-                        if (run != null)
+                        if (type.IsDefined(typeof(JSAutoRunAttribute), false))
                         {
-                            run.Invoke(null, null);
+                            try
+                            {
+                                var run = type.GetMethod("Run", BindingFlags.Static | BindingFlags.Public);
+                                if (run != null)
+                                {
+                                    run.Invoke(null, null);
+                                }
+                            }
+                            catch (Exception exception)
+                            {
+                                Debug.LogWarning($"JSAutoRun failed: {exception}");
+                            }
+                            continue;
                         }
-                    }
-                    catch (Exception exception)
-                    {
-                        Debug.LogWarning($"JSAutoRun failed: {exception}");
-                    }
-                    continue;
-                }
 #endif
-                var attributes = type.GetCustomAttributes(typeof(JSBindingAttribute), false);
-                if (attributes.Length == 1)
-                {
-                    var jsBinding = attributes[0] as JSBindingAttribute;
-                    if (jsBinding.Version == 0 || jsBinding.Version == VERSION)
-                    {
-                        bindingTypes.Add(type);
-                    }
-                    else
-                    {
-                        if (listener != null)
+                        var attributes = type.GetCustomAttributes(typeof(JSBindingAttribute), false);
+                        if (attributes.Length == 1)
                         {
-                            listener.OnBindingError(this, type);
+                            var jsBinding = attributes[0] as JSBindingAttribute;
+                            if (jsBinding.Version == 0 || jsBinding.Version == VERSION)
+                            {
+                                bindingTypes.Add(type);
+                            }
+                            else
+                            {
+                                if (listener != null)
+                                {
+                                    listener.OnBindingError(this, type);
+                                }
+                            }
                         }
                     }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogErrorFormat("assembly: {0}, {1}", assembly, e);
                 }
             }
-
             var numRegInvoked = bindingTypes.Count;
             for (var i = 0; i < numRegInvoked; ++i)
             {

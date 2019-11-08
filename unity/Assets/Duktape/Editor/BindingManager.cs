@@ -1049,6 +1049,15 @@ namespace Duktape
             OnPreCollectAssemblies();
             AddAssemblies(false, prefs.explicitAssemblies.ToArray());
             AddAssemblies(true, prefs.implicitAssemblies.ToArray());
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            for (var i = 0; i < assemblies.Length; i++)
+            {
+                var assembly = assemblies[i];
+                if (!assembly.IsDynamic)
+                {
+                    AddAssemblies(false, assembly.FullName);
+                }
+            }
             OnPostCollectAssemblies();
 
             ExportAssemblies(_explicitAssemblies, false);
@@ -1075,11 +1084,25 @@ namespace Duktape
         {
             if (implicitExport)
             {
-                _implicitAssemblies.AddRange(assemblyNames);
+                for (var i = 0; i < assemblyNames.Length; i++)
+                {
+                    var assemblyName = assemblyNames[i];
+                    if (!_implicitAssemblies.Contains(assemblyName) && !_explicitAssemblies.Contains(assemblyName))
+                    {
+                        _implicitAssemblies.Add(assemblyName);
+                    }
+                }
             }
             else
             {
-                _explicitAssemblies.AddRange(assemblyNames);
+                for (var i = 0; i < assemblyNames.Length; i++)
+                {
+                    var assemblyName = assemblyNames[i];
+                    if (!_implicitAssemblies.Contains(assemblyName) && !_explicitAssemblies.Contains(assemblyName))
+                    {
+                        _explicitAssemblies.Add(assemblyName);
+                    }
+                }
             }
         }
 

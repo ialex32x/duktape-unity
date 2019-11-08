@@ -115,6 +115,7 @@ function sample() {
         go.name = "testing_cube"
         let hello = go.AddComponent(SampleNamespace.Hello)
         console.log("hello.name = ", hello.gameObject.name)
+        console.log("DuktapeJS.Bridge = ", DuktapeJS.Bridge)
         let bridge = go.AddComponent(DuktapeJS.Bridge)
 
         class MyBridge {
