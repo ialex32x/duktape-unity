@@ -50,28 +50,28 @@
             "showDebugVariables": false
         },
         {
-            "name": "Duk Attach (1)",
+            "name": "Duk Attach (js)",
             "type": "duk",
             "request": "attach",
-            "stopOnEntry": false,
+            "stopOnEntry": true,
             "address": "localhost",
             "port": 9091,
-            "localRoot": "${workspaceRoot}",
+            "localRoot": "${workspaceRoot}/Assets/Examples/Scripts/out",
             "sourceMaps": false,
-            "debugLog": true,
-            "outDir": "./Assets/Scripts/Generated" // /Assets/Scripts/Generated
+            "debugLog": true
         }, 
         {
-            "name"        : "Duk Attach (2)",
-            "type"        : "duk",
-            "request"     : "attach",
-            "stopOnEntry" : true,
-            "address"     : "localhost",
-            "port"        : 9091,
-            "localRoot"   : "${workspaceRoot}",
-            "sourceMaps"  : false,
-            "debugLog"    : true,
-            "outDir"      : null
+            "name": "Duk Attach (ts)",
+            "type": "duk",
+            "request": "attach",
+            "stopOnEntry": true,
+            "address": "localhost",
+            "port": 9091,
+            "localRoot": "${workspaceRoot}/Assets/Examples/Scripts/src",
+            "dukRemoteRoot": "Assets/Examples/Scripts/out",
+            "sourceMaps": true,
+            "debugLog": true, 
+            "outDir": "${workspaceRoot}/Assets/Examples/Scripts/out"
         }
     ]
 }
