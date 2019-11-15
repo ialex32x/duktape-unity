@@ -46,13 +46,9 @@ namespace Duktape
             return _instance;
         }
 
-        public static void Shutdown()
+        private static void OnDestroy()
         {
-            if (_instance != null)
-            {
-                _instance.Stop();
-                _instance = null;
-            }
+            _instance?.Stop();
         }
 
         private void Start(int port)
@@ -60,9 +56,10 @@ namespace Duktape
             Stop();
             _server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _server.Bind(new IPEndPoint(IPAddress.Any, port));
-            _server.Listen(1);
+            _server.Listen(8);
             _server.BeginAccept(_Accept, _server);
             _loop = DuktapeRunner.SetLoop(OnUpdate);
+            DuktapeRunner.onDestroy += OnDestroy;
         }
 
         private void _Accept(IAsyncResult ar)
@@ -70,13 +67,13 @@ namespace Duktape
             try
             {
                 var socket = _server.EndAccept(ar);
-                Debug.LogWarningFormat("accept: {0}", socket.RemoteEndPoint);
                 lock (_pending)
                 {
                     if (_pending.Count == 0)
                     {
                         socket.NoDelay = true;
                         _pending.Add(socket);
+                        Debug.LogWarningFormat("accept({0}): {1}", _pending.Count, socket.RemoteEndPoint);
                     }
                     else
                     {
@@ -127,7 +124,7 @@ namespace Duktape
             {
                 if (!_client.Connected || (_client.Poll(1000, SelectMode.SelectRead) && _client.Available == 0))
                 {
-                    Debug.LogError("dead");
+                    // Debug.LogError("dead");
                     _client.Close();
                     _client = null;
                 }
@@ -136,6 +133,11 @@ namespace Duktape
 
         private void DetachCurrent()
         {
+            if (_client != null)
+            {
+                _client.Close();
+                _client = null;
+            }
             DuktapeDLL.duk_unity_detach_debugger(_ctx, _debugger);
             _debugger = IntPtr.Zero;
         }
@@ -147,11 +149,6 @@ namespace Duktape
                 _pending.Clear();
             }
             DetachCurrent();
-            if (_client != null)
-            {
-                _client.Close();
-                _client = null;
-            }
             if (_server != null)
             {
                 _server.Close();
@@ -186,7 +183,11 @@ namespace Duktape
             catch (Exception exception)
             {
                 Debug.LogWarningFormat("debugger connection lost: {0}", exception);
-                _instance._client = null;
+                if (_instance != null && _instance._client != null)
+                {
+                    _instance._client.Close();
+                    _instance._client = null;
+                }
             }
             return 0;
         }
@@ -224,7 +225,7 @@ namespace Duktape
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_unity_debug_peek_function))]
         private static uint duk_unity_debug_peek_function(int udata)
         {
-            Debug.LogWarning("duk_unity_debug_peek_function");
+            // Debug.LogWarning("duk_unity_debug_peek_function");
             try
             {
                 if (_instance != null && _instance._client != null)
@@ -234,24 +235,24 @@ namespace Duktape
                         if (_instance._client.Poll(1000, SelectMode.SelectRead))
                         {
                             var n = _instance._client.Available;
-                            Debug.LogWarningFormat("peek available {0}", n);
+                            // Debug.LogWarningFormat("peek available {0}", n);
                             if (n > 0)
                             {
                                 return (uint)n;
                             }
-                            Debug.LogWarningFormat("remote closed");
+                            // Debug.LogWarningFormat("remote closed");
                         }
                         else if (_instance._client.Poll(1000, SelectMode.SelectError))
                         {
-                            Debug.LogWarningFormat("peek error");
+                            // Debug.LogWarningFormat("peek error");
                         }
                         else
                         {
-                            Debug.LogWarningFormat("no data");
+                            // Debug.LogWarningFormat("no data");
                             return 0;
                         }
                     }
-                    Debug.LogWarningFormat("closing");
+                    // Debug.LogWarningFormat("closing");
                     _instance._client.Close();
                     _instance._client = null;
                 }
@@ -259,7 +260,11 @@ namespace Duktape
             catch (Exception exception)
             {
                 Debug.LogWarningFormat("debugger connection lost: {0}", exception);
-                _instance._client = null;
+                if (_instance != null && _instance._client != null)
+                {
+                    _instance._client.Close();
+                    _instance._client = null;
+                }
             }
             return 0;
         }
@@ -277,14 +282,19 @@ namespace Duktape
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_unity_debug_request_function))]
         private static int duk_unity_debug_request_function(IntPtr ctx, int udata, int nvalues)
         {
-            Debug.LogWarningFormat("duk_unity_debug_request_function: {0}", nvalues);
+            // Debug.LogWarningFormat("duk_unity_debug_request_function: {0}", nvalues);
             return 0;
         }
 
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_unity_debug_detached_function))]
         private static void duk_unity_debug_detached_function(IntPtr ctx, int udata)
         {
-            Debug.LogWarningFormat("duk_unity_debug_detached_function");
+            // Debug.LogWarningFormat("duk_unity_debug_detached_function");
+            if (_instance != null && _instance._client != null)
+            {
+                _instance._client.Close();
+                _instance._client = null;
+            }
         }
     }
 }

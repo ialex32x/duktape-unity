@@ -99,7 +99,6 @@ public class Sample : MonoBehaviour, IDuktapeListener
 
     void OnDestroy()
     {
-        DuktapeDebugger.Shutdown();
         if (vm.context != null)
         {
             DuktapeDLL.duk_example_detach_debugger(vm.context.rawValue, IntPtr.Zero);

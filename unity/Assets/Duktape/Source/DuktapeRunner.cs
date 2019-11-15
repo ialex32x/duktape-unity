@@ -14,11 +14,28 @@ namespace Duktape
         private static int _id;
         private static Dictionary<int, Coroutine> _timers = new Dictionary<int, Coroutine>();
 
+        private static List<Action> _onDestroyCallbacks = new List<Action>();
+
+        public static event Action onDestroy
+        {
+            add
+            {
+                if (!_onDestroyCallbacks.Contains(value))
+                {
+                    _onDestroyCallbacks.Add(value);
+                }
+            }
+            remove
+            {
+                _onDestroyCallbacks.Remove(value);
+            }
+        }
+
         public static DuktapeRunner GetRunner()
         {
             if (_runner == null)
             {
-                var go = new GameObject {hideFlags = HideFlags.HideAndDontSave};
+                var go = new GameObject { hideFlags = HideFlags.HideAndDontSave };
                 GameObject.DontDestroyOnLoad(go);
                 _runner = go.AddComponent<DuktapeRunner>();
             }
@@ -35,7 +52,7 @@ namespace Duktape
 
         public static int SetTimeout(DuktapeFunction fn, double ms)
         {
-            return SetTimeout(fn, (float) ms);
+            return SetTimeout(fn, (float)ms);
         }
 
         public static int SetTimeout(DuktapeFunction fn, float ms)
@@ -47,7 +64,7 @@ namespace Duktape
 
         public static int SetInterval(DuktapeFunction fn, double ms)
         {
-            return SetInterval(fn, (float) ms);
+            return SetInterval(fn, (float)ms);
         }
 
         public static int SetInterval(DuktapeFunction fn, float ms)
@@ -135,6 +152,16 @@ namespace Duktape
             {
                 yield return wait;
                 fn();
+            }
+        }
+
+        private void OnDestroy()
+        {
+            var size = _onDestroyCallbacks.Count;
+            for (var i = 0; i < size; i++)
+            {
+                var cb = _onDestroyCallbacks[i];
+                cb();
             }
         }
     }
