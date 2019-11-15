@@ -41,7 +41,8 @@ public class Sample : MonoBehaviour, IDuktapeListener
         vm.AddSearchPath("Assets/Examples/Scripts/out");
         if (experimentalDebugger)
         {
-            DuktapeDLL.duk_example_attach_debugger(vm.context.rawValue);
+            // DuktapeDLL.duk_example_attach_debugger(vm.context.rawValue);
+            DuktapeDebugger.CreateDebugger(vm.ctx);
         }
         // vm.EvalFile("test.js");
         vm.EvalMain(launchScript);
@@ -98,7 +99,7 @@ public class Sample : MonoBehaviour, IDuktapeListener
 
     void OnDestroy()
     {
-        // DuktapeDebugger.Shutdown();
+        DuktapeDebugger.Shutdown();
         if (vm.context != null)
         {
             DuktapeDLL.duk_example_detach_debugger(vm.context.rawValue, IntPtr.Zero);

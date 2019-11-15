@@ -69,8 +69,7 @@ namespace Duktape
         {
             try
             {
-                var server = ar.AsyncState as Socket;
-                var socket = server.EndAccept(ar);
+                var socket = _server.EndAccept(ar);
                 Debug.LogWarningFormat("accept: {0}", socket.RemoteEndPoint);
                 lock (_pending)
                 {
@@ -84,7 +83,7 @@ namespace Duktape
                         socket.Close();
                     }
                 }
-                server.BeginAccept(_Accept, server);
+                _server.BeginAccept(_Accept, _server);
             }
             catch (Exception)
             {
