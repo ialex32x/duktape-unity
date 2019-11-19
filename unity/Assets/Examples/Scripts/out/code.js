@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -82,6 +82,7 @@ if (!window["__reloading"]) {
     enableStacktrace(true);
     console.log("hello, javascript! again!! (with stacktrace)");
     addSearchPath("Assets/Examples/Scripts/libs");
+    dofile("bluebird.core.js");
     dofile("protobuf-library.js");
     dofile("test.pb.js");
     sample();

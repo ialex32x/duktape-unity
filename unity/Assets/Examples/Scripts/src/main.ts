@@ -15,6 +15,7 @@ if (!window["__reloading"]) {
 
     addSearchPath("Assets/Examples/Scripts/libs");
 
+    dofile("bluebird.core.js");
     dofile("protobuf-library.js");
     dofile("test.pb.js");
 
