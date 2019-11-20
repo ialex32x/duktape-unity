@@ -82,12 +82,20 @@ if (!window["__reloading"]) {
     enableStacktrace(true);
     console.log("hello, javascript! again!! (with stacktrace)");
     addSearchPath("Assets/Examples/Scripts/libs");
-    dofile("bluebird.core.js");
+    window["Promise"] = require("bluebird.core.js");
     dofile("protobuf-library.js");
     dofile("test.pb.js");
     sample();
     circle();
     fmathtest();
+    new Promise(function (resolve) {
+        console.log("promise.resolve");
+        setTimeout(function () {
+            resolve(123);
+        }, 1000);
+    }).then(function (value) {
+        console.log("promise.then", value);
+    });
     new ut.ComponentSystem();
 }
 window["OnBeforeSourceReload"] = function () {

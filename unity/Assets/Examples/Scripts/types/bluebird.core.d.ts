@@ -1258,4 +1258,5 @@ declare namespace Bluebird {
   function setScheduler(scheduler: (callback: (...args: any[]) => void) => void): void;
 }
 
-export = Bluebird;
+// export = Bluebird;
+declare let Promise: typeof Bluebird;

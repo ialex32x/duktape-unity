@@ -15,13 +15,22 @@ if (!window["__reloading"]) {
 
     addSearchPath("Assets/Examples/Scripts/libs");
 
-    dofile("bluebird.core.js");
+    window["Promise"] = require("bluebird.core.js");
     dofile("protobuf-library.js");
     dofile("test.pb.js");
 
     sample();
     circle();
     fmathtest();
+
+    new Promise((resolve: (value: any) => void) => {
+        console.log("promise.resolve");
+        setTimeout(() => {
+            resolve(123);
+        }, 1000);
+    }).then((value: any) => {
+        console.log("promise.then", value);
+    });
 
     new ut.ComponentSystem();
 }
