@@ -109,7 +109,6 @@ public class Sample : MonoBehaviour, IDuktapeListener
 
     void OnDestroy()
     {
-        DuktapeDebugger.Shutdown();
         vm.Destroy();
         vm = null;
     }

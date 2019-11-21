@@ -37,7 +37,7 @@ namespace Duktape
         public const string SPECIAL_CSHARP = "CSharp";
 
         private static DuktapeVM _instance;
-        private int _updateTimer;
+        private uint _updateTimer;
         private DuktapeContext _ctx;
         private IFileSystem _fileManager;
         private ObjectCache _objectCache = new ObjectCache();
@@ -435,7 +435,7 @@ namespace Duktape
             DuktapeJSBuiltins.postreg(ctx);
             DuktapeDLL.duk_pop(ctx); // pop global 
 
-            _updateTimer = DuktapeRunner.SetInterval(this.OnUpdate, 100f);
+            _updateTimer = DuktapeRunner.SetInterval(this.OnUpdate, 100);
 
             if (listener != null)
             {

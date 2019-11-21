@@ -11,25 +11,10 @@ namespace Duktape
     public class DuktapeRunner : MonoBehaviour
     {
         private static DuktapeRunner _runner;
-        private static int _id;
-        private static Dictionary<int, Coroutine> _timers = new Dictionary<int, Coroutine>();
 
-        private static List<Action> _onDestroyCallbacks = new List<Action>();
+        private Dictionary<uint, Timer> _timers = new Dictionary<uint, Timer>();
 
-        public static event Action onDestroy
-        {
-            add
-            {
-                if (!_onDestroyCallbacks.Contains(value))
-                {
-                    _onDestroyCallbacks.Add(value);
-                }
-            }
-            remove
-            {
-                _onDestroyCallbacks.Remove(value);
-            }
-        }
+        private Scheduler _scheduler = new Scheduler();
 
         public static DuktapeRunner GetRunner()
         {
@@ -45,147 +30,73 @@ namespace Duktape
             return _runner;
         }
 
-        public static int SetLoop(Action fn)
+        public static uint SetTimeout(DuktapeFunction fn, int ms)
         {
             var runner = GetRunner();
             if (runner != null)
             {
-                var id = ++_id;
-                runner.AddLoop(id, fn);
-                return id;
+                var timer = runner._scheduler.CreateTimer(ms, fn, 1);
+                runner._timers.Add(timer.id, timer);
+                return timer.id;
             }
             return 0;
         }
 
-        public static int SetTimeout(DuktapeFunction fn, double ms)
-        {
-            return SetTimeout(fn, (float)ms);
-        }
-
-        public static int SetTimeout(DuktapeFunction fn, float ms)
+        public static uint SetInterval(DuktapeFunction fn, int ms)
         {
             var runner = GetRunner();
             if (runner != null)
             {
-                var id = ++_id;
-                runner.AddTimeout(id, fn, ms * 0.001f);
-                return id;
+                var timer = runner._scheduler.CreateTimer(ms, fn, -1);
+                runner._timers.Add(timer.id, timer);
+                return timer.id;
             }
             return 0;
         }
 
-        public static int SetInterval(DuktapeFunction fn, double ms)
-        {
-            return SetInterval(fn, (float)ms);
-        }
-
-        public static int SetInterval(DuktapeFunction fn, float ms)
+        public static uint SetInterval(Action fn, int ms)
         {
             var runner = GetRunner();
             if (runner != null)
             {
-                var id = ++_id;
-                runner.AddInterval(id, fn, ms * 0.001f);
-                return id;
+                var timer = runner._scheduler.CreateTimer(ms, new InvokableAction(fn), -1);
+                runner._timers.Add(timer.id, timer);
+                return timer.id;
             }
             return 0;
         }
 
-        public static int SetInterval(Action fn, float ms)
+        public static bool Clear(uint id)
         {
             var runner = GetRunner();
             if (runner != null)
             {
-                var id = ++_id;
-                runner.AddInterval(id, fn, ms * 0.001f);
-                return id;
+                Timer timer;
+                if (runner._timers.TryGetValue(id, out timer))
+                {
+                    timer.enabled = false;
+                    return true;
+                }
             }
-            return 0;
+            return false;
         }
 
-        public static bool Clear(int id)
+        private bool RemoveTimer(uint id)
         {
-            var runner = GetRunner();
-            return runner != null ? runner.RemoveTimer(id) : false;
-        }
-
-        private void AddTimeout(int id, DuktapeFunction fn, float seconds)
-        {
-            _timers[id] = StartCoroutine(_Timeout(id, fn, seconds));
-        }
-
-        private void AddInterval(int id, DuktapeFunction fn, float seconds)
-        {
-            _timers[id] = StartCoroutine(_Interval(id, fn, seconds));
-        }
-
-        private void AddInterval(int id, Action fn, float seconds)
-        {
-            _timers[id] = StartCoroutine(_Interval(id, fn, seconds));
-        }
-
-        private void AddLoop(int id, Action fn)
-        {
-            _timers[id] = StartCoroutine(_Loop(id, fn));
-        }
-
-        private bool RemoveTimer(int id)
-        {
-            Coroutine coroutine;
-            if (_timers.TryGetValue(id, out coroutine))
+            Timer timer;
+            if (_timers.TryGetValue(id, out timer))
             {
-                StopCoroutine(coroutine);
-                return _timers.Remove(id);
+                _timers.Remove(id);
+                timer.enabled = false;
+                return true;
             }
 
             return false;
         }
 
-        private IEnumerator _Loop(int id, Action fn)
+        private void Update()
         {
-            while (true)
-            {
-                yield return null;
-                fn();
-            }
-        }
-
-        private IEnumerator _Timeout(int id, DuktapeFunction fn, float seconds)
-        {
-            var wait = seconds > 0 ? new WaitForSeconds(seconds) : null;
-            yield return wait;
-            _timers.Remove(id);
-            fn.Invoke();
-        }
-
-        private IEnumerator _Interval(int id, DuktapeFunction fn, float seconds)
-        {
-            var wait = seconds > 0 ? new WaitForSeconds(seconds) : null;
-            while (true)
-            {
-                yield return wait;
-                fn.Invoke();
-            }
-        }
-
-        private IEnumerator _Interval(int id, Action fn, float seconds)
-        {
-            var wait = seconds > 0 ? new WaitForSeconds(seconds) : null;
-            while (true)
-            {
-                yield return wait;
-                fn();
-            }
-        }
-
-        private void OnDestroy()
-        {
-            var size = _onDestroyCallbacks.Count;
-            for (var i = 0; i < size; i++)
-            {
-                var cb = _onDestroyCallbacks[i];
-                cb();
-            }
+            _scheduler.Update((int)(Time.deltaTime * 1000f));
         }
     }
 }

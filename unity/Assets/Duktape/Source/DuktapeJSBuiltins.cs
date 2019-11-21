@@ -50,7 +50,7 @@ namespace Duktape
         {
             if (DuktapeDLL.duk_is_number(ctx, 0))
             {
-                var id = DuktapeDLL.duk_get_int(ctx, 0);
+                var id = DuktapeDLL.duk_get_uint(ctx, 0);
                 DuktapeDLL.duk_push_boolean(ctx, DuktapeRunner.Clear(id));
                 return 1;
             }
@@ -64,8 +64,8 @@ namespace Duktape
             var idx = _GetTimerFunction(ctx, out fn);
             if (idx < 0)
             {
-                var id = DuktapeRunner.SetInterval(fn, (float)DuktapeDLL.duk_get_number(ctx, 1));
-                DuktapeDLL.duk_push_int(ctx, id);
+                var id = DuktapeRunner.SetInterval(fn, DuktapeDLL.duk_get_int(ctx, 1));
+                DuktapeDLL.duk_push_uint(ctx, id);
                 return 1;
             }
             return DuktapeDLL.duk_generic_error(ctx, "invalid arg " + idx);
@@ -78,8 +78,8 @@ namespace Duktape
             var idx = _GetTimerFunction(ctx, out fn);
             if (idx < 0)
             {
-                var id = DuktapeRunner.SetTimeout(fn, (float)DuktapeDLL.duk_get_number(ctx, 1));
-                DuktapeDLL.duk_push_int(ctx, id);
+                var id = DuktapeRunner.SetTimeout(fn, DuktapeDLL.duk_get_int(ctx, 1));
+                DuktapeDLL.duk_push_uint(ctx, id);
                 return 1;
             }
             return DuktapeDLL.duk_generic_error(ctx, "invalid arg " + idx);

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Duktape
 {
-    public class DuktapeFunction : DuktapeValue
+    public class DuktapeFunction : DuktapeValue, Invokable
     {
         private DuktapeValue[] _argv;
 

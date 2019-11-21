@@ -149,7 +149,7 @@ namespace Duktape
         private bool _enabled;
         private int _repeat;
         private int _interval;
-        private Action<Timer> _fn;
+        private Invokable _fn;
 
         public string name;
 
@@ -180,13 +180,13 @@ namespace Duktape
             }
         }
 
-        public Action<Timer> callback
+        public Invokable callback
         {
             get { return _fn; }
             set { _fn = value; }
         }
 
-        public Timer(Scheduler scheduler, int interval, Action<Timer> fn, int repeat)
+        public Timer(Scheduler scheduler, int interval, Invokable fn, int repeat)
         {
             _id = ++_idgen;
             _scheduler = scheduler;
@@ -200,7 +200,7 @@ namespace Duktape
         {
             _handle = 0;
             --_repeat;
-            _fn(this);
+            _fn.Invoke();
             if (_repeat != 0 && _enabled)
             {
                 _handle = _scheduler.Add(_interval, OnTick);
@@ -305,7 +305,7 @@ namespace Duktape
             get { return _elapsed; }
         }
 
-        public Timer CreateTimer(int interval, Action<Timer> fn, int repeat)
+        public Timer CreateTimer(int interval, Invokable fn, int repeat)
         {
             if (_threadId != Thread.CurrentThread.ManagedThreadId)
             {

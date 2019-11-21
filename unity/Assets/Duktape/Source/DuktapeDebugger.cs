@@ -9,18 +9,15 @@ namespace Duktape
 {
     using UnityEngine;
 
-    public class DuktapeDebugger
+    public class DuktapeDebugger : MonoBehaviour
     {
         private static DuktapeDebugger _instance;
         private static byte[] _buffer;
         private DuktapeVM _vm;
-        private IntPtr _debugger;
-        private int _loop;
+        private IntPtr _debugger = IntPtr.Zero;
         private Socket _server;
         private Socket _client;
         private List<Socket> _pending = new List<Socket>();
-
-        private DuktapeDebugger() { }
 
         public static DuktapeDebugger CreateDebugger(DuktapeVM vm)
         {
@@ -38,12 +35,24 @@ namespace Duktape
             {
                 throw new Exception("debugger already exists");
             }
+            if (!Application.isPlaying)
+            {
+                throw new Exception();
+            }
+            var gameObject = new GameObject("_duktape_debugger");
+            _instance = gameObject.AddComponent<DuktapeDebugger>();
             _buffer = new byte[bufferSize];
-            _instance = new DuktapeDebugger();
             _instance._vm = vm;
-            _instance._debugger = IntPtr.Zero;
-            _instance.Start(port);
+            _instance.Serve(port);
             return _instance;
+        }
+
+        private void Awake()
+        {
+            if (_instance != null)
+            {
+                throw new Exception("debugger already exists");
+            }
         }
 
         public static void Shutdown()
@@ -51,20 +60,18 @@ namespace Duktape
             _instance?.Stop();
         }
 
-        private static void OnDestroy()
+        private void OnDestroy()
         {
-            _instance?.Stop();
+            Stop();
         }
 
-        private void Start(int port)
+        private void Serve(int port)
         {
             Stop();
             _server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _server.Bind(new IPEndPoint(IPAddress.Any, port));
             _server.Listen(8);
             _server.BeginAccept(_Accept, _server);
-            _loop = DuktapeRunner.SetLoop(OnUpdate);
-            DuktapeRunner.onDestroy += OnDestroy;
         }
 
         private void _Accept(IAsyncResult ar)
@@ -93,7 +100,7 @@ namespace Duktape
             }
         }
 
-        private void OnUpdate()
+        private void Update()
         {
             if (_client == null)
             {
@@ -162,8 +169,6 @@ namespace Duktape
                 _server.Close();
                 _server = null;
             }
-            DuktapeRunner.Clear(_loop);
-            _loop = 0;
         }
 
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_unity_debug_read_function))]
