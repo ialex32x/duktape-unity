@@ -35,19 +35,26 @@ namespace Duktape
         {
             if (_runner == null)
             {
-                var go = new GameObject { hideFlags = HideFlags.HideAndDontSave };
-                GameObject.DontDestroyOnLoad(go);
-                _runner = go.AddComponent<DuktapeRunner>();
+                if (Application.isPlaying)
+                {
+                    var go = new GameObject { hideFlags = HideFlags.HideAndDontSave };
+                    GameObject.DontDestroyOnLoad(go);
+                    _runner = go.AddComponent<DuktapeRunner>();
+                }
             }
-
             return _runner;
         }
 
         public static int SetLoop(Action fn)
         {
-            var id = ++_id;
-            GetRunner().AddLoop(id, fn);
-            return id;
+            var runner = GetRunner();
+            if (runner != null)
+            {
+                var id = ++_id;
+                runner.AddLoop(id, fn);
+                return id;
+            }
+            return 0;
         }
 
         public static int SetTimeout(DuktapeFunction fn, double ms)
@@ -57,9 +64,14 @@ namespace Duktape
 
         public static int SetTimeout(DuktapeFunction fn, float ms)
         {
-            var id = ++_id;
-            GetRunner().AddTimeout(id, fn, ms * 0.001f);
-            return id;
+            var runner = GetRunner();
+            if (runner != null)
+            {
+                var id = ++_id;
+                runner.AddTimeout(id, fn, ms * 0.001f);
+                return id;
+            }
+            return 0;
         }
 
         public static int SetInterval(DuktapeFunction fn, double ms)
@@ -69,21 +81,32 @@ namespace Duktape
 
         public static int SetInterval(DuktapeFunction fn, float ms)
         {
-            var id = ++_id;
-            GetRunner().AddInterval(id, fn, ms * 0.001f);
-            return id;
+            var runner = GetRunner();
+            if (runner != null)
+            {
+                var id = ++_id;
+                runner.AddInterval(id, fn, ms * 0.001f);
+                return id;
+            }
+            return 0;
         }
 
         public static int SetInterval(Action fn, float ms)
         {
-            var id = ++_id;
-            GetRunner().AddInterval(id, fn, ms * 0.001f);
-            return id;
+            var runner = GetRunner();
+            if (runner != null)
+            {
+                var id = ++_id;
+                runner.AddInterval(id, fn, ms * 0.001f);
+                return id;
+            }
+            return 0;
         }
 
         public static bool Clear(int id)
         {
-            return GetRunner().RemoveTimer(id);
+            var runner = GetRunner();
+            return runner != null ? runner.RemoveTimer(id) : false;
         }
 
         private void AddTimeout(int id, DuktapeFunction fn, float seconds)

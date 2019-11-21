@@ -93,7 +93,7 @@ namespace Duktape
 
         private static void OnPlayModeStateChanged(PlayModeStateChange playModeStateChange)
         {
-            if (playModeStateChange == PlayModeStateChange.ExitingPlayMode)
+            if (playModeStateChange == PlayModeStateChange.EnteredEditMode)
             {
                 EditorApplication.delayCall += () =>
                 {

@@ -13,7 +13,7 @@ namespace Duktape
     {
         private static DuktapeDebugger _instance;
         private static byte[] _buffer;
-        private IntPtr _ctx;
+        private DuktapeVM _vm;
         private IntPtr _debugger;
         private int _loop;
         private Socket _server;
@@ -22,17 +22,17 @@ namespace Duktape
 
         private DuktapeDebugger() { }
 
-        public static DuktapeDebugger CreateDebugger(IntPtr ctx)
+        public static DuktapeDebugger CreateDebugger(DuktapeVM vm)
         {
-            return CreateDebugger(ctx, 9091, 1024);
+            return CreateDebugger(vm, 9091, 1024);
         }
 
-        public static DuktapeDebugger CreateDebugger(IntPtr ctx, int port)
+        public static DuktapeDebugger CreateDebugger(DuktapeVM vm, int port)
         {
-            return CreateDebugger(ctx, port, 1024);
+            return CreateDebugger(vm, port, 1024);
         }
 
-        public static DuktapeDebugger CreateDebugger(IntPtr ctx, int port, int bufferSize)
+        public static DuktapeDebugger CreateDebugger(DuktapeVM vm, int port, int bufferSize)
         {
             if (_instance != null)
             {
@@ -40,10 +40,15 @@ namespace Duktape
             }
             _buffer = new byte[bufferSize];
             _instance = new DuktapeDebugger();
-            _instance._ctx = ctx;
+            _instance._vm = vm;
             _instance._debugger = IntPtr.Zero;
             _instance.Start(port);
             return _instance;
+        }
+
+        public static void Shutdown()
+        {
+            _instance?.Stop();
         }
 
         private static void OnDestroy()
@@ -103,7 +108,7 @@ namespace Duktape
                             DetachCurrent();
                             Debug.LogFormat("debugger connected: {0}", newClient.RemoteEndPoint);
                             _client = newClient;
-                            _debugger = DuktapeDLL.duk_unity_attach_debugger(_ctx,
+                            _debugger = DuktapeDLL.duk_unity_attach_debugger(_vm.ctx,
                                 duk_unity_debug_read_function,
                                 duk_unity_debug_write_function,
                                 duk_unity_debug_peek_function,
@@ -138,7 +143,10 @@ namespace Duktape
                 _client.Close();
                 _client = null;
             }
-            DuktapeDLL.duk_unity_detach_debugger(_ctx, _debugger);
+            if (_vm != null && _vm.ctx != IntPtr.Zero)
+            {
+                DuktapeDLL.duk_unity_detach_debugger(_vm.ctx, _debugger);
+            }
             _debugger = IntPtr.Zero;
         }
 

@@ -114,6 +114,13 @@ namespace Duktape
             this.cg.cs.AddTabLevel();
 
             this.cg.cs.AppendLine("var ctx = fn.ctx;");
+            this.cg.cs.AppendLine("if (ctx == IntPtr.Zero)");
+            this.cg.cs.AppendLine("{");
+            this.cg.cs.AddTabLevel();
+            this.cg.cs.AppendLine("throw new InvalidOperationException(\"duktape vm context has already been released.\");");
+            this.cg.cs.DecTabLevel();
+            this.cg.cs.AppendLine("}");
+
             if (nargs > 0)
             {
                 this.cg.cs.AppendLine("fn.BeginInvoke(ctx);");
