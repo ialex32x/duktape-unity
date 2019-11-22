@@ -15,9 +15,10 @@
 * 集成 websocket ([libwebsockets](https://github.com/warmcat/libwebsockets))
 * iOS (64bit, bitcode)
 * Android (v7a, v8a, x86)
-* 调试器支持 (vscode) (not implemented)
+* 调试器支持 (vscode) 
 * tcp (not implemented)
 * udp with kcp (not implemented)
+* 集成 promise (bluebird.js)
 
 您可以在项目中使用大部分纯js实现的的库, 比如 protobufjs.
 ![protobufjs](res/test_protobufjs.png)
@@ -224,6 +225,7 @@ VS Marketplace Link: https://marketplace.visualstudio.com/items?itemName=HaroldB
 * [libwebsockets](https://github.com/warmcat/libwebsockets)
 * [mbedtls](https://github.com/ARMmbed/mbedtls)
 * [libfixmath](https://github.com/PetteriAimonen/libfixmath)
+* [bluebird.js](https://github.com/petkaantonov/bluebird)
 
 # Misc.
 

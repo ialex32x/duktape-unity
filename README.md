@@ -17,9 +17,10 @@ Typescript is a preferred choice, it provides type checks.
 * websocket ([libwebsockets](https://github.com/warmcat/libwebsockets))
 * iOS (64bit, bitcode)
 * Android (v7a, v8a, x86)
-* live debugger (vscode) (not implemented)
+* live debugger (vscode)
 * tcp (not implemented)
 * udp with kcp (not implemented)
+* promise (bluebird.js)
 
 You can use lots of pure js libraries in your project, such as protobufjs.
 ![protobufjs](res/test_protobufjs.png)
@@ -207,6 +208,7 @@ Assets/Scenes/main.unity (Sample.cs) demonstrate the basic usage.<br/>
 * [libwebsockets](https://github.com/warmcat/libwebsockets)
 * [mbedtls](https://github.com/ARMmbed/mbedtls)
 * [libfixmath](https://github.com/PetteriAimonen/libfixmath)
+* [bluebird.js](https://github.com/petkaantonov/bluebird)
 
 # Misc.
 
