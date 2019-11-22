@@ -1,0 +1,402 @@
+<h1 id="defines">Header definitions</h1>
+
+<p>This section summarizes some commonly needed header definitions in
+<code>duktape.h</code>.  It is not exhaustive and the excerpts have been
+reorganized for readability.  Don't rely on specific define values, only
+the define names.  When in doubt, consult the header directly.</p>
+
+<h2>Duktape version</h2>
+
+<p>Duktape version is available through the <code>DUK_VERSION</code> define:</p>
+
+<table>
+<tr>
+<td><code>DUK_VERSION</code></td>
+<td>Numeric value <code>(major * 10000 + minor * 100 + patch)</code></td>
+</tr>
+</table>
+
+<p>For example, version 2.3.4 would have the value 20304.  The same value is
+available to ECMAScript code through <code>Duktape.version</code>.
+For pre-releases <code>DUK_VERSION</code> is one less than the actual
+release, e.g. 2.4.0 pre-release would be 20399.  See
+<a href="guide.html#versioning">Versioning</a>.</p>
+
+<h2>Git information</h2>
+
+<p>The following Git identifiers are available (all refer to the
+<a href="https://github.com/svaarala/duktape">Duktape GitHub repo</a>):</p>
+
+<table>
+<tr>
+<td><code>DUK_GIT_DESCRIBE</code></td>
+<td>Git describe string for the Duktape build.  For official releases this
+is just "v1.0.0" or similar, but for snapshot builds it provides useful
+version information, e.g. "v1.0.0-155-g5b7ef1f-dirty".</td>
+</tr>
+<tr>
+<td><code>DUK_GIT_COMMIT</code></td>
+<td>Exact commit hash where distributable was built from.</td>
+</tr>
+<tr>
+<td><code>DUK_GIT_BRANCH</code></td>
+<td>Branch where the distributable was built from.  This is useful to
+identify prototypes built from a development branch.</td>
+</tr>
+</table>
+
+<p>There are no equivalent defines in the ECMAScript environment.</p>
+
+<h2>Debug protocol version</h2>
+
+<p>Debug protocol version number:</p>
+<table>
+<tr>
+<td><code>DUK_DEBUG_PROTOCOL_VERSION</code></td>
+<td>Version number of the debug protocol (a single integer)</td>
+</tr>
+</table>
+
+<h2>Structs and typedefs</h2>
+<pre class="c-code">
+typedef struct duk_hthread duk_context;
+
+typedef duk_ret_t (*duk_c_function)(duk_context *ctx);
+typedef void *(*duk_alloc_function) (void *udata, duk_size_t size);
+typedef void *(*duk_realloc_function) (void *udata, void *ptr, duk_size_t size);
+typedef void (*duk_free_function) (void *udata, void *ptr);
+typedef void (*duk_fatal_function) (void *udata, const char *msg);
+typedef void (*duk_decode_char_function) (void *udata, duk_codepoint_t codepoint);
+typedef duk_codepoint_t (*duk_map_char_function) (void *udata, duk_codepoint_t codepoint);
+typedef duk_ret_t (*duk_safe_call_function) (duk_context *ctx, void *udata);
+typedef duk_size_t (*duk_debug_read_function) (void *udata, char *buffer, duk_size_t length);
+typedef duk_size_t (*duk_debug_write_function) (void *udata, const char *buffer, duk_size_t length);
+typedef duk_size_t (*duk_debug_peek_function) (void *udata);
+typedef void (*duk_debug_read_flush_function) (void *udata);
+typedef void (*duk_debug_write_flush_function) (void *udata);
+typedef void (*duk_debug_detached_function) (duk_context *ctx, void *udata);
+
+struct duk_memory_functions {
+        duk_alloc_function alloc_func;
+        duk_realloc_function realloc_func;
+        duk_free_function free_func;
+        void *udata;
+};
+typedef struct duk_memory_functions duk_memory_functions;
+
+struct duk_function_list_entry {
+	const char *key;
+	duk_c_function value;
+	duk_int_t nargs;
+};
+typedef struct duk_function_list_entry duk_function_list_entry;
+
+struct duk_number_list_entry {
+	const char *key;
+	duk_double_t value;
+};
+typedef struct duk_number_list_entry duk_number_list_entry;
+</pre>
+
+<h2>Error codes</h2>
+
+<p>Error codes used by e.g. duk_error():</p>
+
+<table>
+<tr>
+<td><code>DUK_ERR_NONE</code></td>
+<td>No error, e.g. from duk_get_error_code()</td>
+</tr>
+<tr>
+<td><code>DUK_ERR_ERROR</code></td>
+<td>Error</td>
+</tr>
+<tr>
+<td><code>DUK_ERR_EVAL_ERROR</code></td>
+<td>EvalError</td>
+</tr>
+<tr>
+<td><code>DUK_ERR_RANGE_ERROR</code></td>
+<td>RangeError</td>
+</tr>
+<tr>
+<td><code>DUK_ERR_REFERENCE_ERROR</code></td>
+<td>ReferenceError</td>
+</tr>
+<tr>
+<td><code>DUK_ERR_SYNTAX_ERROR</code></td>
+<td>SyntaxError</td>
+</tr>
+<tr>
+<td><code>DUK_ERR_TYPE_ERROR</code></td>
+<td>TypeError</td>
+</tr>
+<tr>
+<td><code>DUK_ERR_URI_ERROR</code></td>
+<td>URIError</td>
+</tr>
+</table>
+
+<h2>Return codes from Duktape/C functions</h2>
+
+<p>Shorthand return values for Duktape/C functions, e.g.
+<code>return DUK_RET_TYPE_ERROR</code> is similar to calling
+<code>duk_type_error()</code> but shorter:</p>
+
+<table>
+<tr>
+<td><code>DUK_RET_ERROR</code></td>
+<td>Similar to throwing with DUK_ERR_ERROR</td>
+</tr>
+<tr>
+<td><code>DUK_RET_EVAL_ERROR</code></td>
+<td>Similar to throwing with DUK_ERR_EVAL_ERROR</td>
+</tr>
+<tr>
+<td><code>DUK_RET_RANGE_ERROR</code></td>
+<td>Similar to throwing with DUK_ERR_RANGE_ERROR</td>
+</tr>
+<tr>
+<td><code>DUK_RET_REFERENCE_ERROR</code></td>
+<td>Similar to throwing with DUK_ERR_REFERENCE_ERROR</td>
+</tr>
+<tr>
+<td><code>DUK_RET_SYNTAX_ERROR</code></td>
+<td>Similar to throwing with DUK_ERR_SYNTAX_ERROR</td>
+</tr>
+<tr>
+<td><code>DUK_RET_TYPE_ERROR</code></td>
+<td>Similar to throwing with DUK_ERR_TYPE_ERROR</td>
+</tr>
+<tr>
+<td><code>DUK_RET_URI_ERROR</code></td>
+<td>Similar to throwing with DUK_ERR_URI_ERROR</td>
+</tr>
+</table>
+
+<h2>Return codes for protected calls</h2>
+
+<p>Return codes for protected calls (e.g. duk_safe_call(), duk_pcall()):</p>
+
+<table>
+<tr>
+<td><code>DUK_EXEC_SUCCESS</code></td>
+<td>Call finished without error</td>
+</tr>
+<tr>
+<td><code>DUK_EXEC_ERROR</code></td>
+<td>Call failed, error was caught</td>
+</tr>
+</table>
+
+<h2>Compilation flags for duk_compile()</h2>
+
+<p>Compilation flags for e.g. duk_compile() and duk_eval():</p>
+
+<table>
+<tr>
+<td><code>DUK_COMPILE_EVAL</code></td>
+<td>Compile eval code (instead of program)</td>
+</tr>
+<tr>
+<td><code>DUK_COMPILE_FUNCTION</code></td>
+<td>Compile function code (instead of program)</td>
+</tr>
+<tr>
+<td><code>DUK_COMPILE_STRICT</code></td>
+<td>Use strict (outer) context for program, eval, or function</td>
+</tr>
+</table>
+
+<h2>Flags for duk_def_prop()</h2>
+
+<p>Flags for duk_def_prop() and its variants:</p>
+
+<table>
+<tr>
+<td><code>DUK_DEFPROP_WRITABLE</code></td>
+<td>Set writable (effective if DUK_DEFPROP_HAVE_WRITABLE set)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_ENUMERABLE</code></td>
+<td>Set enumerable (effective if DUK_DEFPROP_HAVE_ENUMERABLE set)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_CONFIGURABLE</code></td>
+<td>Set configurable (effective if DUK_DEFPROP_HAVE_CONFIGURABLE set)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_HAVE_WRITABLE</code></td>
+<td>Set/clear writable</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_HAVE_ENUMERABLE</code></td>
+<td>Set/clear enumerable</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_HAVE_CONFIGURABLE</code></td>
+<td>Set/clear configurable</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_HAVE_VALUE</code></td>
+<td>Set value (given on value stack)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_HAVE_GETTER</code></td>
+<td>Set getter (given on value stack)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_HAVE_SETTER</code></td>
+<td>Set setter (given on value stack)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_FORCE</code></td>
+<td>Force change if possible, may still fail for e.g. virtual properties</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_SET_WRITABLE</code></td>
+<td>(DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_CLEAR_WRITABLE</code></td>
+<td>DUK_DEFPROP_HAVE_WRITABLE</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_SET_ENUMERABLE</code></td>
+<td>(DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_ENUMERABLE)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_CLEAR_ENUMERABLE</code></td>
+<td>DUK_DEFPROP_HAVE_ENUMERABLE</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_SET_CONFIGURABLE</code></td>
+<td>(DUK_DEFPROP_HAVE_CONFIGURABLE | DUK_DEFPROP_CONFIGURABLE)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_CLEAR_CONFIGURABLE</code></td>
+<td>DUK_DEFPROP_HAVE_CONFIGURABLE</td>
+</tr>
+</table>
+
+<p>Some convenience variants omitted, see
+<code><a href="#duk_def_prop">duk_def_prop()</a></code>.</p>
+
+<h2>Enumeration flags for duk_enum()</h2>
+
+<p>Enumeration flags for duk_enum():</p>
+
+<table>
+<tr>
+<td><code>DUK_ENUM_INCLUDE_NONENUMERABLE</code></td>
+<td>Enumerate non-numerable properties in addition to enumerable</td>
+</tr>
+<tr>
+<td><code>DUK_ENUM_INCLUDE_HIDDEN</code></td>
+<td>Enumerate hidden Symbols too (in Duktape 1.x called internal properties)</td>
+</tr>
+<tr>
+<td><code>DUK_ENUM_INCLUDE_SYMBOLS</code></td>
+<td>Enumerate Symbol keys (default is not to enumerate them)</td>
+</tr>
+<tr>
+<td><code>DUK_ENUM_EXCLUDE_STRINGS</code></td>
+<td>Do not enumerate string keys (default is to enumerate them)</td>
+</tr>
+<tr>
+<td><code>DUK_ENUM_OWN_PROPERTIES_ONLY</code></td>
+<td>Don't walk prototype chain, only check own properties</td>
+</tr>
+<tr>
+<td><code>DUK_ENUM_ARRAY_INDICES_ONLY</code></td>
+<td>Only enumerate array indices</td>
+</tr>
+<tr>
+<td><code>DUK_ENUM_SORT_ARRAY_INDICES</code></td>
+<td>Sort array indices (applied to full enumeration result, including inherited array indices)</td>
+</tr>
+<tr>
+<td><code>DUK_ENUM_NO_PROXY_BEHAVIOR</code></td>
+<td>Enumerate a proxy object itself without invoking proxy behavior</td>
+</tr>
+</table>
+
+<h2>Garbage collection flags for duk_gc()</h2>
+
+<p>Flags for duk_gc():</p>
+
+<table>
+<tr>
+<td><code>DUK_GC_COMPACT</code></td>
+<td>Compact heap objects</td>
+</tr>
+</table>
+
+<h2>Coercion hints</h2>
+
+<p>Coercion hints:</p>
+
+<table>
+<tr>
+<td><code>DUK_HINT_NONE</code></td>
+<td>Prefer number, unless coercion input is a Date, in which case prefer string (E5 Section 8.12.8)</td>
+</tr>
+<tr>
+<td><code>DUK_HINT_STRING</code></td>
+<td>Prefer string</td>
+</tr>
+<tr>
+<td><code>DUK_HINT_NUMBER</code></td>
+<td>Prefer number</td>
+</tr>
+</table>
+
+<h2>Symbol literal macros</h2>
+
+<p>The following macros are defined for creating internal Symbol representations
+as C literals.  All arguments must be string literals and cannot be computed
+values:</p>
+
+<table>
+<tr>
+<td><code>DUK_HIDDEN_SYMBOL(x)</code></td>
+<td>A C literal for a Duktape specific hidden Symbol</td>
+</tr>
+<tr>
+<td><code>DUK_GLOBAL_SYMBOL(x)</code></td>
+<td>A C literal for a global symbol, equivalent to <code>Symbol.for(x)</code></td>
+</tr>
+<tr>
+<td><code>DUK_LOCAL_SYMBOL(x,uniq)</code></td>
+<td>A C literal for a local symbol, equivalent to <code>Symbol(x)</code>,
+    unique part provided in 'uniq' must not conflict with Duktape internal
+    format, recommendation is to prefix the unique part with a "!"</td>
+</tr>
+<tr>
+<td><code>DUK_WELLKNOWN_SYMBOL(x)</code></td>
+<td>A C literal for a well-known symbol like <code>Symbol.iterator</code></td>
+</tr>
+<tr>
+<td><code>DUK_INTERNAL_SYMBOL(x)</code></td>
+<td>A C literal for a Duktape internal symbol; an application shouldn't
+    normally use this macro at all, it is reserved for Duktape internal
+    symbols only (with no versioning guarantees)</td>
+</tr>
+</table>
+
+<h2>Misc defines</h2>
+
+<table>
+<tr>
+<td><code>DUK_INVALID_INDEX</code></td>
+<td>Stack index is invalid, missing, or n/a</td>
+</tr>
+<tr>
+<td><code>DUK_VARARGS</code></td>
+<td>Function takes variable arguments</td>
+</tr>
+<tr>
+<td><code>DUK_API_ENTRY_STACK</code></td>
+<td>Number of value stack entries guaranteed to be reserved at function entry</td>
+</tr>
+</table>

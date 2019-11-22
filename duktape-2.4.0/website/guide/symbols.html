@@ -1,0 +1,69 @@
+<a name="internalproperties"></a>  <!-- legacy links -->
+<h1 id="symbols">Symbols</h1>
+
+<p>Duktape supports ES2015 Symbols and also provides a Duktape specific
+<b>hidden Symbol</b> variant similar to internal strings in Duktape 1.x.
+Hidden Symbols differ from ES2015 Symbols in that they're hidden from
+ordinary ECMAScript code: they can't be created from ECMAScript code,
+won't be enumerated or JSON-serialized, and won't be returned from
+<code>Object.getOwnPropertyNames()</code> or even
+<code>Object.getOwnPropertySymbols()</code>.  Properties with hidden Symbol
+keys can only be accessed by a direct property read/write when holding a
+reference to the hidden Symbol.</p>
+
+<p>Symbols of all kinds are represented internally using invalid UTF-8 byte
+sequences, see
+<a href="https://github.com/svaarala/duktape/blob/master/doc/symbols.rst">symbols.rst</a>
+for the current formats in use.  Application hidden Symbols begin with a 0xFF
+byte prefix and are followed by an arbitrary, application selected string.  When
+C code pushes a string using e.g. <code>duk_push_string()</code> and the byte
+sequence matches an internal Symbol format, the string value is automatically
+interpreted as a Symbol.</p>
+
+<p>Duktape also uses hidden Symbols for various implementation specific purposes,
+such as storing an object's finalizer reference.  As of Duktape 2.2 a different
+byte prefix is used for Duktape's hidden Symbols, so the 0xFF prefix is now
+reserved entirely for application use.  Application code should never try to
+access Duktape's hidden Symbol keyed properties: the set of such properties can
+change arbitrarily between versions.</p>
+
+<div class="note">
+Note that the internal UTF-8 byte sequences cannot be created from ECMAScript
+code as a valid ECMAScript string.  For example, a hidden Symbol might be
+represented using <code>\xFFxyz</code>, i.e. the byte sequence
+<code>ff 78 79 7a</code>, while the ECMAScript string <code>"\u00ffxyz"</code>
+would be represented as the CESU-8 bytes <code>c3 bf 78 79 7a</code> in memory.
+</div>
+
+<p>Creating a Symbol is straightforward from C code:</p>
+<pre class="c-code">
+/* Create a hidden Symbol which can then be used to read/write properties.
+ * The Symbol can be passed on to ECMAScript code like any other string or
+ * Symbol.
+ */
+duk_push_string(ctx, DUK_HIDDEN_SYMBOL("mySymbol"));
+</pre>
+
+<p>Before Duktape 2.2 <code>DUK_HIDDEN_SYMBOL()</code> and other symbol
+literal macros were not available and the internal representation would be
+used directly:</p>
+<pre class="c-code">
+/* Terminating a string literal after a hex escape is safest to avoid some
+ * ambiguous cases like "\xffab".  For more discussion, see:
+ * https://github.com/svaarala/duktape/blob/master/misc/c_hex_esc.c
+ */
+duk_push_string(ctx, "\xff" "mySymbol");
+</pre>
+
+<p>Hidden Symbols cannot be created from ECMAScript code using the default
+built-ins alone.  Standard ES2015 Symbols can be created using the
+<code>Symbol</code> built-in, e.g. as <code>Symbol.for('foo')</code>.
+When sandboxing, ensure that application C bindings don't accidentally provide
+a mechanism to create hidden Symbols by e.g. converting an input buffer as-is
+to a string without applying an encoding.</p>
+
+<p>There's currently no special access control for properties with hidden
+Symbol keys: if user code has access to the Symbol, it can read/write the
+property value.  This will most likely change in future major versions so
+that ECMAScript code cannot access a property with a hidden Symbol key,
+even when holding a reference to the hidden Symbol value.</p>

@@ -2,3 +2,5 @@
 *.pyc
 
 **/.vscode/ipch
+
+# /duktape-2.4.0/src-custom

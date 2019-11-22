@@ -1,0 +1,41 @@
+name: duk_get_lstring
+
+proto: |
+  const char *duk_get_lstring(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Get character data pointer and length for a string at <code>idx</code>
+  without modifying or coercing the value.  Returns a non-<code>NULL</code>
+  pointer to the read-only, NUL-terminated string data, and writes the
+  string byte length to <code>*out_len</code> (if <code>out_len</code> is
+  non-<code>NULL</code>).  Returns <code>NULL</code> and writes zero to <code>*out_len</code>
+  (if <code>out_len</code> is non-<code>NULL</code>) if the value is not a string or
+  the index is invalid.</p>
+
+  <p>To get the string character length (instead of byte length), use
+  <code><a href="#duk_get_length">duk_get_length()</a></code>.</p>
+
+  <div include="string-non-null-zero-length.html" />
+
+example: |
+  const char *str;
+  duk_size_t len;
+
+  str = duk_get_lstring(ctx, -3, &len);
+  if (str) {
+      printf("value is a string, %lu bytes\n", (unsigned long) len);
+  }
+
+tags:
+  - stack
+  - string
+
+seealso:
+  - duk_get_string
+  - duk_get_lstring_default
+  - duk_get_string_default
+
+introduced: 1.0.0
