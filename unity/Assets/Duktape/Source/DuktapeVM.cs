@@ -518,10 +518,15 @@ namespace Duktape
         public void EvalMain(string filename)
         {
             filename = EnsureExtension(filename);
-            var ctx = _ctx.rawValue;
-            var top = DuktapeDLL.duk_get_top(ctx);
             var resolvedPath = ResolvePath(filename);
             var source = _fileManager.ReadAllText(resolvedPath);
+            EvalMain(filename, source);
+        }
+
+        public void EvalMain(string filename, string source)
+        {
+            var ctx = _ctx.rawValue;
+            var top = DuktapeDLL.duk_get_top(ctx);
             DuktapeDLL.duk_push_string(ctx, source);
             var err = DuktapeDLL.duk_module_node_peval_main(ctx, filename);
             // var err = DuktapeDLL.duk_peval(ctx);
