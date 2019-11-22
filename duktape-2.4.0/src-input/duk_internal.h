@@ -73,4 +73,8 @@
 #include "duk_bi_protos.h"
 #include "duk_selftest.h"
 
+#include "duk_extra_unity.h"
+#include "duk_extra_sock.h"
+#include "duk_extra_websocket.h"
+
 #endif  /* DUK_INTERNAL_H_INCLUDED */
