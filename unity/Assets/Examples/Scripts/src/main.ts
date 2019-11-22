@@ -8,7 +8,7 @@ import Quaternion = UnityEngine.Quaternion;
 import Time = UnityEngine.Time;
 
 if (!window["__reloading"]) {
-    console.log("hello, javascript! (no stacktrace)");
+    console.log("hello, javascript! (no stacktrace)", DuktapeJS.DUK_VERSION);
     // enable js stacktrace in print (= console.log)
     enableStacktrace(true);
     console.log("hello, javascript! again!! (with stacktrace)");

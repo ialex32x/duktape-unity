@@ -10,6 +10,8 @@
 #define UNITY_MATH_PI 3.1415926535897932384626433832795028841971693993F
 #define UNITY_DEG2RAD 0.017453292519943295F
 #define UNITY_RAD2DEG 57.29577951308232F
+#define UNITY_V2S_(x) #x
+#define UNITY_V2S(x) UNITY_V2S_(x)
 
 DUK_INTERNAL DUK_INLINE float float_clamped(float a, float b, float t) {
     float d = b - a;
@@ -2221,6 +2223,11 @@ DUK_LOCAL void duk_unity_Quaternion_add_const(duk_context *ctx, duk_idx_t idx, c
 DUK_INTERNAL void duk_unity_valuetypes_open(duk_context *ctx) {
     duk_push_global_object(ctx);
     duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
+
+    {
+        duk_push_literal(ctx, UNITY_V2S(DUK_VERSION));
+        duk_put_prop_literal(ctx, -2, "DUK_VERSION");
+    }
     
     {
         duk_unity_begin_class(ctx, "Vector2", DUK_UNITY_BUILTINS_VECTOR2, duk_unity_Vector2_constructor, NULL);

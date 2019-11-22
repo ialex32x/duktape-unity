@@ -77,6 +77,8 @@ declare namespace FMath {
 }
 
 declare namespace DuktapeJS {
+    const DUK_VERSION: string
+    
     const COMPLETE: string
     const ERROR: string
 
