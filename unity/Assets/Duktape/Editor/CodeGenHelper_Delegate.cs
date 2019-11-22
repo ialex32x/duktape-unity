@@ -133,13 +133,20 @@ namespace Duktape
             }
             else
             {
-                this.cg.cs.AppendLine("fn.Invoke(ctx);");
+                this.cg.cs.AppendLine("fn.BeginInvoke(ctx);");
+                this.cg.cs.AppendLine("fn.EndInvoke(ctx);");
             }
+
             if (delegateBindingInfo.returnType != typeof(void))
             {
                 this.cg.cs.AppendLine($"{this.cg.bindingManager.GetCSTypeFullName(delegateBindingInfo.returnType)} {retName};");
                 this.cg.cs.AppendLine($"{this.cg.bindingManager.GetDuktapeGetter(delegateBindingInfo.returnType)}(ctx, -1, out {retName});");
+                this.cg.cs.AppendLine("DuktapeDLL.duk_pop(ctx);");
                 this.cg.cs.AppendLine($"return {retName};");
+            }
+            else
+            {
+                this.cg.cs.AppendLine("DuktapeDLL.duk_pop(ctx);");
             }
         }
 

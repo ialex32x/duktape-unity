@@ -36,12 +36,6 @@ namespace Duktape
             }
         }
 
-        public void Invoke(IntPtr ctx)
-        {
-            this.BeginInvoke(ctx);
-            this.EndInvoke(ctx);
-        }
-
         // 记录栈状态
         public void BeginInvoke(IntPtr ctx)
         {
@@ -63,6 +57,7 @@ namespace Duktape
         }
 
         // 根据当前栈参数数量调用函数
+        // 调用失败时抛异常， 成功时栈上保留返回值
         public void EndInvoke(IntPtr ctx)
         {
             var nargs = DuktapeDLL.duk_get_top(ctx) - _savedState;
@@ -71,11 +66,7 @@ namespace Duktape
             {
                 DuktapeAux.PrintError(ctx, -1);
                 DuktapeDLL.duk_pop(ctx);
-                // throw new Exception(err); 
-            }
-            else
-            {
-                DuktapeDLL.duk_pop(ctx);
+                throw new Exception("duktape delegate exception"); 
             }
         }
     }

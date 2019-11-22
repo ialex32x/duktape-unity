@@ -204,6 +204,8 @@ function sample() {
             console.log("sampleClass.testEvent invoked!!!!");
         });
         sampleClass.DispatchTestEvent();
+        sampleClass.delegateFoo4 = function (a, b) { return a + b; };
+        sampleClass.TestDelegate4();
         SampleNamespace.SampleClass.TestDelegate(function () {
             console.log(this, "TestDelegate");
         });

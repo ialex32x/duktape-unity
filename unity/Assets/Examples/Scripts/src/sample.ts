@@ -97,6 +97,9 @@ function sample() {
         })
         sampleClass.DispatchTestEvent();
 
+        sampleClass.delegateFoo4 = (a, b) => a + b;
+        sampleClass.TestDelegate4();
+
         SampleNamespace.SampleClass.TestDelegate(function () {
             console.log(this, "TestDelegate")
         })

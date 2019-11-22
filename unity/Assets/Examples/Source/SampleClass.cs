@@ -94,6 +94,15 @@ namespace SampleNamespace
             }
         }
 
+        public void TestDelegate4()
+        {
+            if (delegateFoo4 != null)
+            {
+                var r = delegateFoo4(1, 2.0f);
+                Debug.Log($"TestDelegate4: {r}");
+            }
+        }
+
         public void TestVector3(Vector3 v)
         {
             Debug.Log($"TestVector3({v})");
