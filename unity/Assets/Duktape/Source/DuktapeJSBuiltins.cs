@@ -259,29 +259,37 @@ namespace Duktape
             DuktapeDLL.duk_builtins_reg_get(ctx, k);    // c
             DuktapeDLL.duk_get_prop_string(ctx, -2, t); // cs
 
-            // copy static fields from c# to c
-            DuktapeDLL.duk_enum(ctx, -1, 0);
-            while (DuktapeDLL.duk_next(ctx, -1, true))
+            if (DuktapeDLL.duk_is_constructable(ctx, -1))
             {
-                DuktapeDLL.duk_dup(ctx, -2);
-                if (!DuktapeDLL.duk_has_prop(ctx, -6))
+                // copy static fields from c# to c
+                DuktapeDLL.duk_enum(ctx, -1, 0);
+                while (DuktapeDLL.duk_next(ctx, -1, true))
                 {
-                    DuktapeDLL.duk_put_prop(ctx, -5);
+                    DuktapeDLL.duk_dup(ctx, -2);
+                    if (!DuktapeDLL.duk_has_prop(ctx, -6))
+                    {
+                        DuktapeDLL.duk_put_prop(ctx, -5);
+                    }
+                    else
+                    {
+                        DuktapeDLL.duk_pop_2(ctx); // pop key and value
+                    }
                 }
-                else
-                {
-                    DuktapeDLL.duk_pop_2(ctx); // pop key and value
-                }
+                DuktapeDLL.duk_pop(ctx); // pop enum
+
+                DuktapeDLL.duk_get_prop_string(ctx, -2, "prototype"); // c  prototype
+                DuktapeDLL.duk_get_prop_string(ctx, -2, "prototype"); // cs prototype   <stack> [c, cs, c.prototype, cs.prototype]
+
+                DuktapeDLL.duk_set_prototype(ctx, -2);  // c.prototype = cs.prototype   <stack> [c, cs, c.prototype]
+                DuktapeDLL.duk_pop(ctx); // pop c.prototype
+                DuktapeDLL.duk_put_prop_string(ctx, -2, "_raw"); // cs._raw = c
+                DuktapeDLL.duk_put_prop_string(ctx, -2, t); // <global>
             }
-            DuktapeDLL.duk_pop(ctx); // pop enum
-
-            DuktapeDLL.duk_get_prop_string(ctx, -2, "prototype"); // c  prototype
-            DuktapeDLL.duk_get_prop_string(ctx, -2, "prototype"); // cs prototype   <stack> [c, cs, c.prototype, cs.prototype]
-
-            DuktapeDLL.duk_set_prototype(ctx, -2);  // c.prototype = cs.prototype   <stack> [c, cs, c.prototype]
-            DuktapeDLL.duk_pop(ctx); // pop c.prototype
-            DuktapeDLL.duk_put_prop_string(ctx, -2, "_raw"); // cs._raw = c
-            DuktapeDLL.duk_put_prop_string(ctx, -2, t); // <global>
+            else
+            {
+                // Debug.LogWarning($"builtin type {t} does not exist");
+                DuktapeDLL.duk_pop_2(ctx);
+            }
         }
 
         public static void postreg(IntPtr ctx)

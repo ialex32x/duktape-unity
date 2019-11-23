@@ -6,14 +6,6 @@ namespace Duktape
     using UnityEngine;
     using UnityEditor;
 
-    public enum NewLineStyle
-    {
-        AUTO,
-        CR,
-        LF,
-        CRLF,
-    }
-
     // duktape 配置 (editor only)
     public class Prefs
     {
@@ -32,17 +24,17 @@ namespace Duktape
 
         public string extraExt = ""; // 生成文件的额外后缀
 
-        public NewLineStyle newLineStyle;
+        public string newLineStyle;
 
         public string newline
         {
             get
             {
-                switch (newLineStyle)
+                switch (newLineStyle.ToLower())
                 {
-                    case NewLineStyle.CR: return "\r";
-                    case NewLineStyle.LF: return "\n";
-                    case NewLineStyle.CRLF: return "\r\n";
+                    case "cr": return "\r";
+                    case "lf": return "\n";
+                    case "crlf": return "\r\n";
                     default: return Environment.NewLine;
                 }
             }
@@ -111,7 +103,7 @@ namespace Duktape
             {
                 if (System.IO.File.Exists(path))
                 {
-                    var json = System.IO.File.ReadAllText(path);
+                    var json = UnityHelper.NormalizeJson(System.IO.File.ReadAllText(path));
                     Debug.Log($"load prefs: {json}");
                     return JsonUtility.FromJson<Prefs>(json);
                 }
