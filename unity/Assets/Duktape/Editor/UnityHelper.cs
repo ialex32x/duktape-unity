@@ -76,7 +76,7 @@ namespace Duktape
         public static void ClearBindings()
         {
             var prefs = Prefs.Load();
-            BindingManager.Cleanup(prefs.csharpDir, null, null);
+            BindingManager.Cleanup(prefs.outDir, null, null);
             BindingManager.Cleanup(prefs.typescriptDir, null, null);
             AssetDatabase.Refresh();
         }

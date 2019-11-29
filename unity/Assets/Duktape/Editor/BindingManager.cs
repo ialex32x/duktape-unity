@@ -1176,7 +1176,7 @@ namespace Duktape
         {
             log.AppendLine("cleanup");
             log.AddTabLevel();
-            Cleanup(prefs.csharpDir, _outputCSFiles, file =>
+            Cleanup(prefs.outDir, _outputCSFiles, file =>
             {
                 removedFiles.Add(file);
                 log.AppendLine("remove unused file {0}", file);
@@ -1219,12 +1219,10 @@ namespace Duktape
         public void Generate()
         {
             var cg = new CodeGenerator(this);
-            var csOutDir = prefs.csharpDir;
+            var csOutDir = prefs.outDir;
             var tsOutDir = prefs.typescriptDir;
             var tx = prefs.extraExt;
             // var tx = "";
-            Debug.Log(csOutDir);
-            Debug.Log(tsOutDir);
             if (!Directory.Exists(csOutDir))
             {
                 Directory.CreateDirectory(csOutDir);

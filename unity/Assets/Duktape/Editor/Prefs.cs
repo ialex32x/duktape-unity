@@ -18,7 +18,7 @@ namespace Duktape
         private string _filePath;
 
         // 静态绑定代码的生成目录
-        public string csharpDir = "Assets/Generated";
+        public string outDir = "Assets/Generated";
         public string typescriptDir = "Assets/Generated";
 
         // // ts 代码的目录 (例如自动生成的 Delegate 泛型, 需要放在 ts 源码目录)
@@ -113,6 +113,10 @@ namespace Duktape
                         Debug.Log($"load prefs({path}): {json}");
                         var prefs = JsonUtility.FromJson<Prefs>(json);
                         prefs._filePath = path;
+                        if (string.IsNullOrEmpty(prefs.typescriptDir))
+                        {
+                            prefs.typescriptDir = prefs.outDir;
+                        }
                         return prefs;
                     }
                     catch (Exception exception)

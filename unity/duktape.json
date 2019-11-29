@@ -1,5 +1,5 @@
 {
-    "csharpDir": "Assets/Generated",
+    "outDir": "Assets/Generated",
     "typescriptDir": "Assets/Generated",
     "extraExt": "",
     "logPath": "Temp/duktape.log",
