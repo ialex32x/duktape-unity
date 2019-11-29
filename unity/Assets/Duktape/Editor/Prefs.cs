@@ -21,6 +21,8 @@ namespace Duktape
         public string outDir = "Assets/Generated";
         public string typescriptDir = "Assets/Generated";
 
+        public string workspace = ".";
+
         // // ts 代码的目录 (例如自动生成的 Delegate 泛型, 需要放在 ts 源码目录)
         // public string tsDir = "Assets/Scripts/Source/duktape";
         // public string jsDir = "Assets/Scripts/Generated/duktape";
