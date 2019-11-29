@@ -94,7 +94,7 @@ public class Sample : MonoBehaviour, IDuktapeListener
 
     void Awake()
     {
-        vm.Initialize(new FakeFileSystem(), this);
+        vm.Initialize(this);
     }
 
     // void Update()

@@ -2,6 +2,8 @@
     "outDir": "Assets/Generated",
     "typescriptDir": "Assets/Generated",
     "extraExt": "",
+    // rootpath of ts/js project
+    "workspace": "",
     "logPath": "Temp/duktape.log",
     // auto, cr, lf, crlf
     "newLineStyle": "auto",

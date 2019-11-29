@@ -39,11 +39,8 @@ namespace Duktape
         private static DuktapeVM _instance;
         private uint _updateTimer;
         private DuktapeContext _ctx;
-        private IFileSystem _fileManager;
+        private IFileResolver _fileResolver;
         private ObjectCache _objectCache = new ObjectCache();
-
-        private List<string> _searchPaths = new List<string>();
-
         private Queue<UnrefAction> _unrefActions = new Queue<UnrefAction>();
 
         // 已经导出的本地类
@@ -68,6 +65,11 @@ namespace Duktape
         public IntPtr ctx
         {
             get { return _ctx != null ? _ctx.rawValue : IntPtr.Zero; }
+        }
+
+        public IFileResolver fileResolver
+        {
+            get { return _fileResolver; }
         }
 
         public DuktapeVM()
@@ -122,10 +124,7 @@ namespace Duktape
 
         public void AddSearchPath(string path)
         {
-            if (!_searchPaths.Contains(path))
-            {
-                _searchPaths.Add(path);
-            }
+            _fileResolver.AddSearchPath(path);
         }
 
         public DuktapeFunction GetSpecial(string name)
@@ -234,24 +233,6 @@ namespace Duktape
             return filename != null && filename.EndsWith(".js") ? filename : filename + ".js";
         }
 
-        public string ResolvePath(string filename)
-        {
-            if (_fileManager.Exists(filename))
-            {
-                return filename;
-            }
-            for (int i = 0, count = _searchPaths.Count; i < count; i++)
-            {
-                var path = _searchPaths[i];
-                var vpath = PathUtils.Combine(path, filename);
-                if (_fileManager.Exists(vpath))
-                {
-                    return vpath;
-                }
-            }
-            return null;
-        }
-
         [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         private static duk_ret_t cb_resolve_module(IntPtr ctx)
         {
@@ -299,10 +280,8 @@ namespace Duktape
             var module_id = DuktapeAux.duk_require_string(ctx, 0);
             DuktapeDLL.duk_get_prop_string(ctx, 2, "filename");
             var filename = DuktapeAux.duk_require_string(ctx, -1);
-            var resolvedPath = GetVM(ctx).ResolvePath(filename);
+            var source = GetVM(ctx)._fileResolver.ReadAllText(filename);
             // Debug.LogFormat("cb_load_module module_id:'{0}', filename:'{1}', resolved:'{2}'\n", module_id, filename, resolvedPath);
-
-            var source = GetVM(ctx)._fileManager.ReadAllText(resolvedPath);
             if (source != null)
             {
                 DuktapeDLL.duk_push_string(ctx, source);
@@ -443,9 +422,19 @@ namespace Duktape
             }
         }
 
-        public void Initialize(IFileSystem fs, IDuktapeListener listener, int step = 30)
+        public void Initialize(IDuktapeListener listener, int step = 30)
         {
-            _fileManager = fs;
+            Initialize(new FileResolver(new DefaultFileSystem()), listener, step);
+        }
+
+        public void Initialize(IFileSystem fileSystem, IDuktapeListener listener, int step = 30)
+        {
+            Initialize(new FileResolver(fileSystem), listener, step);
+        }
+
+        public void Initialize(IFileResolver fileResolver, IDuktapeListener listener, int step = 30)
+        {
+            _fileResolver = fileResolver;
             DuktapeRunner.GetRunner().StartCoroutine(_InitializeStep(listener, step));
         }
 
@@ -510,16 +499,14 @@ namespace Duktape
         {
             filename = EnsureExtension(filename);
             var ctx = _ctx.rawValue;
-            var resolvedPath = ResolvePath(filename);
-            var source = _fileManager.ReadAllText(resolvedPath);
+            var source = _fileResolver.ReadAllText(filename);
             EvalSource(source, filename);
         }
 
         public void EvalMain(string filename)
         {
             filename = EnsureExtension(filename);
-            var resolvedPath = ResolvePath(filename);
-            var source = _fileManager.ReadAllText(resolvedPath);
+            var source = _fileResolver.ReadAllText(filename);
             EvalMain(filename, source);
         }
 

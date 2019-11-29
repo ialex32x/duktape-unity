@@ -16,6 +16,12 @@ namespace Duktape
     public static class SourceMapHelper
     {
         [Serializable]
+        public class DukConfig
+        {
+            public string workspace;
+        }
+
+        [Serializable]
         public class TSConfig
         {
             [Serializable]
@@ -53,11 +59,12 @@ namespace Duktape
             {
                 try
                 {
-                    var vm = DuktapeVM.GetVM(ctx);
-                    var resolvedPath = vm.ResolvePath(fileName + ".map");
-                    if (resolvedPath != null)
+                    var fileResolver = DuktapeVM.GetVM(ctx).fileResolver;
+                    var fileContent = fileResolver.ReadAllText(fileName + ".map");
+                    if (!string.IsNullOrEmpty(fileContent))
                     {
-                        using (var stream = File.OpenRead(resolvedPath))
+                        var bytes = Encoding.UTF8.GetBytes(fileContent);
+                        using (var stream = new MemoryStream(bytes))
                         {
                             var parser = new SourceMapParser();
                             var reader = new StreamReader(stream);
@@ -156,12 +163,29 @@ namespace Duktape
 
         public static void Run()
         {
-            if (File.Exists("tsconfig.json"))
+            var workspace = "";
+            if (File.Exists("duktape.json"))
             {
-                var text = NormalizeJson(File.ReadAllText("tsconfig.json"));
-                var tsconfig = JsonUtility.FromJson<TSConfig>(text);
+                var text = NormalizeJson(File.ReadAllText("duktape.json"));
+                var dukconfig = JsonUtility.FromJson<DukConfig>(text);
 
-                _sourceRoot = tsconfig.compilerOptions.sourceRoot;
+                workspace = dukconfig.workspace;
+            }
+            var tsconfigPath = string.IsNullOrEmpty(workspace) ? "tsconfig.json" : Path.Combine(workspace, "tsconfig.json");
+            if (File.Exists(tsconfigPath))
+            {
+                var text = NormalizeJson(File.ReadAllText(tsconfigPath));
+                var tsconfig = JsonUtility.FromJson<TSConfig>(text);
+                var sourceRoot = tsconfig.compilerOptions.sourceRoot;
+
+                if (string.IsNullOrEmpty(workspace) || Path.IsPathRooted(sourceRoot))
+                {
+                    _sourceRoot = sourceRoot;
+                }
+                else
+                {
+                    _sourceRoot = Path.Combine(workspace, sourceRoot);
+                }
                 DuktapeAux.duk_source_position = duk_source_position;
                 // Debug.Log($"[SourceMapHelper] enabled {_sourceRoot}");
             }
