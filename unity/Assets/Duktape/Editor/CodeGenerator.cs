@@ -153,15 +153,15 @@ namespace Duktape
             File.Copy(srcPath, Path.Combine(dir, filename));
         }
 
-        public void WriteTo(string outDir, string filename, string tx)
+        public void WriteTo(string csOutDir, string tsOutDir, string filename, string tx)
         {
             try
             {
                 if (this.cs.enabled && this.cs.size > 0)
                 {
                     var csName = filename + ".cs" + tx;
-                    var csPath = Path.Combine(outDir, csName);
-                    this.bindingManager.AddOutputFile(csPath);
+                    var csPath = Path.Combine(csOutDir, csName);
+                    this.bindingManager.AddOutputCSFile(csPath);
                     WriteAllText(csPath, this.cs.ToString());
                 }
             }
@@ -175,8 +175,8 @@ namespace Duktape
                 if (this.tsDeclare.enabled && this.tsDeclare.size > 0)
                 {
                     var tsName = filename + ".d.ts" + tx;
-                    var tsPath = Path.Combine(outDir, tsName);
-                    this.bindingManager.AddOutputFile(tsPath);
+                    var tsPath = Path.Combine(tsOutDir, tsName);
+                    this.bindingManager.AddOutputTSFile(tsPath);
                     WriteAllText(tsPath, this.tsDeclare.ToString());
                 }
             }

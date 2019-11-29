@@ -1,0 +1,35 @@
+{
+    "outDir": "Assets/Generated",
+    "typescriptDir": "Assets/Generated",
+    "extraExt": "",
+    "logPath": "Temp/duktape.log",
+    // auto, cr, lf, crlf
+    "newLineStyle": "auto",
+    "implicitAssemblies": [
+        "UnityEngine",
+        "UnityEngine.CoreModule", 
+        "UnityEngine.UI", 
+        "UnityEngine.UIModule"
+    ], 
+    "explicitAssemblies": [
+        "Assembly-CSharp"
+    ],
+    // types in blacklist will not be exported
+    "typePrefixBlacklist": [
+        "JetBrains.",
+        "Unity.Collections.",
+        "Unity.Jobs.",
+        "Unity.Profiling.",
+        "UnityEditor.",
+        "UnityEditorInternal.",
+        "UnityEngineInternal.",
+        "UnityEditor.Experimental.",
+        "UnityEngine.Experimental.",
+        "Unity.IO.LowLevel.",
+        "Unity.Burst.",
+        // more types ...
+        "UnityEngine.Assertions."
+    ], 
+    "ns": "DuktapeJS",
+    "tab": "    "
+}
