@@ -36,6 +36,7 @@ cmake -DANDROID_ABI=x86 -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.
 cd ..
 cmake --build Android_x86 --config Release
 cd ..
+
 mkdir -p ./unity/Assets/Duktape/Plugins/Android/libs/x86/
 cp ./build/Android_x86/libduktape.so ./unity/Assets/Duktape/Plugins/Android/libs/x86/
 

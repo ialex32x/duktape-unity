@@ -9,11 +9,12 @@ namespace Duktape
     // duktape 配置 (editor only)
     public class Prefs
     {
-        public const string PATH = "ProjectSettings/duktape.json";
+        public const string PATH = "duktape.json;ProjectSettings/duktape.json";
 
         public string logPath = "Temp/duktape.log";
 
         private bool _dirty;
+        private string _filePath;
 
         // 静态绑定代码的生成目录
         public string outDir = "Assets/Generated";
@@ -97,22 +98,30 @@ namespace Duktape
             return this;
         }
 
-        public static Prefs Load(string path)
+        public static Prefs Load()
         {
-            try
+            var pathlist = PATH.Split(';');
+            foreach (var path in pathlist)
             {
                 if (System.IO.File.Exists(path))
                 {
-                    var json = UnityHelper.NormalizeJson(System.IO.File.ReadAllText(path));
-                    Debug.Log($"load prefs: {json}");
-                    return JsonUtility.FromJson<Prefs>(json);
+                    try
+                    {
+                        var json = UnityHelper.NormalizeJson(System.IO.File.ReadAllText(path));
+                        Debug.Log($"load prefs({path}): {json}");
+                        var prefs = JsonUtility.FromJson<Prefs>(json);
+                        prefs._filePath = path;
+                        return prefs;
+                    }
+                    catch (Exception exception)
+                    {
+                        Debug.LogWarning(exception);
+                    }
                 }
             }
-            catch (Exception exception)
-            {
-                Debug.LogWarning(exception);
-            }
-            return new Prefs();
+            var defaultPrefs = new Prefs();
+            defaultPrefs._filePath = pathlist[0];
+            return defaultPrefs;
         }
 
         public void Save()
@@ -123,7 +132,7 @@ namespace Duktape
                 try
                 {
                     var json = JsonUtility.ToJson(this, true);
-                    System.IO.File.WriteAllText(PATH, json);
+                    System.IO.File.WriteAllText(_filePath, json);
                 }
                 catch (Exception exception)
                 {

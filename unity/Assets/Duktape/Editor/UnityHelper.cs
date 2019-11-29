@@ -42,7 +42,7 @@ namespace Duktape
         [MenuItem("Duktape/Generate Bindings")]
         public static void GenerateBindings()
         {
-            var bm = new BindingManager(Prefs.Load(Prefs.PATH));
+            var bm = new BindingManager(Prefs.Load());
             bm.Collect();
             // temp
             // bm.AddExport(typeof(GameObject));
@@ -75,7 +75,7 @@ namespace Duktape
         [MenuItem("Duktape/Clear")]
         public static void ClearBindings()
         {
-            BindingManager.Cleanup(Prefs.Load(Prefs.PATH).outDir, null, null);
+            BindingManager.Cleanup(Prefs.Load().outDir, null, null);
             AssetDatabase.Refresh();
         }
 

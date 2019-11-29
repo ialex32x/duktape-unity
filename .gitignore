@@ -3,5 +3,7 @@
 
 **/.vscode/ipch
 
-# /duktape-2.4.0/src-custom
+/duktape-2.4.0/src-custom
+/duktape-2.4.0/src-debug
+/duktape-2.4.0/src-release
 /prebuilt/**/*.meta
