@@ -26,7 +26,8 @@ namespace Duktape
         private Dictionary<Type, Type> redirectDelegates = new Dictionary<Type, Type>();
         // 类型修改
         private Dictionary<Type, TypeTransform> typesTarnsform = new Dictionary<Type, TypeTransform>();
-        private List<string> outputFiles = new List<string>();
+        private List<string> _outputCSFiles = new List<string>();
+        private List<string> _outputTSFiles = new List<string>();
         private List<string> removedFiles = new List<string>();
 
         private Dictionary<Type, List<string>> _tsTypeNameMap = new Dictionary<Type, List<string>>();
@@ -1175,7 +1176,7 @@ namespace Duktape
         {
             log.AppendLine("cleanup");
             log.AddTabLevel();
-            Cleanup(prefs.outDir, outputFiles, file =>
+            Cleanup(prefs.csharpDir, _outputCSFiles, file =>
             {
                 removedFiles.Add(file);
                 log.AppendLine("remove unused file {0}", file);
@@ -1205,20 +1206,32 @@ namespace Duktape
             }
         }
 
-        public void AddOutputFile(string filename)
+        public void AddOutputCSFile(string filename)
         {
-            outputFiles.Add(filename);
+            _outputCSFiles.Add(filename);
+        }
+
+        public void AddOutputTSFile(string filename)
+        {
+            _outputTSFiles.Add(filename);
         }
 
         public void Generate()
         {
             var cg = new CodeGenerator(this);
-            var outDir = prefs.outDir;
+            var csOutDir = prefs.csharpDir;
+            var tsOutDir = prefs.typescriptDir;
             var tx = prefs.extraExt;
             // var tx = "";
-            if (!Directory.Exists(outDir))
+            Debug.Log(csOutDir);
+            Debug.Log(tsOutDir);
+            if (!Directory.Exists(csOutDir))
             {
-                Directory.CreateDirectory(outDir);
+                Directory.CreateDirectory(csOutDir);
+            }
+            if (!Directory.Exists(tsOutDir))
+            {
+                Directory.CreateDirectory(tsOutDir);
             }
             var cancel = false;
             var current = 0;
@@ -1244,7 +1257,7 @@ namespace Duktape
                         OnPreGenerateType(typeBindingInfo);
                         cg.Generate(typeBindingInfo);
                         OnPostGenerateType(typeBindingInfo);
-                        cg.WriteTo(outDir, typeBindingInfo.GetFileName(), tx);
+                        cg.WriteTo(csOutDir, tsOutDir, typeBindingInfo.GetFileName(), tx);
                     }
                 }
                 catch (Exception exception)
@@ -1264,7 +1277,7 @@ namespace Duktape
                     cg.Clear();
                     cg.Generate(exportedDelegatesArray);
                     // cg.tsSource.enabled = false;
-                    cg.WriteTo(outDir, DuktapeVM._DuktapeDelegates, tx);
+                    cg.WriteTo(csOutDir, tsOutDir, DuktapeVM._DuktapeDelegates, tx);
                 }
                 catch (Exception exception)
                 {

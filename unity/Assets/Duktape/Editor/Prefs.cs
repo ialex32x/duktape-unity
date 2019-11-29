@@ -5,6 +5,7 @@ namespace Duktape
 {
     using UnityEngine;
     using UnityEditor;
+    using UnityEngine.Serialization;
 
     // duktape 配置 (editor only)
     public class Prefs
@@ -17,7 +18,8 @@ namespace Duktape
         private string _filePath;
 
         // 静态绑定代码的生成目录
-        public string outDir = "Assets/Generated";
+        public string csharpDir = "Assets/Generated";
+        public string typescriptDir = "Assets/Generated";
 
         // // ts 代码的目录 (例如自动生成的 Delegate 泛型, 需要放在 ts 源码目录)
         // public string tsDir = "Assets/Scripts/Source/duktape";

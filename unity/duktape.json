@@ -1,5 +1,6 @@
 {
-    "outDir": "Assets/Generated",
+    "csharpDir": "Assets/Generated",
+    "typescriptDir": "Assets/Generated",
     "extraExt": "",
     "logPath": "Temp/duktape.log",
     // auto, cr, lf, crlf
