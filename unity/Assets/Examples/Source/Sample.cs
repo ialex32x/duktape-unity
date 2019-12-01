@@ -8,6 +8,7 @@ public class Sample : MonoBehaviour, IDuktapeListener
 {
     public string launchScript = "code.js";
     public bool experimentalDebugger = false;
+    public bool waitForDebuggerClient = false;
 
     private bool _loaded;
     DuktapeVM vm = new DuktapeVM();
@@ -39,13 +40,26 @@ public class Sample : MonoBehaviour, IDuktapeListener
     {
         tests();
         vm.AddSearchPath("Assets/Examples/Scripts/out");
-        if (experimentalDebugger)
+        do
         {
-            // DuktapeDLL.duk_example_attach_debugger(vm.context.rawValue);
-            DuktapeDebugger.CreateDebugger(vm);
-        }
+            if (experimentalDebugger)
+            {
+                // DuktapeDLL.duk_example_attach_debugger(vm.context.rawValue);
+                DuktapeDebugger.CreateDebugger(vm);
+                if (waitForDebuggerClient)
+                {
+                    Debug.Log("wait for debugger connection");
+                    DuktapeDebugger.onAttached = () =>
+                    {
+                        DuktapeDebugger.onAttached = null;
+                        vm.EvalMain(launchScript);
+                    };
+                    break;
+                }
+            }
+            vm.EvalMain(launchScript);
+        } while (false);
         // vm.EvalFile("test.js");
-        vm.EvalMain(launchScript);
         _loaded = true;
     }
 
