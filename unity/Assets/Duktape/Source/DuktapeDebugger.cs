@@ -13,11 +13,18 @@ namespace Duktape
     {
         private static DuktapeDebugger _instance;
         private static byte[] _buffer;
+        public static Action onAttached;
+
         private DuktapeVM _vm;
         private IntPtr _debugger = IntPtr.Zero;
         private Socket _server;
         private Socket _client;
         private List<Socket> _pending = new List<Socket>();
+
+        public static bool connected
+        {
+            get { return _instance != null && _instance._client != null && _instance._client.Connected; }
+        }
 
         public static DuktapeDebugger CreateDebugger(DuktapeVM vm)
         {
@@ -124,6 +131,14 @@ namespace Duktape
                                 duk_unity_debug_request_function,
                                 duk_unity_debug_detached_function,
                                 0);
+                            try
+                            {
+                                onAttached?.Invoke();
+                            }
+                            catch (Exception exception)
+                            {
+                                Debug.LogError(exception);
+                            }
                         }
                         else
                         {
