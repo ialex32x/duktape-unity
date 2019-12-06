@@ -86,6 +86,55 @@ namespace Duktape
         {
             EditorWindow.GetWindow<PrefsEditor>().Show();
         }
+
+        [MenuItem("Assets/Duktape/Compile (bytecode)", true)]
+        public static bool CompileBytecodeValidate()
+        {
+            var objects = Selection.objects;
+            for (var i = 0; i < objects.Length; ++i)
+            {
+                var obj = objects[i];
+                var assetPath = AssetDatabase.GetAssetPath(obj);
+                if (!string.IsNullOrEmpty(assetPath) && assetPath.EndsWith(".js"))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        [MenuItem("Assets/Duktape/Compile (bytecode)")]
+        public static void CompileBytecode()
+        {
+            using (var ctx = new DuktapeCompiler())
+            {
+                var objects = Selection.objects;
+                for (var i = 0; i < objects.Length; ++i)
+                {
+                    var obj = objects[i];
+                    var assetPath = AssetDatabase.GetAssetPath(obj);
+                    if (!string.IsNullOrEmpty(assetPath) && assetPath.EndsWith(".js"))
+                    {
+                        var outPath = assetPath + ".bytes";
+                        var bytecode = ctx.Compile(assetPath);
+                        if (bytecode != null)
+                        {
+                            File.WriteAllBytes(outPath, bytecode);
+                        }
+                        else
+                        {
+                            Debug.LogErrorFormat("compilation failed: {0}", assetPath);
+                            if (File.Exists(outPath))
+                            {
+                                File.Delete(outPath);
+                            }
+                        }
+                    }
+                }
+            }
+            AssetDatabase.Refresh();
+        }
+
         #endregion
 
         static UnityHelper()

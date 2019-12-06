@@ -76,6 +76,13 @@ namespace Duktape
         public DuktapeVM()
         {
             _instance = this;
+
+            var ctx = DuktapeDLL.duk_create_heap_default();
+
+            _ctx = new DuktapeContext(this, ctx);
+            DuktapeAux.duk_open(ctx);
+            DuktapeVM.duk_open_module(ctx);
+            DuktapeDLL.duk_unity_open(ctx);
         }
 
         public static DuktapeVM GetInstance()
@@ -304,12 +311,6 @@ namespace Duktape
 
         private IEnumerator _InitializeStep(IDuktapeListener listener, int step)
         {
-            var ctx = DuktapeDLL.duk_create_heap_default();
-
-            _ctx = new DuktapeContext(this, ctx);
-            DuktapeAux.duk_open(ctx);
-            DuktapeVM.duk_open_module(ctx);
-            DuktapeDLL.duk_unity_open(ctx);
             DuktapeDLL.duk_push_global_object(ctx);
             DuktapeJSBuiltins.reg(ctx);
             listener?.OnTypesBinding(this);
@@ -443,7 +444,16 @@ namespace Duktape
         public void Initialize(IFileResolver fileResolver, IDuktapeListener listener, int step = 30)
         {
             _fileResolver = fileResolver;
-            DuktapeRunner.GetRunner().StartCoroutine(_InitializeStep(listener, step));
+            var runner = DuktapeRunner.GetRunner();
+            if (runner != null)
+            {
+                runner.StartCoroutine(_InitializeStep(listener, step));
+            }
+            else
+            {
+                var e = _InitializeStep(listener, step);
+                while (e.MoveNext()) ;
+            }
         }
 
         // 将 type 的 prototype 压栈 （未导出则向父类追溯）
@@ -565,37 +575,7 @@ namespace Duktape
 
         public byte[] DumpBytecode(string filename, byte[] source)
         {
-            if (source == null || source.Length == 0)
-            {
-                return null;
-            }
-            if (source[0] == 0xbf)
-            {
-                return source;
-            }
-            if (filename == null)
-            {
-                filename = "eval";
-            }
-            var ctx = _ctx.rawValue;
-            DuktapeDLL.duk_unity_push_lstring(ctx, source, (uint)source.Length);
-            DuktapeDLL.duk_push_string(ctx, filename);
-            if (DuktapeDLL.duk_pcompile(ctx, 0) != 0)
-            {
-                DuktapeAux.PrintError(ctx, -1, filename);
-                DuktapeDLL.duk_pop(ctx);
-                return null;
-            }
-            else
-            {
-                DuktapeDLL.duk_dump_function(ctx);
-                uint buffer_size;
-                var buffer_ptr = DuktapeDLL.duk_unity_require_buffer_data(ctx, -1, out buffer_size);
-                var bytes = new byte[buffer_size];
-                Marshal.Copy(buffer_ptr, bytes, 0, (int)buffer_size);
-                DuktapeDLL.duk_pop(ctx);
-                return bytes;
-            }
+            return _ctx != null ? DuktapeAux.DumpBytecode(_ctx.rawValue, filename, source) : null;
         }
 
         public void Destroy()

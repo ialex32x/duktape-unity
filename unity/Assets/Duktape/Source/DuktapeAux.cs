@@ -25,6 +25,44 @@ namespace Duktape
             return type;
         }
 
+        public static byte[] DumpBytecode(IntPtr ctx, string filename, byte[] source)
+        {
+            if (ctx == IntPtr.Zero)
+            {
+                throw new InvalidOperationException();
+            }
+            if (source == null || source.Length == 0)
+            {
+                return null;
+            }
+            if (source[0] == 0xbf)
+            {
+                return source;
+            }
+            if (filename == null)
+            {
+                filename = "eval";
+            }
+            DuktapeDLL.duk_unity_push_lstring(ctx, source, (uint)source.Length);
+            DuktapeDLL.duk_push_string(ctx, filename);
+            if (DuktapeDLL.duk_pcompile(ctx, 0) != 0)
+            {
+                DuktapeAux.PrintError(ctx, -1, filename);
+                DuktapeDLL.duk_pop(ctx);
+                return null;
+            }
+            else
+            {
+                DuktapeDLL.duk_dump_function(ctx);
+                uint buffer_size;
+                var buffer_ptr = DuktapeDLL.duk_unity_require_buffer_data(ctx, -1, out buffer_size);
+                var bytes = new byte[buffer_size];
+                Marshal.Copy(buffer_ptr, bytes, 0, (int)buffer_size);
+                DuktapeDLL.duk_pop(ctx);
+                return bytes;
+            }
+        }
+
         public static void PrintError(IntPtr ctx, int idx)
         {
             PrintError(ctx, idx, null);
