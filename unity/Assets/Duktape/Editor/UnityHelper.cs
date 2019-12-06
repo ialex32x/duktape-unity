@@ -116,10 +116,12 @@ namespace Duktape
                     if (!string.IsNullOrEmpty(assetPath) && assetPath.EndsWith(".js"))
                     {
                         var outPath = assetPath + ".bytes";
-                        var bytecode = ctx.Compile(assetPath);
+                        var bytes = File.ReadAllBytes(assetPath);
+                        var bytecode = ctx.Compile(assetPath, bytes);
                         if (bytecode != null)
                         {
                             File.WriteAllBytes(outPath, bytecode);
+                            Debug.LogFormat("compile {0}({1}) => {2}({3})", assetPath, bytes.Length, outPath, bytecode.Length);
                         }
                         else
                         {

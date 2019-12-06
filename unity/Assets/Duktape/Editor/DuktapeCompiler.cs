@@ -25,9 +25,13 @@ namespace Duktape
 
         public byte[] Compile(string filename)
         {
+            return Compile(filename, File.ReadAllBytes(filename));
+        }
+
+        public byte[] Compile(string filename, byte[] bytes)
+        {
             try
             {
-                var bytes = File.ReadAllBytes(filename);
                 return DuktapeAux.DumpBytecode(_ctx, filename, bytes);
             }
             catch (Exception exception)
