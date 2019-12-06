@@ -26,8 +26,7 @@ namespace Duktape
         private Dictionary<Type, Type> redirectDelegates = new Dictionary<Type, Type>();
         // 类型修改
         private Dictionary<Type, TypeTransform> typesTarnsform = new Dictionary<Type, TypeTransform>();
-        private List<string> _outputCSFiles = new List<string>();
-        private List<string> _outputTSFiles = new List<string>();
+        private Dictionary<string, List<string>> _outputFiles = new Dictionary<string, List<string>>();
         private List<string> removedFiles = new List<string>();
 
         private Dictionary<Type, List<string>> _tsTypeNameMap = new Dictionary<Type, List<string>>();
@@ -1176,7 +1175,7 @@ namespace Duktape
         {
             log.AppendLine("cleanup");
             log.AddTabLevel();
-            Cleanup(prefs.outDir, _outputCSFiles, file =>
+            Cleanup(_outputFiles, file =>
             {
                 removedFiles.Add(file);
                 log.AppendLine("remove unused file {0}", file);
@@ -1185,35 +1184,40 @@ namespace Duktape
             log.DecTabLevel();
         }
 
-        public static void Cleanup(string outDir, List<string> excludedFiles, Action<string> ondelete)
+        public static void Cleanup(Dictionary<string, List<string>> excludedFilesKV, Action<string> ondelete)
         {
-            foreach (var file in Directory.GetFiles(outDir))
+            foreach (var kv in excludedFilesKV)
             {
-                var nfile = file;
-                if (file.EndsWith(".meta"))
+                var outDir = kv.Key;
+                var excludedFiles = kv.Value;
+                foreach (var file in Directory.GetFiles(outDir))
                 {
-                    nfile = file.Substring(0, file.Length - 5);
-                }
-                // Debug.LogFormat("checking file {0}", nfile);
-                if (excludedFiles == null || !excludedFiles.Contains(nfile))
-                {
-                    File.Delete(file);
-                    if (ondelete != null)
+                    var nfile = file;
+                    if (file.EndsWith(".meta"))
                     {
-                        ondelete(file);
+                        nfile = file.Substring(0, file.Length - 5);
+                    }
+                    // Debug.LogFormat("checking file {0}", nfile);
+                    if (excludedFiles == null || !excludedFiles.Contains(nfile))
+                    {
+                        File.Delete(file);
+                        if (ondelete != null)
+                        {
+                            ondelete(file);
+                        }
                     }
                 }
             }
         }
 
-        public void AddOutputCSFile(string filename)
+        public void AddOutputFile(string outDir, string filename)
         {
-            _outputCSFiles.Add(filename);
-        }
-
-        public void AddOutputTSFile(string filename)
-        {
-            _outputTSFiles.Add(filename);
+            List<string> list;
+            if (!_outputFiles.TryGetValue(outDir, out list))
+            {
+                list = _outputFiles[outDir] = new List<string>();
+            }
+            list.Add(filename);
         }
 
         public void Generate()
