@@ -60,11 +60,10 @@ namespace Duktape
                 try
                 {
                     var fileResolver = DuktapeVM.GetVM(ctx).fileResolver;
-                    var fileContent = fileResolver.ReadAllText(fileName + ".map");
-                    if (!string.IsNullOrEmpty(fileContent))
+                    var fileContent = fileResolver.ReadAllBytes(fileName + ".map");
+                    if (fileContent != null && fileContent.Length > 0)
                     {
-                        var bytes = Encoding.UTF8.GetBytes(fileContent);
-                        using (var stream = new MemoryStream(bytes))
+                        using (var stream = new MemoryStream(fileContent))
                         {
                             var parser = new SourceMapParser();
                             var reader = new StreamReader(stream);
