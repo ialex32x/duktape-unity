@@ -76,7 +76,12 @@ public class Sample : MonoBehaviour, IDuktapeListener
             }
             else
             {
-                vm.EvalMain(launchScript);
+                var source = fr.ReadAllBytes(launchScript);
+                bytecode = vm.DumpBytecode(launchScript, source);
+                Debug.LogFormat("{0} => {1} (bytecode)", source.Length, bytecode.Length);
+                System.IO.File.WriteAllBytes("Assets/Examples/Scripts/out/" + launchScript + ".bytes", bytecode);
+                // vm.EvalMain(launchScript);
+                vm.EvalMain(launchScript, bytecode);
             }
         }
         else

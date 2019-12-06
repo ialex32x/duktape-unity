@@ -12,10 +12,13 @@ namespace Duktape
     public class DuktapeCompiler : IDisposable
     {
         private IntPtr _ctx = IntPtr.Zero;
+        // private DuktapeVM _vm;
 
         public DuktapeCompiler()
         {
             _ctx = DuktapeDLL.duk_create_heap_default();
+            // _vm = new DuktapeVM();
+            // _vm.Initialize(null);
         }
 
         ~DuktapeCompiler()
@@ -32,6 +35,7 @@ namespace Duktape
         {
             try
             {
+                // return _vm.DumpBytecode(filename, bytes);
                 return DuktapeAux.DumpBytecode(_ctx, filename, bytes);
             }
             catch (Exception exception)
@@ -43,6 +47,11 @@ namespace Duktape
 
         public virtual void Dispose(bool bManaged)
         {
+            // if (_vm != null)
+            // {
+            //     _vm.Destroy();
+            //     _vm = null;
+            // }
             if (_ctx != IntPtr.Zero)
             {
                 DuktapeDLL.duk_destroy_heap(_ctx);
