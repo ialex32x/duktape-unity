@@ -9,7 +9,7 @@ namespace Duktape
     {
         void AddSearchPath(string path);
 
-        string ReadAllText(string filename);
+        byte[] ReadAllBytes(string filename);
     }
 
     public class FileResolver : IFileResolver
@@ -30,11 +30,11 @@ namespace Duktape
             }
         }
 
-        public string ReadAllText(string filename)
+        public byte[] ReadAllBytes(string filename)
         {
             if (_fileSystem.Exists(filename))
             {
-                return _fileSystem.ReadAllText(filename);
+                return _fileSystem.ReadAllBytes(filename);
             }
             for (int i = 0, count = _searchPaths.Count; i < count; i++)
             {
@@ -42,7 +42,7 @@ namespace Duktape
                 var vpath = PathUtils.Combine(path, filename);
                 if (_fileSystem.Exists(vpath))
                 {
-                    return _fileSystem.ReadAllText(vpath);
+                    return _fileSystem.ReadAllBytes(vpath);
                 }
             }
             return null;

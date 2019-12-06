@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -226,9 +227,16 @@ namespace Duktape
         [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         public static int duk_dostring(IntPtr ctx)
         {
-            var source = DuktapeDLL.duk_get_string(ctx, 0);
-            var filename = DuktapeDLL.duk_get_string(ctx, 1);
-            DuktapeVM.GetVM(ctx).EvalSource(source, filename);
+            // var source = DuktapeDLL.duk_get_string(ctx, 0);
+            uint len;
+            var buffer_ptr = DuktapeDLL.duk_unity_get_lstring(ctx, 0, out len);
+            if (len > 0)
+            {
+                var bytes = new byte[len];
+                Marshal.Copy(buffer_ptr, bytes, 0, (int)len);
+                var filename = DuktapeDLL.duk_get_string(ctx, 1);
+                DuktapeVM.GetVM(ctx).EvalSource(filename, bytes);
+            }
             return 0;
         }
 

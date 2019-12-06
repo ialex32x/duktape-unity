@@ -9,6 +9,7 @@ public class Sample : MonoBehaviour, IDuktapeListener
     public string launchScript = "code.js";
     public bool experimentalDebugger = false;
     public bool waitForDebuggerClient = false;
+    public bool jsBytecode = false;
 
     private bool _loaded;
     DuktapeVM vm = new DuktapeVM();
@@ -52,15 +53,40 @@ public class Sample : MonoBehaviour, IDuktapeListener
                     DuktapeDebugger.onAttached = () =>
                     {
                         DuktapeDebugger.onAttached = null;
-                        vm.EvalMain(launchScript);
+                        RunScript(vm);
                     };
                     break;
                 }
             }
-            vm.EvalMain(launchScript);
+            RunScript(vm);
         } while (false);
         // vm.EvalFile("test.js");
         _loaded = true;
+    }
+
+    private void RunScript(DuktapeVM vm)
+    {
+        if (jsBytecode)
+        {
+            var fr = vm.fileResolver;
+            var bytecode = fr.ReadAllBytes(launchScript + ".bytes");
+            if (bytecode != null)
+            {
+                vm.EvalMain(launchScript, bytecode);
+            }
+            else
+            {
+                var source = fr.ReadAllBytes(launchScript);
+                bytecode = vm.DumpBytecode(launchScript, source);
+                System.IO.File.WriteAllBytes("Assets/Examples/Scripts/out/" + launchScript + ".bytes", bytecode);
+                // vm.EvalMain(launchScript);
+            }
+            vm.EvalMain(launchScript, bytecode);
+        }
+        else
+        {
+            vm.EvalMain(launchScript);
+        }
     }
 
     private void tests()
@@ -100,9 +126,8 @@ public class Sample : MonoBehaviour, IDuktapeListener
     {
         if (_loaded)
         {
-            vm.context.Invoke("OnBeforeSourceReload");
-            vm.EvalMain(launchScript);
-            vm.context.Invoke("OnAfterSourceReload");
+            // vm.context.Invoke("OnBeforeSourceReload");
+            // vm.context.Invoke("OnAfterSourceReload");
         }
     }
 

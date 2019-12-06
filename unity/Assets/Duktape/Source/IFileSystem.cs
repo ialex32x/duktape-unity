@@ -8,7 +8,7 @@ namespace Duktape
     public interface IFileSystem
     {
         bool Exists(string path);
-        string ReadAllText(string path);
+        byte[] ReadAllBytes(string path);
     }
 
     public class DefaultFileSystem : IFileSystem
@@ -18,11 +18,11 @@ namespace Duktape
             return System.IO.File.Exists(path);
         }
 
-        public string ReadAllText(string path)
+        public byte[] ReadAllBytes(string path)
         {
             try
             {
-                return System.IO.File.ReadAllText(path);
+                return System.IO.File.ReadAllBytes(path);
             }
             catch (Exception exception)
             {

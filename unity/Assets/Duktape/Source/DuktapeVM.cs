@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 namespace Duktape
 {
+    using System.Runtime.InteropServices;
     using UnityEngine;
     using duk_ret_t = System.Int32;
 
@@ -280,17 +281,24 @@ namespace Duktape
             var module_id = DuktapeAux.duk_require_string(ctx, 0);
             DuktapeDLL.duk_get_prop_string(ctx, 2, "filename");
             var filename = DuktapeAux.duk_require_string(ctx, -1);
-            var source = GetVM(ctx)._fileResolver.ReadAllText(filename);
+            var source = GetVM(ctx)._fileResolver.ReadAllBytes(filename);
             // Debug.LogFormat("cb_load_module module_id:'{0}', filename:'{1}', resolved:'{2}'\n", module_id, filename, resolvedPath);
-            if (source != null)
+            do
             {
-                DuktapeDLL.duk_push_string(ctx, source);
-            }
-            else
-            {
+                if (source != null && source.Length > 0) // bytecode is unsupported
+                {
+                    if (source[0] != 0xbf)
+                    {
+                        DuktapeDLL.duk_unity_push_lstring(ctx, source, (uint)source.Length);
+                    }
+                    else
+                    {
+                        DuktapeDLL.duk_type_error(ctx, "cannot load module (bytecode): %s", module_id);
+                    }
+                    break;
+                }
                 DuktapeDLL.duk_type_error(ctx, "cannot load module: %s", module_id);
-            }
-
+            } while (false);
             return 1;
         }
 
@@ -465,26 +473,37 @@ namespace Duktape
             return PushChainedPrototypeOf(ctx, baseType.BaseType);
         }
 
-        public void EvalSource(string source, string filename)
+        public void EvalSource(string filename, byte[] source)
         {
+            if (source == null || source.Length == 0)
+            {
+                return;
+            }
             if (filename == null)
             {
                 filename = "eval";
             }
-            if (string.IsNullOrEmpty(source))
-            {
-                return;
-            }
             var ctx = _ctx.rawValue;
-            DuktapeDLL.duk_push_string(ctx, source);
-            DuktapeDLL.duk_push_string(ctx, filename);
-            if (DuktapeDLL.duk_pcompile(ctx, 0) != 0)
+            do
             {
-                DuktapeAux.PrintError(ctx, -1, filename);
-                DuktapeDLL.duk_pop(ctx);
-            }
-            else
-            {
+                if (source[0] == 0xbf)
+                {
+                    // load bytecode...
+                    var buffer_ptr = DuktapeDLL.duk_push_fixed_buffer(ctx, (uint)source.Length);
+                    Marshal.Copy(source, 0, buffer_ptr, source.Length);
+                    DuktapeDLL.duk_load_function(ctx);
+                }
+                else
+                {
+                    DuktapeDLL.duk_unity_push_lstring(ctx, source, (uint)source.Length);
+                    DuktapeDLL.duk_push_string(ctx, filename);
+                    if (DuktapeDLL.duk_pcompile(ctx, 0) != 0)
+                    {
+                        DuktapeAux.PrintError(ctx, -1, filename);
+                        DuktapeDLL.duk_pop(ctx);
+                        break;
+                    }
+                }
                 // Debug.LogFormat("check top {0}", DuktapeDLL.duk_get_top(ctx));
                 if (DuktapeDLL.duk_pcall(ctx, 0) != DuktapeDLL.DUK_EXEC_SUCCESS)
                 {
@@ -492,39 +511,91 @@ namespace Duktape
                 }
                 DuktapeDLL.duk_pop(ctx);
                 // Debug.LogFormat("check top {0}", DuktapeDLL.duk_get_top(ctx));
-            }
+            } while (false);
         }
 
         public void EvalFile(string filename)
         {
             filename = EnsureExtension(filename);
             var ctx = _ctx.rawValue;
-            var source = _fileResolver.ReadAllText(filename);
-            EvalSource(source, filename);
+            var source = _fileResolver.ReadAllBytes(filename);
+            EvalSource(filename, source);
         }
 
         public void EvalMain(string filename)
         {
             filename = EnsureExtension(filename);
-            var source = _fileResolver.ReadAllText(filename);
+            var source = _fileResolver.ReadAllBytes(filename);
             EvalMain(filename, source);
         }
 
-        public void EvalMain(string filename, string source)
+        public void EvalMain(string filename, byte[] source)
         {
+            if (source == null || source.Length == 0)
+            {
+                return;
+            }
+            if (source[0] == 0xbf)
+            {
+                //NOTE: module is not supported in bytecode mode
+                EvalSource(filename, source);
+            }
+            else
+            {
+                if (filename == null)
+                {
+                    filename = "eval";
+                }
+                var ctx = _ctx.rawValue;
+                var top = DuktapeDLL.duk_get_top(ctx);
+
+                DuktapeDLL.duk_unity_push_lstring(ctx, source, (uint)source.Length);
+                var err = DuktapeDLL.duk_module_node_peval_main(ctx, filename);
+                // var err = DuktapeDLL.duk_peval(ctx);
+                // var err = DuktapeDLL.duk_peval_string_noresult(ctx, source);
+                // Debug.Log($"load main module: {filename} ({resolvedPath})");
+                if (err != 0)
+                {
+                    DuktapeAux.PrintError(ctx, -1, filename);
+                    // Debug.LogErrorFormat("eval main error: {0}\n{1}", DuktapeDLL.duk_safe_to_string(ctx, -1), filename);
+                }
+                DuktapeDLL.duk_set_top(ctx, top);
+            }
+        }
+
+        public byte[] DumpBytecode(string filename, byte[] source)
+        {
+            if (source == null || source.Length == 0)
+            {
+                return null;
+            }
+            if (source[0] == 0xbf)
+            {
+                return source;
+            }
+            if (filename == null)
+            {
+                filename = "eval";
+            }
             var ctx = _ctx.rawValue;
-            var top = DuktapeDLL.duk_get_top(ctx);
-            DuktapeDLL.duk_push_string(ctx, source);
-            var err = DuktapeDLL.duk_module_node_peval_main(ctx, filename);
-            // var err = DuktapeDLL.duk_peval(ctx);
-            // var err = DuktapeDLL.duk_peval_string_noresult(ctx, source);
-            // Debug.Log($"load main module: {filename} ({resolvedPath})");
-            if (err != 0)
+            DuktapeDLL.duk_unity_push_lstring(ctx, source, (uint)source.Length);
+            DuktapeDLL.duk_push_string(ctx, filename);
+            if (DuktapeDLL.duk_pcompile(ctx, 0) != 0)
             {
                 DuktapeAux.PrintError(ctx, -1, filename);
-                // Debug.LogErrorFormat("eval main error: {0}\n{1}", DuktapeDLL.duk_safe_to_string(ctx, -1), filename);
+                DuktapeDLL.duk_pop(ctx);
+                return null;
             }
-            DuktapeDLL.duk_set_top(ctx, top);
+            else
+            {
+                DuktapeDLL.duk_dump_function(ctx);
+                uint buffer_size;
+                var buffer_ptr = DuktapeDLL.duk_unity_require_buffer_data(ctx, -1, out buffer_size);
+                var bytes = new byte[buffer_size];
+                Marshal.Copy(buffer_ptr, bytes, 0, (int)buffer_size);
+                DuktapeDLL.duk_pop(ctx);
+                return bytes;
+            }
         }
 
         public void Destroy()
