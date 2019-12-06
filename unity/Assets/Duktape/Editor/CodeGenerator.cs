@@ -161,7 +161,7 @@ namespace Duktape
                 {
                     var csName = filename + ".cs" + tx;
                     var csPath = Path.Combine(csOutDir, csName);
-                    this.bindingManager.AddOutputCSFile(csPath);
+                    this.bindingManager.AddOutputFile(csOutDir, csPath);
                     WriteAllText(csPath, this.cs.ToString());
                 }
             }
@@ -176,7 +176,7 @@ namespace Duktape
                 {
                     var tsName = filename + ".d.ts" + tx;
                     var tsPath = Path.Combine(tsOutDir, tsName);
-                    this.bindingManager.AddOutputTSFile(tsPath);
+                    this.bindingManager.AddOutputFile(tsOutDir, tsPath);
                     WriteAllText(tsPath, this.tsDeclare.ToString());
                 }
             }
