@@ -1,3 +1,4 @@
+![logo](res/logo.png "duktape-unity")
 
 [中文说明](README_CN.md)
 
@@ -17,10 +18,10 @@ Typescript is a preferred choice, it provides type checks.
 * websocket ([libwebsockets](https://github.com/warmcat/libwebsockets))
 * iOS (64bit, bitcode)
 * Android (v7a, v8a, x86)
-* live debugger (vscode)
+* remote debugger (vscode)
+* promise (bluebird.js)
 * tcp (not implemented)
 * udp with kcp (not implemented)
-* promise (bluebird.js)
 
 You can use lots of pure js libraries in your project, such as protobufjs.
 ![protobufjs](res/test_protobufjs.png)
@@ -161,16 +162,43 @@ Typescript source files will be compiled into js after your modification and swi
 ## How to customize exported types
 
 * duktape.json
-modify the basic configuration at ProjectSettings\duktape.json (details in Assets\Duktape\Editor\Prefs.cs)
+modify the basic configuration at ./duktape.json (details in Assets/Duktape/Editor/Prefs.cs)
 ```json
 {
-    "outDir": "Assets/Source/Generated",
+    "outDir": "Assets/Generated",
+    "typescriptDir": "Assets/Generated",
+    "extraExt": "",
+    // rootpath of ts/js project
+    "workspace": "",
+    "logPath": "Temp/duktape.log",
+    // auto, cr, lf, crlf
+    "newLineStyle": "auto",
     "implicitAssemblies": [
-        "UnityEngine.CoreModule"
+        "UnityEngine",
+        "UnityEngine.CoreModule", 
+        "UnityEngine.UI", 
+        "UnityEngine.UIModule"
     ], 
     "explicitAssemblies": [
         "Assembly-CSharp"
     ],
+    // types in blacklist will not be exported
+    "typePrefixBlacklist": [
+        "JetBrains.",
+        "Unity.Collections.",
+        "Unity.Jobs.",
+        "Unity.Profiling.",
+        "UnityEditor.",
+        "UnityEditorInternal.",
+        "UnityEngineInternal.",
+        "UnityEditor.Experimental.",
+        "UnityEngine.Experimental.",
+        "Unity.IO.LowLevel.",
+        "Unity.Burst.",
+        // more types ...
+        "UnityEngine.Assertions."
+    ], 
+    "ns": "DuktapeJS",
     "tab": "    "
 }
 ```

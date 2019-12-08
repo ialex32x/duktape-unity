@@ -1,3 +1,4 @@
+![logo](res/logo.png "duktape-unity")
 
 # 简介
 将[duktape](https://github.com/svaarala/duktape)集成到Unity中, 使您可以在运行时动态加载执行javascript脚本. <br/>
@@ -15,10 +16,10 @@
 * 集成 websocket ([libwebsockets](https://github.com/warmcat/libwebsockets))
 * iOS (64bit, bitcode)
 * Android (v7a, v8a, x86)
-* 调试器支持 (vscode) 
+* 远程调试器支持 (vscode) 
+* 集成 promise (bluebird.js)
 * tcp (not implemented)
 * udp with kcp (not implemented)
-* 集成 promise (bluebird.js)
 
 您可以在项目中使用大部分纯js实现的的库, 比如 protobufjs.
 ![protobufjs](res/test_protobufjs.png)
@@ -160,16 +161,43 @@ Vector2/Matrix3x3/Matrix4x4/Quaternion 等值类型一部分在*C*中实现, 尚
 ## 如何自定义导出
 
 * duktape.json
-可以修改 ProjectSettings\duktape.json 配置文件 (详细可配置项可以参考 Assets\Duktape\Editor\Prefs.cs 中的定义及注释说明)
+可以修改 ./duktape.json 配置文件 (详细可配置项可以参考 Assets/Duktape/Editor/Prefs.cs 中的定义及注释说明)
 ```json
 {
-    "outDir": "Assets/Source/Generated",
+    "outDir": "Assets/Generated",
+    "typescriptDir": "Assets/Generated",
+    "extraExt": "",
+    // rootpath of ts/js project
+    "workspace": "",
+    "logPath": "Temp/duktape.log",
+    // auto, cr, lf, crlf
+    "newLineStyle": "auto",
     "implicitAssemblies": [
-        "UnityEngine.CoreModule"
+        "UnityEngine",
+        "UnityEngine.CoreModule", 
+        "UnityEngine.UI", 
+        "UnityEngine.UIModule"
     ], 
     "explicitAssemblies": [
         "Assembly-CSharp"
     ],
+    // types in blacklist will not be exported
+    "typePrefixBlacklist": [
+        "JetBrains.",
+        "Unity.Collections.",
+        "Unity.Jobs.",
+        "Unity.Profiling.",
+        "UnityEditor.",
+        "UnityEditorInternal.",
+        "UnityEngineInternal.",
+        "UnityEditor.Experimental.",
+        "UnityEngine.Experimental.",
+        "Unity.IO.LowLevel.",
+        "Unity.Burst.",
+        // more types ...
+        "UnityEngine.Assertions."
+    ], 
+    "ns": "DuktapeJS",
     "tab": "    "
 }
 ```
