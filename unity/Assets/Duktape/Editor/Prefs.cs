@@ -10,7 +10,7 @@ namespace Duktape
     // duktape 配置 (editor only)
     public class Prefs
     {
-        public const string PATH = "duktape.json;ProjectSettings/duktape.json";
+        public const string PATH = "duktape.json";
 
         public string logPath = "Temp/duktape.log";
 
