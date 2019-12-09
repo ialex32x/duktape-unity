@@ -2,7 +2,7 @@
     "compilerOptions": {
         // "module": "commonjs",
         "target": "es5",
-        "sourceRoot": "Assets/Examples/Scripts/src",
+        "sourceRoot": "",
         // "outDir": "Assets/Examples/Scripts/out",
         "outFile": "Assets/Examples/Scripts/out/code.js",
         "typeRoots": [
