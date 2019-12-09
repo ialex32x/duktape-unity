@@ -226,6 +226,24 @@ public class MyCustomBinding : AbstractBindingProcess
 ## Sample scene
 Assets/Scenes/main.unity (Sample.cs) demonstrate the basic usage.<br/>
 
+# Debugger
+
+Support js/ts remote debug.
+
+## the prebuilt library for android/ios is compiled without debugger support.
+
+![debugger](res/debugger.png)
+
+```yml
+Name: Duktape Debugger
+Id: haroldbrenes.duk-debug
+Description: Debug Adapter for Duktape runtimes.
+Version: 0.5.6
+Publisher: HaroldBrenes
+VS Marketplace Link: https://marketplace.visualstudio.com/items?itemName=HaroldBrenes.duk-debug
+```
+If you are debugging ts sources, this extension has some path-resolve issues break the debug process, you can try [the modified version](https://github.com/ialex32x/vscode-duktape-debug/releases/download/v0.5.6ts/duk-debug-0.5.6.vsix).
+
 # Referenced libraries
 
 * [duktape](https://github.com/svaarala/duktape)
