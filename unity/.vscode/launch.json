@@ -53,7 +53,7 @@
             "name": "Duk Attach",
             "type": "duk",
             "request": "attach",
-            "stopOnEntry": true,
+            "stopOnEntry": false,
             "address": "localhost",
             "port": 9091,
             "localRoot": "${workspaceRoot}/Assets/Examples/Scripts/src",
