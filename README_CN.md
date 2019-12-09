@@ -225,12 +225,11 @@ public class MyCustomBinding : AbstractBindingProcess
 ## 例子场景
 Assets/Scenes/main.unity 展示了一些基本的使用情况.<br/>
 
-# 调试
+# 调试器
 
-可以通过调试器进行断点调试. 目前还有问题:
-* 无法正确sourceMap
-* 必须配置"stopOnEntry":true, 否则无法进入后续断点
-## 目前仅编译了 windows x64 的 duktape.dll 支持 debugger.
+可以通过调试器进行断点调试:
+* 支持 js/ts 的远程调试
+## 目前默认编译的android/ios平台的动态库是不带调试器功能的.
 ![debugger](res/debugger.png)
 
 调试插件为:
@@ -238,10 +237,11 @@ Assets/Scenes/main.unity 展示了一些基本的使用情况.<br/>
 Name: Duktape Debugger
 Id: haroldbrenes.duk-debug
 Description: Debug Adapter for Duktape runtimes.
-Version: 0.5.0
+Version: 0.5.6
 Publisher: HaroldBrenes
 VS Marketplace Link: https://marketplace.visualstudio.com/items?itemName=HaroldBrenes.duk-debug
 ```
+请使用最新版本 0.5.6, 该插件调试ts时存在bug, 可以使用[修改过的版本](https://github.com/ialex32x/vscode-duktape-debug/releases/download/v0.5.6ts/duk-debug-0.5.6.vsix)
 
 # Referenced libraries
 
