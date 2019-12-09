@@ -10,6 +10,7 @@
     "implicitAssemblies": [
         "UnityEngine",
         "UnityEngine.CoreModule", 
+        "UnityEngine.InputLegacyModule", // if unity2019.2+
         "UnityEngine.UI", 
         "UnityEngine.UIModule"
     ], 

@@ -53,7 +53,7 @@ namespace Duktape
             AssetDatabase.Refresh();
         }
 
-        [MenuItem("Duktape/Compile TypeScript")]
+        // [MenuItem("Duktape/Compile TypeScript")]
         public static void CompileScripts()
         {
             Debug.Log("compiling typescript source...");
@@ -77,13 +77,13 @@ namespace Duktape
         {
             var prefs = Prefs.Load();
             var kv = new Dictionary<string, List<string>>();
-            kv.Add(prefs.outDir, new List<string>());
-            kv.Add(prefs.typescriptDir, new List<string>());
+            kv[prefs.outDir] = new List<string>();
+            kv[prefs.typescriptDir] = new List<string>();
             BindingManager.Cleanup(kv, null);
             AssetDatabase.Refresh();
         }
 
-        [MenuItem("Duktape/Prefs ...")]
+        // [MenuItem("Duktape/Prefs ...")]
         public static void OpenPrefsEditor()
         {
             EditorWindow.GetWindow<PrefsEditor>().Show();
