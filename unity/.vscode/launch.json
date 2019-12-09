@@ -50,7 +50,7 @@
             "showDebugVariables": false
         },
         {
-            "name": "Duk Attach (js)",
+            "name": "Duk Attach",
             "type": "duk",
             "request": "attach",
             "stopOnEntry": true,
@@ -60,19 +60,6 @@
             "outDir": "${workspaceRoot}/Assets/Examples/Scripts/out",
             "sourceMaps": true,
             "debugLog": true
-        }, 
-        {
-            "name": "Duk Attach (ts)",
-            "type": "duk",
-            "request": "attach",
-            "stopOnEntry": true,
-            "address": "localhost",
-            "port": 9091,
-            "localRoot": "${workspaceRoot}/Assets/Examples/Scripts/src",
-            "dukRemoteRoot": "Assets/Examples/Scripts/out",
-            "sourceMaps": true,
-            "debugLog": true, 
-            "outDir": "${workspaceRoot}/Assets/Examples/Scripts/out"
         }
     ]
 }
