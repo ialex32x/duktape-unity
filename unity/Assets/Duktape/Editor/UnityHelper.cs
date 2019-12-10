@@ -83,7 +83,7 @@ namespace Duktape
             AssetDatabase.Refresh();
         }
 
-        // [MenuItem("Duktape/Prefs ...")]
+        [MenuItem("Duktape/Prefs ...")]
         public static void OpenPrefsEditor()
         {
             EditorWindow.GetWindow<PrefsEditor>().Show();
