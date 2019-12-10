@@ -30,6 +30,7 @@ namespace Duktape
 
         void OnEnable()
         {
+            titleContent = new GUIContent("duktape.json");
             _prefs = Prefs.Load();
             _blockStyle.normal.background = MakeTex(100, 100, new Color32(56, 56, 56, 0));
             _assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -147,6 +148,7 @@ namespace Duktape
 
         void OnGUI()
         {
+            EditorGUILayout.HelpBox("(experimental) Editor for duktape.json", MessageType.Warning);
             EditorGUILayout.BeginHorizontal();
             Block("Assemblies", () =>
             {
