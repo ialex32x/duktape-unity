@@ -23,6 +23,9 @@ namespace Duktape
 
         public string workspace = ".";
 
+        // 尝试生成 Assembly 对应帮助内容
+        public bool doc = true;
+
         // // ts 代码的目录 (例如自动生成的 Delegate 泛型, 需要放在 ts 源码目录)
         // public string tsDir = "Assets/Scripts/Source/duktape";
         // public string jsDir = "Assets/Scripts/Generated/duktape";
