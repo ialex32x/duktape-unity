@@ -261,6 +261,16 @@ namespace Duktape
                 }
                 GUI.color = color;
             });
+            EditorGUILayout.BeginVertical();
+            Block("Assembly Info", () =>
+            {
+                if (_selectedIndex >= 0 && _selectedIndex < _assemblies.Length)
+                {
+                    var assembly = _assemblies[_selectedIndex];
+                    EditorGUILayout.TextField("Full Name", assembly.FullName);
+                    EditorGUILayout.TextField("Location", assembly.Location, GUILayout.MinWidth(500f));
+                }
+            });
             Block("Types", () =>
             {
                 var count = _filteredTypes.Count;
@@ -274,6 +284,7 @@ namespace Duktape
                     EditorGUILayout.HelpBox("No type to bindgen.", MessageType.Info);
                 }
             });
+            EditorGUILayout.EndVertical();
             EditorGUILayout.EndHorizontal();
             ExecuteDefers();
         }

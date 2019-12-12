@@ -331,6 +331,7 @@ namespace Duktape
                                     tsPropertyPrefix += "readonly ";
                                 }
                                 var tsPropertyType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.propertyInfo.PropertyType);
+                                cg.AppendJSDoc(bindingInfo.propertyInfo);
                                 cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                             }
                             if (bindingInfo.instancePair.IsValid())
@@ -348,6 +349,7 @@ namespace Duktape
                                     tsPropertyPrefix += "readonly ";
                                 }
                                 var tsPropertyType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.propertyInfo.PropertyType);
+                                cg.AppendJSDoc(bindingInfo.propertyInfo);
                                 cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                             }
                         }
@@ -375,6 +377,7 @@ namespace Duktape
                                 tsFieldPrefix += "readonly ";
                             }
                             var tsFieldType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.fieldInfo.FieldType);
+                            cg.AppendJSDoc(bindingInfo.fieldInfo);
                             cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
                         }
                         foreach (var kv in bindingInfo.events)

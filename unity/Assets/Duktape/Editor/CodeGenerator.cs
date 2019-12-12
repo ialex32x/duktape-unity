@@ -298,13 +298,121 @@ namespace Duktape
             return null;
         }
 
-        public void AppendJSDoc(MemberInfo info)
+        public void AppendJSDoc(Type type)
         {
-            var jsdoc = info.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
+            if (bindingManager.prefs.doc)
+            {
+                var doc = DocResolver.GetDocBody(type);
+                if (doc != null)
+                {
+                    AppendJSDoc(doc);
+                    return;
+                }
+            }
+            var jsdoc = type.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
             if (jsdoc != null)
             {
                 AppendJSDoc(jsdoc.lines);
             }
+        }
+
+        public void AppendJSDoc(PropertyInfo propertyInfo)
+        {
+            if (bindingManager.prefs.doc)
+            {
+                var doc = DocResolver.GetDocBody(propertyInfo);
+                if (doc != null)
+                {
+                    AppendJSDoc(doc);
+                    return;
+                }
+            }
+            var jsdoc = propertyInfo.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
+            if (jsdoc != null)
+            {
+                AppendJSDoc(jsdoc.lines);
+            }
+        }
+
+        public void AppendJSDoc(FieldInfo fieldInfo)
+        {
+            if (bindingManager.prefs.doc)
+            {
+                var doc = DocResolver.GetDocBody(fieldInfo);
+                if (doc != null)
+                {
+                    AppendJSDoc(doc);
+                    return;
+                }
+            }
+            var jsdoc = fieldInfo.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
+            if (jsdoc != null)
+            {
+                AppendJSDoc(jsdoc.lines);
+            }
+        }
+
+        public void AppendEnumJSDoc(Type type, object value)
+        {
+            if (bindingManager.prefs.doc)
+            {
+                var resolver = DocResolver.GetResolver(type.Assembly);
+                var doc = resolver.GetFieldDocBody(type.FullName + "." + Enum.GetName(type, value));
+                if (doc != null)
+                {
+                    AppendJSDoc(doc);
+                    return;
+                }
+            }
+        }
+
+        public void AppendJSDoc<T>(T methodInfo)
+        where T : MethodBase
+        {
+            if (bindingManager.prefs.doc)
+            {
+                var doc = DocResolver.GetDocBody(methodInfo);
+                if (doc != null)
+                {
+                    AppendJSDoc(doc);
+                    return;
+                }
+            }
+            var jsdoc = methodInfo.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
+            if (jsdoc != null)
+            {
+                AppendJSDoc(jsdoc.lines);
+            }
+        }
+
+        public void AppendJSDoc(DocResolver.DocBody body)
+        {
+            if (body.summary.Length > 1)
+            {
+                this.tsDeclare.AppendLine("/**");
+                foreach (var line in body.summary)
+                {
+                    this.tsDeclare.AppendLine(" * {0}", line.Replace('\r', ' '));
+                }
+            }
+            else
+            {
+                this.tsDeclare.AppendLine("/** {0}", body.summary[0]);
+            }
+            foreach (var kv in body.parameters)
+            {
+                var pname = kv.Key;
+                var ptext = kv.Value;
+                if (!string.IsNullOrEmpty(ptext))
+                {
+                    this.tsDeclare.AppendLine($" * @param {pname} {ptext}");
+                }
+            }
+            if (!string.IsNullOrEmpty(body.returns))
+            {
+                this.tsDeclare.AppendLine($" * @returns {body.returns}");
+            }
+            this.tsDeclare.AppendLine(" */");
         }
 
         public void AppendJSDoc(string[] lines)

@@ -31,17 +31,19 @@ namespace Duktape
                         this.cg.cs.AppendLine("duk_begin_enum(ctx, \"{0}\", typeof({1}));",
                             bindingInfo.jsName,
                             this.cg.bindingManager.GetCSTypeFullName(bindingInfo.type));
-                        var values = new Dictionary<string, int>();
+                        var values = new Dictionary<string, object>();
                         foreach (var ev in Enum.GetValues(bindingInfo.type))
                         {
-                            values[Enum.GetName(bindingInfo.type, ev)] = Convert.ToInt32(ev);
+                            values[Enum.GetName(bindingInfo.type, ev)] = ev;
                         }
                         foreach (var kv in values)
                         {
                             var name = kv.Key;
                             var value = kv.Value;
-                            this.cg.cs.AppendLine($"duk_add_const(ctx, \"{name}\", {value}, {-2});");
-                            this.cg.tsDeclare.AppendLine($"{name} = {value},");
+                            var pvalue = Convert.ToInt32(value);
+                            this.cg.cs.AppendLine($"duk_add_const(ctx, \"{name}\", {pvalue}, {-2});");
+                            this.cg.AppendEnumJSDoc(bindingInfo.type, value);
+                            this.cg.tsDeclare.AppendLine($"{name} = {pvalue},");
                         }
                         this.cg.cs.AppendLine("duk_end_enum(ctx);");
                     }

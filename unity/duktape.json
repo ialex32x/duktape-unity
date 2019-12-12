@@ -34,5 +34,6 @@
         "UnityEngine.Assertions."
     ], 
     "ns": "DuktapeJS",
-    "tab": "    "
+    "tab": "    ", 
+    "doc": true
 }
