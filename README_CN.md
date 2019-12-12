@@ -4,6 +4,8 @@
 将[duktape](https://github.com/svaarala/duktape)集成到Unity中, 使您可以在运行时动态加载执行javascript脚本. <br/>
 另外也提供了对typescript的集成支持, 建议使用typescript进行脚本编写.
 
+技术交流QQ群: 859823032
+
 ![editing script](res/ts_editing_1.png "so brilliant!")
 
 # 特点 
