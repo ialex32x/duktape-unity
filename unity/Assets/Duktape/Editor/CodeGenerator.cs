@@ -397,16 +397,24 @@ namespace Duktape
             }
             else
             {
-                this.tsDeclare.AppendLine("/** {0}", body.summary[0]);
+                if (body.summary.Length == 0 || string.IsNullOrEmpty(body.summary[0]))
+                {
+                    if (body.parameters.Count == 0 && string.IsNullOrEmpty(body.returns))
+                    {
+                        return;
+                    }
+                    this.tsDeclare.AppendLine("/**");
+                }
+                else
+                {
+                    this.tsDeclare.AppendLine("/** {0}", body.summary[0]);
+                }
             }
             foreach (var kv in body.parameters)
             {
                 var pname = kv.Key;
                 var ptext = kv.Value;
-                if (!string.IsNullOrEmpty(ptext))
-                {
-                    this.tsDeclare.AppendLine($" * @param {pname} {ptext}");
-                }
+                this.tsDeclare.AppendLine($" * @param {pname} {ptext}");
             }
             if (!string.IsNullOrEmpty(body.returns))
             {
