@@ -14,6 +14,7 @@ namespace Duktape
     {
         public class DocBody
         {
+            public string name;
             public string[] summary;
             public Dictionary<string, string> parameters = new Dictionary<string, string>();
             public string returns;
@@ -61,10 +62,17 @@ namespace Duktape
 
         public void Load(Assembly assembly)
         {
-            var location = assembly.Location;
-            var ext = Path.GetExtension(location);
-            var xlocation = location.Substring(0, location.Length - ext.Length) + ".xml";
-            ParseXml(xlocation);
+            try
+            {
+                var location = assembly.Location;
+                var ext = Path.GetExtension(location);
+                var xlocation = location.Substring(0, location.Length - ext.Length) + ".xml";
+                ParseXml(xlocation);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarningFormat("fail to read doc xml ({0}): {1}", assembly, exception);
+            }
         }
 
         public DocBody GetFieldDocBody(string path)
@@ -167,21 +175,25 @@ namespace Duktape
                 }
                 if (type == XmlNodeType.Element && reader.Name == "summary")
                 {
-                    body.summary = ReadTextBlock(reader, "summary");
+                    body.summary = ReadTextBlock(reader, body, "summary");
                 }
                 if (type == XmlNodeType.Element && reader.Name == "param")
                 {
                     var pname = reader.GetAttribute("name");
-                    body.parameters[pname] = ReadSingleTextBlock(reader, "param");
+                    var ptext = ReadSingleTextBlock(reader, body, "param");
+                    if (!string.IsNullOrEmpty(ptext))
+                    {
+                        body.parameters[pname] = ptext;
+                    }
                 }
                 if (type == XmlNodeType.Element && reader.Name == "returns")
                 {
-                    body.returns = ReadSingleTextBlock(reader, "returns");
+                    body.returns = ReadSingleTextBlock(reader, body, "returns");
                 }
             }
         }
 
-        private string[] ReadTextBlock(XmlReader reader, string elementName)
+        private string[] ReadTextBlock(XmlReader reader, DocBody body, string elementName)
         {
             var lines = new List<string>();
             if (!reader.IsEmptyElement)
@@ -195,14 +207,32 @@ namespace Duktape
                     }
                     if (type == XmlNodeType.Element && reader.Name == "para")
                     {
-                        lines.Add(reader.ReadElementContentAsString());
+                        lines.Add(ReadElementContentAsString(reader, body, "para"));
                     }
                 }
             }
             return lines.ToArray();
         }
 
-        private string ReadSingleTextBlock(XmlReader reader, string elementName)
+        private string ReadElementContentAsString(XmlReader reader, DocBody body, string elementName)
+        {
+            var text = string.Empty;
+            while (reader.Read())
+            {
+                var type = reader.NodeType;
+                if (type == XmlNodeType.EndElement && reader.Name == elementName)
+                {
+                    break;
+                }
+                if (type == XmlNodeType.Text)
+                {
+                    text = reader.Value;
+                }
+            }
+            return text;
+        }
+
+        private string ReadSingleTextBlock(XmlReader reader, DocBody body, string elementName)
         {
             _sb.Clear();
             if (!reader.IsEmptyElement)
@@ -216,7 +246,7 @@ namespace Duktape
                     }
                     if (type == XmlNodeType.Element && reader.Name == "para")
                     {
-                        _sb.Append(reader.ReadElementContentAsString());
+                        _sb.Append(ReadElementContentAsString(reader, body, "para"));
                         _sb.Append(' ');
                     }
                     if (type == XmlNodeType.Text)
@@ -246,14 +276,18 @@ namespace Duktape
                         {
                             var body = new DocBody();
                             var name = reader.GetAttribute("name");
-                            switch (name[0])
+                            if (name.Length > 2)
                             {
-                                case 'F': _fdocs[name.Substring(2)] = body; break;
-                                case 'P': _pdocs[name.Substring(2)] = body; break;
-                                case 'M': _mdocs[name.Substring(2)] = body; break;
-                                case 'T': _tdocs[name.Substring(2)] = body; break;
+                                var subname = name.Substring(2);
+                                body.name = subname;
+                                switch (name[0])
+                                {
+                                    case 'F': _fdocs[subname] = body; break;
+                                    case 'P': _pdocs[subname] = body; break;
+                                    case 'M': _mdocs[subname] = body; break;
+                                    case 'T': _tdocs[subname] = body; break;
+                                }
                             }
-
                             ParseXmlMember(reader, body, "member");
                         }
                     }
