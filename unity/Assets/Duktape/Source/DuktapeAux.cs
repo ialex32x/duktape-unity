@@ -278,6 +278,7 @@ namespace Duktape
             return 0;
         }
 
+        [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         public static int duk_enableStacktrace(IntPtr ctx)
         {
             printStacktrace = DuktapeDLL.duk_require_boolean(ctx, 0);
