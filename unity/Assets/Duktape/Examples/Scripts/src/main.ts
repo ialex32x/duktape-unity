@@ -13,7 +13,7 @@ if (!window["__reloading"]) {
     enableStacktrace(true);
     console.log("hello, javascript! again!! (with stacktrace)");
 
-    addSearchPath("Assets/Examples/Scripts/libs");
+    addSearchPath("Assets/Duktape/Examples/Scripts/libs");
 
     window["Promise"] = require("bluebird.core.js");
     dofile("protobuf-library.js");
@@ -44,11 +44,11 @@ if (!window["__reloading"]) {
     new ut.ComponentSystem();
 }
 
-window["OnBeforeSourceReload"] = function () {
-    console.log("before source reload");
-    window["__reloading"] = true;
-}
+// window["OnBeforeSourceReload"] = function () {
+//     console.log("before source reload");
+//     window["__reloading"] = true;
+// }
 
-window["OnAfterSourceReload"] = function () {
-    console.log("after source reload !!!");
-}
+// window["OnAfterSourceReload"] = function () {
+//     console.log("after source reload !!!");
+// }
