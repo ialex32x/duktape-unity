@@ -1,4 +1,5 @@
 /// <reference path="./ut/component_system.ts" />
+/// <reference path="./duktape/http.ts" />
 
 import UObject = UnityEngine.Object;
 import GameObject = UnityEngine.GameObject;

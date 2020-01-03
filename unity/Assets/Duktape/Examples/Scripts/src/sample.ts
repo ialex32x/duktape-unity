@@ -38,6 +38,17 @@ function sample() {
     // })();
 
     (function () {
+        console.log("http requesting...");
+        HttpRequest.GET("http://t.weather.sojson.com/api/weather/city/101030100", null, (status, res) => {
+            console.warn("http response:", status, res);
+            if (status) {
+                let obj = JSON.parse(res);
+                console.log("as object", obj.message);
+            }
+        });
+    })();
+
+    (function () {
         let Vector3 = UnityEngine.Vector3
         let start = Date.now()
         let v1 = new Vector3(0, 0, 0)
