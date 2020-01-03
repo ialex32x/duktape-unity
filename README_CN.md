@@ -164,7 +164,7 @@ Vector2/Matrix3x3/Matrix4x4/Quaternion 等值类型一部分在*C*中实现, 尚
 
 * duktape.json
 可以修改 ./duktape.json 配置文件 (详细可配置项可以参考 Assets/Duktape/Editor/Prefs.cs 中的定义及注释说明)
-```json
+```javascript
 {
     "outDir": "Assets/Generated",
     "typescriptDir": "Assets/Generated",
