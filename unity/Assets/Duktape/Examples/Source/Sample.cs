@@ -40,7 +40,7 @@ public class Sample : MonoBehaviour, IDuktapeListener
     public void OnLoaded(DuktapeVM vm)
     {
         tests();
-        vm.AddSearchPath("Assets/Examples/Scripts/out");
+        vm.AddSearchPath("Assets/Duktape/Examples/Scripts/out");
         do
         {
             if (experimentalDebugger)
@@ -79,7 +79,7 @@ public class Sample : MonoBehaviour, IDuktapeListener
                 var source = fr.ReadAllBytes(launchScript);
                 bytecode = vm.DumpBytecode(launchScript, source);
                 Debug.LogFormat("{0} => {1} (bytecode)", source.Length, bytecode.Length);
-                System.IO.File.WriteAllBytes("Assets/Examples/Scripts/out/" + launchScript + ".bytes", bytecode);
+                System.IO.File.WriteAllBytes("Assets/Duktape/Examples/Scripts/out/" + launchScript + ".bytes", bytecode);
                 // vm.EvalMain(launchScript);
                 vm.EvalMain(launchScript, bytecode);
             }

@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -69,7 +69,148 @@ var ut;
     }());
     ut.ComponentSystem = ComponentSystem;
 })(ut || (ut = {}));
+var ContentType = /** @class */ (function () {
+    function ContentType() {
+    }
+    ContentType.FORM = "application/x-www-form-urlencoded";
+    ContentType.JSON = "application/json";
+    return ContentType;
+}());
+var HttpRequest = /** @class */ (function () {
+    function HttpRequest(url, data) {
+        this.baseUrl = "";
+        this.onfinish = null;
+        this._url = url;
+        this._data = data;
+        this._req = new DuktapeJS.HttpRequest();
+    }
+    Object.defineProperty(HttpRequest.prototype, "isCancelled", {
+        get: function () {
+            return this._cancel;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(HttpRequest.prototype, "isDone", {
+        get: function () {
+            return this._done;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * 将json对象转为 key=val 形式的 query 参数
+     */
+    HttpRequest.QUERY = function (payload) {
+        if (payload) {
+            var str = '';
+            for (var key in payload) {
+                if (str.length > 0) {
+                    str += '&';
+                }
+                str += key + "=" + encodeURIComponent(payload[key]);
+            }
+            return str;
+        }
+        return null;
+    };
+    /**
+     * 拼接 url 与 query 参数
+     */
+    HttpRequest.URL = function (url, payload) {
+        var query = this.QUERY(payload);
+        if (query && query.length > 0) {
+            return url + "?" + query;
+        }
+        return url;
+    };
+    // 以 GET 方式发送请求 （参数直接在url中携带）
+    HttpRequest.GET = function (url, query, finish) {
+        var req = new HttpRequest(this.URL(url, query), undefined);
+        req.baseUrl = this.sharedBaseUrl;
+        req.onfinish = finish;
+        req.get();
+        return req;
+    };
+    // 以 POST 方式发送 JSON 对象
+    HttpRequest.POST = function (url, payload, finish) {
+        var data = payload && JSON.stringify(payload);
+        var req = new HttpRequest(url, data);
+        req.baseUrl = this.sharedBaseUrl;
+        req.onfinish = finish;
+        req.contentType(ContentType.JSON);
+        req.post();
+        return req;
+    };
+    // 以 POST 方式发送 表单 数据 (data 内容形式 "a=val1&b=val2&c=123")
+    HttpRequest.FORM = function (url, data, finish) {
+        var req = new HttpRequest(url, data);
+        req.baseUrl = this.sharedBaseUrl;
+        req.onfinish = finish;
+        req.contentType(ContentType.FORM);
+        req.post();
+        return req;
+    };
+    /**
+     * 取消请求
+     */
+    HttpRequest.prototype.cancel = function () {
+        if (!this._done) {
+            this._cancel = true;
+            if (this.onfinish) {
+                this.onfinish(false, "request cancelled");
+            }
+        }
+        return this;
+    };
+    /**
+     * 设定超时
+     */
+    HttpRequest.prototype.timeout = function (seconds) {
+        var _this = this;
+        if (!this._done) {
+            setTimeout(function () {
+                if (!_this._done) {
+                    _this._cancel = true;
+                    if (_this.onfinish) {
+                        _this.onfinish(false, "request timeout");
+                    }
+                }
+            }, seconds * 1000);
+        }
+        return this;
+    };
+    /**
+     * 伪造 User-Agent
+     */
+    HttpRequest.prototype.userAgent = function (agent) {
+        // this._headers.push("User-Agent", agent || "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36");
+        this._req.SetRequestHeader("User-Agent", agent || "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36");
+    };
+    HttpRequest.prototype.contentType = function (type) {
+        // this._headers.push("Content-Type", type);
+        this._req.SetRequestHeader("Content-Type", type);
+    };
+    HttpRequest.prototype.onComplete = function (succ, res) {
+        this._done = true;
+        // console.log("httprequest", this._cancel, res);
+        if (this.onfinish && !this._cancel) {
+            this.onfinish(succ, res);
+        }
+    };
+    HttpRequest.prototype.get = function () {
+        // console.log("GET", this._url);
+        this._req.SendGetRequest(this.baseUrl + this._url, this.onComplete.bind(this));
+    };
+    HttpRequest.prototype.post = function () {
+        // console.log("POST", this._url, this._data);
+        this._req.SendPostRequest(this.baseUrl + this._url, this._data, this.onComplete.bind(this));
+    };
+    HttpRequest.sharedBaseUrl = "";
+    return HttpRequest;
+}());
 /// <reference path="./ut/component_system.ts" />
+/// <reference path="./duktape/http.ts" />
 var UObject = UnityEngine.Object;
 var GameObject = UnityEngine.GameObject;
 var Transform = UnityEngine.Transform;
@@ -81,7 +222,7 @@ if (!window["__reloading"]) {
     // enable js stacktrace in print (= console.log)
     enableStacktrace(true);
     console.log("hello, javascript! again!! (with stacktrace)");
-    addSearchPath("Assets/Examples/Scripts/libs");
+    addSearchPath("Assets/Duktape/Examples/Scripts/libs");
     window["Promise"] = require("bluebird.core.js");
     dofile("protobuf-library.js");
     dofile("test.pb.js");
@@ -106,13 +247,13 @@ if (!window["__reloading"]) {
     }, 1000 * 15);
     new ut.ComponentSystem();
 }
-window["OnBeforeSourceReload"] = function () {
-    console.log("before source reload");
-    window["__reloading"] = true;
-};
-window["OnAfterSourceReload"] = function () {
-    console.log("after source reload !!!");
-};
+// window["OnBeforeSourceReload"] = function () {
+//     console.log("before source reload");
+//     window["__reloading"] = true;
+// }
+// window["OnAfterSourceReload"] = function () {
+//     console.log("after source reload !!!");
+// }
 function sample() {
     // test protobuf
     // (function () {
@@ -149,6 +290,16 @@ function sample() {
     //         },
     //     })
     // })();
+    (function () {
+        console.log("http requesting...");
+        HttpRequest.GET("http://t.weather.sojson.com/api/weather/city/101030100", null, function (status, res) {
+            console.warn("http response:", status, res);
+            if (status) {
+                var obj = JSON.parse(res);
+                console.log("as object", obj.message);
+            }
+        });
+    })();
     (function () {
         var Vector3 = UnityEngine.Vector3;
         var start = Date.now();
@@ -303,157 +454,6 @@ function sample() {
     //     console.log(u.value);
     // })();
 }
-/*
-class ContentType {
-    static readonly FORM = "application/x-www-form-urlencoded"
-    static readonly JSON = "application/json"
-}
-
-export class HttpRequest {
-    static sharedBaseUrl = ""
-    public baseUrl = ""
-    private url: string
-    private data: any
-    private req: DuktapeJS.HttpRequest
-    private type: string
-    private _headers: Array<any> = []
-    private _cancel: boolean
-    private _done: boolean
-
-    onfinish: (status: boolean, res: any) => void
-
-    isCancelled() {
-        return this._cancel
-    }
-
-    isDone() {
-        return this._done
-    }
-
-    // 将json对象转为 key=val 形式的 query 参数
-    static QUERY(payload?: any) {
-        if (!!payload) {
-            let str = ''
-            for (let key in payload) {
-                if (str.length > 0) {
-                    str += '&'
-                }
-                str += `${key}=${encodeURIComponent(payload[key])}`
-            }
-            return str
-        }
-    }
-
-    // 拼接 url 与 query 参数
-    static URL(url: string, payload?: any) {
-        let query = this.QUERY(payload)
-        if (!!query) {
-            return `${url}?${query}`
-        }
-        return url
-    }
-
-    // 以 GET 方式发送请求 （参数直接在url中携带）
-    static GET(url: string, query?: any, finish?: (status: boolean, res: any) => void, type = "json") {
-        let req = new HttpRequest(this.URL(url, query), undefined, type)
-        req.baseUrl = this.sharedBaseUrl
-        req.onfinish = finish
-        req.get()
-        return req
-    }
-
-    // 以 POST 方式发送 JSON 对象
-    static POST(url: string, payload: any, finish: (status: boolean, res: any) => void, type = "json") {
-        let data = payload && JSON.stringify(payload)
-        let req = new HttpRequest(url, data, type)
-        req.baseUrl = this.sharedBaseUrl
-        req.onfinish = finish
-        req.contentType(ContentType.JSON)
-        req.post()
-        return req
-    }
-
-    // 以 POST 方式发送 表单 数据 (data 内容形式 "a=val1&b=val2&c=123")
-    static FORM(url: string, data: string, finish: (status: boolean, res: any) => void, type = "json") {
-        let req = new HttpRequest(url, data, type)
-        req.baseUrl = this.sharedBaseUrl
-        req.onfinish = finish
-        req.contentType(ContentType.FORM)
-        req.post()
-        return req
-    }
-
-    constructor(url: string, data?: any, type = "json") {
-        this.url = url
-        this.data = data
-        this.type = type
-        this.req = new DuktapeJS.HttpRequest()
-        this.req.once(DuktapeJS.COMPLETE, this, this.onComplete)
-        this.req.once(DuktapeJS.ERROR, this, this.onError)
-    }
-
-    // 取消请求
-    cancel() {
-        if (!this._done) {
-            this._cancel = true
-            if (!!this.onfinish) {
-                this.onfinish(false, "request cancelled")
-            }
-        }
-        return this
-    }
-
-    // 设定超时
-    timeout(seconds: number) {
-        if (!this._done) {
-            setTimeout(() => {
-                if (!this._done) {
-                    this._cancel = true
-                    if (!!this.onfinish) {
-                        this.onfinish(false, "request timeout")
-                    }
-                }
-            }, seconds * 1000)
-        }
-        return this
-    }
-
-    // 伪造 User-Agent
-    userAgent() {
-        this._headers.push("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36")
-    }
-
-    contentType(type: string) {
-        this._headers.push("Content-Type", type)
-    }
-
-    private onComplete(res: any) {
-        this._done = true
-        console.log("httprequest", this._cancel, res)
-        if (!!this.onfinish && !this._cancel) {
-            this.onfinish(true, res)
-        }
-    }
-
-    private onError(res: any) {
-        this._done = true
-        console.log("httprequest", res)
-        if (!!this.onfinish && !this._cancel) {
-            this.onfinish(false, res)
-        }
-    }
-
-    get() {
-        console.log("GET", this.type, this.url)
-        this.req.send(this.baseUrl + this.url, this.data, "get", this.type, this._headers)
-    }
-
-    post() {
-        console.log("POST", this.type, this.url, this.data)
-        this.req.send(this.baseUrl + this.url, this.data, "post", this.type, this._headers)
-    }
-}
-*/ 
 var mm;
 (function (mm) {
     var FooBase = /** @class */ (function () {

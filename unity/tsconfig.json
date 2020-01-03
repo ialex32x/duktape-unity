@@ -3,12 +3,12 @@
         // "module": "commonjs",
         "target": "es5",
         "sourceRoot": "",
-        // "outDir": "Assets/Examples/Scripts/out",
-        "outFile": "Assets/Examples/Scripts/out/code.js",
+        // "outDir": "Assets/Duktape/Examples/Scripts/out",
+        "outFile": "Assets/Duktape/Examples/Scripts/out/code.js",
         "typeRoots": [
             "Assets/Duktape/Typings",
             "Assets/Generated",
-            "Assets/Examples/Scripts/types"
+            "Assets/Duktape/Examples/Scripts/types"
         ],
         "moduleResolution": "node",
         "types": [
@@ -29,10 +29,10 @@
     "include": [
         "Assets/Duktape/Typings/**/*.ts",
         "Assets/Generated/**/*.ts",
-        "Assets/Examples/Scripts/types/**/*.ts", 
-        "Assets/Examples/Scripts/src/**/*.ts"
+        "Assets/Duktape/Examples/Scripts/types/**/*.ts", 
+        "Assets/Duktape/Examples/Scripts/src/**/*.ts"
     ],
     "exclude": [
-        "Assets/Examples/Scripts/out/**/*"
+        "Assets/Duktape/Examples/Scripts/out/**/*"
     ]
 }
