@@ -4,17 +4,19 @@ class MyCircleBridge {
     transform: Transform
     rot = 0
 
-    root_cw: GameObject
-    root_ccw: GameObject
+    root_cw: Transform
+    root_ccw: Transform
 
     Awake() {
         console.log(this.gameObject)
 
         let cube = GameObject.Find("/abox")
-        this.root_cw = new GameObject("cube instances cw")
-        this.root_cw.transform.localPosition = Vector3.zero
-        this.root_ccw = new GameObject("cube instances ccw")
-        this.root_ccw.transform.localPosition = Vector3.zero
+        let root_cw = new GameObject("cube instances cw")
+        this.root_cw = root_cw.transform;
+        this.root_cw.localPosition = Vector3.zero
+        let root_ccw = new GameObject("cube instances ccw")
+        this.root_ccw = root_ccw.transform;
+        this.root_ccw.localPosition = Vector3.zero
 
         let secs = 10
         let up = new Vector3(0, 5, 0)
@@ -22,20 +24,20 @@ class MyCircleBridge {
         // copy.transform.localPosition = UnityExtensions.Vector3Rot(up, Quaternion.Euler(0, 0, 45))
         for (let i = 0; i < secs; i++) {
             let slice = i * 360 / secs
-            let copy = <GameObject>UObject.Instantiate(cube, this.root_cw.transform)
+            let copy = <GameObject>UObject.Instantiate(cube, this.root_cw)
             copy.transform.localPosition = UnityExtensions.Vector3Rot(up, Quaternion.Euler(0, 0, slice))
         }
         for (let i = 0; i < secs; i++) {
             let slice = i * 360 / secs
-            let copy = <GameObject>UObject.Instantiate(cube, this.root_ccw.transform)
+            let copy = <GameObject>UObject.Instantiate(cube, this.root_ccw)
             copy.transform.localPosition = UnityExtensions.Vector3Rot(up, Quaternion.Euler(0, 0, slice))
         }
     }
 
     Update() {
         this.rot += Time.deltaTime * 50
-        this.root_cw.transform.localRotation = Quaternion.Euler(0, 0, this.rot)
-        this.root_ccw.transform.localRotation = Quaternion.Euler(0, 0, -this.rot)
+        this.root_cw.localRotation = Quaternion.Euler(0, 0, this.rot)
+        this.root_ccw.localRotation = Quaternion.Euler(0, 0, -this.rot)
     }
 }
 

@@ -18,29 +18,31 @@ var MyCircleBridge = /** @class */ (function () {
     MyCircleBridge.prototype.Awake = function () {
         console.log(this.gameObject);
         var cube = GameObject.Find("/abox");
-        this.root_cw = new GameObject("cube instances cw");
-        this.root_cw.transform.localPosition = Vector3.zero;
-        this.root_ccw = new GameObject("cube instances ccw");
-        this.root_ccw.transform.localPosition = Vector3.zero;
+        var root_cw = new GameObject("cube instances cw");
+        this.root_cw = root_cw.transform;
+        this.root_cw.localPosition = Vector3.zero;
+        var root_ccw = new GameObject("cube instances ccw");
+        this.root_ccw = root_ccw.transform;
+        this.root_ccw.localPosition = Vector3.zero;
         var secs = 10;
         var up = new Vector3(0, 5, 0);
         // let copy = <GameObject>UObject.Instantiate(cube, cube.transform)
         // copy.transform.localPosition = UnityExtensions.Vector3Rot(up, Quaternion.Euler(0, 0, 45))
         for (var i = 0; i < secs; i++) {
             var slice = i * 360 / secs;
-            var copy = UObject.Instantiate(cube, this.root_cw.transform);
+            var copy = UObject.Instantiate(cube, this.root_cw);
             copy.transform.localPosition = UnityExtensions.Vector3Rot(up, Quaternion.Euler(0, 0, slice));
         }
         for (var i = 0; i < secs; i++) {
             var slice = i * 360 / secs;
-            var copy = UObject.Instantiate(cube, this.root_ccw.transform);
+            var copy = UObject.Instantiate(cube, this.root_ccw);
             copy.transform.localPosition = UnityExtensions.Vector3Rot(up, Quaternion.Euler(0, 0, slice));
         }
     };
     MyCircleBridge.prototype.Update = function () {
         this.rot += Time.deltaTime * 50;
-        this.root_cw.transform.localRotation = Quaternion.Euler(0, 0, this.rot);
-        this.root_ccw.transform.localRotation = Quaternion.Euler(0, 0, -this.rot);
+        this.root_cw.localRotation = Quaternion.Euler(0, 0, this.rot);
+        this.root_ccw.localRotation = Quaternion.Euler(0, 0, -this.rot);
     };
     return MyCircleBridge;
 }());
@@ -381,19 +383,20 @@ function sample() {
                 this.rotx = 10;
                 this.roty = 20;
                 this.gameObject = gameObject;
+                this.transform = gameObject.transform;
             }
             MyBridge.prototype.OnEnable = function () {
                 console.log("bridge.OnEnable");
             };
             MyBridge.prototype.Start = function () {
                 console.log("bridge.Start");
-                this.gameObject.transform.localPosition = new UnityEngine.Vector3(3, 0, 0);
+                this.transform.localPosition = new UnityEngine.Vector3(3, 0, 0);
             };
             MyBridge.prototype.OnDisable = function () {
                 console.log("bridge.OnDisable");
             };
             MyBridge.prototype.Update = function () {
-                this.gameObject.transform.localRotation = UnityEngine.Quaternion.Euler(this.rotx, this.roty, 0);
+                this.transform.localRotation = UnityEngine.Quaternion.Euler(this.rotx, this.roty, 0);
                 this.rotx += UnityEngine.Time.deltaTime * 30;
                 this.roty += UnityEngine.Time.deltaTime * 15;
                 if (UnityEngine.Input.GetMouseButtonUp(0)) {

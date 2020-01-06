@@ -135,11 +135,13 @@ function sample() {
         class MyBridge {
             hitInfo: any = {}
             gameObject: UnityEngine.GameObject
+            transform: Transform;
             private rotx = 10
             private roty = 20
 
             constructor(gameObject: UnityEngine.GameObject) {
                 this.gameObject = gameObject
+                this.transform = gameObject.transform;
             }
 
             OnEnable() {
@@ -148,7 +150,7 @@ function sample() {
 
             Start() {
                 console.log("bridge.Start")
-                this.gameObject.transform.localPosition = new UnityEngine.Vector3(3, 0, 0)
+                this.transform.localPosition = new UnityEngine.Vector3(3, 0, 0)
             }
 
             OnDisable() {
@@ -156,7 +158,7 @@ function sample() {
             }
 
             Update() {
-                this.gameObject.transform.localRotation = UnityEngine.Quaternion.Euler(this.rotx, this.roty, 0)
+                this.transform.localRotation = UnityEngine.Quaternion.Euler(this.rotx, this.roty, 0)
                 this.rotx += UnityEngine.Time.deltaTime * 30
                 this.roty += UnityEngine.Time.deltaTime * 15
                 if (UnityEngine.Input.GetMouseButtonUp(0)) {
