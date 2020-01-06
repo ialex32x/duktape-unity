@@ -163,7 +163,7 @@ Typescript source files will be compiled into js after your modification and swi
 
 * duktape.json
 modify the basic configuration at ./duktape.json (details in Assets/Duktape/Editor/Prefs.cs)
-```json
+```javascript
 {
     "outDir": "Assets/Generated",
     "typescriptDir": "Assets/Generated",
