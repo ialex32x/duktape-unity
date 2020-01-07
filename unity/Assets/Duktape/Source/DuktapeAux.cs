@@ -215,15 +215,17 @@ namespace Duktape
 
         private static string duk_get_stacktrace(IntPtr ctx)
         {
-            var stacktrace = string.Empty;
-
+            var stacktrace = "\n";
             uint malloc_count = 0;
             uint malloc_size = 0;
             var vm = DuktapeVM.GetVM(ctx);
             if (vm != null)
             {
                 vm.GetMemoryState(out malloc_count, out malloc_size);
-                stacktrace += $"Allocations: {malloc_count} [{malloc_size}]\n";
+                if (malloc_count != 0)
+                {
+                    stacktrace += $"allocations: {malloc_count} [{malloc_size}]\n";
+                }
             }
             stacktrace += "stacktrace:\n";
             for (int i = -2; ; i--)

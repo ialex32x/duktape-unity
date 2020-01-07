@@ -316,6 +316,8 @@ namespace Duktape
 
         #endregion
 
+        // temp code
+#if UNITY_EDITOR_WIN
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void duk_unity_get_memory_state(IntPtr thr, out duk_uint_t malloc_count, out duk_uint_t malloc_size);
 
@@ -323,24 +325,36 @@ namespace Duktape
         public static extern IntPtr duk_unity_create_heap();
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void duk_unity_destroy_heap(IntPtr ctx);
+#else
+        public static void duk_unity_get_memory_state(IntPtr thr, out duk_uint_t malloc_count, out duk_uint_t malloc_size)
+        {
+            malloc_size=malloc_count=0;
+        }
+#endif
+
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr duk_create_heap(IntPtr allocFunc, IntPtr reallocFunc, IntPtr freeFunc, IntPtr heapUdata, IntPtr fatalFunc);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void duk_destroy_heap(IntPtr ctx);
 
-        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_unity_destroy_heap(IntPtr ctx);
-
         public static IntPtr duk_create_heap_default()
         {
+#if UNITY_EDITOR_WIN // temp code
             return duk_unity_create_heap();
-            // return duk_create_heap(IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+#else
+            return duk_create_heap(IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+#endif
         }
 
         public static void duk_destroy_heap_default(IntPtr ctx)
         {
-            // duk_destroy_heap(ctx);
+#if UNITY_EDITOR_WIN // temp code
             duk_unity_destroy_heap(ctx);
+#else
+            duk_destroy_heap(ctx);
+#endif
         }
 
         // public static IntPtr duk_create_heap(duk_alloc_function allocFunc, duk_realloc_function reallocFunc, duk_free_function freeFunc, IntPtr heapUdata, duk_fatal_function fatalFunc)
