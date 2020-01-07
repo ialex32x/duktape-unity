@@ -85,6 +85,11 @@ namespace Duktape
             DuktapeDLL.duk_unity_open(ctx);
         }
 
+        public void GetMemoryState(out uint count, out uint size)
+        {
+            DuktapeDLL.duk_unity_get_memory_state(ctx, out count, out size);
+        }
+
         public static DuktapeVM GetInstance()
         {
             return _instance;
@@ -590,7 +595,7 @@ namespace Duktape
                 _lastContext = null;
                 _contexts.Clear();
                 _objectCache.Clear();
-                DuktapeDLL.duk_destroy_heap(ctx);
+                DuktapeDLL.duk_destroy_heap_default(ctx);
                 // Debug.LogWarning("duk_destroy_heap");
             }
 

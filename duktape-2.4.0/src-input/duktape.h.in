@@ -1397,6 +1397,13 @@ DUK_EXTERNAL_DECL duk_bool_t duk_sock_open(duk_context *ctx);
 // DUK_EXTERNAL_DECL void duk_unity_resume(duk_context *ctx);
 
 /*
+ * memory allocation state
+ */
+DUK_EXTERNAL_DECL void duk_unity_get_memory_state(duk_context *thr, duk_uint_t *malloc_count, duk_uint_t *malloc_size);
+DUK_EXTERNAL_DECL duk_context *duk_unity_create_heap();
+DUK_EXTERNAL_DECL void duk_unity_destroy_heap(duk_context *thr);
+
+/*
  * debugger supported
  */
 

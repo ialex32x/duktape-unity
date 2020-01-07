@@ -16,7 +16,7 @@ namespace Duktape
 
         public DuktapeCompiler()
         {
-            _ctx = DuktapeDLL.duk_create_heap_default();
+            _ctx = DuktapeDLL.duk_create_heap(IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
             // _vm = new DuktapeVM();
             // _vm.Initialize(null);
         }
