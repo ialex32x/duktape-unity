@@ -215,7 +215,17 @@ namespace Duktape
 
         private static string duk_get_stacktrace(IntPtr ctx)
         {
-            var stacktrace = "stacktrace:\n";
+            var stacktrace = string.Empty;
+
+            uint malloc_count = 0;
+            uint malloc_size = 0;
+            var vm = DuktapeVM.GetVM(ctx);
+            if (vm != null)
+            {
+                vm.GetMemoryState(out malloc_count, out malloc_size);
+                stacktrace += $"Allocations: {malloc_count} [{malloc_size}]\n";
+            }
+            stacktrace += "stacktrace:\n";
             for (int i = -2; ; i--)
             {
                 DuktapeDLL.duk_inspect_callstack_entry(ctx, i);
