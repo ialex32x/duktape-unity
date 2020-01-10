@@ -60,6 +60,21 @@ function fmathtest() {
         f2 = FMath.div(f2, f1);
         console.log(FMath.to_number(f2), FMath.to_number(FMath.sin(f2)));
     }
+    var seed_start = 0;
+    var seed_end = seed_start + 5;
+    for (var seed = seed_start; seed < seed_end; seed++) {
+        var r = new FMath.Random(seed);
+        var c = 0;
+        var times = 100;
+        for (var i = 0; i < times; i++) {
+            // let v = r.range(0, full) / full;
+            var v = r.value;
+            if (v > 0.5) {
+                c++;
+            }
+        }
+        console.log("random:", c * 100 / times, "% with seed:", seed);
+    }
 }
 var ut;
 (function (ut) {
