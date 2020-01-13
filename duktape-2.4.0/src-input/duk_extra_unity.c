@@ -874,6 +874,59 @@ DUK_EXTERNAL void duk_unity_destroy_heap(duk_hthread *thr) {
     duk_destroy_heap(thr);
 }
 
+DUK_EXTERNAL duk_bool_t duk_unity_get_refid(duk_context *ctx, duk_idx_t idx, duk_int_t *refid) {
+    if (refid) {
+        if (duk_get_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("!ref"))) {
+            *refid = duk_get_int(ctx, -1);
+            duk_pop(ctx);
+            return 1;
+        }
+        duk_pop(ctx);
+    }
+    return 0;
+}
+
+DUK_EXTERNAL duk_bool_t duk_unity_set_refid(duk_context *ctx, duk_idx_t idx, duk_int_t refid) {
+    idx = duk_normalize_index(ctx, idx);
+    duk_push_int(ctx, refid);
+    return duk_put_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("!ref"));
+}
+
+DUK_EXTERNAL duk_bool_t duk_unity_get_weak_refid(duk_context *ctx, duk_idx_t idx, duk_int_t *refid) {
+    if (refid) {
+        if (duk_get_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("!weak"))) {
+            *refid = duk_get_int(ctx, -1);
+            duk_pop(ctx);
+            return 1;
+        }
+        duk_pop(ctx);
+    }
+    return 0;
+}
+
+DUK_EXTERNAL duk_bool_t duk_unity_set_weak_refid(duk_context *ctx, duk_idx_t idx, duk_int_t refid) {
+    idx = duk_normalize_index(ctx, idx);
+    duk_push_int(ctx, refid);
+    return duk_put_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("!weak"));
+}
+
+DUK_EXTERNAL duk_bool_t duk_unity_get_type_refid(duk_context *ctx, duk_idx_t idx, duk_uint_t *refid) {
+    if (refid) {
+        if (duk_get_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("!type"))) {
+            *refid = duk_get_uint(ctx, -1);
+            duk_pop(ctx);
+            return 1;
+        }
+        duk_pop(ctx);
+    }
+    return 0;
+}
+
+DUK_EXTERNAL duk_bool_t duk_unity_set_type_refid(duk_context *ctx, duk_idx_t idx, duk_uint_t refid) {
+    idx = duk_normalize_index(ctx, idx);
+    duk_push_uint(ctx, refid);
+    return duk_put_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("!type"));
+}
 
 DUK_EXTERNAL duk_bool_t duk_unity_open(duk_context *ctx) {
     duk_refsys_open(ctx);

@@ -545,7 +545,7 @@ namespace Duktape
         where T : class
         {
             object o_t;
-            var ret = duk_get_object(ctx, idx, out o_t);
+            var ret = duk_get_cached_object(ctx, idx, out o_t);
             o = o_t as T;
             if (o_t != null && o == null)
             {
@@ -601,15 +601,10 @@ namespace Duktape
 
         public static bool duk_get_cached_object(IntPtr ctx, int idx, out object o)
         {
-            if (DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE))
+            int id;
+            if (DuktapeDLL.duk_unity_get_refid(ctx, idx, out id))
             {
-                var id = DuktapeDLL.duk_get_int(ctx, -1);
-                DuktapeDLL.duk_pop(ctx);
                 return DuktapeVM.GetObjectCache(ctx).TryGetObject(id, out o);
-            }
-            else
-            {
-                DuktapeDLL.duk_pop(ctx);
             }
             o = null;
             return false;

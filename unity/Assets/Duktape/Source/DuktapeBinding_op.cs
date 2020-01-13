@@ -26,7 +26,7 @@ namespace Duktape
         {
             var cache = DuktapeVM.GetObjectCache(ctx);
             var id = cache.AddObject(o);
-            DuktapeDLL.duk_unity_set_prop_i(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE, id);
+            DuktapeDLL.duk_unity_set_refid(ctx, idx, id);
             if (DuktapeVM.GetVM(ctx).PushChainedPrototypeOf(ctx, o.GetType()))
             {
                 DuktapeDLL.duk_set_prototype(ctx, -2);
@@ -135,12 +135,11 @@ namespace Duktape
         {
             if (!DuktapeDLL.duk_is_null_or_undefined(ctx, idx))
             {
-                if (DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE))
+                if (DuktapeDLL.duk_unity_get_refid(ctx, idx, out id))
                 {
                     id = DuktapeDLL.duk_get_int(ctx, -1);
                     return true;
                 }
-                DuktapeDLL.duk_pop(ctx); // pop OBJ_PROP_NATIVE
             }
             id = 0;
             return false;
@@ -152,15 +151,10 @@ namespace Duktape
             {
                 return true;
             }
-            if (DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE))
+            int id;
+            if (DuktapeDLL.duk_unity_get_refid(ctx, idx, out id))
             {
-                var id = DuktapeDLL.duk_get_int(ctx, -1);
-                DuktapeDLL.duk_pop(ctx); // pop OBJ_PROP_NATIVE
                 return DuktapeVM.GetObjectCache(ctx).ReplaceObject(id, o);
-            }
-            else
-            {
-                DuktapeDLL.duk_pop(ctx);
             }
             return false;
         }
