@@ -606,6 +606,7 @@ namespace Duktape
             {
                 return DuktapeVM.GetObjectCache(ctx).TryGetObject(id, out o);
             }
+            //TODO: if o is Delegate, try get from delegate cache list
             o = null;
             return false;
         }

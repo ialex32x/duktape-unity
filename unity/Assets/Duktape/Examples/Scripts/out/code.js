@@ -374,9 +374,12 @@ function sample() {
         sampleClass.DispatchTestEvent();
         sampleClass.delegateFoo4 = function (a, b) { return a + b; };
         sampleClass.TestDelegate4();
-        SampleNamespace.SampleClass.TestDelegate(function () {
+        console.log("trytrytrytry", sampleClass.delegateFoo4);
+        var fn = function () {
             console.log(this, "TestDelegate");
-        });
+        };
+        SampleNamespace.SampleClass.TestDelegate(fn);
+        SampleNamespace.SampleClass.TestDelegate(fn);
         var d = new DuktapeJS.Dispatcher();
         d.on("this", function () {
             console.log(this, "TestDelegate");

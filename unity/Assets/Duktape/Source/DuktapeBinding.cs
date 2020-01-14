@@ -15,6 +15,7 @@ namespace Duktape
             int id;
             if (DuktapeDLL.duk_unity_get_refid(ctx, 0, out id))
             {
+                // Debug.LogErrorFormat("remove refid {0}", id);
                 DuktapeVM.GetObjectCache(ctx)?.RemoveObject(id);
             }
             return 0;

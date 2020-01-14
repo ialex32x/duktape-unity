@@ -219,6 +219,7 @@ namespace Duktape
             IntPtr heapptr;
             if (cache.TryGetJSValue(o, out heapptr))
             {
+                // Debug.LogWarningFormat("cache hit push {0}", heapptr);
                 DuktapeDLL.duk_push_heapptr(ctx, heapptr);
                 return;
             }

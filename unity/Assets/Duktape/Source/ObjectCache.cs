@@ -35,6 +35,10 @@ namespace Duktape
         private List<ObjectRef> _map = new List<ObjectRef>();
         // host object => jsvalue heapptr (dangerous)
         private Dictionary<object, IntPtr> _rmap = new Dictionary<object, IntPtr>(EqualityComparer.Default);
+        // weak reference table for delegates
+        private Dictionary<IntPtr, WeakReference> _delegateMap = new Dictionary<IntPtr, WeakReference>();
+
+        // private Dictionary<IntPtr, 
 
         public void Clear()
         {
@@ -66,9 +70,35 @@ namespace Duktape
             return o != null && _rmap.Remove(o);
         }
 
-        public int AddWeakObject(object o)
+        public void AddDelegate(IntPtr jso, DuktapeDelegate o)
         {
-            return AddObject(new WeakReference(o));
+            _delegateMap[jso] = new WeakReference(o);
+            AddJSValue(o, jso);
+        }
+
+        public bool TryGetDelegate(IntPtr jso, out DuktapeDelegate o)
+        {
+            WeakReference weakRef;
+            if (_delegateMap.TryGetValue(jso, out weakRef))
+            {
+                o = weakRef.Target as DuktapeDelegate;
+                return o != null;
+            }
+            o = null;
+            return false;
+        }
+
+        public bool RemoveDelegate(IntPtr jso)
+        {
+            WeakReference weakRef;
+            var r = false;
+            if (_delegateMap.TryGetValue(jso, out weakRef))
+            {
+                r = true;
+                _delegateMap.Remove(jso);
+                RemoveJSValue(weakRef.Target);
+            }
+            return r;
         }
 
         public int AddObject(object o)
