@@ -110,10 +110,14 @@ function sample() {
 
         sampleClass.delegateFoo4 = (a, b) => a + b;
         sampleClass.TestDelegate4();
+        console.log("trytrytrytry", sampleClass.delegateFoo4);
 
-        SampleNamespace.SampleClass.TestDelegate(function () {
+        var fn = function () {
             console.log(this, "TestDelegate")
-        })
+        };
+        SampleNamespace.SampleClass.TestDelegate(fn);
+        SampleNamespace.SampleClass.TestDelegate(fn);
+        
         let d = new DuktapeJS.Dispatcher()
         d.on("this", function () {
             console.log(this, "TestDelegate")

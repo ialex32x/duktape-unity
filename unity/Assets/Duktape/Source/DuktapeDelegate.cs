@@ -10,17 +10,21 @@ namespace Duktape
         // cache the delegate object
         public Delegate target;
         private int _savedState;
+        private IntPtr _jsObject;
 
         private DuktapeFunction _jsInvoker;
 
         public DuktapeDelegate(IntPtr ctx, uint refid)
         : base(ctx, refid)
         {
+            _jsObject = ctx;
         }
 
         private static void duk_unity_unref(IntPtr ctx, uint refid, object target)
         {
-            DuktapeVM.GetObjectCache(ctx).RemoveJSValue(target);
+            var cache = DuktapeVM.GetObjectCache(ctx);
+            // cache.RemoveJSValue(target);
+            cache.RemoveDelegate((IntPtr)target);
             DuktapeDLL.duk_unity_unref(ctx, refid);
         }
 
@@ -30,9 +34,10 @@ namespace Duktape
             if (this._refid != 0 && this._context != null)
             {
                 var vm = this._context.vm;
-                vm.GC(this._refid, this.target, duk_unity_unref);
+                vm.GC(this._refid, this._jsObject, duk_unity_unref);
                 this._refid = 0;
                 this.target = null;
+                this._jsObject = IntPtr.Zero;
             }
         }
 

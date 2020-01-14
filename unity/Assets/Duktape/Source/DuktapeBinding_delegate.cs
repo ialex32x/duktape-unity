@@ -44,29 +44,25 @@ namespace Duktape
             if (DuktapeDLL.duk_is_object(ctx, idx)/* && check if js delegate type (hidden property) */
              || DuktapeDLL.duk_is_function(ctx, idx))
             {
-                DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE_WEAK);
-                var refid = DuktapeDLL.duk_get_int(ctx, -1);
-                DuktapeDLL.duk_pop(ctx);
-
+                var heapptr = DuktapeDLL.duk_get_heapptr(ctx, idx);
                 var cache = DuktapeVM.GetObjectCache(ctx);
                 DuktapeDelegate fn;
-                if (cache.TryGetTypedWeakObject(refid, out fn) && fn != null)
+                if (cache.TryGetDelegate(heapptr, out fn))
                 {
+                    // Debug.LogWarningFormat("cache hit {0}", heapptr);
                     o = fn.target as T;
                     return true;
                 }
                 // 默认赋值操作
                 DuktapeDLL.duk_dup(ctx, idx);
-                var heapptr = DuktapeDLL.duk_get_heapptr(ctx, idx);
                 fn = new DuktapeDelegate(ctx, DuktapeDLL.duk_unity_ref(ctx));
                 var vm = DuktapeVM.GetVM(ctx);
                 o = vm.CreateDelegate(typeof(T), fn) as T;
 
                 // DuktapeDelegate 拥有 js 对象的强引用, 此 js 对象无法释放 cache 中的 object, 所以这里用弱引用注册
                 // 会出现的问题是, 如果 c# 没有对 DuktapeDelegate 的强引用, 那么反复 get_delegate 会重复创建 DuktapeDelegate
-                refid = cache.AddWeakObject(fn);
-                DuktapeDLL.duk_unity_set_prop_i(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE_WEAK, refid);
-                cache.AddJSValue(o, heapptr);
+                // Debug.LogWarningFormat("cache create : {0}", heapptr);
+                cache.AddDelegate(heapptr, fn);
                 return true;
             }
             o = null;

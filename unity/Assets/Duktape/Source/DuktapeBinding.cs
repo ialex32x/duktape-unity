@@ -12,12 +12,12 @@ namespace Duktape
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         protected static int object_dtor(IntPtr ctx)
         {
-            if (DuktapeDLL.duk_get_prop_string(ctx, 0, DuktapeVM.OBJ_PROP_NATIVE))
+            int id;
+            if (DuktapeDLL.duk_unity_get_refid(ctx, 0, out id))
             {
-                var id = DuktapeDLL.duk_get_int(ctx, -1);
+                // Debug.LogErrorFormat("remove refid {0}", id);
                 DuktapeVM.GetObjectCache(ctx)?.RemoveObject(id);
             }
-            DuktapeDLL.duk_pop(ctx); // pop native 
             return 0;
         }
 
@@ -172,8 +172,8 @@ namespace Duktape
             // Debug.LogFormat("begin check {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_dup(ctx, -1);
             var refid = DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx)));
-            DuktapeDLL.duk_push_uint(ctx, refid);
-            DuktapeDLL.duk_put_prop_string(ctx, -3, DuktapeVM.OBJ_PROP_EXPORTED_REFID);
+            // DuktapeDLL.duk_push_uint(ctx, refid);
+            DuktapeDLL.duk_unity_set_type_refid(ctx, -2, refid); // DuktapeDLL.duk_put_prop_string(ctx, -3, DuktapeVM.OBJ_PROP_EXPORTED_REFID);
             // Debug.LogFormat("end check {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_put_prop_string(ctx, -3, typename);
             DuktapeDLL.duk_push_object(ctx); // [ctor, prototype]
@@ -215,13 +215,11 @@ namespace Duktape
         protected static void duk_add_event(IntPtr ctx, string name, DuktapeDLL.duk_c_function add_op, DuktapeDLL.duk_c_function remove_op, int idx)
         {
             idx = DuktapeDLL.duk_normalize_index(ctx, idx);
-            
-            DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE); // 直接在 event object 上复制主对象的引用id
-            var refid = DuktapeDLL.duk_get_int(ctx, -1);
-            DuktapeDLL.duk_pop(ctx);
+            int refid;
+            DuktapeDLL.duk_unity_get_refid(ctx, idx, out refid); // 直接在 event object 上复制主对象的引用id
 
             DuktapeDLL.duk_push_object(ctx);
-            DuktapeDLL.duk_unity_set_prop_i(ctx, -1, DuktapeVM.OBJ_PROP_NATIVE, refid);
+            DuktapeDLL.duk_unity_set_refid(ctx, -1, refid);
             DuktapeDLL.duk_push_c_function(ctx, add_op, 1);
             DuktapeDLL.duk_put_prop_string(ctx, -2, "on");
             DuktapeDLL.duk_push_c_function(ctx, remove_op, 1);
@@ -233,12 +231,11 @@ namespace Duktape
         {
             idx = DuktapeDLL.duk_normalize_index(ctx, idx);
 
-            DuktapeDLL.duk_get_prop_string(ctx, idx, DuktapeVM.OBJ_PROP_NATIVE); // 直接在 event object 上复制主对象的引用id
-            var refid = DuktapeDLL.duk_get_int(ctx, -1);
-            DuktapeDLL.duk_pop(ctx);
+            int refid;
+            DuktapeDLL.duk_unity_get_refid(ctx, idx, out refid); // 直接在 event object 上复制主对象的引用id
 
             DuktapeDLL.duk_push_object(ctx); // [evtobj]
-            DuktapeDLL.duk_unity_set_prop_i(ctx, -1, DuktapeVM.OBJ_PROP_NATIVE, refid); 
+            DuktapeDLL.duk_unity_set_refid(ctx, -1, refid);
             DuktapeDLL.duk_push_string(ctx, name); // [evtobj, name]
             DuktapeDLL.duk_dup(ctx, -2); // [evtobj, name, evtobj]
             DuktapeDLL.duk_push_c_function(ctx, add_op, 1);

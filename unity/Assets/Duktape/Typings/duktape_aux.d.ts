@@ -71,6 +71,7 @@ declare namespace FMath {
 
     class Random {
         constructor(seed?: number)
+        readonly value: number
         next(): number
         range(min?: number, max?: number): number
     }

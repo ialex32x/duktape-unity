@@ -1301,6 +1301,15 @@ DUK_EXTERNAL_DECL void duk_module_node_init(duk_context *ctx);
 
 DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_unity_error_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt));
 
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_get_refid(duk_context *ctx, duk_idx_t idx, duk_int_t *refid);
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_refid(duk_context *ctx, duk_idx_t idx, duk_int_t refid);
+
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_get_weak_refid(duk_context *ctx, duk_idx_t idx, duk_int_t *refid);
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_weak_refid(duk_context *ctx, duk_idx_t idx, duk_int_t refid);
+
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_get_type_refid(duk_context *ctx, duk_idx_t idx, duk_uint_t *refid);
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_type_refid(duk_context *ctx, duk_idx_t idx, duk_uint_t refid);
+
 DUK_EXTERNAL_DECL const char *duk_unity_get_lstring(duk_context *ctx, duk_idx_t idx, duk_uint_t *out_len);
 
 DUK_EXTERNAL_DECL duk_int_t duk_unity_compile_raw(duk_context *ctx, const char *src_buffer, duk_uint_t src_length, duk_uint_t flags);
@@ -1397,14 +1406,14 @@ DUK_EXTERNAL_DECL duk_bool_t duk_sock_open(duk_context *ctx);
 // DUK_EXTERNAL_DECL void duk_unity_resume(duk_context *ctx);
 
 /*
- * memory allocation state
+ * extra: memory allocation state
  */
 DUK_EXTERNAL_DECL void duk_unity_get_memory_state(duk_context *thr, duk_uint_t *malloc_count, duk_uint_t *malloc_size);
 DUK_EXTERNAL_DECL duk_context *duk_unity_create_heap();
 DUK_EXTERNAL_DECL void duk_unity_destroy_heap(duk_context *thr);
 
 /*
- * debugger supported
+ * extra: debugger supported
  */
 
 typedef duk_uint_t (*duk_unity_debug_read_function) (duk_int_t udata, char *buffer, duk_uint_t length);

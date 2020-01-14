@@ -175,16 +175,17 @@ DUK_LOCAL DUK_INLINE duk_ret_t duk_fmath_magnitude(duk_context *ctx) {
 }
 
 DUK_LOCAL DUK_INLINE duk_ret_t duk_fmath_rng_constructor(duk_context *ctx) {
-    duk_uint_t seed = duk_get_uint_default(ctx, 0, 0x00010002);
+    duk_uint_t seed = duk_get_uint_default(ctx, 0, 521288629);
     duk_push_this(ctx);
-    duk_push_uint(ctx, seed & 0xffff);
+    duk_push_uint(ctx, seed);
     duk_put_prop_string(ctx, -2, DUK_HIDDEN_SYMBOL("w"));
-    duk_push_uint(ctx, (seed >> 16) & 0xffff);
+    duk_push_uint(ctx, seed + 362436069);
     duk_put_prop_string(ctx, -2, DUK_HIDDEN_SYMBOL("z"));
     duk_pop(ctx);
     return 0;
 }
 
+// next uint32 value
 DUK_LOCAL DUK_INLINE duk_ret_t duk_fmath_rng_next(duk_context *ctx) {
     duk_uint_t value = 0;
     duk_push_this(ctx);
@@ -205,6 +206,29 @@ DUK_LOCAL DUK_INLINE duk_ret_t duk_fmath_rng_next(duk_context *ctx) {
     return 1;
 }
 
+// next double value [0, 1)
+DUK_LOCAL DUK_INLINE duk_ret_t duk_fmath_rng_get_value(duk_context *ctx) {
+    duk_uint_t value = 0;
+    duk_push_this(ctx);
+    duk_get_prop_string(ctx, -1, DUK_HIDDEN_SYMBOL("w"));
+    duk_uint_t w = duk_get_uint(ctx, -1);
+    duk_get_prop_string(ctx, -2, DUK_HIDDEN_SYMBOL("z"));
+    duk_uint_t z = duk_get_uint(ctx, -1);
+    duk_pop_2(ctx);
+    z = 36969 * (z & 65535) + (z >> 16);
+    w = 18000 * (w & 65535) + (w >> 16);
+    duk_push_uint(ctx, w);
+    duk_put_prop_string(ctx, -2, DUK_HIDDEN_SYMBOL("w"));
+    duk_push_uint(ctx, z);
+    duk_put_prop_string(ctx, -2, DUK_HIDDEN_SYMBOL("z"));
+    duk_pop(ctx);
+    value = (z << 16) + w;
+    duk_double_t result = ((duk_double_t)value + 1.0) * 2.328306435454494e-10;
+    duk_push_number(ctx, result);
+    return 1;
+}
+
+// next uint32 value [min, max)
 DUK_LOCAL DUK_INLINE duk_ret_t duk_fmath_rng_range(duk_context *ctx) {
     duk_uint_t min = duk_get_uint_default(ctx, 0, 0);
     duk_uint_t max = duk_get_uint_default(ctx, 1, 65536);
@@ -286,6 +310,7 @@ DUK_INTERNAL duk_bool_t duk_fmath_open(duk_context *ctx) {
     duk_push_int(ctx, 642253); duk_put_prop_string(ctx, -2, "gravity"); // 9.8
 
     duk_unity_begin_class(ctx, "Random", DUK_UNITY_BUILTINS_RNG, duk_fmath_rng_constructor, NULL);
+    duk_unity_add_property(ctx, "value", duk_fmath_rng_get_value, NULL, -1);
     duk_unity_add_member(ctx, "next", duk_fmath_rng_next, -1);
     duk_unity_add_member(ctx, "range", duk_fmath_rng_range, -1);
     duk_unity_end_class(ctx);
