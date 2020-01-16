@@ -1,13 +1,23 @@
 #!/usr/bin/env sh
 
-rm -rf build/ios
-mkdir -p build/ios
-cd build/ios
+rm -rf build/ios_debug
+mkdir -p build/ios_debug
+cd build/ios_debug
+cmake -DDUKTAPE_SRC_CAT=debug -DCMAKE_TOOLCHAIN_FILE=../../cmake/ios.toolchain.cmake -DPLATFORM=OS64 -GXcode ../..
+cd ..
+cmake --build ios_debug --config Release
+cd ..
+mkdir -p ./prebuilt/debug/Plugins/duktape.bundle/Contents/MacOS/
+cp ./build/ios_debug/Release-iphoneos/libduktape.a ./prebuilt/debug/Plugins/iOS/
 
-cmake -DCMAKE_TOOLCHAIN_FILE=../../cmake/ios.toolchain.cmake -DPLATFORM=OS64 -GXcode ../..
+
+rm -rf build/ios_release
+mkdir -p build/ios_release
+cd build/ios_release
+cmake -DDUKTAPE_SRC_CAT=release -DCMAKE_TOOLCHAIN_FILE=../../cmake/ios.toolchain.cmake -DPLATFORM=OS64 -GXcode ../..
 cd ..
-cmake --build ios --config Release
+cmake --build ios_release --config Release
 cd ..
-mkdir -p ./unity/Assets/Duktape/Plugins/duktape.bundle/Contents/MacOS/
-cp ./build/ios/Release-iphoneos/libduktape.a ./unity/Assets/Duktape/Plugins/iOS/
+mkdir -p ./prebuilt/release/Plugins/duktape.bundle/Contents/MacOS/
+cp ./build/ios_release/Release-iphoneos/libduktape.a ./prebuilt/release/Plugins/iOS/
 
