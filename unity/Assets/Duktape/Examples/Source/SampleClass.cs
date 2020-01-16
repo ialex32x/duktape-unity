@@ -219,6 +219,8 @@ namespace SampleNamespace
         {
         }
 
+        public static void DoNothing() { }
+
         public int Sum(int[] all)
         {
             var sum = 0;
