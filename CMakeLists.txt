@@ -6,6 +6,9 @@ IF (WIN32)
     add_definitions(-D_WINSOCKAPI_)
 ENDIF ()
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
+
 set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(DUKTAPE_DIR ${TOP_DIR}/duktape-2.4.0)
 
@@ -131,7 +134,6 @@ ELSE ()
 ENDIF ()
 
 IF (ANDROID)
-    MESSAGE("ANDROID")
     list(APPEND LIBWEBSOCKETS_SRCS
         ${LIBWEBSOCKETS_DIR}/misc/getifaddrs.c
     )
