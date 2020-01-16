@@ -1,13 +1,22 @@
 #!/usr/bin/env sh
 
-rm -rf build/osx
-mkdir -p build/osx
-cd build/osx
+rm -rf build/osx_debug
+mkdir -p build/osx_debug
+cd build/osx_debug
+cmake -DDUKTAPE_SRC_CAT=debug -GXcode ../..
+cd ..
+cmake --build osx_debug --config Release
+cd ..
+mkdir -p ./prebuilt/debug/Plugins/duktape.bundle/Contents/MacOS/
+cp ./build/osx_debug/Release/duktape.bundle/Contents/MacOS/duktape ./prebuilt/debug/Plugins/duktape.bundle/Contents/MacOS/
 
-cmake -GXcode ../..
+rm -rf build/osx_release
+mkdir -p build/osx_release
+cd build/osx_release
+cmake -DDUKTAPE_SRC_CAT=release -GXcode ../..
 cd ..
-cmake --build osx --config Release
+cmake --build osx_release --config Release
 cd ..
-mkdir -p ./unity/Assets/Duktape/Plugins/duktape.bundle/Contents/MacOS/
-cp ./build/osx/Release/duktape.bundle/Contents/MacOS/duktape ./unity/Assets/Duktape/Plugins/duktape.bundle/Contents/MacOS/
+mkdir -p ./prebuilt/release/Plugins/duktape.bundle/Contents/MacOS/
+cp ./build/osx_release/Release/duktape.bundle/Contents/MacOS/duktape ./prebuilt/release/Plugins/duktape.bundle/Contents/MacOS/
 
