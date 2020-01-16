@@ -60,7 +60,7 @@ cmake -DDUKTAPE_SRC_CAT=debug -DANDROID_ABI=x86 -DCMAKE_TOOLCHAIN_FILE=$ANDROID_
 cd ..
 cmake --build Android_x86_debug --config Release
 cd ..
-mkdir -p ./prebuilt/release/Plugins/Android/libs/x86/
+mkdir -p ./prebuilt/debug/Plugins/Android/libs/x86/
 cp ./build/Android_x86_debug/libduktape.so ./prebuilt/debug/Plugins/Android/libs/x86/
 
 
