@@ -7,7 +7,7 @@ cmake -DDUKTAPE_SRC_CAT=debug -DCMAKE_TOOLCHAIN_FILE=../../cmake/ios.toolchain.c
 cd ..
 cmake --build ios_debug --config Release
 cd ..
-mkdir -p ./prebuilt/debug/Plugins/duktape.bundle/Contents/MacOS/
+mkdir -p ./prebuilt/debug/Plugins/iOS/
 cp ./build/ios_debug/Release-iphoneos/libduktape.a ./prebuilt/debug/Plugins/iOS/
 
 
@@ -18,6 +18,6 @@ cmake -DDUKTAPE_SRC_CAT=release -DCMAKE_TOOLCHAIN_FILE=../../cmake/ios.toolchain
 cd ..
 cmake --build ios_release --config Release
 cd ..
-mkdir -p ./prebuilt/release/Plugins/duktape.bundle/Contents/MacOS/
+mkdir -p ./prebuilt/release/Plugins/iOS/
 cp ./build/ios_release/Release-iphoneos/libduktape.a ./prebuilt/release/Plugins/iOS/
 
