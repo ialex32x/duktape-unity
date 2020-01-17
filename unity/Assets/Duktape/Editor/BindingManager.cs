@@ -351,6 +351,7 @@ namespace Duktape
                 whitelist.Add(type);
                 return null;
             }
+            var tt = TransformType(type);
             if (!exportedTypes.ContainsKey(type))
             {
                 var typeBindingInfo = new TypeBindingInfo(this, type);
@@ -367,7 +368,7 @@ namespace Duktape
                     }
                 }
             }
-            return TransformType(type);
+            return tt;
         }
 
         public bool RemoveExportedType(Type type)
@@ -929,6 +930,22 @@ namespace Duktape
             }
         }
 
+        private void OnPreExporting()
+        {
+            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            {
+                var bp = _bindingProcess[i];
+                try
+                {
+                    bp.OnPreExporting(this);
+                }
+                catch (Exception exception)
+                {
+                    this.Error($"process failed [{bp}][OnPreExporting]: {exception}");
+                }
+            }
+        }
+
         private void OnPreCollectTypes()
         {
             for (int i = 0, size = _bindingProcess.Count; i < size; i++)
@@ -1060,6 +1077,7 @@ namespace Duktape
             }
             OnPostCollectAssemblies();
 
+            OnPreExporting();
             ExportAssemblies(_explicitAssemblies, false);
             ExportAssemblies(_implicitAssemblies, true);
             ExportBuiltins();
@@ -1131,6 +1149,7 @@ namespace Duktape
             AddExportedType(typeof(Array));
             AddExportedType(typeof(Object));
             AddExportedType(typeof(Vector3));
+            AddExportedType(typeof(DuktapeBridge));
         }
 
         // implicitExport: 默认进行导出(黑名单例外), 否则根据导出标记或手工添加

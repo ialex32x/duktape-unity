@@ -63,9 +63,9 @@ namespace Duktape
         // 默认导出所有类型, 过滤黑名单
         public List<string> implicitAssemblies = new List<string>(new string[]
         {
-            "UnityEngine",
-            "UnityEngine.CoreModule",
-            "UnityEngine.UIModule",
+            // "UnityEngine",
+            // "UnityEngine.CoreModule",
+            // "UnityEngine.UIModule",
             // "UnityEngine.TextRenderingModule",
             // "UnityEngine.TextRenderingModule",
             // "UnityEngine.UnityWebRequestWWWModule",
@@ -75,7 +75,7 @@ namespace Duktape
             // "UnityEngine.IMGUIModule",
             // "UnityEngine.UnityWebRequestModule",
             // "UnityEngine.PhysicsModule",
-            "UnityEngine.UI",
+            // "UnityEngine.UI",
         });
 
         // type.FullName 前缀满足以下任意一条时不会被导出
