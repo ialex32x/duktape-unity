@@ -31,6 +31,7 @@ namespace Duktape
 
         private Dictionary<Type, List<string>> _tsTypeNameMap = new Dictionary<Type, List<string>>();
         private Dictionary<Type, string> _csTypeNameMap = new Dictionary<Type, string>();
+        private Dictionary<Type, string> _csTypePusherMap = new Dictionary<Type, string>();
         private Dictionary<string, string> _csTypeNameMapS = new Dictionary<string, string>();
         private static HashSet<string> _tsKeywords = new HashSet<string>();
 
@@ -232,6 +233,19 @@ namespace Duktape
             AddCSTypeNameMap(typeof(System.Object), "object");
             AddCSTypeNameMap(typeof(void), "void");
 
+            AddCSTypePusherMap(typeof(bool), "DuktapeDLL.duk_push_boolean");
+            AddCSTypePusherMap(typeof(char), "DuktapeDLL.duk_push_int");
+            AddCSTypePusherMap(typeof(byte), "DuktapeDLL.duk_push_int");
+            AddCSTypePusherMap(typeof(sbyte), "DuktapeDLL.duk_push_int");
+            AddCSTypePusherMap(typeof(short), "DuktapeDLL.duk_push_int");
+            AddCSTypePusherMap(typeof(ushort), "DuktapeDLL.duk_push_int");
+            AddCSTypePusherMap(typeof(int), "DuktapeDLL.duk_push_int");
+            AddCSTypePusherMap(typeof(uint), "DuktapeDLL.duk_push_uint");
+            AddCSTypePusherMap(typeof(long), "DuktapeDLL.duk_push_number");
+            AddCSTypePusherMap(typeof(ulong), "DuktapeDLL.duk_push_number");
+            AddCSTypePusherMap(typeof(float), "DuktapeDLL.duk_push_number");
+            AddCSTypePusherMap(typeof(double), "DuktapeDLL.duk_push_number");
+
             Initialize();
         }
 
@@ -340,6 +354,11 @@ namespace Duktape
             _csTypeNameMap[type] = name;
             _csTypeNameMapS[type.FullName] = name;
             _csTypeNameMapS[GetCSNamespace(type) + type.Name] = name;
+        }
+
+        public void AddCSTypePusherMap(Type type, string name)
+        {
+            _csTypePusherMap[type] = name;
         }
 
         // 增加导出类型 (需要在 Collect 阶段进行)
@@ -629,6 +648,11 @@ namespace Duktape
             if (type.IsByRef)
             {
                 return GetDuktapePusher(type.GetElementType());
+            }
+            string pusher;
+            if (_csTypePusherMap.TryGetValue(type, out pusher))
+            {
+                return pusher;
             }
             if (type.BaseType == typeof(MulticastDelegate))
             {
