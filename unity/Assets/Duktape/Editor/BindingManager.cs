@@ -344,7 +344,7 @@ namespace Duktape
 
         // 增加导出类型 (需要在 Collect 阶段进行)
         //NOTE: editor mscorlib 与 runtime 存在差异, 需要手工 block 差异
-        public TypeTransform AddExportedType(Type type)
+        public TypeTransform AddExportedType(Type type, bool importBaseType = false)
         {
             if (type.IsGenericTypeDefinition)
             {
@@ -358,13 +358,24 @@ namespace Duktape
                 exportedTypes.Add(type, typeBindingInfo);
                 log.AppendLine($"AddExportedType: {type} Assembly: {type.Assembly}");
 
-                // 检查具体化泛型基类 (如果基类泛型定义在显式导出清单中, 那么导出此具体化类)
                 var baseType = type.BaseType;
-                if (baseType != null && baseType.IsConstructedGenericType)
+                if (baseType != null && !IsExportingBlocked(baseType))
                 {
-                    if (!IsExportingBlocked(baseType) && IsExportingExplicit(baseType.GetGenericTypeDefinition()))
+                    // 检查具体化泛型基类 (如果基类泛型定义在显式导出清单中, 那么导出此具体化类)
+                    // Debug.LogFormat("{0} IsConstructedGenericType:{1} {2} {3}", type, type.IsConstructedGenericType, type.IsGenericType, importBaseType);
+                    if (baseType.IsConstructedGenericType)
                     {
-                        AddExportedType(baseType);
+                        if (IsExportingExplicit(baseType.GetGenericTypeDefinition()))
+                        {
+                            AddExportedType(baseType);
+                        }
+                    }
+                    else if (!baseType.IsGenericType)
+                    {
+                        if (importBaseType)
+                        {
+                            AddExportedType(baseType, importBaseType);
+                        }
                     }
                 }
             }
