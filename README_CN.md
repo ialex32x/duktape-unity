@@ -20,6 +20,7 @@
 * Android (v7a, v8a, x86)
 * 远程调试器支持 (vscode) 
 * 集成 promise (bluebird.js)
+* coroutine (duktape thread)
 * tcp (not implemented)
 * udp with kcp (not implemented)
 
@@ -150,6 +151,36 @@ setInterval(() => {
     ws.poll()
 }, 50)
 
+```
+
+```ts
+// http request example
+console.log("http requesting...");
+HttpRequest.GET("http://t.weather.sojson.com/api/weather/city/101030100", null, (status, res) => {
+    console.warn("http response:", status, res);
+    if (status) {
+        let obj = JSON.parse(res);
+        console.log("as object", obj.message);
+    }
+});
+```
+
+```ts
+// coroutine example
+let co = new Coroutine(function (x) {
+    console.log("duktape thread, start:", x);
+    for (var i = 1; i <= 5; ++i) {
+        let r = Coroutine.yield(i);
+        console.log("duktape thread, yield:", r);
+    }
+    // Coroutine.break();
+    return "all done!";
+});
+let c = 'A'.charCodeAt(0);
+while (co.next(String.fromCharCode(c++))) {
+    console.log("duktape thread, next:", co.value);
+}
+console.log("duktape thread, done:", co.value);
 ```
 
 # 开发进度
