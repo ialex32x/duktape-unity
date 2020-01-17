@@ -7,7 +7,7 @@ IF (WIN32)
 ENDIF ()
 
 set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(DUKTAPE_DIR ${TOP_DIR}/duktape-2.4.0)
+set(DUKTAPE_DIR ${TOP_DIR}/build)
 
 # if (ANDROID OR IOS)
 #     set(DUKTAPE_SRC_CAT src-release)
