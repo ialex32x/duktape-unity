@@ -131,6 +131,8 @@ ELSE ()
 ENDIF ()
 
 IF (ANDROID)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fstrict-aliasing -fomit-frame-pointer")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fstrict-aliasing -fomit-frame-pointer")
     list(APPEND LIBWEBSOCKETS_SRCS
         ${LIBWEBSOCKETS_DIR}/misc/getifaddrs.c
     )
