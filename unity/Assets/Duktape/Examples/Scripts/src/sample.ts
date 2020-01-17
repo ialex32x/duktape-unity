@@ -1,4 +1,5 @@
 import { HttpRequest } from "./duktape/http";
+import { Coroutine } from "./duktape/coroutine";
 
 export function sampleTests() {
     // test protobuf
@@ -226,32 +227,20 @@ export function sampleTests() {
     })();
 
     (function () {
-        function makeGen(fn) {
-            return function () {
-                var thr = new Duktape.Thread(fn);
-                return { next: next };
-
-                function next() {
-                    var value = Duktape.Thread.resume(thr);  // assuming no-throw behavior
-                    var done = Duktape.info(thr).tstate === 5;
-                    return { value: value, done: done };
-                }
-            };
-        }
-
-        var myGenFunc = makeGen(function () {
-            for (var i = 1; i <= 10; ++i)
-                Duktape.Thread.yield(i);
+        let co = new Coroutine(function (x) {
+            console.log("duktape thread, start:", x);
+            for (var i = 1; i <= 5; ++i) {
+                let r = Coroutine.yield(i);
+                console.log("duktape thread, yield:", r);
+            }
+            // Coroutine.break();
             return "all done!";
         });
-
-        // ES6 behavior from here on out
-        var iter = myGenFunc();
-        var result;
-        while (!(result = iter.next()).done) {
-            console.log("duktape thread, next:", result.value);
+        let c = 'A'.charCodeAt(0);
+        while (co.next(String.fromCharCode(c++))) {
+            console.log("duktape thread, next:", co.value);
         }
-        console.log("duktape thread, done:", result.value);
+        console.log("duktape thread, done:", co.value);
     })();
 
     // (function () {
