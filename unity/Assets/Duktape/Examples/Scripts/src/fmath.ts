@@ -1,5 +1,5 @@
 
-function fmathtest() {
+export function fmathTest() {
     let f1 = FMath.from_int(2);
     let f2 = FMath.from_int(5000);
     for (let i = 0; i < 5; i++) {

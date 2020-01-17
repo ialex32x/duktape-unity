@@ -1,9 +1,10 @@
-class ContentType {
+
+export class ContentType {
     static readonly FORM = "application/x-www-form-urlencoded";
     static readonly JSON = "application/json";
 }
 
-class HttpRequest {
+export class HttpRequest {
     static sharedBaseUrl = "";
 
     public baseUrl = "";

@@ -1,8 +1,6 @@
 
-namespace ut {
-    export class ComponentSystem {
-        constructor() {
-            console.log("ComponentSystem")
-        }
+export class ComponentSystem {
+    constructor() {
+        console.log("ComponentSystem")
     }
 }

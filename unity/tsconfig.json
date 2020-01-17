@@ -1,10 +1,11 @@
 {
     "compilerOptions": {
-        // "module": "commonjs",
+        "newLine": "CRLF",
+        "module": "commonjs",
         "target": "es5",
         "sourceRoot": "",
-        // "outDir": "Assets/Duktape/Examples/Scripts/out",
-        "outFile": "Assets/Duktape/Examples/Scripts/out/code.js",
+        "outDir": "Assets/Duktape/Examples/Scripts/out",
+        // "outFile": "Assets/Duktape/Examples/Scripts/out/code.js",
         "typeRoots": [
             "Assets/Duktape/Typings",
             "Assets/Generated",

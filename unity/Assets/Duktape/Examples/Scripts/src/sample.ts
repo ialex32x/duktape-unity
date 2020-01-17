@@ -1,5 +1,6 @@
+import { HttpRequest } from "./duktape/http";
 
-function sample() {
+export function sampleTests() {
     // test protobuf
     // (function () {
     //     // let writer = protobuf.Writer.create()
@@ -139,7 +140,7 @@ function sample() {
         class MyBridge {
             hitInfo: any = {}
             gameObject: UnityEngine.GameObject
-            transform: Transform;
+            transform: UnityEngine.Transform;
             private rotx = 10
             private roty = 20
 
