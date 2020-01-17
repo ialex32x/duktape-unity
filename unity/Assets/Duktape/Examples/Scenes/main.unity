@@ -573,7 +573,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ee3122959ce9c443b76f88b52aa4770, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  launchScript: code.js
+  launchScript: main.js
   experimentalDebugger: 1
   waitForDebuggerClient: 0
   jsBytecode: 0

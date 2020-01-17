@@ -1,12 +1,12 @@
 
-v0.2:
-    ✔ websocket 支持 (libwebsockets) @done(19-04-10 11:08)
-    ☐ websocket.open 传入服务器选择的 protocol
-
-v0.1:
-    ✔ Unity 常用值类型优化 @done(19-04-10 10:19)
-
 core: 
+    ☐ extends MonoBehaviour (需要禁止 MonoBehaviour binding 中对构造方法调用的默认行为) @started(19-03-11 14:09)
+    ☐ websocket.open 传入服务器选择的 protocol
+    ☐ 为导出类型链末端 constructor 增加额外一层继承, 以便在 d.ts 中对 Type 做出具体类型约束
+    ☐ 识别属性 JSRawFunction, 直接传递 ctx
+    ✔ 利用 duktape thread 模拟协程 (https://github.com/svaarala/duktape/issues/1101) @done(20-01-17 11:41)
+    ✔ websocket 支持 (libwebsockets) @done(19-04-10 11:08)
+    ✔ Unity 常用值类型优化 @done(19-04-10 10:19)
     ✔ nodejs-like module @done(19-02-28 16:06)
     ✔ auto generate C# types binding code @done(19-02-28 16:06)
     ✔ auto generate d.ts for exported C# types @done(19-02-28 16:07)
@@ -14,41 +14,37 @@ core:
     ✔ !!! 处理重载函数 @done(19-03-05 17:31)
     ✔ 处理 interface @done(19-03-05 17:31)
     ✔ 优化 Vector3 等值类型 (Vector3已部分完成, Slerp等考虑转接到binding调用, 不在优化中自己实现) @started(19-03-11 14:09) @done(19-03-29 09:32) @lasted(2w3d19h23m39s)
-    ☐ extends MonoBehaviour (需要禁止 MonoBehaviour binding 中对构造方法调用的默认行为) @started(19-03-11 14:09)
     ✔ 将 ref/out 做成 ts 泛型调用约定 (DuktapeJS.Ref<T> & Out<T>) @started(19-03-11 14:09) @done(19-03-12 04:54) @lasted(14h45m29s)
     
+compatiblity: 
+    ✔ setInterval/setTimeout @done(19-02-28 16:02)
+    ✔ http.GET/POST/FORM @done(20-01-17 09:47)
+    ☐ socket (tcp/udp)
+
 Misc: 
+    ☐ Physcis.Raycast 等接口的调用优化 (提供改写的扩展方法)
+    ☐ Buffer 传值优化 (避免拷贝)
     ✔ 处理泛型 @started(19-03-01 08:44) @done(19-03-06 06:09) @lasted(4d21h25m8s)
     ✔ AddComponent/GetComponent @done(19-03-06 06:09)
-    ☐ 支持 debugger @started(19-03-01 08:44)
+    ✔ 支持 debugger @done(20-01-17 09:44)
     ✔ 具体泛型类支持 (待细化) @done(19-03-29 09:32)
-    ☐ socket
     ✔ websocket @done(19-04-11 10:06)
     ✔ protobufjs @done(19-03-29 09:32)
     ✔ !!! 索引访问 ($GetValue/$SetValue) @done(19-03-07 15:21)
     ✔ !!! 扩展方法 @started(19-03-07 14:10) @done(19-03-25 14:02) @lasted(2w3d23h52m10s)
-    ☐ Physcis.Raycast 等接口的调用优化 (直接提供改写的扩展方法)
     ✔ push_delegate 尝试还原 js 对象 @done(19-03-07 14:10)
     ✔ 自动生成 Delegate 对应的 stub type var (== Dispatcher) @done(19-03-07 17:30)
-    ☐ 识别属性 JSRawFunction, 直接传递 ctx
-
-compatiblity: 
-    ✔ setInterval/setTimeout @done(19-02-28 16:02)
-    ☐ http.GET/POST/FORM
-    
-TODO: 
-    ☐ 为导出类型链末端 constructor 增加额外一层继承, 以便在 d.ts 中对 Type 做出具体类型约束
-
+        
 FIXME: 
+    ☐ websocket.close() does not actually close the connection
+    ☐ C# 抽象类没有实现基类或接口方法时在 d.ts 仍需补充声明
     ✔ duk_get_delegate 中缓存的 jsValue 存在gc问题 (js 层 DelegateBase 没有 Finalizer) @started(19-03-01 15:14) @done(19-03-07 17:31) @lasted(6d2h17m22s)
     ✔ 剔除重复的枚举值 @done(19-03-05 17:31)
     ✔ 嵌套类型 ts 定义修正 @done(19-03-06 06:12)
     ✔ !!! 当使用扩展方法时 添加额外的 using 来启用扩展（或者直接按静态方式调用扩展方法） @started(19-03-28 15:52) @done(19-03-29 09:11) @lasted(17h19m28s)
     ✔ !!  处理类实现接口对应的 d.ts 声明 @done(19-03-29 09:30)
-    ☐ (C#)抽象类没有实现基类或接口方法时在 d.ts 仍需补充声明
     ✔ get_this 取值方式优化 （与普通参数取值流程一致） @started(19-03-30 00:57) @done(19-03-30 00:57) @lasted(42s)
     ✔ byte[] 取值兼容 Buffer @started(19-03-30 00:58) @done(19-03-30 00:58) @lasted(20s)
-    ☐ websocket.close() does not actually close the connection
 
 UNSUPPORTED： 
     x 在C中可操作的协程 （duktape 目前无法支持）

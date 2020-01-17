@@ -1,12 +1,9 @@
-/// <reference path="./ut/component_system.ts" />
-/// <reference path="./duktape/http.ts" />
 
-import UObject = UnityEngine.Object;
-import GameObject = UnityEngine.GameObject;
-import Transform = UnityEngine.Transform;
-import Vector3 = UnityEngine.Vector3;
-import Quaternion = UnityEngine.Quaternion;
-import Time = UnityEngine.Time;
+import { sampleTests } from "./sample";
+import { circle } from "./circle";
+import { fmathTest } from "./fmath";
+import { ComponentSystem } from "./ut/component_system";
+import { promiseTest } from "./promise_test";
 
 if (!window["__reloading"]) {
     console.log("hello, javascript! (no stacktrace)", DuktapeJS.DUK_VERSION);
@@ -20,29 +17,12 @@ if (!window["__reloading"]) {
     dofile("protobuf-library.js");
     dofile("test.pb.js");
 
-    sample();
+    sampleTests();
     circle();
-    fmathtest();
+    fmathTest();
+    promiseTest();
 
-    new Promise((resolve: (value: any) => void) => {
-        console.log("promise.resolve", Time.realtimeSinceStartup);
-        setTimeout(() => {
-            resolve(123);
-        }, 1000);
-    }).then((value: any) => {
-        console.log("promise.then", value, Time.realtimeSinceStartup);
-    });
-    console.log("timeout begin", Time.realtimeSinceStartup)
-    setTimeout(() => {
-        console.log("timeout 3s", Time.realtimeSinceStartup)
-    }, 1000 * 3);
-
-    console.log("interval begin", Time.realtimeSinceStartup)
-    setInterval(() => {
-        console.log("interval 15s", Time.realtimeSinceStartup)
-    }, 1000 * 15);
-
-    new ut.ComponentSystem();
+    new ComponentSystem();
 }
 
 // window["OnBeforeSourceReload"] = function () {

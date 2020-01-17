@@ -1,0 +1,78 @@
+name: duk_safe_to_string
+
+proto: |
+  const char *duk_safe_to_string(duk_context *ctx, duk_idx_t idx);
+
+stack: |
+  [ ... val! ... ] -> [ ... ToString(val)! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_to_string">duk_to_string()</a></code> but if
+  the initial string coercion fails, the error value is coerced to a string.
+  If that also fails, a fixed pre-allocated error string <code>"Error"</code>
+  is used instead (because the string is pre-allocated, this cannot fail due to
+  out-of-memory).</p>
+
+  <p>The caller can safely use this function to coerce a value to a string,
+  which is useful in C code to print out a return value safely with
+  <code>printf()</code>.  The only uncaught errors possible are out-of-memory
+  and other internal errors.</p>
+
+  <p>ECMAScript equivalent:</p>
+  <pre class="ecmascript-code">
+  function duk_safe_to_string(val) {
+      function tostr(x) {
+          try {
+              return String(x);
+          } catch (e) {
+              return e;
+          }
+      }
+
+      // Initial coercion attempt.
+      var t = tostr(val);
+      if (typeof t === 'string') {
+          // ToString() coercion succeeded with a string result, or
+          // coercion failed with a plain string error value; return as is.
+          return t;
+      }
+
+      // Result was an Error or a non-string, try to coerce again.
+      t = tostr(t);
+      if (typeof t === 'string') {
+          return t;
+      }
+
+      // Still an Error or a non-string, return fixed value.
+      return 'Error';
+  }
+  </pre>
+
+  <div class="note">
+  While the string coercion is safe from error throws, it may have side
+  effects in the current implementation.  In particular, the string coercion
+  may enter an infinite loop and never return.
+  </div>
+
+example: |
+  /* Coercion causes error. */
+  duk_eval_string(ctx, "({ toString: function () { throw new Error('toString error'); } })");
+  printf("coerced string: %s\n", duk_safe_to_string(ctx, -1));  /* -> "Error: toString error" */
+  duk_pop(ctx);
+
+  /* Coercion causes error, and the error itself cannot be string coerced. */
+  duk_eval_string(ctx, "({ toString: function () { var e = new Error('cannot string coerce me');"
+                       "                           e.toString = function () { throw new Error('coercion error'); };"
+                       "                           throw e; } })");
+  printf("coerced string: %s\n", duk_safe_to_string(ctx, -1));  /* -> "Error" */
+  duk_pop(ctx);
+
+tags:
+  - stack
+  - string
+  - protected
+
+seealso:
+  - duk_to_string
+
+introduced: 1.0.0

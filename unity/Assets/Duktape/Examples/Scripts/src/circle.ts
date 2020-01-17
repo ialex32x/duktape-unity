@@ -1,5 +1,11 @@
+import GameObject = UnityEngine.GameObject;
+import Transform = UnityEngine.Transform;
+import Vector3 = UnityEngine.Vector3;
+import Time = UnityEngine.Time;
+import Quaternion = UnityEngine.Quaternion;
+import UObject = UnityEngine.Object;
 
-class MyCircleBridge {
+export class MyCircleBridge {
     gameObject: GameObject
     transform: Transform
     rot = 0
@@ -41,7 +47,7 @@ class MyCircleBridge {
     }
 }
 
-function circle() {
+export function circle() {
     let bridge = UnityEngine.Camera.main.gameObject.AddComponent(DuktapeJS.Bridge)
     let target = new MyCircleBridge();
     target.gameObject = bridge.gameObject;

@@ -1,5 +1,7 @@
+import { HttpRequest } from "./duktape/http";
+import { Coroutine } from "./duktape/coroutine";
 
-function sample() {
+export function sampleTests() {
     // test protobuf
     // (function () {
     //     // let writer = protobuf.Writer.create()
@@ -117,7 +119,7 @@ function sample() {
         };
         SampleNamespace.SampleClass.TestDelegate(fn);
         SampleNamespace.SampleClass.TestDelegate(fn);
-        
+
         let d = new DuktapeJS.Dispatcher()
         d.on("this", function () {
             console.log(this, "TestDelegate")
@@ -139,7 +141,7 @@ function sample() {
         class MyBridge {
             hitInfo: any = {}
             gameObject: UnityEngine.GameObject
-            transform: Transform;
+            transform: UnityEngine.Transform;
             private rotx = 10
             private roty = 20
 
@@ -222,6 +224,23 @@ function sample() {
         console.log(buffer);
         let str = SampleNamespace.SampleClass.InputBytes(buffer);
         console.log(str);
+    })();
+
+    (function () {
+        let co = new Coroutine(function (x) {
+            console.log("duktape thread, start:", x);
+            for (var i = 1; i <= 5; ++i) {
+                let r = Coroutine.yield(i);
+                console.log("duktape thread, yield:", r);
+            }
+            // Coroutine.break();
+            return "all done!";
+        });
+        let c = 'A'.charCodeAt(0);
+        while (co.next(String.fromCharCode(c++))) {
+            console.log("duktape thread, next:", co.value);
+        }
+        console.log("duktape thread, done:", co.value);
     })();
 
     // (function () {
