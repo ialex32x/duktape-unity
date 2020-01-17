@@ -219,7 +219,16 @@ namespace SampleNamespace
         {
         }
 
+        public static UnityEngine.UI.Text logText;
         public static void DoNothing() { }
+
+        public static void WriteLog(string text)
+        {
+            if (logText != null)
+            {
+                logText.text += text + "\n";
+            }
+        }
 
         public int Sum(int[] all)
         {

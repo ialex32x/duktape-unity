@@ -22,6 +22,8 @@ namespace Duktape
         //
         void OnPostCollectAssemblies(BindingManager bindingManager);
         
+        void OnPreExporting(BindingManager bindingManager);
+        
         void OnPostExporting(BindingManager bindingManager);
 
         // 收集类型阶段开始, 可在该阶段 AddExportedType 增加导出类型

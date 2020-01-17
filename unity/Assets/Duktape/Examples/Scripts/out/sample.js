@@ -51,6 +51,13 @@ function sampleTests() {
     (function () {
         var Vector3 = UnityEngine.Vector3;
         var start = Date.now();
+        var DoNothing = SampleNamespace.SampleClass.DoNothing;
+        for (var i = 1; i < 1000000; i++) {
+            DoNothing();
+        }
+        SampleNamespace.SampleClass.WriteLog("js/DoNothing: " + (Date.now() - start) / 1000);
+        console.log("js/DoNothing", (Date.now() - start) / 1000);
+        start = Date.now();
         var v1 = new Vector3(0, 0, 0);
         for (var i = 1; i < 200000; i++) {
             v1.Set(i, i, i);

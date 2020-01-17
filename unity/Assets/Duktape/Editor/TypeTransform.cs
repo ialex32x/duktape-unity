@@ -58,9 +58,10 @@ namespace Duktape
             return _memberBlacklist.Contains(memeberName);
         }
 
-        public void SetMemberBlocked(string memberName)
+        public TypeTransform SetMemberBlocked(string memberName)
         {
             _memberBlacklist.Add(memberName);
+            return this;
         }
 
         // 指定的方法是否被屏蔽

@@ -22,6 +22,10 @@ namespace Duktape
         {
         }
 
+        public virtual void OnPreExporting(BindingManager bindingManager)
+        {
+        }
+
         public virtual void OnPostExporting(BindingManager bindingManager)
         {
         }
