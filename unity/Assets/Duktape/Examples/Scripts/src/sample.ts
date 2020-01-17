@@ -54,7 +54,7 @@ export function sampleTests() {
         let Vector3 = UnityEngine.Vector3;
         let start = Date.now();
         let DoNothing = SampleNamespace.SampleClass.DoNothing;
-        for (var i = 1; i < 1000000; i++)
+        for (let i = 1; i < 1000000; i++)
         {
             DoNothing();
         }
