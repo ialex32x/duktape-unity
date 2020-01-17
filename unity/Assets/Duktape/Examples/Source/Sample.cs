@@ -10,6 +10,7 @@ public class Sample : MonoBehaviour, IDuktapeListener
     public bool experimentalDebugger = false;
     public bool waitForDebuggerClient = false;
     public bool jsBytecode = false;
+    public UnityEngine.UI.Text logText;
 
     private bool _loaded;
     DuktapeVM vm = new DuktapeVM();
@@ -91,12 +92,14 @@ public class Sample : MonoBehaviour, IDuktapeListener
 
     private void tests()
     {
+        SampleNamespace.SampleClass.logText = logText;
         {
             var start = DateTime.Now;
             for (var i = 1; i < 1000000; i++)
             {
                 SampleNamespace.SampleClass.DoNothing();
             }
+            SampleNamespace.SampleClass.WriteLog(string.Format("c#/DoNothing {0}", (DateTime.Now - start).TotalSeconds));
             Debug.LogFormat("c#/DoNothing {0}", (DateTime.Now - start).TotalSeconds);
         }
         {
@@ -141,7 +144,8 @@ public class Sample : MonoBehaviour, IDuktapeListener
 
     void Awake()
     {
-        vm.Initialize(this);
+        vm.Initialize(new RFileSystem(), this);
+        // vm.Initialize(this);
     }
 
     // void Update()

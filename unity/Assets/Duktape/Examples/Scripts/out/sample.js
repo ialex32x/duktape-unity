@@ -55,6 +55,7 @@ function sampleTests() {
         for (var i = 1; i < 1000000; i++) {
             DoNothing();
         }
+        SampleNamespace.SampleClass.WriteLog("js/DoNothing: " + (Date.now() - start) / 1000);
         console.log("js/DoNothing", (Date.now() - start) / 1000);
         start = Date.now();
         var v1 = new Vector3(0, 0, 0);

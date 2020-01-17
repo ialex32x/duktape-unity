@@ -58,6 +58,7 @@ export function sampleTests() {
         {
             DoNothing();
         }
+        SampleNamespace.SampleClass.WriteLog(`js/DoNothing: ${(Date.now() - start) / 1000}`);
         console.log("js/DoNothing", (Date.now() - start) / 1000);
         start = Date.now();
         let v1 = new Vector3(0, 0, 0)

@@ -8,11 +8,11 @@
     // auto, cr, lf, crlf
     "newLineStyle": "auto",
     "implicitAssemblies": [
-        "UnityEngine",
-        "UnityEngine.CoreModule", 
-        "UnityEngine.InputLegacyModule", // if unity2019.2+
-        "UnityEngine.UI", 
-        "UnityEngine.UIModule"
+        // "UnityEngine",
+        // "UnityEngine.CoreModule", 
+        // "UnityEngine.InputLegacyModule", // if unity2019.2+
+        // "UnityEngine.UI", 
+        // "UnityEngine.UIModule"
     ], 
     "explicitAssemblies": [
         "Assembly-CSharp"
@@ -30,6 +30,21 @@
         "UnityEngine.Experimental.",
         "Unity.IO.LowLevel.",
         "Unity.Burst.",
+        "UnityEngine.Windows",
+        "UnityEngine.WSA",
+        "UnityEngine.Apple",
+        "UnityEngine.tvOS",
+        "UnityEngine.iOS",
+        "UnityEngine.iPhone",
+        "UnityEngine.EventProvider",
+        "UnityEngine.Caching",
+        "UnityEngine.DrivenRectTransformTracker",
+        "UnityEngine.Handheld",
+        "UnityEngine.CanvasRenderer",
+        "UnityEngine.Texture",
+        "UnityEngine.Texture2D",
+        "UnityEngine.UI.GraphicRebuildTracker",
+        "UnityEngine.Light",
         // more types ...
         "UnityEngine.Assertions."
     ], 
