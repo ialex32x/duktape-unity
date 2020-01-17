@@ -117,7 +117,7 @@ function sample() {
         };
         SampleNamespace.SampleClass.TestDelegate(fn);
         SampleNamespace.SampleClass.TestDelegate(fn);
-        
+
         let d = new DuktapeJS.Dispatcher()
         d.on("this", function () {
             console.log(this, "TestDelegate")
@@ -222,6 +222,35 @@ function sample() {
         console.log(buffer);
         let str = SampleNamespace.SampleClass.InputBytes(buffer);
         console.log(str);
+    })();
+
+    (function () {
+        function makeGen(fn) {
+            return function () {
+                var thr = new Duktape.Thread(fn);
+                return { next: next };
+
+                function next() {
+                    var value = Duktape.Thread.resume(thr);  // assuming no-throw behavior
+                    var done = Duktape.info(thr).tstate === 5;
+                    return { value: value, done: done };
+                }
+            };
+        }
+
+        var myGenFunc = makeGen(function () {
+            for (var i = 1; i <= 10; ++i)
+                Duktape.Thread.yield(i);
+            return "all done!";
+        });
+
+        // ES6 behavior from here on out
+        var iter = myGenFunc();
+        var result;
+        while (!(result = iter.next()).done) {
+            console.log("duktape thread, next:", result.value);
+        }
+        console.log("duktape thread, done:", result.value);
     })();
 
     // (function () {
