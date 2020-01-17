@@ -80,7 +80,6 @@ public class Sample : MonoBehaviour, IDuktapeListener
                 bytecode = vm.DumpBytecode(launchScript, source);
                 Debug.LogFormat("{0} => {1} (bytecode)", source.Length, bytecode.Length);
                 System.IO.File.WriteAllBytes("Assets/Duktape/Examples/Scripts/out/" + launchScript + ".bytes", bytecode);
-                // vm.EvalMain(launchScript);
                 vm.EvalMain(launchScript, bytecode);
             }
         }
@@ -92,6 +91,14 @@ public class Sample : MonoBehaviour, IDuktapeListener
 
     private void tests()
     {
+        {
+            var start = DateTime.Now;
+            for (var i = 1; i < 1000000; i++)
+            {
+                SampleNamespace.SampleClass.DoNothing();
+            }
+            Debug.LogFormat("c#/DoNothing {0}", (DateTime.Now - start).TotalSeconds);
+        }
         {
             var start = DateTime.Now;
             var v = new Vector3(0, 0, 0);

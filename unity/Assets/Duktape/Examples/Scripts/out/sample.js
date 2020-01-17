@@ -51,22 +51,28 @@ function sampleTests() {
     (function () {
         var Vector3 = UnityEngine.Vector3;
         var start = Date.now();
+        var DoNothing = SampleNamespace.SampleClass.DoNothing;
+        for (var i = 1; i < 1000000; i++) {
+            DoNothing();
+        }
+        console.log("js/DoNothing", (Date.now() - start) / 1000);
+        start = Date.now();
         var v1 = new Vector3(0, 0, 0);
-        for (var i = 1; i < 200000; i++) {
-            v1.Set(i, i, i);
+        for (var i_1 = 1; i_1 < 200000; i_1++) {
+            v1.Set(i_1, i_1, i_1);
             v1.Normalize();
         }
         console.log("js/vector3/normailize", (Date.now() - start) / 1000);
         var v = Vector3.zero;
         var w = Vector3.one;
-        for (var i = 1; i < 200000; i++) {
+        for (var i_2 = 1; i_2 < 200000; i_2++) {
             v.Scale(w);
         }
         console.log("js/vector3/scale", (Date.now() - start) / 1000);
         start = Date.now();
         var sum = 0;
-        for (var i = 1; i < 20000000; i++) {
-            sum += i;
+        for (var i_3 = 1; i_3 < 20000000; i_3++) {
+            sum += i_3;
         }
         console.log("js/number/add", (Date.now() - start) / 1000, sum);
     })();
