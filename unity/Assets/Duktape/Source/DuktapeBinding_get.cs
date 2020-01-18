@@ -56,7 +56,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     bool e;
-                    duk_get_primitive(ctx, -1, out e);
+                    e = DuktapeDLL.duk_get_boolean(ctx, -1); //duk_get_primitive(ctx, -1, out e);
                     o[i] = e;
                     DuktapeDLL.duk_pop(ctx);
                 }
@@ -83,7 +83,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     sbyte e;
-                    duk_get_primitive(ctx, -1, out e);
+                    e = (sbyte)DuktapeDLL.duk_get_int(ctx, -1); // duk_get_primitive(ctx, -1, out e);
                     o[i] = e;
                     DuktapeDLL.duk_pop(ctx);
                 }
@@ -110,7 +110,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     byte e;
-                    duk_get_primitive(ctx, -1, out e);
+                    e = (byte)DuktapeDLL.duk_get_int(ctx, -1); // duk_get_primitive(ctx, -1, out e);
                     o[i] = e;
                     DuktapeDLL.duk_pop(ctx);
                 }
@@ -145,7 +145,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     char e;
-                    duk_get_primitive(ctx, -1, out e);
+                    e = (char)DuktapeDLL.duk_get_int(ctx, -1); // duk_get_primitive(ctx, -1, out e);
                     o[i] = e;
                     DuktapeDLL.duk_pop(ctx);
                 }
@@ -172,7 +172,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     string e;
-                    duk_get_primitive(ctx, -1, out e);
+                    e = DuktapeDLL.duk_get_string(ctx, -1); // duk_get_primitive(ctx, -1, out e);
                     o[i] = e;
                     DuktapeDLL.duk_pop(ctx);
                 }
@@ -199,7 +199,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     short e;
-                    duk_get_primitive(ctx, -1, out e);
+                    e = (short)DuktapeDLL.duk_get_int(ctx, -1); // duk_get_primitive(ctx, -1, out e);
                     o[i] = e;
                     DuktapeDLL.duk_pop(ctx);
                 }
@@ -226,7 +226,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     ushort e;
-                    duk_get_primitive(ctx, -1, out e);
+                    e = (ushort)DuktapeDLL.duk_get_int(ctx, -1); // duk_get_primitive(ctx, -1, out e);
                     o[i] = e;
                     DuktapeDLL.duk_pop(ctx);
                 }
@@ -253,7 +253,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     int e;
-                    duk_get_primitive(ctx, -1, out e);
+                    e = DuktapeDLL.duk_get_int(ctx, -1); // duk_get_primitive(ctx, -1, out e);
                     o[i] = e;
                     DuktapeDLL.duk_pop(ctx);
                 }
@@ -307,7 +307,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     long e;
-                    duk_get_primitive(ctx, -1, out e);
+                    e = (long)DuktapeDLL.duk_get_number(ctx, -1); // duk_get_primitive(ctx, -1, out e);
                     o[i] = e;
                     DuktapeDLL.duk_pop(ctx);
                 }
@@ -334,7 +334,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     ulong e;
-                    duk_get_primitive(ctx, -1, out e);
+                    e = (ulong)DuktapeDLL.duk_get_number(ctx, -1); // duk_get_primitive(ctx, -1, out e);
                     o[i] = e;
                     DuktapeDLL.duk_pop(ctx);
                 }
@@ -361,7 +361,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     float e;
-                    duk_get_primitive(ctx, -1, out e);
+                    e = (float)DuktapeDLL.duk_get_number(ctx, -1); // duk_get_primitive(ctx, -1, out e);
                     o[i] = e;
                     DuktapeDLL.duk_pop(ctx);
                 }
