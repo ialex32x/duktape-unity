@@ -24,7 +24,7 @@ namespace Duktape
 
             var caller = this.cg.AppendGetThisCS(bindingInfo);
             this.cg.cs.AppendLine("{0} value;", this.cg.bindingManager.GetCSTypeFullName(eventInfo.EventHandlerType));
-            this.cg.cs.AppendLine("{0}(ctx, 0, out value);", this.cg.bindingManager.GetDuktapeGetter(eventInfo.EventHandlerType));
+            this.cg.cs.AppendLine(this.cg.bindingManager.GetDuktapeGetter(eventInfo.EventHandlerType, "ctx", "0", "value"));
             this.cg.cs.AppendLine("{0}.{1} += value;", caller, eventInfo.Name);
             if (declaringType.IsValueType && !eventInfo.GetAddMethod().IsStatic)
             {
@@ -54,7 +54,7 @@ namespace Duktape
 
             var caller = this.cg.AppendGetThisCS(bindingInfo);
             this.cg.cs.AppendLine("{0} value;", this.cg.bindingManager.GetCSTypeFullName(eventInfo.EventHandlerType));
-            this.cg.cs.AppendLine("{0}(ctx, 0, out value);", this.cg.bindingManager.GetDuktapeGetter(eventInfo.EventHandlerType));
+            this.cg.cs.AppendLine(this.cg.bindingManager.GetDuktapeGetter(eventInfo.EventHandlerType, "ctx", "0", "value"));
             this.cg.cs.AppendLine("{0}.{1} -= value;", caller, eventInfo.Name);
             if (declaringType.IsValueType && !eventInfo.GetAddMethod().IsStatic)
             {

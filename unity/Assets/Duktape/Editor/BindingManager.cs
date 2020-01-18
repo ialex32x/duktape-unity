@@ -31,6 +31,7 @@ namespace Duktape
 
         private Dictionary<Type, List<string>> _tsTypeNameMap = new Dictionary<Type, List<string>>();
         private Dictionary<Type, string> _csTypeNameMap = new Dictionary<Type, string>();
+        private Dictionary<Type, string> _csTypePusherMap = new Dictionary<Type, string>();
         private Dictionary<string, string> _csTypeNameMapS = new Dictionary<string, string>();
         private static HashSet<string> _tsKeywords = new HashSet<string>();
 
@@ -232,6 +233,19 @@ namespace Duktape
             AddCSTypeNameMap(typeof(System.Object), "object");
             AddCSTypeNameMap(typeof(void), "void");
 
+            AddCSTypePusherMap(typeof(bool), "DuktapeDLL.duk_push_boolean");
+            AddCSTypePusherMap(typeof(char), "DuktapeDLL.duk_push_int");
+            AddCSTypePusherMap(typeof(byte), "DuktapeDLL.duk_push_int");
+            AddCSTypePusherMap(typeof(sbyte), "DuktapeDLL.duk_push_int");
+            AddCSTypePusherMap(typeof(short), "DuktapeDLL.duk_push_int");
+            AddCSTypePusherMap(typeof(ushort), "DuktapeDLL.duk_push_int");
+            AddCSTypePusherMap(typeof(int), "DuktapeDLL.duk_push_int");
+            AddCSTypePusherMap(typeof(uint), "DuktapeDLL.duk_push_uint");
+            AddCSTypePusherMap(typeof(long), "DuktapeDLL.duk_push_number");
+            AddCSTypePusherMap(typeof(ulong), "DuktapeDLL.duk_push_number");
+            AddCSTypePusherMap(typeof(float), "DuktapeDLL.duk_push_number");
+            AddCSTypePusherMap(typeof(double), "DuktapeDLL.duk_push_number");
+
             Initialize();
         }
 
@@ -340,6 +354,11 @@ namespace Duktape
             _csTypeNameMap[type] = name;
             _csTypeNameMapS[type.FullName] = name;
             _csTypeNameMapS[GetCSNamespace(type) + type.Name] = name;
+        }
+
+        public void AddCSTypePusherMap(Type type, string name)
+        {
+            _csTypePusherMap[type] = name;
         }
 
         // 增加导出类型 (需要在 Collect 阶段进行)
@@ -586,7 +605,39 @@ namespace Duktape
             return $"DuktapeDLL.duk_generic_error(ctx, \"{err}\");";
         }
 
-        public string GetDuktapeGetter(Type type)
+        public string GetDuktapeGetter(Type type, string ctx, string index, string varname)
+        {
+            #region [临时做法] 并且是可选的优化, 可以避免一层函数调用
+            if (type == typeof(bool))
+            {
+                return $"{varname} = DuktapeDLL.duk_get_boolean({ctx}, {index});";
+            }
+            if (type == typeof(string))
+            {
+                return $"{varname} = DuktapeDLL.duk_get_string({ctx}, {index});";
+            }
+            if (type == typeof(byte))
+            {
+                return $"{varname} = (byte)DuktapeDLL.duk_get_int({ctx}, {index});";
+            }
+            if (type == typeof(sbyte))
+            {
+                return $"{varname} = (sbyte)DuktapeDLL.duk_get_int({ctx}, {index});";
+            }
+            if (type == typeof(float))
+            {
+                return $"{varname} = (float)DuktapeDLL.duk_get_number({ctx}, {index});";
+            }
+            if (type == typeof(double))
+            {
+                return $"{varname} = DuktapeDLL.duk_get_number({ctx}, {index});";
+            }
+            #endregion 
+            var getter = GetDuktapeGetter(type);
+            return $"{getter}({ctx}, {index}, out {varname});";
+        }
+
+        private string GetDuktapeGetter(Type type)
         {
             if (type.IsByRef)
             {
@@ -629,6 +680,11 @@ namespace Duktape
             if (type.IsByRef)
             {
                 return GetDuktapePusher(type.GetElementType());
+            }
+            string pusher;
+            if (_csTypePusherMap.TryGetValue(type, out pusher))
+            {
+                return pusher;
             }
             if (type.BaseType == typeof(MulticastDelegate))
             {

@@ -13,7 +13,7 @@ public class Sample : MonoBehaviour, IDuktapeListener
     public UnityEngine.UI.Text logText;
 
     private bool _loaded;
-    DuktapeVM vm = new DuktapeVM();
+    private DuktapeVM vm;
 
     public void OnBinded(DuktapeVM vm, int numRegs)
     {
@@ -144,8 +144,9 @@ public class Sample : MonoBehaviour, IDuktapeListener
 
     void Awake()
     {
-        vm.Initialize(new RFileSystem(), this);
-        // vm.Initialize(this);
+        vm = new DuktapeVM();
+        // vm.Initialize(new RFileSystem(), this);
+        vm.Initialize(this);
     }
 
     // void Update()
