@@ -262,7 +262,8 @@ Assets/Scenes/main.unity 展示了一些基本的使用情况.<br/>
 
 可以通过调试器进行断点调试:
 * 支持 js/ts 的远程调试
-## 目前默认编译的android/ios平台的动态库是不带调试器功能的.
+## unity项目目录中默认编译的动态库是带调试器功能的, 如果需要使用不带调试器的release版本, 可以使用 /prebuilt/release 目录中预编译的版本. 或自行编译.
+
 ![debugger](res/debugger.png)
 
 调试插件为:

@@ -280,7 +280,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     uint e;
-                    duk_get_primitive(ctx, -1, out e);
+                    e = DuktapeDLL.duk_get_uint(ctx, -1); // duk_get_primitive(ctx, -1, out e); 
                     o[i] = e;
                     DuktapeDLL.duk_pop(ctx);
                 }
@@ -388,7 +388,7 @@ namespace Duktape
                 {
                     DuktapeDLL.duk_get_prop_index(ctx, idx, i);
                     double e;
-                    duk_get_primitive(ctx, -1, out e);
+                    e = DuktapeDLL.duk_get_number(ctx, -1); // duk_get_primitive(ctx, -1, out e);
                     o[i] = e;
                     DuktapeDLL.duk_pop(ctx);
                 }

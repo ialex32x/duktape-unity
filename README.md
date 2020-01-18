@@ -261,7 +261,7 @@ Assets/Scenes/main.unity (Sample.cs) demonstrate the basic usage.<br/>
 
 Support js/ts remote debug.
 
-## the prebuilt library for android/ios is compiled without debugger support.
+## the libraries in unity project is built with debugger support. if you want to use a release version without debugger support, checkout /prebuilt/release. or compile them by yourself.
 
 ![debugger](res/debugger.png)
 
