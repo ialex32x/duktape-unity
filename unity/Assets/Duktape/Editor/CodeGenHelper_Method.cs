@@ -116,9 +116,9 @@ namespace Duktape
                         this.cg.cs.AppendLine("{");
                         this.cg.cs.AddTabLevel();
                         {
-                            var argElementGetterOp = this.cg.bindingManager.GetDuktapeGetter(parameter.ParameterType.GetElementType());
                             var argElementOffset = i == 0 ? "" : " - " + i;
-                            this.cg.cs.AppendLine($"{argElementGetterOp}(ctx, i, out arg{i}[i{argElementOffset}]);");
+                            var argName = $"arg{i}[i{argElementOffset}]";
+                            this.cg.cs.AppendLine(this.cg.bindingManager.GetDuktapeGetter(parameter.ParameterType.GetElementType(), "ctx", "i", argName));
                         }
                         this.cg.cs.DecTabLevel();
                         this.cg.cs.AppendLine("}");
@@ -142,8 +142,7 @@ namespace Duktape
             // 非 out 参数才需要取值
             if (!parameter.IsOut || !parameter.ParameterType.IsByRef)
             {
-                var argGetterOp = this.cg.bindingManager.GetDuktapeGetter(ptype);
-                this.cg.cs.AppendLine($"{argGetterOp}(ctx, {index}, out {argname});");
+                this.cg.cs.AppendLine(this.cg.bindingManager.GetDuktapeGetter(ptype, "ctx", index + "", argname));
             }
         }
 

@@ -249,7 +249,7 @@ namespace Duktape
                 caller = "self";
                 this.cs.AppendLine($"{this.bindingManager.GetCSTypeFullName(declaringType)} {caller};");
                 this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
-                this.cs.AppendLine($"{this.bindingManager.GetDuktapeGetter(declaringType)}(ctx, -1, out {caller});");
+                this.cs.AppendLine(this.bindingManager.GetDuktapeGetter(declaringType, "ctx", "-1", caller));
                 this.cs.AppendLine($"DuktapeDLL.duk_pop(ctx);");
             }
             return caller;
@@ -281,7 +281,7 @@ namespace Duktape
                 caller = "self";
                 this.cs.AppendLine($"{this.bindingManager.GetCSTypeFullName(declaringType)} {caller};");
                 this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
-                this.cs.AppendLine($"{this.bindingManager.GetDuktapeGetter(declaringType)}(ctx, -1, out {caller});");
+                this.cs.AppendLine(this.bindingManager.GetDuktapeGetter(declaringType, "ctx", "-1", caller));
                 this.cs.AppendLine($"DuktapeDLL.duk_pop(ctx);");
             }
             return caller;

@@ -605,7 +605,39 @@ namespace Duktape
             return $"DuktapeDLL.duk_generic_error(ctx, \"{err}\");";
         }
 
-        public string GetDuktapeGetter(Type type)
+        public string GetDuktapeGetter(Type type, string ctx, string index, string varname)
+        {
+            #region [临时做法] 并且是可选的优化, 可以避免一层函数调用
+            if (type == typeof(bool))
+            {
+                return $"{varname} = DuktapeDLL.duk_get_boolean({ctx}, {index});";
+            }
+            if (type == typeof(string))
+            {
+                return $"{varname} = DuktapeDLL.duk_get_string({ctx}, {index});";
+            }
+            if (type == typeof(byte))
+            {
+                return $"{varname} = (byte)DuktapeDLL.duk_get_int({ctx}, {index});";
+            }
+            if (type == typeof(sbyte))
+            {
+                return $"{varname} = (sbyte)DuktapeDLL.duk_get_int({ctx}, {index});";
+            }
+            if (type == typeof(float))
+            {
+                return $"{varname} = (float)DuktapeDLL.duk_get_number({ctx}, {index});";
+            }
+            if (type == typeof(double))
+            {
+                return $"{varname} = DuktapeDLL.duk_get_number({ctx}, {index});";
+            }
+            #endregion 
+            var getter = GetDuktapeGetter(type);
+            return $"{getter}({ctx}, {index}, out {varname});";
+        }
+
+        private string GetDuktapeGetter(Type type)
         {
             if (type.IsByRef)
             {

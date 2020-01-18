@@ -140,7 +140,7 @@ namespace Duktape
             if (delegateBindingInfo.returnType != typeof(void))
             {
                 this.cg.cs.AppendLine($"{this.cg.bindingManager.GetCSTypeFullName(delegateBindingInfo.returnType)} {retName};");
-                this.cg.cs.AppendLine($"{this.cg.bindingManager.GetDuktapeGetter(delegateBindingInfo.returnType)}(ctx, -1, out {retName});");
+                this.cg.cs.AppendLine(this.cg.bindingManager.GetDuktapeGetter(delegateBindingInfo.returnType, "ctx", "-1", retName));
                 this.cg.cs.AppendLine("DuktapeDLL.duk_pop(ctx);");
                 this.cg.cs.AppendLine($"return {retName};");
             }
