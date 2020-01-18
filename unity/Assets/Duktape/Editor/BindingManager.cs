@@ -620,9 +620,37 @@ namespace Duktape
             {
                 return $"{varname} = (byte)DuktapeDLL.duk_get_int({ctx}, {index});";
             }
+            if (type == typeof(char))
+            {
+                return $"{varname} = (char)DuktapeDLL.duk_get_int({ctx}, {index});";
+            }
             if (type == typeof(sbyte))
             {
                 return $"{varname} = (sbyte)DuktapeDLL.duk_get_int({ctx}, {index});";
+            }
+            if (type == typeof(short))
+            {
+                return $"{varname} = (short)DuktapeDLL.duk_get_int({ctx}, {index});";
+            }
+            if (type == typeof(ushort))
+            {
+                return $"{varname} = (ushort)DuktapeDLL.duk_get_int({ctx}, {index});";
+            }
+            if (type == typeof(int))
+            {
+                return $"{varname} = (int)DuktapeDLL.duk_get_int({ctx}, {index});";
+            }
+            if (type == typeof(uint))
+            {
+                return $"{varname} = (uint)DuktapeDLL.duk_get_uint({ctx}, {index});";
+            }
+            if (type == typeof(long))
+            {
+                return $"{varname} = (long)DuktapeDLL.duk_get_number({ctx}, {index});";
+            }
+            if (type == typeof(ulong))
+            {
+                return $"{varname} = (ulong)DuktapeDLL.duk_get_number({ctx}, {index});";
             }
             if (type == typeof(float))
             {
