@@ -10,26 +10,6 @@ namespace Duktape
     // 对原始导入函数的简单封装
     public static partial class DuktapeAux
     {
-        public static string duk_require_string(IntPtr ctx, duk_idx_t idx)
-        {
-            var ptr = DuktapeDLL.duk_require_string(ctx, idx);
-            return Marshal.PtrToStringAnsi(ptr);
-        }
-
-        public static byte[] duk_require_lstring(IntPtr ctx, duk_idx_t idx)
-        {
-            var size_t = 0U;
-            var ptr = DuktapeDLL.duk_unity_require_lstring(ctx, idx, out size_t);
-            var out_size = (int)size_t;
-            if (ptr != IntPtr.Zero && out_size > 0)
-            {
-                var bytes = new byte[out_size];
-                Marshal.Copy(ptr, bytes, 0, out_size);
-                return bytes;
-            }
-            return null;
-        }
-
         public static byte[] duk_require_buffer(IntPtr ctx, duk_idx_t idx)
         {
             var size_t = 0U;
@@ -58,10 +38,54 @@ namespace Duktape
             return null;
         }
 
+        public static string duk_require_string(IntPtr ctx, duk_idx_t idx)
+        {
+            var len = 0U;
+            var ptr = DuktapeDLL.duk_unity_require_lstring(ctx, idx, out len);
+            if (ptr != IntPtr.Zero)
+            {
+                var str = Marshal.PtrToStringAnsi(ptr, (int)len);
+                if (str == null)
+                {
+                    var buffer = new byte[len];
+                    Marshal.Copy(ptr, buffer, 0, (int)len);
+                    return Encoding.UTF8.GetString(buffer);
+                }
+                return str;
+            }
+            return null;
+        }
+
+        public static byte[] duk_require_lstring(IntPtr ctx, duk_idx_t idx)
+        {
+            var len = 0U;
+            var ptr = DuktapeDLL.duk_unity_require_lstring(ctx, idx, out len);
+            var out_size = (int)len;
+            if (ptr != IntPtr.Zero && out_size > 0)
+            {
+                var bytes = new byte[out_size];
+                Marshal.Copy(ptr, bytes, 0, out_size);
+                return bytes;
+            }
+            return null;
+        }
+
         public static string duk_to_string(IntPtr ctx, duk_idx_t idx)
         {
-            var ptr = DuktapeDLL.duk_to_string(ctx, idx);
-            return Marshal.PtrToStringAnsi(ptr);
+            var len = 0U;
+            var ptr = DuktapeDLL.duk_unity_to_lstring(ctx, idx, out len);
+            if (ptr != IntPtr.Zero)
+            {
+                var str = Marshal.PtrToStringAnsi(ptr, (int)len);
+                if (str == null)
+                {
+                    var buffer = new byte[len];
+                    Marshal.Copy(ptr, buffer, 0, (int)len);
+                    return Encoding.UTF8.GetString(buffer);
+                }
+                return str;
+            }
+            return null;
         }
 
         public static byte[] duk_to_lstring(IntPtr ctx, duk_idx_t idx)

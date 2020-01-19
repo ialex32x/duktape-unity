@@ -721,8 +721,20 @@ namespace Duktape
 
         public static string duk_get_string(IntPtr ctx, duk_idx_t idx)
         {
-            var ptr = __duk_get_string(ctx, idx);
-            return Marshal.PtrToStringAnsi(ptr);
+            duk_uint_t len;
+            var ptr = duk_unity_get_lstring(ctx, idx, out len);
+            if (ptr != IntPtr.Zero)
+            {
+                var str = Marshal.PtrToStringAnsi(ptr, (int)len);
+                if (str == null)
+                {
+                    var buffer = new byte[len];
+                    Marshal.Copy(ptr, buffer, 0, (int)len);
+                    return Encoding.UTF8.GetString(buffer);
+                }
+                return str;
+            }
+            return null;
         }
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -1187,9 +1199,18 @@ namespace Duktape
         {
             duk_uint_t len;
             var ptr = duk_unity_safe_to_lstring((ctx), (idx), out len);
-            var str = Marshal.PtrToStringAnsi(ptr);
-            // return System.Text.Encoding.UTF8.GetString(bytes);
-            return str;
+            if (ptr != IntPtr.Zero)
+            {
+                var str = Marshal.PtrToStringAnsi(ptr, (int)len);
+                if (str == null)
+                {
+                    var buffer = new byte[len];
+                    Marshal.Copy(ptr, buffer, 0, (int)len);
+                    return Encoding.UTF8.GetString(buffer);
+                }
+                return str;
+            }
+            return null;
         }
 
         /*
