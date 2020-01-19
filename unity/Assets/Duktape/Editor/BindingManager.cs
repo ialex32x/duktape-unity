@@ -245,6 +245,7 @@ namespace Duktape
             AddCSTypePusherMap(typeof(ulong), "DuktapeDLL.duk_push_number");
             AddCSTypePusherMap(typeof(float), "DuktapeDLL.duk_push_number");
             AddCSTypePusherMap(typeof(double), "DuktapeDLL.duk_push_number");
+            AddCSTypePusherMap(typeof(string), "DuktapeDLL.duk_push_string");
 
             Initialize();
         }
@@ -638,11 +639,11 @@ namespace Duktape
             }
             if (type == typeof(int))
             {
-                return $"{varname} = (int)DuktapeDLL.duk_get_int({ctx}, {index});";
+                return $"{varname} = DuktapeDLL.duk_get_int({ctx}, {index});";
             }
             if (type == typeof(uint))
             {
-                return $"{varname} = (uint)DuktapeDLL.duk_get_uint({ctx}, {index});";
+                return $"{varname} = DuktapeDLL.duk_get_uint({ctx}, {index});";
             }
             if (type == typeof(long))
             {
