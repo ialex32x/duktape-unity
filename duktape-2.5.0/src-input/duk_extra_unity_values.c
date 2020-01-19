@@ -2196,6 +2196,12 @@ DUK_EXTERNAL void duk_unity_push_vector4(duk_context *ctx, float x, float y, flo
     vec4_push_new(ctx, x, y, z, w);
 }
 
+DUK_LOCAL void duk_unity_Vector4_add_const(duk_context *ctx, duk_idx_t idx, const char *key, float x, float y, float z, float w) {
+    idx = duk_normalize_index(ctx, idx);
+    vec4_push_new(ctx, x, y, z, w);
+    duk_put_prop_string(ctx, idx, key);
+}
+
 DUK_EXTERNAL void duk_unity_push_quaternion(duk_context *ctx, float x, float y, float z, float w) {
     quaternion_push_new(ctx, x, y, z, w);
 }
@@ -2274,8 +2280,8 @@ DUK_INTERNAL void duk_unity_valuetypes_open(duk_context *ctx) {
         duk_unity_Vector2_add_const(ctx, -2, "down", 0.0F, -1.0F);
         duk_unity_Vector2_add_const(ctx, -2, "left", -1.0F, 0.0F);
         duk_unity_Vector2_add_const(ctx, -2, "right", 1.0F, 0.0F);
-        // duk_unity_Vector2_add_const(ctx, -2, "positiveInfinity", 1.0F / 0.0F, 1.0F / 0.0F);
-        // duk_unity_Vector2_add_const(ctx, -2, "negativeInfinity", -1.0F / 0.0F, -1.0F / 0.0F);
+        duk_unity_Vector2_add_const(ctx, -2, "positiveInfinity", INFINITY, INFINITY);
+        duk_unity_Vector2_add_const(ctx, -2, "negativeInfinity", -INFINITY, -INFINITY);
 
         duk_unity_add_property(ctx, "x", duk_unity_Vector2_getx, duk_unity_Vector2_setx, -1);
         duk_unity_add_property(ctx, "y", duk_unity_Vector2_gety, duk_unity_Vector2_sety, -1);
@@ -2369,8 +2375,8 @@ DUK_INTERNAL void duk_unity_valuetypes_open(duk_context *ctx) {
         duk_unity_Vector3_add_const(ctx, -2, "left", -1.0, 0.0, 0.0);
         duk_unity_Vector3_add_const(ctx, -2, "right", 1.0, 0.0, 0.0);
 
-        // duk_unity_Vector3_add_const(ctx, -2, "positiveInfinity", 1.0F / 0.0F, 1.0F / 0.0F, 1.0F / 0.0F);
-        // duk_unity_Vector3_add_const(ctx, -2, "negativeInfinity", -1.0F / 0.0F, -1.0F / 0.0F, -1.0F / 0.0F);
+        duk_unity_Vector3_add_const(ctx, -2, "positiveInfinity", INFINITY, INFINITY, INFINITY);
+        duk_unity_Vector3_add_const(ctx, -2, "negativeInfinity", -INFINITY, -INFINITY, -INFINITY);
 
         duk_unity_add_const_number(ctx, -2, "kEpsilon", 1e-05);
         duk_unity_add_const_number(ctx, -2, "kEpsilonNormalSqrt", 1e-15);
@@ -2436,10 +2442,10 @@ DUK_INTERNAL void duk_unity_valuetypes_open(duk_context *ctx) {
         // readonly normalized: UnityEngine.Vector4
         // readonly magnitude: number
         // readonly sqrMagnitude: number
-        // readonly zero: UnityEngine.Vector4
-        // readonly one: UnityEngine.Vector4
-        // readonly positiveInfinity: UnityEngine.Vector4
-        // readonly negativeInfinity: UnityEngine.Vector4
+        duk_unity_Vector4_add_const(ctx, -2, "zero", 0.0f, 0.0f, 0.0f, 0.0f); // readonly zero: UnityEngine.Vector4
+        duk_unity_Vector4_add_const(ctx, -2, "one", 1.0f, 1.0f, 1.0f, 1.0f); // readonly one: UnityEngine.Vector4
+        duk_unity_Vector4_add_const(ctx, -2, "positiveInfinity", INFINITY, INFINITY, INFINITY, INFINITY); // readonly positiveInfinity: UnityEngine.Vector4
+        duk_unity_Vector4_add_const(ctx, -2, "negativeInfinity", -INFINITY, -INFINITY, -INFINITY, -INFINITY); // readonly negativeInfinity: UnityEngine.Vector4
         duk_unity_add_const_number(ctx, -2, "kEpsilon", 1e-05);
         duk_unity_add_property(ctx, "x", duk_unity_Vector4_getx, duk_unity_Vector4_setx, -1);
         duk_unity_add_property(ctx, "y", duk_unity_Vector4_gety, duk_unity_Vector4_sety, -1);
