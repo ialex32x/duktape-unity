@@ -50,15 +50,21 @@ function sampleTests() {
     })();
     (function () {
         var Vector3 = UnityEngine.Vector3;
-        var start = Date.now();
+        var start;
         var DoNothing = SampleNamespace.SampleClass.DoNothing;
+        start = Date.now();
         for (var i = 1; i < 1000000; i++) {
             DoNothing();
         }
         SampleNamespace.SampleClass.WriteLog("js/DoNothing: " + (Date.now() - start) / 1000);
-        console.log("js/DoNothing", (Date.now() - start) / 1000);
+        var DoNothing1 = SampleNamespace.SampleClass.DoNothing1;
         start = Date.now();
+        for (var i = 1; i < 1000000; i++) {
+            DoNothing1(i);
+        }
+        SampleNamespace.SampleClass.WriteLog("js/DoNothing1: " + (Date.now() - start) / 1000);
         var v1 = new Vector3(0, 0, 0);
+        start = Date.now();
         for (var i = 1; i < 200000; i++) {
             v1.Set(i, i, i);
             v1.Normalize();
@@ -66,12 +72,13 @@ function sampleTests() {
         console.log("js/vector3/normailize", (Date.now() - start) / 1000);
         var v = Vector3.zero;
         var w = Vector3.one;
+        start = Date.now();
         for (var i = 1; i < 200000; i++) {
             v.Scale(w);
         }
         console.log("js/vector3/scale", (Date.now() - start) / 1000);
-        start = Date.now();
         var sum = 0;
+        start = Date.now();
         for (var i = 1; i < 20000000; i++) {
             sum += i;
         }

@@ -93,6 +93,15 @@ public class Sample : MonoBehaviour, IDuktapeListener
     private void tests()
     {
         SampleNamespace.SampleClass.logText = logText;
+        DateTime.Now.ToFileTime();
+        {
+            var start = DateTime.Now;
+            for (var i = 1; i < 1000000; i++)
+            {
+                SampleNamespace.SampleClass.DoNothing1(i);
+            }
+            SampleNamespace.SampleClass.WriteLog(string.Format("c#/DoNothing1 {0}", (DateTime.Now - start).TotalSeconds));
+        }
         {
             var start = DateTime.Now;
             for (var i = 1; i < 1000000; i++)
@@ -100,7 +109,6 @@ public class Sample : MonoBehaviour, IDuktapeListener
                 SampleNamespace.SampleClass.DoNothing();
             }
             SampleNamespace.SampleClass.WriteLog(string.Format("c#/DoNothing {0}", (DateTime.Now - start).TotalSeconds));
-            Debug.LogFormat("c#/DoNothing {0}", (DateTime.Now - start).TotalSeconds);
         }
         {
             var start = DateTime.Now;

@@ -221,6 +221,7 @@ namespace SampleNamespace
 
         public static UnityEngine.UI.Text logText;
         public static void DoNothing() { }
+        public static void DoNothing1(int a) { }
 
         public static void WriteLog(string text)
         {
