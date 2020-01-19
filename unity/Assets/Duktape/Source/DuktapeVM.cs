@@ -103,6 +103,16 @@ namespace Duktape
             _lastContextPtr = ctx;
         }
 
+        public static DuktapeVM GetVM(IntPtr ctx)
+        {
+            return GetContext(ctx)?.vm;
+        }
+
+        public static ObjectCache GetObjectCache(IntPtr ctx)
+        {
+            return GetContext(ctx)?.vm?._objectCache;
+        }
+
         public static DuktapeContext GetContext(IntPtr ctx)
         {
             if (_lastContextPtr == ctx)
@@ -118,21 +128,6 @@ namespace Duktape
             }
             // fixme 如果是 thread 则获取对应 main context
             return null;
-        }
-
-        // public static DuktapeContext GetContext(IntPtr ctx)
-        // {
-        //     return DuktapeContext.GetContext(ctx);
-        // }
-
-        public static DuktapeVM GetVM(IntPtr ctx)
-        {
-            return DuktapeContext.GetVM(ctx);
-        }
-
-        public static ObjectCache GetObjectCache(IntPtr ctx)
-        {
-            return DuktapeContext.GetVM(ctx)?._objectCache;
         }
 
         public void AddSearchPath(string path)
