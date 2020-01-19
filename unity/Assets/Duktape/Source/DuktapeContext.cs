@@ -8,14 +8,9 @@ namespace Duktape
     {
         private DuktapeVM _vm;
         private IntPtr _ctx;
+        // private byte[] _tStringBuffer;
 
-        public IntPtr rawValue
-        {
-            get
-            {
-                return this._ctx;
-            }
-        }
+        public IntPtr rawValue { get { return this._ctx; } }
 
         public DuktapeVM vm { get { return _vm; } }
 
@@ -26,14 +21,14 @@ namespace Duktape
             DuktapeVM.addContext(this);
         }
 
+        // public byte[] GetBytes(string v)
+        // {
+        //     System.Text.Encoding.UTF8.GetBytes(v, 0, _tStringBuffer, 0);
+        // }
+
         public void onDestroy()
         {
             _ctx = IntPtr.Zero;
-        }
-
-        public static DuktapeVM GetVM(IntPtr ctx)
-        {
-            return DuktapeVM.GetContext(ctx)?._vm;
         }
 
         // 获取全局函数并调用 (do not cache it)
