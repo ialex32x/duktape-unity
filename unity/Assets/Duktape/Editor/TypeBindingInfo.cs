@@ -355,7 +355,7 @@ namespace Duktape
             this.bindingManager = bindingManager;
             this.type = type;
             this.transform = bindingManager.GetTypeTransform(type);
-            var naming = GetNamingAttribute(type);
+            var naming = this.transform?.GetTypeNaming() ?? GetNamingAttribute(type);
             var indexOfTypeName = naming.LastIndexOf('.');
             if (indexOfTypeName >= 0) // 内部类
             {

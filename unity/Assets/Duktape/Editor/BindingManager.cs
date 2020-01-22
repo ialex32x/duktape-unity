@@ -218,6 +218,16 @@ namespace Duktape
             AddTSTypeNameMap(typeof(Vector4), "UnityEngine.Vector4");
             AddTSTypeNameMap(typeof(Quaternion), "UnityEngine.Quaternion");
             AddTSTypeNameMap(typeof(DuktapeArray), "any[]");
+            AddTSTypeNameMap(typeof(IO.ByteBuffer), "DuktapeJS.ByteBuffer", "Buffer");
+
+            TransformType(typeof(IO.ByteBuffer))
+                .Rename("DuktapeJS.ByteBuffer")
+                .SetMemberBlocked("_SetPosition")
+                .SetMethodBlocked("ReadAllBytes", typeof(IntPtr))
+                .SetMethodBlocked("WriteBytes", typeof(IntPtr), typeof(int));
+
+            AddExportedType(typeof(DuktapeBridge));
+            AddExportedType(typeof(IO.ByteBuffer));
 
             AddCSTypeNameMap(typeof(sbyte), "sbyte");
             AddCSTypeNameMap(typeof(byte), "byte");
@@ -1247,11 +1257,6 @@ namespace Duktape
             AddExportedType(typeof(Array));
             AddExportedType(typeof(Object));
             AddExportedType(typeof(Vector3));
-            AddExportedType(typeof(DuktapeBridge));
-            AddExportedType(typeof(IO.ByteBuffer))
-                .SetMemberBlocked("_SetPosition")
-                .SetMethodBlocked("ReadAllBytes", typeof(IntPtr))
-                .SetMethodBlocked("WriteBytes", typeof(IntPtr), typeof(int));
         }
 
         // implicitExport: 默认进行导出(黑名单例外), 否则根据导出标记或手工添加

@@ -12,6 +12,7 @@ namespace Duktape
     public class TypeTransform
     {
         private Type _type;
+        private string _typeNaming;
 
         // 按名字屏蔽导出
         private HashSet<string> _memberBlacklist = new HashSet<string>();
@@ -39,6 +40,17 @@ namespace Duktape
             {
                 fn(decl);
             }
+        }
+
+        public string GetTypeNaming()
+        {
+            return _typeNaming;
+        }
+
+        public TypeTransform Rename(string name)
+        {
+            _typeNaming = name;
+            return this;
         }
 
         public TypeTransform AddTSMethodDeclaration(string spec)
