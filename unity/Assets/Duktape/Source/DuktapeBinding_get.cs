@@ -596,6 +596,7 @@ namespace Duktape
                     uint length;
                     var pointer = DuktapeDLL.duk_unity_get_buffer_data(ctx, idx, out length);
                     o = allocator.Alloc((int)length);
+                    allocator.AutoRelease(o);
                     o.WriteBytes(pointer, (int)length);
                     return true;
                 }

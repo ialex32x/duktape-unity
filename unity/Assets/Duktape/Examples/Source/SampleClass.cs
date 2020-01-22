@@ -127,8 +127,9 @@ namespace SampleNamespace
 
         public static void AnotherBytesTest(Duktape.IO.ByteBuffer byteBuffer)
         {
+            // 此 ByteBuffer 将在帧切换时自动 Release
+            // 如要保留引用, 需调用 byteBuffer.Retain(), 不再引用时调用 byteBuffer.Release(), 必须配对
             Debug.LogFormat("C#/AnotherBytesTest: {0} bytes", byteBuffer.readableBytes);
-            byteBuffer.Release();
         }
 
         [JSType]

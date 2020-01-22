@@ -231,6 +231,10 @@ namespace Duktape
                     // Debug.LogFormat("duktape gc {0}", act.refid);
                 }
             }
+            if (_byteBufferAllocator != null)
+            {
+                _byteBufferAllocator.Drain();
+            }
         }
 
         public static void duk_open_module(IntPtr ctx)

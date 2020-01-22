@@ -1,4 +1,5 @@
-﻿
+﻿using System.Collections.Generic;
+
 namespace Duktape.IO
 {
     public abstract class ByteBufferAllocator
@@ -8,6 +9,8 @@ namespace Duktape.IO
 
         protected bool _traceMemoryLeak = false;
 
+        private List<ByteBuffer> _autoreleases = new List<ByteBuffer>();
+
         public bool traceMemoryLeak
         {
             get { return _traceMemoryLeak; }
@@ -16,6 +19,25 @@ namespace Duktape.IO
         public ByteBuffer Alloc()
         {
             return Alloc(DEFAULT_SIZE);
+        }
+
+        public void AutoRelease(ByteBuffer b)
+        {
+            _autoreleases.Add(b);
+        }
+
+        public void Drain()
+        {
+            var size = _autoreleases.Count;
+            if (size > 0)
+            {
+                for (var i = 0; i < size; ++i)
+                {
+                    var b = _autoreleases[i];
+                    b.Release();
+                }
+                _autoreleases.Clear();
+            }
         }
 
         // 返回一个由对象池分配的 ByteBuffer 对象, 初始大小至少为 size
