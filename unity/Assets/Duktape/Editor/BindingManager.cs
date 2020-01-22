@@ -1248,6 +1248,10 @@ namespace Duktape
             AddExportedType(typeof(Object));
             AddExportedType(typeof(Vector3));
             AddExportedType(typeof(DuktapeBridge));
+            AddExportedType(typeof(IO.ByteBuffer))
+                .SetMemberBlocked("_SetPosition")
+                .SetMethodBlocked("ReadAllBytes", typeof(IntPtr))
+                .SetMethodBlocked("WriteBytes", typeof(IntPtr), typeof(int));
         }
 
         // implicitExport: 默认进行导出(黑名单例外), 否则根据导出标记或手工添加

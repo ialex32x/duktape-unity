@@ -128,6 +128,16 @@ namespace Duktape
             return duk_match_type(ctx, 0, t0) && duk_match_type(ctx, 1, t1) && duk_match_type(ctx, 2, t2) && duk_match_type(ctx, 3, t3) && duk_match_type(ctx, 4, t4);
         }
 
+        protected static bool duk_match_types(IntPtr ctx, int nargs, Type t0, Type t1, Type t2, Type t3, Type t4, Type t5)
+        {
+            return duk_match_type(ctx, 0, t0) && duk_match_type(ctx, 1, t1) && duk_match_type(ctx, 2, t2) && duk_match_type(ctx, 3, t3) && duk_match_type(ctx, 4, t4) && duk_match_type(ctx, 5, t5);
+        }
+
+        protected static bool duk_match_types(IntPtr ctx, int nargs, Type t0, Type t1, Type t2, Type t3, Type t4, Type t5, Type t6)
+        {
+            return duk_match_type(ctx, 0, t0) && duk_match_type(ctx, 1, t1) && duk_match_type(ctx, 2, t2) && duk_match_type(ctx, 3, t3) && duk_match_type(ctx, 4, t4) && duk_match_type(ctx, 5, t5) && duk_match_type(ctx, 6, t6);
+        }
+
         protected static bool duk_match_types(IntPtr ctx, int nargs, params Type[] types)
         {
             for (int i = 0, size = types.Length; i < size; i++)
