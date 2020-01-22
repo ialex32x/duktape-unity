@@ -80,10 +80,6 @@ namespace Duktape.IO
             _writePosition = 0;
             _readPosition = 0;
             _allocator = allocator;
-            if (_allocator == null)
-            {
-                Retain();
-            }
         }
 
         // ~ByteBuffer()
