@@ -41,6 +41,7 @@ namespace Duktape
         private uint _updateTimer;
         private DuktapeContext _ctx;
         private IFileResolver _fileResolver;
+        private IO.ByteBufferAllocator _byteBufferAllocator;
         private ObjectCache _objectCache = new ObjectCache();
         private Queue<UnrefAction> _unrefActions = new Queue<UnrefAction>();
 
@@ -73,9 +74,10 @@ namespace Duktape
             get { return _fileResolver; }
         }
 
-        public DuktapeVM()
+        public DuktapeVM(IO.ByteBufferAllocator allocator = null)
         {
             _instance = this;
+            _byteBufferAllocator = allocator;
 
             var ctx = DuktapeDLL.duk_create_heap_default();
 
@@ -83,6 +85,11 @@ namespace Duktape
             DuktapeAux.duk_open(ctx);
             DuktapeVM.duk_open_module(ctx);
             DuktapeDLL.duk_unity_open(ctx);
+        }
+
+        public IO.ByteBufferAllocator GetByteBufferAllocator()
+        {
+            return _byteBufferAllocator;
         }
 
         public void GetMemoryState(out uint count, out uint size)
@@ -443,6 +450,13 @@ namespace Duktape
 
         public void Initialize(IFileResolver fileResolver, IDuktapeListener listener, int step = 30)
         {
+            var byteBufferAllocator = new IO.ByteBufferPooledAllocator(0, IO.ByteBufferAllocator.DEFAULT_SIZE, IO.ByteBufferAllocator.DEFAULT_MAX_CAPACITY, false);
+            Initialize(byteBufferAllocator, fileResolver, listener, step);
+        }
+
+        public void Initialize(IO.ByteBufferAllocator byteBufferAllocator, IFileResolver fileResolver, IDuktapeListener listener, int step = 30)
+        {
+            _byteBufferAllocator = byteBufferAllocator;
             _fileResolver = fileResolver;
             var runner = DuktapeRunner.GetRunner();
             if (runner != null)

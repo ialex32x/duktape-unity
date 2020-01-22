@@ -213,6 +213,8 @@ function sampleTests() {
         console.log(buffer);
         var str = SampleNamespace.SampleClass.InputBytes(buffer);
         console.log(str);
+        SampleNamespace.SampleClass.AnotherBytesTest(buffer);
+        SampleNamespace.SampleClass.AnotherBytesTest(buffer);
     })();
     (function () {
         var co = new coroutine_1.Coroutine(function (x) {

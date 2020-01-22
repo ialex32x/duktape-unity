@@ -577,6 +577,33 @@ namespace Duktape
             return false;
         }
 
+        public static bool duk_get_classvalue(IntPtr ctx, int idx, out IO.ByteBuffer o)
+        {
+            object obj;
+            if (duk_get_cached_object(ctx, idx, out obj))
+            {
+                if (obj is IO.ByteBuffer)
+                {
+                    o = (IO.ByteBuffer)obj;
+                    return true;
+                }
+            }
+            if (DuktapeDLL.duk_is_buffer_data(ctx, idx))
+            {
+                var allocator = DuktapeVM.GetVM(ctx).GetByteBufferAllocator();
+                if (allocator != null)
+                {
+                    uint length;
+                    var pointer = DuktapeDLL.duk_unity_get_buffer_data(ctx, idx, out length);
+                    o = allocator.Alloc((int)length);
+                    o.WriteBytes(pointer, (int)length);
+                    return true;
+                }
+            }
+            o = null;
+            return false;
+        }
+
         public static bool duk_get_classvalue(IntPtr ctx, int idx, out DuktapeArray o)
         {
             object obj;

@@ -240,6 +240,8 @@ export function sampleTests() {
         console.log(buffer);
         let str = SampleNamespace.SampleClass.InputBytes(buffer);
         console.log(str);
+        SampleNamespace.SampleClass.AnotherBytesTest(buffer);
+        SampleNamespace.SampleClass.AnotherBytesTest(buffer);
     })();
 
     (function () {

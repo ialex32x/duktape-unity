@@ -125,6 +125,12 @@ namespace SampleNamespace
             return System.Text.Encoding.UTF8.GetString(bytes);
         }
 
+        public static void AnotherBytesTest(Duktape.IO.ByteBuffer byteBuffer)
+        {
+            Debug.LogFormat("C#/AnotherBytesTest: {0} bytes", byteBuffer.readableBytes);
+            byteBuffer.Release();
+        }
+
         [JSType]
         public class SampleInnerClass
         {
