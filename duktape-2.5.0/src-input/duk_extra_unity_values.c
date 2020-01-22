@@ -120,6 +120,24 @@ DUK_INTERNAL DUK_INLINE void quaternion_mul(const float *lhs, const float *rhs, 
     res[3] = w;
 }
 
+DUK_INTERNAL DUK_INLINE void quaternion_mul_vec3(const float *lhs, const float *rhs, float *res) {
+	float x =  lhs[0] * 2.0f;
+	float y =  lhs[1] * 2.0f;
+	float z =  lhs[2] * 2.0f;
+	float xx = lhs[0] * x;
+	float yy = lhs[1] * y;
+	float zz = lhs[2] * z;
+	float xy = lhs[0] * y;
+	float xz = lhs[0] * z;
+	float yz = lhs[1] * z;
+	float wx = lhs[3] * x;
+	float wy = lhs[3] * y;
+	float wz = lhs[3] * z;
+	res[0] = (1.0f - (yy + zz)) * rhs[0] + (xy - wz)          * rhs[1] + (xz + wy)          * rhs[2];
+	res[1] = (xy + wz)          * rhs[0] + (1.0f - (xx + zz)) * rhs[1] + (yz - wx)          * rhs[2];
+	res[2] = (xz - wy)          * rhs[0] + (yz + wx)          * rhs[1] + (1.0f - (xx + yy)) * rhs[2];
+}
+
 DUK_INTERNAL DUK_INLINE void color_push_new(duk_context *ctx, float r, float g, float b, float a) {
     duk_builtins_reg_get(ctx, DUK_UNITY_BUILTINS_COLOR);
     duk_push_number(ctx, r);
@@ -1113,6 +1131,37 @@ DUK_LOCAL duk_ret_t duk_unity_Quaternion_static_Normalize(duk_context *ctx) {
     float m = 1.0f / quaternion_magnitude(q);
     quaternion_push_new(ctx, q[0] * m, q[1] * m, q[2] * m, q[3] * m);
     return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_unity_Quaternion_static_Mul(duk_context *ctx) {
+    duk_size_t length = duk_get_length(ctx, 1);
+    if (length == 3) {
+        float lhs[4];
+        float rhs[3];
+        float res[3];
+        duk_unity_get4f(ctx, 0, &lhs[0], &lhs[1], &lhs[2], &lhs[3]);
+        duk_unity_get3f(ctx, 1, &rhs[0], &rhs[1], &rhs[2]);
+        quaternion_mul_vec3(lhs, rhs, res);
+        vec3_push_new(ctx, res[0], res[1], res[2]);
+        return 1;
+    } 
+    if (length == 4) {
+        float lhs[4];
+        float rhs[4];
+        float res[4];
+        duk_unity_get4f(ctx, 0, &lhs[0], &lhs[1], &lhs[2], &lhs[3]);
+        duk_unity_get4f(ctx, 1, &rhs[0], &rhs[1], &rhs[2], &rhs[3]);
+        quaternion_mul(lhs, rhs, res);
+        quaternion_push_new(ctx, res[0], res[1], res[2], res[3]);
+        return 1;
+    }
+    return 0;
+}
+
+DUK_LOCAL void duk_unity_Quaternion_add_const(duk_context *ctx, duk_idx_t idx, const char *key, float x, float y, float z, float w) {
+    idx = duk_normalize_index(ctx, idx);
+    quaternion_push_new(ctx, x, y, z, w);
+    duk_put_prop_string(ctx, idx, key);
 }
 
 DUK_LOCAL duk_ret_t duk_unity_Vector2_constructor(duk_context *ctx) {
@@ -2276,12 +2325,6 @@ DUK_LOCAL void duk_unity_Color_add_const(duk_context *ctx, duk_idx_t idx, const 
     duk_put_prop_string(ctx, idx, key);
 }
 
-DUK_LOCAL void duk_unity_Quaternion_add_const(duk_context *ctx, duk_idx_t idx, const char *key, float x, float y, float z, float w) {
-    idx = duk_normalize_index(ctx, idx);
-    quaternion_push_new(ctx, x, y, z, w);
-    duk_put_prop_string(ctx, idx, key);
-}
-
 DUK_INTERNAL void duk_unity_valuetypes_open(duk_context *ctx) {
     duk_push_global_object(ctx);
     duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
@@ -2513,6 +2556,9 @@ DUK_INTERNAL void duk_unity_valuetypes_open(duk_context *ctx) {
         duk_unity_begin_class(ctx, "Quaternion", DUK_UNITY_BUILTINS_QUATERNION, duk_unity_Quaternion_constructor, NULL);
         duk_unity_add_member(ctx, "Clone", duk_unity_Quaternion_Clone, -1);
         duk_unity_add_member(ctx, "Set", duk_unity_Quaternion_Set, -1);
+        
+        duk_unity_add_member(ctx, "Mul", duk_unity_Quaternion_static_Mul, -2);
+
         // SetLookRotation(view: UnityEngine.Vector3, up: UnityEngine.Vector3): void
         // SetLookRotation(view: UnityEngine.Vector3): void
         // ToAngleAxis(angle: DuktapeJS.Out<number>, axis: DuktapeJS.Out<UnityEngine.Vector3>): void

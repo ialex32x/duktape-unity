@@ -170,6 +170,8 @@ namespace Duktape
 
             TransformType(typeof(Quaternion))
                 .AddTSMethodDeclaration("Clone(): Quaternion")
+                .AddTSMethodDeclaration("static Mul(lhs: Quaternion, rhs: Vector3): Vector3")
+                .AddTSMethodDeclaration("static Mul(lhs: Quaternion, rhs: Quaternion): Quaternion")
             ;
             // SetTypeBlocked(typeof(RendererExtensions));
             SetTypeBlocked(typeof(UnityEngine.UI.ILayoutGroup));
