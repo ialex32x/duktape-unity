@@ -44,7 +44,7 @@ npm install -g typescript
 ```
 
 # Build
-## prebuilt libraries already in /prebuilt/debug and /prebuilt/release directires.
+## prebuilt libraries already in /prebuilt/debug and /prebuilt/release directories.
 
 python/pip/pyyaml is prerequisites.
 ```shell
