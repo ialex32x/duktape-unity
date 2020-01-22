@@ -152,6 +152,20 @@ namespace Duktape
             duk_push_object(ctx, (object)o);
         }
 
+        // public static void duk_push_classvalue(IntPtr ctx, IO.ByteBuffer o)
+        // {
+        //     if (o == null)
+        //     {
+        //         DuktapeDLL.duk_push_null(ctx);
+        //         return;
+        //     }
+        //     var mem_ptr = DuktapeDLL.duk_push_fixed_buffer(ctx, (uint)o.readableBytes);
+        //     if (mem_ptr != IntPtr.Zero)
+        //     {
+        //         o.ReadAllBytes(mem_ptr);
+        //     }
+        // }
+
         public static void duk_push_classvalue(IntPtr ctx, DuktapeObject o)
         {
             if (o == null)
