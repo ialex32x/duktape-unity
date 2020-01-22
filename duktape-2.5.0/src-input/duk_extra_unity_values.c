@@ -105,6 +105,21 @@ DUK_INTERNAL DUK_INLINE void quaternion_push_new(duk_context *ctx, float x, floa
     duk_new(ctx, 4);
 }
 
+DUK_INTERNAL DUK_INLINE float quaternion_magnitude(const float *q) {
+    return sqrt(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
+}
+
+DUK_INTERNAL DUK_INLINE void quaternion_mul(const float *lhs, const float *rhs, float *res) {
+    float x = lhs[3] * rhs[0] + lhs[0] * rhs[3] + lhs[1] * rhs[2] - lhs[2] * rhs[1];
+    float y = lhs[3] * rhs[1] + lhs[1] * rhs[3] + lhs[2] * rhs[0] - lhs[0] * rhs[2];
+    float z = lhs[3] * rhs[2] + lhs[2] * rhs[3] + lhs[0] * rhs[1] - lhs[1] * rhs[0];
+    float w = lhs[3] * rhs[3] - lhs[0] * rhs[0] - lhs[1] * rhs[1] - lhs[2] * rhs[2];
+    res[0] = x;
+    res[1] = y;
+    res[2] = z;
+    res[3] = w;
+}
+
 DUK_INTERNAL DUK_INLINE void color_push_new(duk_context *ctx, float r, float g, float b, float a) {
     duk_builtins_reg_get(ctx, DUK_UNITY_BUILTINS_COLOR);
     duk_push_number(ctx, r);
@@ -1057,6 +1072,47 @@ DUK_LOCAL duk_ret_t duk_unity_Quaternion_Normalize(duk_context *ctx) {
     duk_unity_put4f(ctx, -1, x * rmag, y * rmag, z * rmag, w * rmag);
     duk_pop(ctx);
     return 0;
+}
+
+// static Euler(x: number, y: number, z: number): UnityEngine.Quaternion
+// static Euler(euler: UnityEngine.Vector3): UnityEngine.Quaternion
+DUK_LOCAL duk_ret_t duk_unity_Quaternion_static_Euler(duk_context *ctx) {
+    float eu[3];
+    if (duk_is_number(ctx, 0)) {
+        eu[0] = duk_get_number(ctx, 0);
+        eu[1] = duk_get_number_default(ctx, 1, 0.0);
+        eu[2] = duk_get_number_default(ctx, 2, 0.0);
+    } else {
+        duk_unity_get3f(ctx, 0, &eu[0], &eu[1], &eu[2]);
+    }
+    float qx[] = { sinf(eu[0] * 0.5f), 0.0f, 0.0f, cosf(eu[0] * 0.5f) };
+    float qy[] = { 0.0f, sinf(eu[1] * 0.5f), 0.0f, cosf(eu[1] * 0.5f) };
+    float qz[] = { 0.0f, 0.0f, sinf(eu[2] * 0.5f), cosf(eu[2] * 0.5f) };
+    float q[4];
+    quaternion_mul(qy, qx, q);
+    quaternion_mul(q, qz, q);
+    quaternion_push_new(ctx, q[0], q[1], q[2], q[3]);
+    return 1;
+}
+
+// static Dot(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion): number
+DUK_LOCAL duk_ret_t duk_unity_Quaternion_static_Dot(duk_context *ctx) {
+    float a[4];
+    float b[4];
+    duk_unity_get4f(ctx, 0, &a[0], &a[1], &a[2], &a[3]);
+    duk_unity_get4f(ctx, 1, &b[0], &b[1], &b[2], &b[3]);
+    float r = (a[0] *  b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3]);
+    duk_push_number(ctx, r);
+    return 1;
+}
+
+// static Normalize(q: UnityEngine.Quaternion): UnityEngine.Quaternion
+DUK_LOCAL duk_ret_t duk_unity_Quaternion_static_Normalize(duk_context *ctx) {
+    float q[4];
+    duk_unity_get4f(ctx, 0, &q[0], &q[1], &q[2], &q[3]);
+    float m = 1.0f / quaternion_magnitude(q);
+    quaternion_push_new(ctx, q[0] * m, q[1] * m, q[2] * m, q[3] * m);
+    return 1;
 }
 
 DUK_LOCAL duk_ret_t duk_unity_Vector2_constructor(duk_context *ctx) {
@@ -2476,12 +2532,11 @@ DUK_INTERNAL void duk_unity_valuetypes_open(duk_context *ctx) {
         // static AngleAxis(angle: number, axis: UnityEngine.Vector3): UnityEngine.Quaternion
         // static LookRotation(forward: UnityEngine.Vector3, upwards: UnityEngine.Vector3): UnityEngine.Quaternion
         // static LookRotation(forward: UnityEngine.Vector3): UnityEngine.Quaternion
-        // static Dot(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion): number
+        duk_unity_add_member(ctx, "Dot", duk_unity_Quaternion_static_Dot, -2); 
         // static Angle(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion): number
-        // static Euler(x: number, y: number, z: number): UnityEngine.Quaternion
-        // static Euler(euler: UnityEngine.Vector3): UnityEngine.Quaternion
+        duk_unity_add_member(ctx, "Euler", duk_unity_Quaternion_static_Euler, -2);
         // static RotateTowards(from: UnityEngine.Quaternion, to: UnityEngine.Quaternion, maxDegreesDelta: number): UnityEngine.Quaternion
-        // static Normalize(q: UnityEngine.Quaternion): UnityEngine.Quaternion
+        duk_unity_add_member(ctx, "Normalize", duk_unity_Quaternion_static_Normalize, -2);
         duk_unity_Quaternion_add_const(ctx, -2, "identity", 0, 0, 0, 1);
         // eulerAngles: UnityEngine.Vector3
         duk_unity_add_property(ctx, "normalized", duk_unity_Quaternion_get_normalized, NULL, -1);
