@@ -43,15 +43,23 @@ If you use typescript, install typescript at first
 npm install -g typescript
 ```
 
-If you need to compile duktape source code, python/pip/pyyaml is prerequisites.
+# Build
+## prebuilt libraries already in /prebuilt/debug and /prebuilt/release directires.
+
+python/pip/pyyaml is prerequisites.
 ```shell
 pip install pyyaml
-
-# duktape-2.3.0/src-input: duktape source code
-# duktape-2.3.0/src-custom: combined duktape source code
-./configure_duktape.bat 
-./make_duktape_<platform>
 ```
+
+duktape original source code is at /duktape-<version>/src-input
+```shell
+./configure_duktape.bat # combined duktape source code will be generated 
+# at:
+# /build/src-debug (with debugger)
+# /build/src-release (without debugger)
+./make_duktape_<platform>.bat # or ./make_duktape_<platform>.sh in osx
+```
+if you build duktape for android in windows, run make_duktape_android.bat in visual studio  cross tools commandline (e.g VS2015 x64 ARM Cross Tools Command Prompt).<br/><br/>
 
 './scratch' is a playground for duktape testing in a simple command line app.
 ```shell

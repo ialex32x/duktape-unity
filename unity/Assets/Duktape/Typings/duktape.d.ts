@@ -60,10 +60,10 @@ declare class CBOR {
     static decode(o: any): any;
 }
 
-declare class TextEncoder {
-    constructor();
-}
+// declare class TextEncoder {
+//     constructor();
+// }
 
-declare class TextDecoder {
-    constructor();
-}
+// declare class TextDecoder {
+//     constructor();
+// }

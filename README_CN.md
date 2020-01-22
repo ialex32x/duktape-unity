@@ -43,15 +43,21 @@
 npm install -g typescript
 ```
 
-如果您需要从 duktape 源代码进行编译, 必须先安装 python/pip/pyyaml.
+# 构建
+如果您需要从 duktape 源代码进行构建, 必须先安装 python/pip/pyyaml.
 ```shell
 pip install pyyaml
-
-# duktape-2.3.0/src-input: duktape source code
-# duktape-2.3.0/src-custom: combined duktape source code
-./configure_duktape.bat 
-./make_duktape_<platform>
 ```
+
+duktape 源代码在目录 /duktape-<version>/src-input 下
+```shell
+./configure_duktape.bat # 生成经过预处理的 duktape 最终源代码
+# 生成的代码位于:
+# /build/src-debug (带调试器支持代码) 
+# /build/src-release (不带调试器支持代码)
+./make_duktape_<platform>.bat # 在 osx 中可用 make_duktape<platform>.sh
+```
+注: 如果在 Windows 下构建 Android 库, 则需要在 VS交叉编译命令行中执行bat (比如 VS2015 x64 ARM Cross Tools Command Prompt).<br/><br/>
 
 './scratch' 是一个简单的功能测试命令行工程, 可以在一个简单的环境中运行测试一些 duktape 的功能, 方便调试.
 ```shell
