@@ -183,7 +183,7 @@ export function sampleTests() {
                 this.transform.localRotation = UnityEngine.Quaternion.Euler(this.rotx, this.roty, 0)
                 this.rotx += UnityEngine.Time.deltaTime * 30
                 this.roty += UnityEngine.Time.deltaTime * 15
-                if (UnityEngine.Input.GetMouseButtonUp(0)) {
+                if (UnityEngine.Input.GetMouseButtonUp(0) || UnityEngine.Input.GetKeyUp(UnityEngine.KeyCode.Space)) {
                     if (UnityExtensions.RaycastMousePosition(this.hitInfo, 1000, 1)) {
                         console.log("you clicked " + this.hitInfo.collider.name)
                     }
