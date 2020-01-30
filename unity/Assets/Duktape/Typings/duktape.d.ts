@@ -47,7 +47,7 @@ declare namespace Duktape {
     class Thread {
         /**	Thread constructor (function). */
         constructor(fn: Function);
-        static resume(thread: Thead, v?: any, f?: any);
+        static resume(thread: Thread, v?: any, f?: any);
         static yield(v?: any, f?: any);
         static current(): Thread;
     }
