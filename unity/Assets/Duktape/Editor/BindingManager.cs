@@ -621,57 +621,71 @@ namespace Duktape
         public string GetDuktapeGetter(Type type, string ctx, string index, string varname)
         {
             #region [临时做法] 并且是可选的优化, 可以避免一层函数调用
-            if (type == typeof(bool))
-            {
-                return $"{varname} = DuktapeDLL.duk_get_boolean({ctx}, {index});";
-            }
             if (type == typeof(string))
             {
                 return $"{varname} = DuktapeDLL.duk_get_string({ctx}, {index});";
             }
-            if (type == typeof(byte))
+            if (type.IsValueType)
             {
-                return $"{varname} = (byte)DuktapeDLL.duk_get_int({ctx}, {index});";
-            }
-            if (type == typeof(char))
-            {
-                return $"{varname} = (char)DuktapeDLL.duk_get_int({ctx}, {index});";
-            }
-            if (type == typeof(sbyte))
-            {
-                return $"{varname} = (sbyte)DuktapeDLL.duk_get_int({ctx}, {index});";
-            }
-            if (type == typeof(short))
-            {
-                return $"{varname} = (short)DuktapeDLL.duk_get_int({ctx}, {index});";
-            }
-            if (type == typeof(ushort))
-            {
-                return $"{varname} = (ushort)DuktapeDLL.duk_get_int({ctx}, {index});";
-            }
-            if (type == typeof(int))
-            {
-                return $"{varname} = DuktapeDLL.duk_get_int({ctx}, {index});";
-            }
-            if (type == typeof(uint))
-            {
-                return $"{varname} = DuktapeDLL.duk_get_uint({ctx}, {index});";
-            }
-            if (type == typeof(long))
-            {
-                return $"{varname} = (long)DuktapeDLL.duk_get_number({ctx}, {index});";
-            }
-            if (type == typeof(ulong))
-            {
-                return $"{varname} = (ulong)DuktapeDLL.duk_get_number({ctx}, {index});";
-            }
-            if (type == typeof(float))
-            {
-                return $"{varname} = (float)DuktapeDLL.duk_get_number({ctx}, {index});";
-            }
-            if (type == typeof(double))
-            {
-                return $"{varname} = DuktapeDLL.duk_get_number({ctx}, {index});";
+                if (type.IsPrimitive)
+                {
+                    if (type == typeof(bool))
+                    {
+                        return $"{varname} = DuktapeDLL.duk_get_boolean({ctx}, {index});";
+                    }
+                    if (type == typeof(byte))
+                    {
+                        return $"{varname} = (byte)DuktapeDLL.duk_get_int({ctx}, {index});";
+                    }
+                    if (type == typeof(char))
+                    {
+                        return $"{varname} = (char)DuktapeDLL.duk_get_int({ctx}, {index});";
+                    }
+                    if (type == typeof(sbyte))
+                    {
+                        return $"{varname} = (sbyte)DuktapeDLL.duk_get_int({ctx}, {index});";
+                    }
+                    if (type == typeof(short))
+                    {
+                        return $"{varname} = (short)DuktapeDLL.duk_get_int({ctx}, {index});";
+                    }
+                    if (type == typeof(ushort))
+                    {
+                        return $"{varname} = (ushort)DuktapeDLL.duk_get_int({ctx}, {index});";
+                    }
+                    if (type == typeof(int))
+                    {
+                        return $"{varname} = DuktapeDLL.duk_get_int({ctx}, {index});";
+                    }
+                    if (type == typeof(uint))
+                    {
+                        return $"{varname} = DuktapeDLL.duk_get_uint({ctx}, {index});";
+                    }
+                    if (type == typeof(long))
+                    {
+                        return $"{varname} = (long)DuktapeDLL.duk_get_number({ctx}, {index});";
+                    }
+                    if (type == typeof(ulong))
+                    {
+                        return $"{varname} = (ulong)DuktapeDLL.duk_get_number({ctx}, {index});";
+                    }
+                    if (type == typeof(float))
+                    {
+                        return $"{varname} = (float)DuktapeDLL.duk_get_number({ctx}, {index});";
+                    }
+                    if (type == typeof(double))
+                    {
+                        return $"{varname} = DuktapeDLL.duk_get_number({ctx}, {index});";
+                    }
+                }
+                if (type.IsEnum)
+                {
+                    if (type.GetEnumUnderlyingType() == typeof(int))
+                    {
+                        var typeStr = this.GetCSTypeFullName(type);
+                        return $"{varname} = ({typeStr})DuktapeDLL.duk_get_int({ctx}, {index});";
+                    }
+                }
             }
             #endregion 
             var getter = GetDuktapeGetter(type);
