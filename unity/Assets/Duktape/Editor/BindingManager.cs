@@ -1360,13 +1360,15 @@ namespace Duktape
             list.Add(filename);
         }
 
-        public void Generate()
+        public void Generate(bool bTSDefinitionFiles)
         {
             var cg = new CodeGenerator(this);
-            var csOutDir = prefs.outDir;
-            var tsOutDir = prefs.typescriptDir;
+            var csOutDir = prefs.procOutDir;
+            var tsOutDir = prefs.procTypescriptDir;
             var tx = prefs.extraExt;
             // var tx = "";
+
+            cg.tsDeclare.enabled = bTSDefinitionFiles;
             if (!Directory.Exists(csOutDir))
             {
                 Directory.CreateDirectory(csOutDir);
@@ -1418,7 +1420,6 @@ namespace Duktape
 
                     cg.Clear();
                     cg.Generate(exportedDelegatesArray);
-                    // cg.tsSource.enabled = false;
                     cg.WriteTo(csOutDir, tsOutDir, DuktapeVM._DuktapeDelegates, tx);
                 }
                 catch (Exception exception)

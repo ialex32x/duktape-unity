@@ -39,15 +39,23 @@ namespace Duktape
     public static class UnityHelper
     {
         #region All Menu Items
-        [MenuItem("Duktape/Generate Bindings")]
+        [MenuItem("Duktape/Generate Bindings with d.ts")]
         public static void GenerateBindings()
         {
             var bm = new BindingManager(Prefs.Load());
             bm.Collect();
-            // temp
-            // bm.AddExport(typeof(GameObject));
-            // bm.AddExport(typeof(Transform));
-            bm.Generate();
+            bm.Generate(true);
+            bm.Cleanup();
+            bm.Report();
+            AssetDatabase.Refresh();
+        }
+
+        [MenuItem("Duktape/Generate Bindings without d.ts")]
+        public static void GenerateBindingsWithoutTSD()
+        {
+            var bm = new BindingManager(Prefs.Load());
+            bm.Collect();
+            bm.Generate(false);
             bm.Cleanup();
             bm.Report();
             AssetDatabase.Refresh();
@@ -77,8 +85,8 @@ namespace Duktape
         {
             var prefs = Prefs.Load();
             var kv = new Dictionary<string, List<string>>();
-            kv[prefs.outDir] = new List<string>();
-            kv[prefs.typescriptDir] = new List<string>();
+            kv[prefs.procOutDir] = new List<string>();
+            kv[prefs.procTypescriptDir] = new List<string>();
             BindingManager.Cleanup(kv, null);
             AssetDatabase.Refresh();
         }
