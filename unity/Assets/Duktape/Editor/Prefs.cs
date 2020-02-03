@@ -21,6 +21,11 @@ namespace Duktape
         public string outDir = "Assets/Generated";
         public string typescriptDir = "Assets/Generated";
 
+        public List<string> cleanupDir = new List<string>(new string[]
+        {
+            "Assets/Generated",
+        });
+
         public string procOutDir => ReplacePathVars(outDir);
         public string procTypescriptDir => ReplacePathVars(typescriptDir);
 
@@ -152,7 +157,7 @@ namespace Duktape
             }
         }
 
-        private string ReplacePathVars(string value)
+        public static string ReplacePathVars(string value)
         {
             var platform = GetPlatform();
             value = value.Replace("${platform}", platform);

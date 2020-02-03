@@ -85,8 +85,11 @@ namespace Duktape
         {
             var prefs = Prefs.Load();
             var kv = new Dictionary<string, List<string>>();
-            kv[prefs.procOutDir] = new List<string>();
-            kv[prefs.procTypescriptDir] = new List<string>();
+            foreach (var dir in prefs.cleanupDir)
+            {
+                var pdir = Prefs.ReplacePathVars(dir);
+                kv[pdir] = new List<string>();
+            }
             BindingManager.Cleanup(kv, null);
             AssetDatabase.Refresh();
         }

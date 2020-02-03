@@ -8,7 +8,7 @@
         // "outFile": "Assets/Duktape/Examples/Scripts/out/code.js",
         "typeRoots": [
             "Assets/Duktape/Typings",
-            "Assets/Generated",
+            "Assets/Generated/Typings",
             "Assets/Duktape/Examples/Scripts/types"
         ],
         "moduleResolution": "node",
