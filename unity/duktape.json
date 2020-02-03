@@ -1,6 +1,11 @@
 {
-    "outDir": "Assets/Generated",
-    "typescriptDir": "Assets/Generated",
+    "outDir": "Assets/Generated/${platform}",
+    "typescriptDir": "Assets/Generated/Typings",
+    "cleanupDir": [
+        "Assets/Generated/${platform}", 
+        "Assets/Generated/Typings", 
+        "Assets/Generated" 
+    ],
     "extraExt": "",
     // rootpath of ts/js project
     "workspace": "",
