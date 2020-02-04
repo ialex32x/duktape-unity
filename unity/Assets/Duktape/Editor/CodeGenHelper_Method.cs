@@ -295,14 +295,15 @@ namespace Duktape
             var isExtension = method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute));
             var refParameters = new List<ParameterInfo>();
             string tsMethodDeclaration;
+            this.cg.AppendJSDoc(method);
             if (this.cg.bindingManager.GetTSMethodDeclaration(method, out tsMethodDeclaration))
             {
                 this.cg.tsDeclare.AppendLine(tsMethodDeclaration);
                 return refParameters;
             }
+            var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
             //TODO: 需要处理参数类型归并问题, 因为如果类型没有导入 ts 中, 可能会在声明中出现相同参数列表的定义
             //      在 MethodVariant 中创建每个方法对应的TS类型名参数列表, 完全相同的不再输出
-            this.cg.AppendJSDoc(method);
             var prefix = "";
             if (method.IsStatic && !isExtension)
             {
@@ -317,46 +318,55 @@ namespace Duktape
             {
                 this.cg.tsDeclare.Append($"{prefix}{bindingInfo.regName}(");
             }
-            var parameters = method.GetParameters();
-            if (isExtension)
+
+            if (isRaw)
             {
-                ArrayUtility.RemoveAt(ref parameters, 0);
+                this.cg.tsDeclare.AppendL("...uncertain: any[]): any /* uncertain */");
+                this.cg.tsDeclare.AppendLine();
             }
-            for (var i = 0; i < parameters.Length; i++)
+            else
             {
-                var parameter = parameters[i];
-                var parameter_prefix = "";
-                var parameterType = parameter.ParameterType;
-                if (parameter.IsOut && parameterType.IsByRef)
+                var parameters = method.GetParameters();
+                if (isExtension)
                 {
-                    // parameter_prefix = "/*out*/ ";
-                    refParameters.Add(parameter);
+                    ArrayUtility.RemoveAt(ref parameters, 0);
                 }
-                else if (parameterType.IsByRef)
+                for (var i = 0; i < parameters.Length; i++)
                 {
-                    // parameter_prefix = "/*ref*/ ";
-                    refParameters.Add(parameter);
+                    var parameter = parameters[i];
+                    var parameter_prefix = "";
+                    var parameterType = parameter.ParameterType;
+                    if (parameter.IsOut && parameterType.IsByRef)
+                    {
+                        // parameter_prefix = "/*out*/ ";
+                        refParameters.Add(parameter);
+                    }
+                    else if (parameterType.IsByRef)
+                    {
+                        // parameter_prefix = "/*ref*/ ";
+                        refParameters.Add(parameter);
+                    }
+                    if (parameter.IsDefined(typeof(ParamArrayAttribute), false) && i == parameters.Length - 1)
+                    {
+                        var elementType = parameterType.GetElementType();
+                        var elementTS = this.cg.bindingManager.GetTSTypeFullName(elementType);
+                        var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
+                        this.cg.tsDeclare.AppendL($"{parameter_prefix}...{parameterVarName}: {elementTS}[]");
+                    }
+                    else
+                    {
+                        var parameterTS = this.cg.bindingManager.GetTSTypeFullName(parameterType, parameter.IsOut);
+                        var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
+                        this.cg.tsDeclare.AppendL($"{parameter_prefix}{parameterVarName}: {parameterTS}");
+                    }
+                    if (i != parameters.Length - 1)
+                    {
+                        this.cg.tsDeclare.AppendL(", ");
+                    }
                 }
-                if (parameter.IsDefined(typeof(ParamArrayAttribute), false) && i == parameters.Length - 1)
-                {
-                    var elementType = parameterType.GetElementType();
-                    var elementTS = this.cg.bindingManager.GetTSTypeFullName(elementType);
-                    var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
-                    this.cg.tsDeclare.AppendL($"{parameter_prefix}...{parameterVarName}: {elementTS}[]");
-                }
-                else
-                {
-                    var parameterTS = this.cg.bindingManager.GetTSTypeFullName(parameterType, parameter.IsOut);
-                    var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
-                    this.cg.tsDeclare.AppendL($"{parameter_prefix}{parameterVarName}: {parameterTS}");
-                }
-                if (i != parameters.Length - 1)
-                {
-                    this.cg.tsDeclare.AppendL(", ");
-                }
+                this.cg.tsDeclare.AppendL($")");
+                WriteTSReturn(method, refParameters);
             }
-            this.cg.tsDeclare.AppendL($")");
-            WriteTSReturn(method, refParameters);
             return refParameters;
         }
 
@@ -375,6 +385,7 @@ namespace Duktape
         {
             var parameters = method.GetParameters();
             var isExtension = method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute));
+            var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
             if (isExtension)
             {
                 ArrayUtility.RemoveAt(ref parameters, 0);
@@ -382,6 +393,28 @@ namespace Duktape
             var parametersByRef = new List<ParameterInfo>();
             var caller = this.cg.AppendGetThisCS(method);
             var returnType = GetReturnType(method);
+
+            if (isRaw)
+            {
+                do
+                {
+                    if (!isExtension)
+                    {
+                        if (returnType == typeof(int) && parameters.Length == 1)
+                        {
+                            var p = parameters[0];
+                            if (p.ParameterType == typeof(IntPtr) && !p.IsOut)
+                            {
+                                cg.cs.AppendLine($"return {caller}.{method.Name}(ctx);");
+                                return;
+                            }
+                        }
+                        cg.bindingManager.Error($"Invalid JSCFunction definition: {method}");
+                        break;
+                    }
+                    cg.bindingManager.Error($"Extension as JSCFunction is not supported: {method}");
+                } while (false);
+            }
 
             if (returnType == null || returnType == typeof(void))
             {
@@ -419,7 +452,7 @@ namespace Duktape
         }
 
         // 回填 ref/out 参数
-        //TODO: !!! 扩展方法参数索引需要偏移
+        // 扩展方法参数索引需要偏移
         protected void _WriteBackParametersByRef(bool isExtension, List<ParameterInfo> parametersByRef)
         {
             for (var i = 0; i < parametersByRef.Count; i++)

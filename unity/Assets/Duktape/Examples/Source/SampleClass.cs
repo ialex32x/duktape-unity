@@ -226,6 +226,18 @@ namespace SampleNamespace
         {
         }
 
+        [JSCFunction]
+        public static int TestStaticRawJSCFunction(IntPtr ctx)
+        {
+            return 0;
+        }
+
+        [JSCFunction]
+        public int TestInstancedRawJSCFunction(IntPtr ctx)
+        {
+            return 0;
+        }
+
         public static UnityEngine.UI.Text logText;
         public static void DoNothing() { }
         public static void DoNothing1(int a) { }
