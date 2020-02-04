@@ -1330,20 +1330,23 @@ namespace Duktape
             {
                 var outDir = kv.Key;
                 var excludedFiles = kv.Value;
-                foreach (var file in Directory.GetFiles(outDir))
+                if (Directory.Exists(outDir))
                 {
-                    var nfile = file;
-                    if (file.EndsWith(".meta"))
+                    foreach (var file in Directory.GetFiles(outDir))
                     {
-                        nfile = file.Substring(0, file.Length - 5);
-                    }
-                    // Debug.LogFormat("checking file {0}", nfile);
-                    if (excludedFiles == null || !excludedFiles.Contains(nfile))
-                    {
-                        File.Delete(file);
-                        if (ondelete != null)
+                        var nfile = file;
+                        if (file.EndsWith(".meta"))
                         {
-                            ondelete(file);
+                            nfile = file.Substring(0, file.Length - 5);
+                        }
+                        // Debug.LogFormat("checking file {0}", nfile);
+                        if (excludedFiles == null || !excludedFiles.Contains(nfile))
+                        {
+                            File.Delete(file);
+                            if (ondelete != null)
+                            {
+                                ondelete(file);
+                            }
                         }
                     }
                 }
