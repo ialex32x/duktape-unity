@@ -133,6 +133,16 @@ namespace Duktape
                     "GetComponentsInParent", typeof(Type))
             ;
 
+            var buildTarget = EditorUserBuildSettings.activeBuildTarget;
+            if (buildTarget != BuildTarget.iOS)
+            {
+                typePrefixBlacklist.Add("UnityEngine.Apple");
+            }
+            if (buildTarget != BuildTarget.Android)
+            {
+                typePrefixBlacklist.Add("UnityEngine.Android");
+            }
+
             // fix d.ts, some C# classes use explicit implemented interface method
             SetTypeBlocked(typeof(UnityEngine.ILogHandler));
             SetTypeBlocked(typeof(UnityEngine.ISerializationCallbackReceiver));
@@ -182,6 +192,14 @@ namespace Duktape
                 .SetMemberBlocked("ModifyMesh");
             TransformType(typeof(UnityEngine.UI.Outline))
                 .SetMemberBlocked("ModifyMesh");
+            TransformType(typeof(UnityEngine.UI.Graphic))
+                .SetMemberBlocked("OnRebuildRequested");
+            TransformType(typeof(UnityEngine.UI.Text))
+                .SetMemberBlocked("OnRebuildRequested");
+            TransformType(typeof(UnityEngine.Input))
+                .SetMemberBlocked("IsJoystickPreconfigured");
+            TransformType(typeof(UnityEngine.MonoBehaviour))
+                .SetMemberBlocked("runInEditMode");
 
             // editor 使用的 .net 与 player 所用存在差异, 这里屏蔽不存在的成员
             TransformType(typeof(double))
@@ -1330,20 +1348,23 @@ namespace Duktape
             {
                 var outDir = kv.Key;
                 var excludedFiles = kv.Value;
-                foreach (var file in Directory.GetFiles(outDir))
+                if (Directory.Exists(outDir))
                 {
-                    var nfile = file;
-                    if (file.EndsWith(".meta"))
+                    foreach (var file in Directory.GetFiles(outDir))
                     {
-                        nfile = file.Substring(0, file.Length - 5);
-                    }
-                    // Debug.LogFormat("checking file {0}", nfile);
-                    if (excludedFiles == null || !excludedFiles.Contains(nfile))
-                    {
-                        File.Delete(file);
-                        if (ondelete != null)
+                        var nfile = file;
+                        if (file.EndsWith(".meta"))
                         {
-                            ondelete(file);
+                            nfile = file.Substring(0, file.Length - 5);
+                        }
+                        // Debug.LogFormat("checking file {0}", nfile);
+                        if (excludedFiles == null || !excludedFiles.Contains(nfile))
+                        {
+                            File.Delete(file);
+                            if (ondelete != null)
+                            {
+                                ondelete(file);
+                            }
                         }
                     }
                 }
