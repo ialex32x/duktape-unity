@@ -185,6 +185,13 @@ function sampleTests() {
         setTimeout(function () {
             UnityEngine.Object.Destroy(go2);
         }, 30000);
+        var time = 0;
+        setInterval(function () {
+            setTimeout(function () {
+                time++;
+                // setTimeout/setInterval gc test
+            }, 50);
+        }, 200);
     })();
     (function () {
         // console.log(UnityEngine.UI.Text)

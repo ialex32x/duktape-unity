@@ -10,9 +10,10 @@ namespace Duktape
     // 利用 coroutine 实现的简易定时运行管理器 (interval/timeout/loop)
     public class DuktapeRunner : MonoBehaviour
     {
+        private static uint _idgen;
         private static DuktapeRunner _runner;
 
-        private Dictionary<uint, Timer> _timers = new Dictionary<uint, Timer>();
+        private Dictionary<uint, STimer> _timers = new Dictionary<uint, STimer>();
 
         private Scheduler _scheduler = new Scheduler();
 
@@ -32,36 +33,46 @@ namespace Duktape
 
         public static uint SetTimeout(DuktapeFunction fn, int ms)
         {
-            var runner = GetRunner();
-            if (runner != null)
-            {
-                var timer = runner._scheduler.CreateTimer(ms, fn, 1);
-                runner._timers.Add(timer.id, timer);
-                return timer.id;
-            }
-            return 0;
+            return CreateTimer(fn, ms, false);
+        }
+
+        public static uint SetTimeout(Action fn, int ms)
+        {
+            return CreateTimer(fn, ms, false);
         }
 
         public static uint SetInterval(DuktapeFunction fn, int ms)
         {
-            var runner = GetRunner();
-            if (runner != null)
-            {
-                var timer = runner._scheduler.CreateTimer(ms, fn, -1);
-                runner._timers.Add(timer.id, timer);
-                return timer.id;
-            }
-            return 0;
+            return CreateTimer(fn, ms, true);
         }
 
         public static uint SetInterval(Action fn, int ms)
         {
+            return CreateTimer(fn, ms, true);
+        }
+
+        private static uint CreateTimer(Action fn, int ms, bool repeat)
+        {
             var runner = GetRunner();
             if (runner != null)
             {
-                var timer = runner._scheduler.CreateTimer(ms, new InvokableAction(fn), -1);
-                runner._timers.Add(timer.id, timer);
-                return timer.id;
+                var id = ++_idgen;
+                var timer = runner._scheduler.CreateSTimer(ms, new InvokableAction(fn), repeat);
+                runner._timers.Add(id, timer);
+                return id;
+            }
+            return 0;
+        }
+
+        private static uint CreateTimer(DuktapeFunction fn, int ms, bool repeat)
+        {
+            var runner = GetRunner();
+            if (runner != null)
+            {
+                var id = ++_idgen;
+                var timer = runner._scheduler.CreateSTimer(ms, fn, repeat);
+                runner._timers.Add(id, timer);
+                return id;
             }
             return 0;
         }
@@ -71,26 +82,14 @@ namespace Duktape
             var runner = GetRunner();
             if (runner != null)
             {
-                Timer timer;
+                STimer timer;
                 if (runner._timers.TryGetValue(id, out timer))
                 {
-                    timer.enabled = false;
+                    runner._timers.Remove(id);
+                    timer.Stop();
                     return true;
                 }
             }
-            return false;
-        }
-
-        private bool RemoveTimer(uint id)
-        {
-            Timer timer;
-            if (_timers.TryGetValue(id, out timer))
-            {
-                _timers.Remove(id);
-                timer.enabled = false;
-                return true;
-            }
-
             return false;
         }
 

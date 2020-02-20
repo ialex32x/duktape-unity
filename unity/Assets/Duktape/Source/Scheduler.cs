@@ -140,6 +140,47 @@ namespace Duktape
         }
     }
 
+    public struct STimer
+    {
+        private uint _handle;
+        private Scheduler _scheduler;
+
+        private int _interval;
+        private Invokable _fn;
+        private bool _repeat;
+
+        public STimer(Scheduler scheduler, int interval, Invokable fn, bool repeat)
+        {
+            _handle = 0;
+            _scheduler = scheduler;
+            _interval = interval;
+            _fn = fn;
+            _repeat = repeat;
+            _handle = _scheduler.Add(_interval, OnTick);
+        }
+
+        private void OnTick(uint id)
+        {
+            _handle = 0;
+            _fn.Invoke();
+            if (_repeat)
+            {
+                _handle = _scheduler.Add(_interval, OnTick);
+            }
+            // UnityEngine.Debug.LogWarning($"STimer:{name}({_id}) interval:{_interval} OnTick, repeat: {_repeat} enabled: {_enabled}");
+        }
+
+        public void Stop()
+        {
+            if (_handle != 0)
+            {
+                _scheduler.Remove(_handle);
+                _handle = 0;
+            }
+            // UnityEngine.Debug.LogWarning($"STimer:{name}({_id}) interval:{_interval} EnableChanged, repeat: {_repeat} enabled: {_enabled}");
+        }
+    }
+
     public class Timer
     {
         private static uint _idgen;
@@ -236,7 +277,7 @@ namespace Duktape
     {
         private int _threadId;
         private List<TimeHandle> _pool = new List<TimeHandle>();
-        private Dictionary<uint, TimeHandle> _timers = new Dictionary<uint, TimeHandle>();
+        private Dictionary<uint, TimeHandle> _timeHandles = new Dictionary<uint, TimeHandle>();
         private Wheel[] _wheels;
         private int _timeslice;
         private int _elapsed;
@@ -316,6 +357,15 @@ namespace Duktape
             return timer;
         }
 
+        public STimer CreateSTimer(int interval, Invokable fn, bool repeat)
+        {
+            if (_threadId != Thread.CurrentThread.ManagedThreadId)
+            {
+                throw new Exception("scheduler is only available in main thread");
+            }
+            return new STimer(this, interval, fn, repeat);
+        }
+
         public uint Add(int delay, Action<uint> fn)
         {
             if (delay < 0)
@@ -324,7 +374,7 @@ namespace Duktape
             }
             var id = ++_idgen;
             var timer = GetTimeHandle(id, delay, fn);
-            _timers[id] = timer;
+            _timeHandles[id] = timer;
             Rearrange(timer);
             // UnityEngine.Debug.Log($"[Scheduler] Add timer#{timer.id} deadline: {timer.deadline}");
             return id;
@@ -335,9 +385,9 @@ namespace Duktape
             if (id > 0)
             {
                 TimeHandle timer;
-                if (_timers.TryGetValue(id, out timer))
+                if (_timeHandles.TryGetValue(id, out timer))
                 {
-                    _timers.Remove(id);
+                    _timeHandles.Remove(id);
                     timer.deleted = true;
                     if (timer.slot != null)
                     {
