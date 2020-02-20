@@ -52,18 +52,16 @@ export function sampleTests() {
 
     (function () {
         let Vector3 = UnityEngine.Vector3;
-        let start:number;
+        let start: number;
         let DoNothing = SampleNamespace.SampleClass.DoNothing;
         start = Date.now();
-        for (let i = 1; i < 1000000; i++)
-        {
+        for (let i = 1; i < 1000000; i++) {
             DoNothing();
         }
         SampleNamespace.SampleClass.WriteLog(`js/DoNothing: ${(Date.now() - start) / 1000}`);
         let DoNothing1 = SampleNamespace.SampleClass.DoNothing1;
         start = Date.now();
-        for (let i = 1; i < 1000000; i++)
-        {
+        for (let i = 1; i < 1000000; i++) {
             DoNothing1(i);
         }
         SampleNamespace.SampleClass.WriteLog(`js/DoNothing1: ${(Date.now() - start) / 1000}`);
@@ -209,6 +207,14 @@ export function sampleTests() {
         setTimeout(() => {
             UnityEngine.Object.Destroy(go2)
         }, 30000)
+
+        let time = 0;
+        setInterval(() => {
+            setTimeout(() => {
+                time++;
+                // setTimeout/setInterval gc test
+            }, 50);
+        }, 200);
     })();
 
     (function () {

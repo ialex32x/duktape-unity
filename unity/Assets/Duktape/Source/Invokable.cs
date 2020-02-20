@@ -18,7 +18,14 @@ namespace Duktape
 
         public void Invoke()
         {
-            _fn();
+            try
+            {
+                _fn();
+            }
+            catch (Exception exception)
+            {
+                UnityEngine.Debug.LogError(exception);
+            }
         }
     }
 }
