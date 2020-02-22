@@ -13,7 +13,7 @@ namespace Duktape
         private static uint _idgen;
         private static DuktapeRunner _runner;
 
-        private Dictionary<uint, STimer> _timers = new Dictionary<uint, STimer>();
+        private Dictionary<uint, ulong> _timers = new Dictionary<uint, ulong>();
 
         private Scheduler _scheduler = new Scheduler();
 
@@ -33,44 +33,44 @@ namespace Duktape
 
         public static uint SetTimeout(DuktapeFunction fn, int ms)
         {
-            return CreateTimer(fn, ms, false);
+            return CreateTimer(fn, ms, true);
         }
 
         public static uint SetTimeout(Action fn, int ms)
         {
-            return CreateTimer(fn, ms, false);
+            return CreateTimer(fn, ms, true);
         }
 
         public static uint SetInterval(DuktapeFunction fn, int ms)
         {
-            return CreateTimer(fn, ms, true);
+            return CreateTimer(fn, ms, false);
         }
 
         public static uint SetInterval(Action fn, int ms)
         {
-            return CreateTimer(fn, ms, true);
+            return CreateTimer(fn, ms, false);
         }
 
-        private static uint CreateTimer(Action fn, int ms, bool repeat)
+        private static uint CreateTimer(Action fn, int ms, bool once)
         {
             var runner = GetRunner();
             if (runner != null)
             {
                 var id = ++_idgen;
-                var timer = runner._scheduler.CreateSTimer(ms, new InvokableAction(fn), repeat);
+                var timer = runner._scheduler.Add(ms, once, new InvokableAction(fn));
                 runner._timers.Add(id, timer);
                 return id;
             }
             return 0;
         }
 
-        private static uint CreateTimer(DuktapeFunction fn, int ms, bool repeat)
+        private static uint CreateTimer(DuktapeFunction fn, int ms, bool once)
         {
             var runner = GetRunner();
             if (runner != null)
             {
                 var id = ++_idgen;
-                var timer = runner._scheduler.CreateSTimer(ms, fn, repeat);
+                var timer = runner._scheduler.Add(ms, once, fn);
                 runner._timers.Add(id, timer);
                 return id;
             }
@@ -82,11 +82,11 @@ namespace Duktape
             var runner = GetRunner();
             if (runner != null)
             {
-                STimer timer;
+                ulong timer;
                 if (runner._timers.TryGetValue(id, out timer))
                 {
                     runner._timers.Remove(id);
-                    timer.Stop();
+                    runner._scheduler.Remove(timer);
                     return true;
                 }
             }

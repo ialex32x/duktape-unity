@@ -5,12 +5,17 @@ using System.Collections.Generic;
 
 namespace Duktape
 {
+    // public delegate void TimeHandleCallback();
+    using TimeHandleCallback = Invokable;
+
     internal class TimeHandle
     {
-        public uint id;
-        public Action<uint> action;
+        public ulong id;
+        public TimeHandleCallback action;
+        public int delay;
         public int deadline;
         public bool deleted;
+        public bool once;
         public WheelSlot slot;
     }
 
@@ -140,153 +145,22 @@ namespace Duktape
         }
     }
 
-    public struct STimer
-    {
-        private uint _handle;
-        private Scheduler _scheduler;
-
-        private int _interval;
-        private Invokable _fn;
-        private bool _repeat;
-
-        public STimer(Scheduler scheduler, int interval, Invokable fn, bool repeat)
-        {
-            _handle = 0;
-            _scheduler = scheduler;
-            _interval = interval;
-            _fn = fn;
-            _repeat = repeat;
-            _handle = _scheduler.Add(_interval, OnTick);
-        }
-
-        private void OnTick(uint id)
-        {
-            _handle = 0;
-            _fn.Invoke();
-            if (_repeat)
-            {
-                _handle = _scheduler.Add(_interval, OnTick);
-            }
-            // UnityEngine.Debug.LogWarning($"STimer:{name}({_id}) interval:{_interval} OnTick, repeat: {_repeat} enabled: {_enabled}");
-        }
-
-        public void Stop()
-        {
-            if (_handle != 0)
-            {
-                _scheduler.Remove(_handle);
-                _handle = 0;
-            }
-            // UnityEngine.Debug.LogWarning($"STimer:{name}({_id}) interval:{_interval} EnableChanged, repeat: {_repeat} enabled: {_enabled}");
-        }
-    }
-
-    public class Timer
-    {
-        private static uint _idgen;
-        private Scheduler _scheduler;
-        private uint _handle;
-        private uint _id;
-        private bool _enabled;
-        private int _repeat;
-        private int _interval;
-        private Invokable _fn;
-
-        public string name;
-
-        public uint id => _id;
-
-        // 剩余重复次数
-        public int repeat
-        {
-            get { return _repeat; }
-            set { _repeat = value; }
-        }
-
-        /// 修改计时器时间 (将导致计时器重置)
-        public int interval
-        {
-            get { return _interval; }
-            set
-            {
-                if (_interval != value)
-                {
-                    _interval = value;
-                    if (_enabled)
-                    {
-                        enabled = false;
-                        enabled = true;
-                    }
-                }
-            }
-        }
-
-        public Invokable callback
-        {
-            get { return _fn; }
-            set { _fn = value; }
-        }
-
-        public Timer(Scheduler scheduler, int interval, Invokable fn, int repeat)
-        {
-            _id = ++_idgen;
-            _scheduler = scheduler;
-            _interval = interval;
-            _fn = fn;
-            _repeat = repeat;
-            _enabled = false;
-        }
-
-        private void OnTick(uint id)
-        {
-            _handle = 0;
-            --_repeat;
-            _fn.Invoke();
-            if (_repeat != 0 && _enabled)
-            {
-                _handle = _scheduler.Add(_interval, OnTick);
-            }
-            else
-            {
-                _enabled = false;
-            }
-            // UnityEngine.Debug.LogWarning($"Timer:{name}({_id}) interval:{_interval} OnTick, repeat: {_repeat} enabled: {_enabled}");
-        }
-
-        public bool enabled
-        {
-            get { return _enabled; }
-            set
-            {
-                if (_enabled != value)
-                {
-                    _enabled = value;
-                    _scheduler.Remove(_handle);
-                    _handle = 0;
-                    if (value)
-                    {
-                        _handle = _scheduler.Add(_interval, OnTick);
-                    }
-                    // UnityEngine.Debug.LogWarning($"Timer:{name}({_id}) interval:{_interval} EnableChanged, repeat: {_repeat} enabled: {_enabled}");
-                }
-            }
-        }
-    }
-
     public class Scheduler
     {
         private int _threadId;
+        private int _poolCapacity = 500;
         private List<TimeHandle> _pool = new List<TimeHandle>();
-        private Dictionary<uint, TimeHandle> _timeHandles = new Dictionary<uint, TimeHandle>();
+        private Dictionary<ulong, TimeHandle> _timeHandles = new Dictionary<ulong, TimeHandle>();
         private Wheel[] _wheels;
         private int _timeslice;
         private int _elapsed;
         private int _jiffies;
-        private uint _idgen;
+        private ulong _idgen;
         private List<TimeHandle> _tcache1 = new List<TimeHandle>();
         private List<TimeHandle> _tcache2 = new List<TimeHandle>();
+        private List<TimeHandle> _recycle = new List<TimeHandle>();
 
-        public Scheduler(int jiffies = 8, int slots = 160, int depth = 4)
+        public Scheduler(int jiffies = 8, int slots = 160, int depth = 4, int prealloc = 50, int capacity = 500)
         {
             _threadId = Thread.CurrentThread.ManagedThreadId;
             _jiffies = jiffies;
@@ -299,6 +173,11 @@ namespace Duktape
                     interval *= slots;
                 }
                 _wheels[i] = new Wheel(i, jiffies, jiffies * interval, slots);
+            }
+            _poolCapacity = capacity;
+            while (prealloc-- > 0)
+            {
+                _pool.Add(new TimeHandle());
             }
         }
 
@@ -320,7 +199,7 @@ namespace Duktape
             // UnityEngine.Debug.Log($"[rearrange] {timer.id} wheel#{wheelCount - 1}:{_wheels[wheelCount - 1].index}");
         }
 
-        private TimeHandle GetTimeHandle(uint id, int delay, Action<uint> fn)
+        private TimeHandle GetTimeHandle(ulong id, int delay, bool once, TimeHandleCallback fn)
         {
             var available = _pool.Count;
             TimeHandle timer;
@@ -334,8 +213,10 @@ namespace Duktape
                 timer = new TimeHandle();
             }
             timer.id = id;
-            timer.deadline = delay + _elapsed;
+            timer.delay = delay < 0 ? 0 : delay;
+            timer.deadline = timer.delay + _elapsed;
             timer.action = fn;
+            timer.once = once;
             timer.deleted = false;
             timer.slot = null;
             return timer;
@@ -346,41 +227,17 @@ namespace Duktape
             get { return _elapsed; }
         }
 
-        public Timer CreateTimer(int interval, Invokable fn, int repeat)
+        public ulong Add(int delay, bool once, TimeHandleCallback fn)
         {
-            if (_threadId != Thread.CurrentThread.ManagedThreadId)
-            {
-                throw new Exception("scheduler is only available in main thread");
-            }
-            var timer = new Timer(this, interval, fn, repeat);
-            timer.enabled = true;
-            return timer;
-        }
-
-        public STimer CreateSTimer(int interval, Invokable fn, bool repeat)
-        {
-            if (_threadId != Thread.CurrentThread.ManagedThreadId)
-            {
-                throw new Exception("scheduler is only available in main thread");
-            }
-            return new STimer(this, interval, fn, repeat);
-        }
-
-        public uint Add(int delay, Action<uint> fn)
-        {
-            if (delay < 0)
-            {
-                delay = 0;
-            }
             var id = ++_idgen;
-            var timer = GetTimeHandle(id, delay, fn);
+            var timer = GetTimeHandle(id, delay, once, fn);
             _timeHandles[id] = timer;
             Rearrange(timer);
             // UnityEngine.Debug.Log($"[Scheduler] Add timer#{timer.id} deadline: {timer.deadline}");
             return id;
         }
 
-        public void Remove(uint id)
+        public void Remove(ulong id)
         {
             if (id > 0)
             {
@@ -394,7 +251,7 @@ namespace Duktape
                         timer.slot.Remove(timer);
                         timer.slot = null;
                     }
-                    _pool.Add(timer);
+                    _recycle.Add(timer);
                 }
             }
         }
@@ -416,8 +273,9 @@ namespace Duktape
                     while (wheelIndex < _wheels.Length)
                     {
                         // UnityEngine.Debug.Log($"[schedule.wheel#{wheelIndex}] slot {_wheels[wheelIndex].index} @{_elapsed}");
+                        // _tcache2.Clear();
                         _wheels[wheelIndex].Collect(_tcache2);
-                        for (var i = 0; i < _tcache2.Count; ++i)
+                        for (int i = 0, size2 = _tcache2.Count; i < size2; ++i)
                         {
                             var timer = _tcache2[i];
                             Rearrange(timer);
@@ -441,15 +299,57 @@ namespace Duktape
 
         private void InvokeTimers()
         {
-            for (int i = 0, cc = _tcache1.Count; i < cc; ++i)
+            var cachedSize = _tcache1.Count;
+            if (cachedSize > 0)
             {
-                var timer = _tcache1[i];
-                var handler = timer.action;
-                Remove(timer.id);
-                // UnityEngine.Debug.LogError($"[timer#{timer.id}] active");
-                handler(timer.id);
+                for (var i = 0; i < cachedSize; ++i)
+                {
+                    var timer = _tcache1[i];
+                    var handler = timer.action;
+                    if (timer.slot != null)
+                    {
+                        timer.slot.Remove(timer);
+                        timer.slot = null;
+                    }
+                    // UnityEngine.Debug.LogError($"[timer#{timer.id}] active");
+                    try
+                    {
+                        if (!timer.deleted && handler != null)
+                        {
+                            handler.Invoke();
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        UnityEngine.Debug.LogErrorFormat("Scheduler Exception: {0}", exception);
+                    }
+                    if (!timer.deleted)
+                    {
+                        if (timer.once)
+                        {
+                            timer.deleted = true;
+                            _timeHandles.Remove(timer.id);
+                            _recycle.Add(timer);
+                        }
+                        else
+                        {
+                            timer.deadline = timer.delay + _elapsed;
+                            Rearrange(timer);
+                        }
+                    }
+                }
+                // 回收
+                for (int i = 0, size = _recycle.Count; i < size; ++i)
+                {
+                    var timer = _recycle[i];
+                    if (_pool.Count < _poolCapacity)
+                    {
+                        _pool.Add(timer);
+                    }
+                }
+                _recycle.Clear();
+                _tcache1.Clear();
             }
-            _tcache1.Clear();
         }
     }
 }
