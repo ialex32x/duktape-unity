@@ -56,8 +56,8 @@
             "stopOnEntry": false,
             "address": "localhost",
             "port": 9091,
-            "localRoot": "${workspaceRoot}/Assets/Examples/Scripts/src",
-            "outDir": "${workspaceRoot}/Assets/Examples/Scripts/out",
+            "localRoot": "${workspaceRoot}/Assets/Duktape/Examples/Scripts/src",
+            "outDir": "${workspaceRoot}/Assets/Duktape/Examples/Scripts/out",
             "sourceMaps": true,
             "debugLog": true
         }
