@@ -4,16 +4,20 @@ import Vector3 = UnityEngine.Vector3;
 import Time = UnityEngine.Time;
 import Quaternion = UnityEngine.Quaternion;
 import UObject = UnityEngine.Object;
+import { MyClass } from "./my_class";
 
 export class MyCircleBridge {
     gameObject: GameObject
     transform: Transform
     rot = 0
 
+    private myClass: MyClass;
+
     root_cw: Transform
     root_ccw: Transform
 
     Awake() {
+        this.myClass = new MyClass();
         console.log(this.gameObject)
 
         let cube = GameObject.Find("/abox")
@@ -44,6 +48,7 @@ export class MyCircleBridge {
         this.rot += Time.deltaTime * 50
         this.root_cw.localRotation = Quaternion.Euler(0, 0, this.rot)
         this.root_ccw.localRotation = Quaternion.Euler(0, 0, -this.rot)
+        this.myClass.update();
     }
 }
 

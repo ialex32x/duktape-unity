@@ -5,11 +5,13 @@ var Vector3 = UnityEngine.Vector3;
 var Time = UnityEngine.Time;
 var Quaternion = UnityEngine.Quaternion;
 var UObject = UnityEngine.Object;
+var my_class_1 = require("./my_class");
 var MyCircleBridge = /** @class */ (function () {
     function MyCircleBridge() {
         this.rot = 0;
     }
     MyCircleBridge.prototype.Awake = function () {
+        this.myClass = new my_class_1.MyClass();
         console.log(this.gameObject);
         var cube = GameObject.Find("/abox");
         var root_cw = new GameObject("cube instances cw");
@@ -37,6 +39,7 @@ var MyCircleBridge = /** @class */ (function () {
         this.rot += Time.deltaTime * 50;
         this.root_cw.localRotation = Quaternion.Euler(0, 0, this.rot);
         this.root_ccw.localRotation = Quaternion.Euler(0, 0, -this.rot);
+        this.myClass.update();
     };
     return MyCircleBridge;
 }());
