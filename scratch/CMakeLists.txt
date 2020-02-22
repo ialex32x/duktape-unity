@@ -7,7 +7,7 @@ IF (WIN32)
 ENDIF ()
 
 set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
-set(DUKTAPE_SRC_DIR ${TOP_DIR}/duktape-2.3.0/src-scratch)
+set(DUKTAPE_SRC_DIR ${TOP_DIR}/build/src-scratch)
 set(DUKTAPE_SCRATCH_SRC_DIR ${TOP_DIR}/scratch/src)
 
 include_directories(${DUKTAPE_SRC_DIR})

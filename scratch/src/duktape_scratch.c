@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 	duk_push_c_function(ctx, native_change, DUK_VARARGS);
 	duk_put_global_string(ctx, "change");
 
-	duk_example_attach_debugger(ctx);
+	// duk_example_attach_debugger(ctx);
 
 	FILE *fp = fopen("scripts/main.js", "r");
 	if (fp) {
