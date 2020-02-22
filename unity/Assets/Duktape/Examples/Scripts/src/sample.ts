@@ -1,5 +1,6 @@
 import { HttpRequest } from "./duktape/http";
 import { Coroutine } from "./duktape/coroutine";
+import Time = UnityEngine.Time;
 
 export function sampleTests() {
     // test protobuf
@@ -179,8 +180,8 @@ export function sampleTests() {
 
             Update() {
                 this.transform.localRotation = UnityEngine.Quaternion.Euler(this.rotx, this.roty, 0)
-                this.rotx += UnityEngine.Time.deltaTime * 30
-                this.roty += UnityEngine.Time.deltaTime * 15
+                this.rotx += Time.deltaTime * 30
+                this.roty += Time.deltaTime * 15
                 if (UnityEngine.Input.GetMouseButtonUp(0) || UnityEngine.Input.GetKeyUp(UnityEngine.KeyCode.Space)) {
                     if (UnityExtensions.RaycastMousePosition(this.hitInfo, 1000, 1)) {
                         console.log("you clicked " + this.hitInfo.collider.name)
@@ -266,6 +267,31 @@ export function sampleTests() {
             console.log("duktape thread, next:", co.value);
         }
         console.log("duktape thread, done:", co.value);
+    })();
+
+    (function () {
+        setTimeout(function () {
+            let time_id = setInterval(function () {
+                console.log(`[setInterval@${Time.frameCount}] test zero interval timer1`);
+            }, 0);
+
+            setTimeout(function () {
+                clearInterval(time_id);
+                console.log(`[setTimeout] clear interval timer1 [id:${time_id}]`);
+            }, 0);
+
+            console.log(`[setInterval@${Time.frameCount}] before timer2 ${Time.realtimeSinceStartup}`);
+            let timer2frames = 0;
+            let time_id2 = setInterval(function () {
+                timer2frames++;
+                console.log(`[setInterval@${Time.frameCount}] test zero interval timer2`);
+            }, 0);
+
+            setTimeout(function () {
+                clearInterval(time_id2);
+                console.log(`[setTimeout] clear interval timer2 [id:${time_id2}] realtime:${Time.realtimeSinceStartup} frames:${timer2frames}`);
+            }, 150);
+        }, 5000);
     })();
 
     // (function () {
