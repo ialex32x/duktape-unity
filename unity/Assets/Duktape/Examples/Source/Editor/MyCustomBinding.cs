@@ -37,6 +37,8 @@ namespace MyProject
             bindingManager.AddExportedType(typeof(UnityEngine.Camera), true);
             bindingManager.AddExportedType(typeof(UnityEngine.Time));
             bindingManager.AddExportedType(typeof(UnityEngine.KeyCode));
+            bindingManager.AddExportedType(typeof(UnityEngine.Profiling.CustomSampler));
+            bindingManager.AddExportedType(typeof(UnityEngine.Profiling.Profiler));
             bindingManager.AddExportedType(typeof(UnityEngine.Input))
                 .SetMemberBlocked("IsJoystickPreconfigured");
             

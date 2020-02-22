@@ -5,6 +5,7 @@ import Time = UnityEngine.Time;
 import Quaternion = UnityEngine.Quaternion;
 import UObject = UnityEngine.Object;
 import { MyClass } from "./my_class";
+import { Profiling, Profiler } from "./duktape/profile";
 
 export class MyCircleBridge {
     gameObject: GameObject
@@ -44,6 +45,7 @@ export class MyCircleBridge {
         }
     }
 
+    @Profiling
     Update() {
         this.rot += Time.deltaTime * 50
         this.root_cw.localRotation = Quaternion.Euler(0, 0, this.rot)
