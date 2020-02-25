@@ -186,6 +186,7 @@ namespace Duktape
             // SetTypeBlocked(typeof(RendererExtensions));
             SetTypeBlocked(typeof(UnityEngine.UI.ILayoutGroup));
             SetTypeBlocked(typeof(UnityEngine.UI.ILayoutSelfController));
+
             TransformType(typeof(UnityEngine.UI.PositionAsUV1))
                 .SetMemberBlocked("ModifyMesh");
             TransformType(typeof(UnityEngine.UI.Shadow))
@@ -194,12 +195,16 @@ namespace Duktape
                 .SetMemberBlocked("ModifyMesh");
             TransformType(typeof(UnityEngine.UI.Graphic))
                 .SetMemberBlocked("OnRebuildRequested");
+            TransformType(typeof(UnityEngine.Texture))
+                .SetMemberBlocked("imageContentsHash");
             TransformType(typeof(UnityEngine.UI.Text))
                 .SetMemberBlocked("OnRebuildRequested");
             TransformType(typeof(UnityEngine.Input))
-                .SetMemberBlocked("IsJoystickPreconfigured");
+                .SetMemberBlocked("IsJoystickPreconfigured"); // specific platform available only
             TransformType(typeof(UnityEngine.MonoBehaviour))
-                .SetMemberBlocked("runInEditMode");
+                .SetMemberBlocked("runInEditMode"); // editor only
+            TransformType(typeof(UnityEngine.QualitySettings))
+                .SetMemberBlocked("streamingMipmapsRenderersPerFrame");
 
             // editor 使用的 .net 与 player 所用存在差异, 这里屏蔽不存在的成员
             TransformType(typeof(double))
