@@ -133,6 +133,29 @@ namespace Duktape
                     "GetComponentsInParent", typeof(Type))
             ;
 
+            TransformType(typeof(Component))
+                .AddTSMethodDeclaration("GetComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
+                    "GetComponent", typeof(Type))
+                .AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T",
+                    "GetComponentInChildren", typeof(Type), typeof(bool))
+                .AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }): T",
+                    "GetComponentInChildren", typeof(Type))
+                .AddTSMethodDeclaration("GetComponentInParent<T extends UnityEngine.Component>(type: { new(): T }): T",
+                    "GetComponentInParent", typeof(Type))
+                // .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }, results: any): void", 
+                //     "GetComponents", typeof(Type))
+                .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): T[]",
+                    "GetComponents", typeof(Type))
+                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T[]",
+                    "GetComponentsInChildren", typeof(Type), typeof(bool))
+                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): T[]",
+                    "GetComponentsInChildren", typeof(Type))
+                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T[]",
+                    "GetComponentsInParent", typeof(Type), typeof(bool))
+                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): T[]",
+                    "GetComponentsInParent", typeof(Type))
+            ;
+
             var buildTarget = EditorUserBuildSettings.activeBuildTarget;
             if (buildTarget != BuildTarget.iOS)
             {
