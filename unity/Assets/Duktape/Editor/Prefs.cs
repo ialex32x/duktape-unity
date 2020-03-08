@@ -40,12 +40,16 @@ namespace Duktape
 
         public string extraExt = ""; // 生成文件的额外后缀
 
-        public string newLineStyle;
+        public string newLineStyle = "";
 
         public string newline
         {
             get
             {
+                if (newLineStyle == null)
+                {
+                    return Environment.NewLine;
+                }
                 switch (newLineStyle.ToLower())
                 {
                     case "cr": return "\r";
