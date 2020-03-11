@@ -9,6 +9,17 @@
 #include <Windows.h>
 // https://docs.microsoft.com/en-us/windows/desktop/WinSock/windows-sockets-error-codes-2
 #else
+
+#include <errno.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/select.h>
+
 #define INVALID_SOCKET  -1
 #define DUK_SOCK_CLOSE(fd) close((fd))
 #endif
@@ -73,7 +84,7 @@ DUK_LOCAL DUK_INLINE struct duk_sock_t* _duk_sock_create(duk_context *ctx, enum 
 		return NULL;
 	}
 #else 
-	int fd = socket(af, type, protocol);
+	int fd = socket(sock_af, sock_type, sock_proto);
 	if (fd < 0) {
 		return NULL;
 	}
@@ -185,7 +196,7 @@ DUK_LOCAL DUK_INLINE DUK_SOCK_ERROR _duk_sock_connect_host(struct duk_sock_t* so
 }
 
 DUK_LOCAL DUK_INLINE DUK_SOCK_ERROR _duk_sock_connecting(struct duk_sock_t* sock) {
-	FD_SET wset;
+	fd_set wset;
 	FD_ZERO(&wset);
 	FD_SET(sock->fd, &wset);
 	struct timeval tv;

@@ -1407,9 +1407,6 @@ DUK_EXTERNAL_DECL void duk_unity_push_buffer_object(duk_context *ctx, duk_idx_t 
 
 DUK_EXTERNAL_DECL duk_idx_t duk_unity_push_error_object_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt);
 
-
-DUK_EXTERNAL_DECL duk_bool_t duk_sock_open(duk_context *ctx);
-
 // DUK_EXTERNAL_DECL void duk_unity_suspend(duk_context *ctx);
 // DUK_EXTERNAL_DECL void duk_unity_resume(duk_context *ctx);
 
