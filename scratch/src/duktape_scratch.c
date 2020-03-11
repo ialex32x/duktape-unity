@@ -6,20 +6,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef WIN32
-#else
-#define INVALID_SOCKET  -1
-#endif
+#define RUN_AS_MODULE
+#define duk_memcmp memcmp
+#define duk_memcpy memcpy
 
+
+#ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <Windows.h>
- // https://docs.microsoft.com/en-us/windows/desktop/WinSock/windows-sockets-error-codes-2
-
-#define RUN_AS_MODULE
-#define duk_memcmp memcmp
-#define duk_memcpy memcpy
+// https://docs.microsoft.com/en-us/windows/desktop/WinSock/windows-sockets-error-codes-2
+#else
+#define INVALID_SOCKET  -1
+#endif
 
 #define DUK_SOCK_ERROR int
 
@@ -162,7 +162,6 @@ DUK_SOCK_ERROR duk_sock_connect(struct duk_sock_t *sock, struct sockaddr *addr, 
 	}
 	else {
 		sock->state = EDUK_SOCKSTATE_CONNECTED;
-		printf("connected 1\n");
 	}
 	return EDUK_SOCKERR_AGAIN;
 }
@@ -222,7 +221,6 @@ DUK_SOCK_ERROR duk_sock_connecting(struct duk_sock_t* sock) {
 		}
 		else {
 			sock->state = EDUK_SOCKSTATE_CONNECTED;
-			printf("connected 2\n");
 		}
 	}
 	return EDUK_SOCKERR_AGAIN;
@@ -316,32 +314,35 @@ static duk_ret_t native_print(duk_context *ctx) {
 	return 0;
 }
 
-int init() {
-#if WIN32
+duk_ret_t duk_sock_constructor(duk_context* ctx) {
+	duk_idx_t top = duk_get_top(ctx);
+	duk_int_t type = duk_require_int(ctx, 0);
+	duk_int_t family = duk_require_int(ctx, 1);
+
+	duk_push_this(ctx);
+	struct duk_sock_t *sock = duk_sock_create(type, family);
+	duk_push_pointer(ctx, sock);
+	duk_put_prop_literal(ctx, -2, DUK_HIDDEN_SYMBOL("_sock"));
+	duk_pop(ctx); // pop this
+	return 0;
+}
+
+//duk_ret_t 
+
+void test_socket() {
 	WSADATA wsaData;
 	WORD wVersionRequested = MAKEWORD(2, 2);
 	int err = WSAStartup(wVersionRequested, &wsaData);
 	if (err != 0) {
 		// failed
-		return 0; 
+		return ;
 	}
-#endif
-	return 1;
-}
-
-void deinit() {
-#if WIN32
-	WSACleanup();
-#endif
-}
-
-void test_socket() {
-	init();
 	// family: AF_INET, AF_INET6
 	// type: SOCK_STREAM, SOCK_DGRAM
 	// protocol: IPPROTO_TCP, IPPROTO_UDP
 	struct duk_sock_t *sock = duk_sock_create(EDUK_SOCKTYPE_UDP, EDUK_SOCKFAMILY_IPV4);
 	if (sock) {
+		duk_sock_setnonblocking(sock);
 		int retval = duk_sock_connect_host(sock, "localhost", 1234);
 		if (retval >= 0) {
 			char send_buf[] = "echo test";
@@ -362,12 +363,15 @@ void test_socket() {
 					recv_buf[recv_size] = '\0';
 					printf("%s\n", recv_buf);
 				}
+				else {
+					printf("again\n");
+				}
 			} while (retval >= 0);
 			duk_sock_close(sock);
 			printf("close\n");
 		}
 	}
-	deinit();
+	WSACleanup();
 }
 
 int main(int argc, char *argv[]) {
