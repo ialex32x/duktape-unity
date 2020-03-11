@@ -14,3 +14,18 @@ function foo() {
     print("here?");
     foo();
 })();
+
+var buffer = new Buffer(1024);
+var sock = new Socket(1, 0);
+var count = 0;
+sock.connect("localhost", 1234);
+print("buffer.length:", buffer.length);
+while (true) {
+    count++;
+    sock.send("test" + count);
+    var recv_size = sock.recv(buffer, 0, buffer.length);
+    if (recv_size > 0) {
+        print("echo", buffer.toString("utf8", 0, recv_size));
+    }
+    sleep(1000);
+}

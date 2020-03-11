@@ -64,7 +64,7 @@ struct duk_sock_t {
 // family: AF_INET, AF_INET6
 // type: SOCK_STREAM, SOCK_DGRAM
 // protocol: IPPROTO_TCP, IPPROTO_UDP
-struct duk_sock_t* duk_sock_create(enum duk_sock_type type, enum duk_sock_family family) {
+struct duk_sock_t* _duk_sock_create(enum duk_sock_type type, enum duk_sock_family family) {
 	int sock_type, sock_proto;
 	int sock_af = family == EDUK_SOCKFAMILY_IPV4 ? AF_INET : AF_INET6;
 	if (type == EDUK_SOCKTYPE_TCP) {
@@ -99,7 +99,7 @@ struct duk_sock_t* duk_sock_create(enum duk_sock_type type, enum duk_sock_family
 	return sock;
 }
 
-void duk_sock_setnonblocking(struct duk_sock_t* sock) {
+void _duk_sock_setnonblocking(struct duk_sock_t* sock) {
 #if WIN32
 	u_long argp = 1;
 	ioctlsocket(sock->fd, FIONBIO, &argp);
@@ -110,7 +110,7 @@ void duk_sock_setnonblocking(struct duk_sock_t* sock) {
 #endif
 }
 
-void duk_sock_close(struct duk_sock_t* sock) {
+void _duk_sock_close(struct duk_sock_t* sock) {
 	if (sock) {
 		if (sock->fd != INVALID_SOCKET) {
 			close(sock->fd);
@@ -120,7 +120,7 @@ void duk_sock_close(struct duk_sock_t* sock) {
 	}
 }
 
-DUK_SOCK_ERROR duk_sock_connect(struct duk_sock_t *sock, struct sockaddr *addr, int port) {
+DUK_SOCK_ERROR _duk_sock_connect(struct duk_sock_t *sock, struct sockaddr *addr, int port) {
 	if (sock->state != EDUK_SOCKSTATE_CREATED && sock->state != EDUK_SOCKSTATE_CLOSED) {
 		return EDUK_SOCKERR_DUPCONNECT;
 	}
@@ -147,14 +147,14 @@ DUK_SOCK_ERROR duk_sock_connect(struct duk_sock_t *sock, struct sockaddr *addr, 
 #if WIN32
 		int err = WSAGetLastError();
 		if (err != WSAEWOULDBLOCK && err != WSAEINPROGRESS) {
-			duk_sock_close(sock);
+			_duk_sock_close(sock);
 			return EDUK_SOCKERR_FAIL;
 		}
 #else
 		int err = errno;
 		while ((err = errno) == EINTR);
 		if (err != EINPROGRESS && err != EAGAIN) {
-			duk_sock_close(sock);
+			_duk_sock_close(sock);
 			return EDUK_SOCKERR_FAIL;
 		}
 #endif
@@ -166,7 +166,7 @@ DUK_SOCK_ERROR duk_sock_connect(struct duk_sock_t *sock, struct sockaddr *addr, 
 	return EDUK_SOCKERR_AGAIN;
 }
 
-DUK_SOCK_ERROR duk_sock_connect_host(struct duk_sock_t* sock, const char* host, int port) {
+DUK_SOCK_ERROR _duk_sock_connect_host(struct duk_sock_t* sock, const char* host, int port) {
 	struct addrinfo hints;
 	struct addrinfo* resolved = NULL, * iter = NULL;
 	struct sockaddr* result = NULL;
@@ -183,7 +183,7 @@ DUK_SOCK_ERROR duk_sock_connect_host(struct duk_sock_t* sock, const char* host, 
 			break;
 		}
 		if (result) {
-			int retval = duk_sock_connect(sock, result, 1234);
+			int retval = _duk_sock_connect(sock, result, 1234);
 			freeaddrinfo(resolved);
 			return retval;
 		}
@@ -192,7 +192,7 @@ DUK_SOCK_ERROR duk_sock_connect_host(struct duk_sock_t* sock, const char* host, 
 	return EDUK_SOCKERR_DNS;
 }
 
-DUK_SOCK_ERROR duk_sock_connecting(struct duk_sock_t* sock) {
+DUK_SOCK_ERROR _duk_sock_connecting(struct duk_sock_t* sock) {
 	FD_SET wset;
 	FD_ZERO(&wset);
 	FD_SET(sock->fd, &wset);
@@ -201,7 +201,7 @@ DUK_SOCK_ERROR duk_sock_connecting(struct duk_sock_t* sock) {
 	tv.tv_usec = 0;
 	int res = select(sock->fd + 1, NULL, &wset, NULL, &tv);
 	if (res < 0) {
-		duk_sock_close(sock);
+		_duk_sock_close(sock);
 		return EDUK_SOCKERR_FAIL;
 	}
 	if (res == 0) {
@@ -212,11 +212,11 @@ DUK_SOCK_ERROR duk_sock_connecting(struct duk_sock_t* sock) {
 		int error = 0;
 		socklen_t len = sizeof(error);
 		if (getsockopt(sock->fd, SOL_SOCKET, SO_ERROR, &error, &len) < 0) {
-			duk_sock_close(sock);
+			_duk_sock_close(sock);
 			return EDUK_SOCKERR_FAIL;
 		}
 		if (error != 0) {
-			duk_sock_close(sock);
+			_duk_sock_close(sock);
 			return EDUK_SOCKERR_FAIL;
 		}
 		else {
@@ -226,13 +226,13 @@ DUK_SOCK_ERROR duk_sock_connecting(struct duk_sock_t* sock) {
 	return EDUK_SOCKERR_AGAIN;
 }
 
-DUK_SOCK_ERROR duk_sock_recv(struct duk_sock_t *sock, char *buf, int buf_size, int *recv_size) {
+DUK_SOCK_ERROR _duk_sock_recv(struct duk_sock_t *sock, char *buf, int buf_size, int *recv_size) {
 	*recv_size = 0;
 	if (sock->state == EDUK_SOCKSTATE_CLOSED || sock->state == EDUK_SOCKSTATE_CREATED) {
 		return EDUK_SOCKERR_CLOSED;
 	}
 	if (sock->state == EDUK_SOCKSTATE_CONNECTING) {
-		return duk_sock_connecting(sock);
+		return _duk_sock_connecting(sock);
 	}
 #if WIN32
 	int prev = 0;
@@ -246,7 +246,7 @@ DUK_SOCK_ERROR duk_sock_recv(struct duk_sock_t *sock, char *buf, int buf_size, i
 			int err = WSAGetLastError();
 			if (err != WSAEWOULDBLOCK) {
 				if (err != WSAECONNRESET || prev == WSAECONNRESET) {
-					duk_sock_close(sock);
+					_duk_sock_close(sock);
 					return EDUK_SOCKERR_FAIL;
 				}
 				prev = err;
@@ -254,7 +254,7 @@ DUK_SOCK_ERROR duk_sock_recv(struct duk_sock_t *sock, char *buf, int buf_size, i
 			}
 			return EDUK_SOCKERR_AGAIN;
 		}
-		duk_sock_close(sock);
+		_duk_sock_close(sock);
 		return EDUK_SOCKERR_RESET;
 	}
 #else
@@ -266,23 +266,23 @@ DUK_SOCK_ERROR duk_sock_recv(struct duk_sock_t *sock, char *buf, int buf_size, i
 	if (res < 0) {
 		int err = errno;
 		if (err != EAGAIN && err != EINTR && err != EWOULDBLOCK) {
-			duk_sock_close(sock);
+			_duk_sock_close(sock);
 			return EDUK_SOCKERR_RESET;
 		}
 		return EDUK_SOCKERR_AGAIN;
 	}
-	duk_sock_close(sock);
+	_duk_sock_close(sock);
 	return EDUK_SOCKERR_RESET;
 #endif
 }
 
-DUK_SOCK_ERROR duk_sock_send(struct duk_sock_t *sock, const char *buf, int buf_size, int *sent_size) {
+DUK_SOCK_ERROR _duk_sock_send(struct duk_sock_t *sock, const char *buf, int buf_size, int *sent_size) {
 	*sent_size = 0;
 	if (sock->state == EDUK_SOCKSTATE_CLOSED || sock->state == EDUK_SOCKSTATE_CREATED) {
 		return EDUK_SOCKERR_CLOSED;
 	}
 	if (sock->state == EDUK_SOCKSTATE_CONNECTING) {
-		return duk_sock_connecting(sock);
+		return _duk_sock_connecting(sock);
 	}
 	int res = send(sock->fd, buf, buf_size, 0);
 	if (res >= 0) {
@@ -292,26 +292,18 @@ DUK_SOCK_ERROR duk_sock_send(struct duk_sock_t *sock, const char *buf, int buf_s
 #if WIN32
 	int err = WSAGetLastError();
 	if (err != WSAEWOULDBLOCK) { //TODO: ! (errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)
-		duk_sock_close(sock);
+		_duk_sock_close(sock);
 		return EDUK_SOCKERR_RESET;
 	}
 	return EDUK_SOCKERR_AGAIN;
 #else
 	int err = errno;
 	if (err == EPIPE || (err != EPROTOTYPE && err != EINTR && err != EAGAIN)) {
-		duk_sock_close(sock);
+		_duk_sock_close(sock);
 		return EDUK_SOCKERR_RESET;
 	}
 	return EDUK_SOCKERR_AGAIN;
 #endif
-}
-
-static duk_ret_t native_print(duk_context *ctx) {
-	duk_push_string(ctx, " ");
-	duk_insert(ctx, 0);
-	duk_join(ctx, duk_get_top(ctx) - 1);
-	printf("%s\n", duk_safe_to_string(ctx, -1));
-	return 0;
 }
 
 duk_ret_t duk_sock_constructor(duk_context* ctx) {
@@ -320,110 +312,295 @@ duk_ret_t duk_sock_constructor(duk_context* ctx) {
 	duk_int_t family = duk_require_int(ctx, 1);
 
 	duk_push_this(ctx);
-	struct duk_sock_t *sock = duk_sock_create(type, family);
+	struct duk_sock_t *sock = _duk_sock_create(type, family);
 	duk_push_pointer(ctx, sock);
 	duk_put_prop_literal(ctx, -2, DUK_HIDDEN_SYMBOL("_sock"));
 	duk_pop(ctx); // pop this
 	return 0;
 }
 
-//duk_ret_t 
+void duk_sock_finalizer(duk_context* ctx) {
+	duk_get_prop_literal(ctx, 0, DUK_HIDDEN_SYMBOL("_sock"));
+	struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
+	duk_pop(ctx); // pop sock
+	duk_del_prop_literal(ctx, 0, DUK_HIDDEN_SYMBOL("_sock"));
+	_duk_sock_close(sock);
+}
 
-void test_socket() {
+duk_ret_t duk_sock_connect(duk_context* ctx) {
+	const char* host = duk_require_string(ctx, 0);
+	duk_int_t port = duk_require_int(ctx, 1);
+	duk_push_this(ctx);
+	duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_sock"));
+	struct duk_sock_t *sock = (struct duk_sock_t *)duk_to_pointer(ctx, -1);
+	duk_pop_2(ctx); // pop sock and this
+	if (!sock) {
+		return duk_generic_error(ctx, "invalid socket");
+	}
+	int ret = _duk_sock_connect_host(sock, host, port);
+	duk_push_int(ctx, ret);
+	return 0;
+}
+
+duk_ret_t duk_sock_close(duk_context* ctx) {
+	duk_push_this(ctx);
+	duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_sock"));
+	struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
+	duk_pop_2(ctx); // pop sock and this 
+	if (sock) {
+		duk_del_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_sock"));
+		_duk_sock_close(sock);
+	}
+	return 0;
+}
+
+duk_ret_t duk_sock_setnonblocking(duk_context* ctx) {
+	duk_push_this(ctx);
+	duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_sock"));
+	struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
+	duk_pop_2(ctx); // pop sock and this 
+	if (sock) {
+		_duk_sock_setnonblocking(sock);
+	}
+	return 0;
+}
+
+duk_ret_t duk_sock_send(duk_context* ctx) {
+	if (duk_is_string(ctx, 0)) {
+		duk_size_t length;
+		const char* buffer = duk_require_lstring(ctx, 0, &length);
+		if (length == 0) {
+			duk_push_int(ctx, 0);
+			return 1;
+		}
+		duk_push_this(ctx);
+		duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_sock"));
+		struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
+		duk_pop_2(ctx); // pop sock and this 
+		if (sock) {
+			int sent_size = 0;
+			int retval = _duk_sock_send(sock, buffer, length, &sent_size);
+			if (retval < 0) {
+				duk_push_int(ctx, retval);
+			}
+			else {
+				duk_push_int(ctx, sent_size);
+			}
+		}
+		else {
+			duk_push_int(ctx, -1);
+		}
+		return 1;
+	}
+	else {
+		duk_size_t size;
+		char* buffer = duk_require_buffer_data(ctx, 0, &size);
+		duk_int_t index = duk_require_int(ctx, 1);
+		duk_int_t length = duk_require_int(ctx, 2);
+		if (index + length > size) {
+			return duk_generic_error(ctx, "buffer overflow");
+		}
+		if (length == 0) {
+			duk_push_int(ctx, 0);
+			return 1;
+		}
+		duk_push_this(ctx);
+		duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_sock"));
+		struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
+		duk_pop_2(ctx); // pop sock and this 
+		if (sock) {
+			int sent_size = 0;
+			int retval = _duk_sock_send(sock, buffer + index, length, &sent_size);
+			if (retval < 0) {
+				duk_push_int(ctx, retval);
+			}
+			else {
+				duk_push_int(ctx, sent_size);
+			}
+		}
+		else {
+			duk_push_int(ctx, -1);
+		}
+		return 1;
+	}
+}
+
+duk_ret_t duk_sock_recv(duk_context* ctx) {
+	duk_size_t size;
+	char* buffer = duk_require_buffer_data(ctx, 0, &size);
+	duk_int_t index = duk_require_int(ctx, 1);
+	duk_int_t length = duk_require_int(ctx, 2);
+	if (index + length > size) {
+		return duk_generic_error(ctx, "buffer overflow");
+	}
+	duk_push_this(ctx);
+	duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_sock"));
+	struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
+	duk_pop_2(ctx); // pop sock and this 
+	if (sock) {
+		int recv_size = 0;
+		int retval = _duk_sock_recv(sock, buffer + index, length, &recv_size);
+		if (retval < 0) {
+			duk_push_int(ctx, retval);
+		}
+		else {
+			duk_push_int(ctx, recv_size);
+		}
+	}
+	else {
+		duk_push_int(ctx, -1);
+	}
+	return 1;
+}
+
+//void test_socket() {
+//	WSADATA wsaData;
+//	WORD wVersionRequested = MAKEWORD(2, 2);
+//	int err = WSAStartup(wVersionRequested, &wsaData);
+//	if (err != 0) {
+//		// failed
+//		return ;
+//	}
+//	// family: AF_INET, AF_INET6
+//	// type: SOCK_STREAM, SOCK_DGRAM
+//	// protocol: IPPROTO_TCP, IPPROTO_UDP
+//	struct duk_sock_t *sock = _duk_sock_create(EDUK_SOCKTYPE_UDP, EDUK_SOCKFAMILY_IPV4);
+//	if (sock) {
+//		_duk_sock_setnonblocking(sock);
+//		int retval = _duk_sock_connect_host(sock, "localhost", 1234);
+//		if (retval >= 0) {
+//			char send_buf[] = "echo test";
+//			char recv_buf[1024];
+//			int sent_size = 0;
+//			int recv_size = 0;
+//			do {
+//				Sleep(1000);
+//				retval = _duk_sock_send(sock, send_buf, sizeof(send_buf), &sent_size);
+//				if (retval < 0) {
+//					break;
+//				}
+//				retval = _duk_sock_recv(sock, recv_buf, sizeof(recv_buf), &recv_size);
+//				if (retval < 0) {
+//					break;
+//				}
+//				if (recv_size > 0) {
+//					recv_buf[recv_size] = '\0';
+//					printf("%s\n", recv_buf);
+//				}
+//				else {
+//					printf("again\n");
+//				}
+//			} while (retval >= 0);
+//			_duk_sock_close(sock);
+//			printf("close\n");
+//		}
+//	}
+//	WSACleanup();
+//}
+
+static duk_ret_t native_sleep(duk_context* ctx) {
+	duk_uint_t tval = duk_require_uint(ctx, 0);
+	Sleep(tval);
+	return 0;
+}
+
+static duk_ret_t native_print(duk_context* ctx) {
+	duk_push_string(ctx, " ");
+	duk_insert(ctx, 0);
+	duk_join(ctx, duk_get_top(ctx) - 1);
+	printf("%s\n", duk_safe_to_string(ctx, -1));
+	return 0;
+}
+
+static void duk_unity_begin_class(duk_context* ctx, const char* key, duk_uarridx_t reg_idx, duk_c_function ctor, duk_c_function dtor) {
+	duk_push_c_function(ctx, ctor, DUK_VARARGS); // ctor
+	duk_dup_top(ctx);
+	duk_builtins_reg_put(ctx, reg_idx);
+	duk_dup_top(ctx);
+	duk_put_prop_string(ctx, -3, key);
+	duk_push_object(ctx); // ctor, prototype
+	if (dtor != NULL) {
+		duk_push_c_function(ctx, dtor, 1); // ctor, prototype, finalizer
+		duk_set_finalizer(ctx, -2); // ctor, prototype
+	}
+	duk_dup_top(ctx); // ctor, prototype, prototype
+	duk_put_prop_string(ctx, -3, "prototype"); // ctor, prototype    
+}
+
+static void duk_unity_end_class(duk_context* ctx) {
+	duk_pop_2(ctx);
+}
+
+int main(int argc, char *argv[]) {
+	//test_socket();
 	WSADATA wsaData;
 	WORD wVersionRequested = MAKEWORD(2, 2);
 	int err = WSAStartup(wVersionRequested, &wsaData);
 	if (err != 0) {
 		// failed
-		return ;
+		return;
 	}
-	// family: AF_INET, AF_INET6
-	// type: SOCK_STREAM, SOCK_DGRAM
-	// protocol: IPPROTO_TCP, IPPROTO_UDP
-	struct duk_sock_t *sock = duk_sock_create(EDUK_SOCKTYPE_UDP, EDUK_SOCKFAMILY_IPV4);
-	if (sock) {
-		duk_sock_setnonblocking(sock);
-		int retval = duk_sock_connect_host(sock, "localhost", 1234);
-		if (retval >= 0) {
-			char send_buf[] = "echo test";
-			char recv_buf[1024];
-			int sent_size = 0;
-			int recv_size = 0;
-			do {
-				Sleep(1000);
-				retval = duk_sock_send(sock, send_buf, sizeof(send_buf), &sent_size);
-				if (retval < 0) {
-					break;
-				}
-				retval = duk_sock_recv(sock, recv_buf, sizeof(recv_buf), &recv_size);
-				if (retval < 0) {
-					break;
-				}
-				if (recv_size > 0) {
-					recv_buf[recv_size] = '\0';
-					printf("%s\n", recv_buf);
-				}
-				else {
-					printf("again\n");
-				}
-			} while (retval >= 0);
-			duk_sock_close(sock);
-			printf("close\n");
+	duk_context *ctx = duk_create_heap_default();
+
+	(void) argc; (void) argv;  /* suppress warning */
+
+	duk_unity_open(ctx);
+
+	duk_push_c_function(ctx, native_print, DUK_VARARGS);
+	duk_put_global_string(ctx, "print");
+	duk_push_c_function(ctx, native_sleep, 1);
+	duk_put_global_string(ctx, "sleep");
+
+	duk_push_global_object(ctx);
+	duk_unity_begin_class(ctx, "Socket", 19, duk_sock_constructor, duk_sock_finalizer);
+	duk_push_c_function(ctx, duk_sock_connect, 2);
+	duk_put_prop_literal(ctx, -2, "connect");
+	duk_push_c_function(ctx, duk_sock_close, 0);
+	duk_put_prop_literal(ctx, -2, "close");
+	duk_push_c_function(ctx, duk_sock_setnonblocking, 0);
+	duk_put_prop_literal(ctx, -2, "setnonblocking");
+	duk_push_c_function(ctx, duk_sock_send, DUK_VARARGS);
+	duk_put_prop_literal(ctx, -2, "send");
+	duk_push_c_function(ctx, duk_sock_recv, 3);
+	duk_put_prop_literal(ctx, -2, "recv");
+	duk_unity_end_class(ctx);
+	duk_pop(ctx); // pop global
+
+	// duk_example_attach_debugger(ctx);
+
+	FILE *fp = fopen("scripts/main.js", "r");
+	if (fp) {
+		fseek(fp, 0, SEEK_END);
+		long length = ftell(fp);
+		fseek(fp, 0, SEEK_SET);
+		char *buf = malloc(length + 1);
+		memset(buf, 0, length + 1);
+		fread(buf, length, 1, fp);
+		fclose(fp);
+		//printf("source(%d): %s\n", length, buf);
+		duk_push_string(ctx, buf);
+
+#if defined(RUN_AS_MODULE)
+		duk_module_node_peval_main(ctx, "scripts/main.js");
+#else
+		duk_push_string(ctx, "scripts/main.js");
+		duk_compile(ctx, 0);
+		if (duk_pcall(ctx, 0) != 0) {
+			duk_get_prop_string(ctx, -1, "stack");
+			const char *err = duk_safe_to_string(ctx, -1);
+			printf("peval error: %s\n", err);
+			//printf("source: %s\n", buf);
 		}
+#endif
+		free(buf);
+		duk_pop(ctx);  // pop eval result 
+	} else {
+		printf("can not read file\n");
 	}
+
+	duk_destroy_heap(ctx);
+	fflush(stdout);
+	system("pause");
 	WSACleanup();
-}
-
-int main(int argc, char *argv[]) {
-	test_socket();
-
-//	duk_context *ctx = duk_create_heap_default();
-//
-//	(void) argc; (void) argv;  /* suppress warning */
-//
-//	duk_unity_open(ctx);
-//
-//	duk_push_c_function(ctx, native_print, DUK_VARARGS);
-//	duk_put_global_string(ctx, "print");
-//
-//	//duk_push_global_object(ctx);
-//	//duk_push_object(ctx);
-//	//duk_push_c_function(ctx, )
-//
-//	// duk_example_attach_debugger(ctx);
-//
-//	FILE *fp = fopen("scripts/main.js", "r");
-//	if (fp) {
-//		fseek(fp, 0, SEEK_END);
-//		long length = ftell(fp);
-//		fseek(fp, 0, SEEK_SET);
-//		char *buf = malloc(length + 1);
-//		memset(buf, 0, length + 1);
-//		fread(buf, length, 1, fp);
-//		fclose(fp);
-//		//printf("source(%d): %s\n", length, buf);
-//		duk_push_string(ctx, buf);
-//
-//#if defined(RUN_AS_MODULE)
-//		duk_module_node_peval_main(ctx, "scripts/main.js");
-//#else
-//		duk_push_string(ctx, "scripts/main.js");
-//		duk_compile(ctx, 0);
-//		if (duk_pcall(ctx, 0) != 0) {
-//			duk_get_prop_string(ctx, -1, "stack");
-//			const char *err = duk_safe_to_string(ctx, -1);
-//			printf("peval error: %s\n", err);
-//			//printf("source: %s\n", buf);
-//		}
-//#endif
-//		free(buf);
-//		duk_pop(ctx);  // pop eval result 
-//	} else {
-//		printf("can not read file\n");
-//	}
-//
-//	duk_destroy_heap(ctx);
-//	fflush(stdout);
-//	system("pause");
 	return 0;
 }
