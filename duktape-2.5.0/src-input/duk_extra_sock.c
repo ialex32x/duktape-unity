@@ -56,7 +56,7 @@ struct duk_sock_t {
 // family: AF_INET, AF_INET6
 // type: SOCK_STREAM, SOCK_DGRAM
 // protocol: IPPROTO_TCP, IPPROTO_UDP
-DUK_LOCAL DUK_INLINE struct duk_sock_t* _duk_sock_create(enum duk_sock_type type, enum duk_sock_family family) {
+DUK_LOCAL DUK_INLINE struct duk_sock_t* _duk_sock_create(duk_context *ctx, enum duk_sock_type type, enum duk_sock_family family) {
 	int sock_type, sock_proto;
 	int sock_af = family == EDUK_SOCKFAMILY_IPV4 ? AF_INET : AF_INET6;
 	if (type == EDUK_SOCKTYPE_TCP) {
@@ -78,7 +78,7 @@ DUK_LOCAL DUK_INLINE struct duk_sock_t* _duk_sock_create(enum duk_sock_type type
 		return NULL;
 	}
 #endif
-	struct duk_sock_t* sock = (struct duk_sock_t*)malloc(sizeof(struct duk_sock_t));
+	struct duk_sock_t* sock = (struct duk_sock_t*)duk_alloc(ctx, sizeof(struct duk_sock_t));
 	if (!sock) {
 		DUK_SOCK_CLOSE(fd);
 		return NULL;
@@ -304,7 +304,7 @@ DUK_LOCAL duk_ret_t duk_sock_constructor(duk_context* ctx) {
 	duk_int_t family = duk_require_int(ctx, 1);
 
 	duk_push_this(ctx);
-	struct duk_sock_t *sock = _duk_sock_create(type, family);
+	struct duk_sock_t *sock = _duk_sock_create(ctx, type, family);
 	duk_push_pointer(ctx, sock);
 	duk_put_prop_literal(ctx, -2, DUK_HIDDEN_SYMBOL("_sock"));
 	duk_pop(ctx); // pop this
@@ -317,6 +317,7 @@ DUK_LOCAL void duk_sock_finalizer(duk_context* ctx) {
 	duk_pop(ctx); // pop sock
 	duk_del_prop_literal(ctx, 0, DUK_HIDDEN_SYMBOL("_sock"));
 	_duk_sock_close(sock);
+    duk_free(ctx, sock);
 }
 
 DUK_LOCAL duk_ret_t duk_sock_connect(duk_context* ctx) {
