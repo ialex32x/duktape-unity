@@ -57,11 +57,26 @@ struct duk_sock_t {
 	int fd;
 #endif
 	enum duk_sock_state state;
+	enum duk_sock_type type;
+	enum duk_sock_family family;
 };
 
-struct duk_sock_t *duk_sock_create(int af, int type, int protocol) {
+// family: AF_INET, AF_INET6
+// type: SOCK_STREAM, SOCK_DGRAM
+// protocol: IPPROTO_TCP, IPPROTO_UDP
+struct duk_sock_t* duk_sock_create(enum duk_sock_type type, enum duk_sock_family family) {
+	int sock_type, sock_proto;
+	int sock_af = family == EDUK_SOCKFAMILY_IPV4 ? AF_INET : AF_INET6;
+	if (type == EDUK_SOCKTYPE_TCP) {
+		sock_type = SOCK_STREAM;
+		sock_proto = IPPROTO_TCP;
+	}
+	else {
+		sock_type = SOCK_DGRAM;
+		sock_proto = IPPROTO_UDP;
+	}
 #if WIN32
-	SOCKET fd = socket(af, type, protocol);
+	SOCKET fd = socket(sock_af, sock_type, sock_proto);
 	if (fd == INVALID_SOCKET) {
 		return NULL;
 	}
@@ -71,7 +86,7 @@ struct duk_sock_t *duk_sock_create(int af, int type, int protocol) {
 		return NULL;
 	}
 #endif
-	struct duk_sock_t *sock = (struct duk_sock_t *)malloc(sizeof(struct duk_sock_t));
+	struct duk_sock_t* sock = (struct duk_sock_t*)malloc(sizeof(struct duk_sock_t));
 	if (!sock) {
 		close(fd);
 		return NULL;
@@ -79,6 +94,8 @@ struct duk_sock_t *duk_sock_create(int af, int type, int protocol) {
 	memset(sock, 0, sizeof(struct duk_sock_t));
 	sock->fd = fd;
 	sock->state = EDUK_SOCKSTATE_CREATED;
+	sock->type = type;
+	sock->family = family;
 	return sock;
 }
 
@@ -150,18 +167,15 @@ DUK_SOCK_ERROR duk_sock_connect(struct duk_sock_t *sock, struct sockaddr *addr, 
 	return EDUK_SOCKERR_AGAIN;
 }
 
-// family: AF_INET, AF_INET6
-// type: SOCK_STREAM, SOCK_DGRAM
-// protocol: IPPROTO_TCP, IPPROTO_UDP
-DUK_SOCK_ERROR duk_sock_connect_host(struct duk_sock_t* sock, const char* host, int port, enum duk_sock_type type, enum duk_sock_family family) {
+DUK_SOCK_ERROR duk_sock_connect_host(struct duk_sock_t* sock, const char* host, int port) {
 	struct addrinfo hints;
 	struct addrinfo* resolved = NULL, * iter = NULL;
 	struct sockaddr* result = NULL;
 	memset(&hints, 0, sizeof(hints));
 
-	hints.ai_socktype = type == EDUK_SOCKTYPE_TCP ? SOCK_STREAM : SOCK_DGRAM;
-	hints.ai_protocol = type == EDUK_SOCKTYPE_TCP ? IPPROTO_TCP : IPPROTO_UDP;
-	hints.ai_family = family == EDUK_SOCKFAMILY_IPV4 ? AF_INET : AF_INET6;
+	hints.ai_socktype = sock->type == EDUK_SOCKTYPE_TCP ? SOCK_STREAM : SOCK_DGRAM;
+	hints.ai_protocol = sock->type == EDUK_SOCKTYPE_TCP ? IPPROTO_TCP : IPPROTO_UDP;
+	hints.ai_family = sock->family == EDUK_SOCKFAMILY_IPV4 ? AF_INET : AF_INET6;
 	hints.ai_flags = 0;
 	int res = getaddrinfo(host, NULL, &hints, &resolved);
 	if (!res) {
@@ -305,13 +319,11 @@ static duk_ret_t native_print(duk_context *ctx) {
 int init() {
 #if WIN32
 	WSADATA wsaData;
-	WORD wVersionRequested = MAKEWORD(2, 0);
+	WORD wVersionRequested = MAKEWORD(2, 2);
 	int err = WSAStartup(wVersionRequested, &wsaData);
-	if (err != 0) return 0;
-	if ((LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 0) &&
-		(LOBYTE(wsaData.wVersion) != 1 || HIBYTE(wsaData.wVersion) != 1)) {
-		WSACleanup();
-		return 0;
+	if (err != 0) {
+		// failed
+		return 0; 
 	}
 #endif
 	return 1;
@@ -328,9 +340,9 @@ void test_socket() {
 	// family: AF_INET, AF_INET6
 	// type: SOCK_STREAM, SOCK_DGRAM
 	// protocol: IPPROTO_TCP, IPPROTO_UDP
-	struct duk_sock_t *sock = duk_sock_create(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	struct duk_sock_t *sock = duk_sock_create(EDUK_SOCKTYPE_UDP, EDUK_SOCKFAMILY_IPV4);
 	if (sock) {
-		int retval = duk_sock_connect_host(sock, "localhost", 1234, EDUK_SOCKTYPE_UDP, EDUK_SOCKFAMILY_IPV4);
+		int retval = duk_sock_connect_host(sock, "localhost", 1234);
 		if (retval >= 0) {
 			char send_buf[] = "echo test";
 			char recv_buf[1024];
