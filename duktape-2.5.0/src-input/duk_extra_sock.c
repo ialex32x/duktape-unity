@@ -1,12 +1,8 @@
 //
 #include "duk_internal.h"
 
-#include <time.h>
-#include <stdio.h>
-#include <limits.h>
-#include <float.h>
-
 #ifdef DUK_F_WINDOWS
+#define DUK_SOCK_CLOSE(fd) closesocket((fd))
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -14,6 +10,7 @@
 // https://docs.microsoft.com/en-us/windows/desktop/WinSock/windows-sockets-error-codes-2
 #else
 #define INVALID_SOCKET  -1
+#define DUK_SOCK_CLOSE(fd) close((fd))
 #endif
 
 #define DUK_SOCK_ERROR int
@@ -46,7 +43,7 @@ enum duk_sock_family {
 };
 
 struct duk_sock_t {
-#if DUK_F_WINDOWS
+#ifdef DUK_F_WINDOWS
 	SOCKET fd;
 #else
 	int fd;
@@ -59,7 +56,7 @@ struct duk_sock_t {
 // family: AF_INET, AF_INET6
 // type: SOCK_STREAM, SOCK_DGRAM
 // protocol: IPPROTO_TCP, IPPROTO_UDP
-struct duk_sock_t* _duk_sock_create(enum duk_sock_type type, enum duk_sock_family family) {
+DUK_LOCAL DUK_INLINE struct duk_sock_t* _duk_sock_create(enum duk_sock_type type, enum duk_sock_family family) {
 	int sock_type, sock_proto;
 	int sock_af = family == EDUK_SOCKFAMILY_IPV4 ? AF_INET : AF_INET6;
 	if (type == EDUK_SOCKTYPE_TCP) {
@@ -70,7 +67,7 @@ struct duk_sock_t* _duk_sock_create(enum duk_sock_type type, enum duk_sock_famil
 		sock_type = SOCK_DGRAM;
 		sock_proto = IPPROTO_UDP;
 	}
-#if DUK_F_WINDOWS
+#ifdef DUK_F_WINDOWS
 	SOCKET fd = socket(sock_af, sock_type, sock_proto);
 	if (fd == INVALID_SOCKET) {
 		return NULL;
@@ -83,7 +80,7 @@ struct duk_sock_t* _duk_sock_create(enum duk_sock_type type, enum duk_sock_famil
 #endif
 	struct duk_sock_t* sock = (struct duk_sock_t*)malloc(sizeof(struct duk_sock_t));
 	if (!sock) {
-		close(fd);
+		DUK_SOCK_CLOSE(fd);
 		return NULL;
 	}
 	memset(sock, 0, sizeof(struct duk_sock_t));
@@ -94,8 +91,8 @@ struct duk_sock_t* _duk_sock_create(enum duk_sock_type type, enum duk_sock_famil
 	return sock;
 }
 
-void _duk_sock_setnonblocking(struct duk_sock_t* sock) {
-#if DUK_F_WINDOWS
+DUK_LOCAL DUK_INLINE void _duk_sock_setnonblocking(struct duk_sock_t* sock) {
+#ifdef DUK_F_WINDOWS
 	u_long argp = 1;
 	ioctlsocket(sock->fd, FIONBIO, &argp);
 #else 
@@ -105,17 +102,17 @@ void _duk_sock_setnonblocking(struct duk_sock_t* sock) {
 #endif
 }
 
-void _duk_sock_close(struct duk_sock_t* sock) {
+DUK_LOCAL DUK_INLINE void _duk_sock_close(struct duk_sock_t* sock) {
 	if (sock) {
 		if (sock->fd != INVALID_SOCKET) {
-			close(sock->fd);
+			DUK_SOCK_CLOSE(sock->fd);
 			sock->fd = INVALID_SOCKET;
 		}
 		sock->state = EDUK_SOCKSTATE_CLOSED;
 	}
 }
 
-DUK_SOCK_ERROR _duk_sock_connect(struct duk_sock_t *sock, struct sockaddr *addr, int port) {
+DUK_LOCAL DUK_INLINE DUK_SOCK_ERROR _duk_sock_connect(struct duk_sock_t *sock, struct sockaddr *addr, int port) {
 	if (sock->state != EDUK_SOCKSTATE_CREATED && sock->state != EDUK_SOCKSTATE_CLOSED) {
 		return EDUK_SOCKERR_DUPCONNECT;
 	}
@@ -139,7 +136,7 @@ DUK_SOCK_ERROR _duk_sock_connect(struct duk_sock_t *sock, struct sockaddr *addr,
 	default: return EDUK_SOCKERR_UNSUPPORTED;
 	}
 	if (res < 0) {
-#if DUK_F_WINDOWS
+#ifdef DUK_F_WINDOWS
 		int err = WSAGetLastError();
 		if (err != WSAEWOULDBLOCK && err != WSAEINPROGRESS) {
 			_duk_sock_close(sock);
@@ -161,7 +158,7 @@ DUK_SOCK_ERROR _duk_sock_connect(struct duk_sock_t *sock, struct sockaddr *addr,
 	return EDUK_SOCKERR_AGAIN;
 }
 
-DUK_SOCK_ERROR _duk_sock_connect_host(struct duk_sock_t* sock, const char* host, int port) {
+DUK_LOCAL DUK_INLINE DUK_SOCK_ERROR _duk_sock_connect_host(struct duk_sock_t* sock, const char* host, int port) {
 	struct addrinfo hints;
 	struct addrinfo* resolved = NULL, * iter = NULL;
 	struct sockaddr* result = NULL;
@@ -187,7 +184,7 @@ DUK_SOCK_ERROR _duk_sock_connect_host(struct duk_sock_t* sock, const char* host,
 	return EDUK_SOCKERR_DNS;
 }
 
-DUK_SOCK_ERROR _duk_sock_connecting(struct duk_sock_t* sock) {
+DUK_LOCAL DUK_INLINE DUK_SOCK_ERROR _duk_sock_connecting(struct duk_sock_t* sock) {
 	FD_SET wset;
 	FD_ZERO(&wset);
 	FD_SET(sock->fd, &wset);
@@ -221,7 +218,7 @@ DUK_SOCK_ERROR _duk_sock_connecting(struct duk_sock_t* sock) {
 	return EDUK_SOCKERR_AGAIN;
 }
 
-DUK_SOCK_ERROR _duk_sock_recv(struct duk_sock_t *sock, char *buf, int buf_size, int *recv_size) {
+DUK_LOCAL DUK_INLINE DUK_SOCK_ERROR _duk_sock_recv(struct duk_sock_t *sock, char *buf, int buf_size, int *recv_size) {
 	*recv_size = 0;
 	if (sock->state == EDUK_SOCKSTATE_CLOSED || sock->state == EDUK_SOCKSTATE_CREATED) {
 		return EDUK_SOCKERR_CLOSED;
@@ -229,7 +226,7 @@ DUK_SOCK_ERROR _duk_sock_recv(struct duk_sock_t *sock, char *buf, int buf_size, 
 	if (sock->state == EDUK_SOCKSTATE_CONNECTING) {
 		return _duk_sock_connecting(sock);
 	}
-#if DUK_F_WINDOWS
+#ifdef DUK_F_WINDOWS
 	int prev = 0;
 	for (;;) {
 		int res = recv(sock->fd, buf, buf_size, 0);
@@ -271,7 +268,7 @@ DUK_SOCK_ERROR _duk_sock_recv(struct duk_sock_t *sock, char *buf, int buf_size, 
 #endif
 }
 
-DUK_SOCK_ERROR _duk_sock_send(struct duk_sock_t *sock, const char *buf, int buf_size, int *sent_size) {
+DUK_LOCAL DUK_INLINE DUK_SOCK_ERROR _duk_sock_send(struct duk_sock_t *sock, const char *buf, int buf_size, int *sent_size) {
 	*sent_size = 0;
 	if (sock->state == EDUK_SOCKSTATE_CLOSED || sock->state == EDUK_SOCKSTATE_CREATED) {
 		return EDUK_SOCKERR_CLOSED;
@@ -284,7 +281,7 @@ DUK_SOCK_ERROR _duk_sock_send(struct duk_sock_t *sock, const char *buf, int buf_
 		*sent_size = res;
 		return EDUK_SOCKERR_AGAIN;
 	}
-#if DUK_F_WINDOWS
+#ifdef DUK_F_WINDOWS
 	int err = WSAGetLastError();
 	if (err != WSAEWOULDBLOCK) { //TODO: ! (errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)
 		_duk_sock_close(sock);
@@ -301,7 +298,7 @@ DUK_SOCK_ERROR _duk_sock_send(struct duk_sock_t *sock, const char *buf, int buf_
 #endif
 }
 
-duk_ret_t duk_sock_constructor(duk_context* ctx) {
+DUK_LOCAL duk_ret_t duk_sock_constructor(duk_context* ctx) {
 	duk_idx_t top = duk_get_top(ctx);
 	duk_int_t type = duk_require_int(ctx, 0);
 	duk_int_t family = duk_require_int(ctx, 1);
@@ -314,7 +311,7 @@ duk_ret_t duk_sock_constructor(duk_context* ctx) {
 	return 0;
 }
 
-void duk_sock_finalizer(duk_context* ctx) {
+DUK_LOCAL void duk_sock_finalizer(duk_context* ctx) {
 	duk_get_prop_literal(ctx, 0, DUK_HIDDEN_SYMBOL("_sock"));
 	struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
 	duk_pop(ctx); // pop sock
@@ -322,7 +319,7 @@ void duk_sock_finalizer(duk_context* ctx) {
 	_duk_sock_close(sock);
 }
 
-duk_ret_t duk_sock_connect(duk_context* ctx) {
+DUK_LOCAL duk_ret_t duk_sock_connect(duk_context* ctx) {
 	const char* host = duk_require_string(ctx, 0);
 	duk_int_t port = duk_require_int(ctx, 1);
 	duk_push_this(ctx);
@@ -337,7 +334,7 @@ duk_ret_t duk_sock_connect(duk_context* ctx) {
 	return 0;
 }
 
-duk_ret_t duk_sock_close(duk_context* ctx) {
+DUK_LOCAL duk_ret_t duk_sock_close(duk_context* ctx) {
 	duk_push_this(ctx);
 	duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_sock"));
 	struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
@@ -349,7 +346,7 @@ duk_ret_t duk_sock_close(duk_context* ctx) {
 	return 0;
 }
 
-duk_ret_t duk_sock_setnonblocking(duk_context* ctx) {
+DUK_LOCAL duk_ret_t duk_sock_setnonblocking(duk_context* ctx) {
 	duk_push_this(ctx);
 	duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_sock"));
 	struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
@@ -360,7 +357,7 @@ duk_ret_t duk_sock_setnonblocking(duk_context* ctx) {
 	return 0;
 }
 
-duk_ret_t duk_sock_send(duk_context* ctx) {
+DUK_LOCAL duk_ret_t duk_sock_send(duk_context* ctx) {
 	if (duk_is_string(ctx, 0)) {
 		duk_size_t length;
 		const char* buffer = duk_require_lstring(ctx, 0, &length);
@@ -420,7 +417,7 @@ duk_ret_t duk_sock_send(duk_context* ctx) {
 	}
 }
 
-duk_ret_t duk_sock_recv(duk_context* ctx) {
+DUK_LOCAL duk_ret_t duk_sock_recv(duk_context* ctx) {
 	duk_size_t size;
 	char* buffer = duk_require_buffer_data(ctx, 0, &size);
 	duk_int_t index = duk_require_int(ctx, 1);
@@ -449,6 +446,15 @@ duk_ret_t duk_sock_recv(duk_context* ctx) {
 }
 
 DUK_INTERNAL duk_bool_t duk_sock_open(duk_context *ctx) {
+#ifdef DUK_F_WINDOWS
+    WSADATA wsaData;
+	WORD wVersionRequested = MAKEWORD(2, 2);
+	int err = WSAStartup(wVersionRequested, &wsaData);
+	if (err != 0) {
+		// failed
+		return 0;
+	}
+#endif
     duk_push_global_object(ctx);
     duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
 

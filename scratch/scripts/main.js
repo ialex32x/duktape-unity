@@ -16,7 +16,7 @@ function foo() {
 })();
 
 var buffer = new Buffer(1024);
-var sock = new Socket(1, 0);
+var sock = new DuktapeJS.Socket(1, 0);
 var count = 0;
 sock.connect("localhost", 1234);
 print("buffer.length:", buffer.length);
