@@ -47,7 +47,7 @@ export class MyCircleBridge {
 
     @Profiling
     Update() {
-        this.rot += Time.deltaTime * 50
+        this.rot += Time.deltaTime * 1.2
         this.root_cw.localRotation = Quaternion.Euler(0, 0, this.rot)
         this.root_ccw.localRotation = Quaternion.Euler(0, 0, -this.rot)
         this.myClass.update();

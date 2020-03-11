@@ -195,6 +195,26 @@ declare namespace DuktapeJS {
         poll()
         send(data: any): boolean
     }
+
+    enum SocketType {
+        TCP = 0,
+        UDP = 1, 
+    }
+
+    enum SocketFamily {
+        IPV4 = 0,
+        IPV6 = 1, 
+    }
+
+    class Socket {
+        constructor(type: SocketType, family: SocketFamily)
+        setnonblocking(): void
+        connect(host: string, port: number)
+        close(): void
+        send(text: string): number
+        send(buf: Buffer, index: number, size: number): number
+        recv(buf: Buffer, index: number, size: number): number
+    }
     
     /*
     class Socket extends Dispatcher {
