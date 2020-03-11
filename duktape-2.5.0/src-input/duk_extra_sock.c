@@ -447,19 +447,24 @@ DUK_LOCAL duk_ret_t duk_sock_recv(duk_context* ctx) {
 }
 
 DUK_INTERNAL duk_bool_t duk_sock_open(duk_context *ctx) {
-#ifdef DUK_F_WINDOWS
-    WSADATA wsaData;
-	WORD wVersionRequested = MAKEWORD(2, 2);
-	int err = WSAStartup(wVersionRequested, &wsaData);
-	if (err != 0) {
-		// failed
-		return 0;
-	}
-#endif
     duk_push_global_object(ctx);
     duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
 
     {
+        duk_push_object(ctx);
+        duk_push_int(ctx, 0);
+        duk_put_prop_literal(ctx, -2, "TCP");
+        duk_push_int(ctx, 1);
+        duk_put_prop_literal(ctx, -2, "UDP");
+        duk_put_prop_literal(ctx, -2, "SocketType");
+
+        duk_push_object(ctx);
+        duk_push_int(ctx, 0);
+        duk_put_prop_literal(ctx, -2, "IPV4");
+        duk_push_int(ctx, 1);
+        duk_put_prop_literal(ctx, -2, "IPV6");
+        duk_put_prop_literal(ctx, -2, "SocketFamily");
+
         duk_unity_begin_class(ctx, "Socket", DUK_UNITY_BUILTINS_SOCKET, duk_sock_constructor, duk_sock_finalizer);
         duk_push_c_function(ctx, duk_sock_connect, 2);
         duk_put_prop_literal(ctx, -2, "connect");
@@ -475,5 +480,14 @@ DUK_INTERNAL duk_bool_t duk_sock_open(duk_context *ctx) {
     }
 
     duk_pop_2(ctx); // pop DuktapeJS and global    
+#ifdef DUK_F_WINDOWS
+    WSADATA wsaData;
+	WORD wVersionRequested = MAKEWORD(2, 2);
+	int err = WSAStartup(wVersionRequested, &wsaData);
+	if (err != 0) {
+		// failed
+		return 0;
+	}
+#endif
     return 1;
 }

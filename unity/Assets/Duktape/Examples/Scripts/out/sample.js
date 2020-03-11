@@ -161,8 +161,8 @@ function sampleTests() {
             };
             MyBridge.prototype.Update = function () {
                 this.transform.localRotation = UnityEngine.Quaternion.Euler(this.rotx, this.roty, 0);
-                this.rotx += Time.deltaTime * 30;
-                this.roty += Time.deltaTime * 15;
+                this.rotx += Time.deltaTime * 3.0;
+                this.roty += Time.deltaTime * 1.5;
                 if (UnityEngine.Input.GetMouseButtonUp(0) || UnityEngine.Input.GetKeyUp(UnityEngine.KeyCode.Space)) {
                     if (UnityExtensions.RaycastMousePosition(this.hitInfo, 1000, 1)) {
                         console.log("you clicked " + this.hitInfo.collider.name);
@@ -193,6 +193,24 @@ function sampleTests() {
                 // setTimeout/setInterval gc test
             }, 50);
         }, 200);
+        if (DuktapeJS.Socket) {
+            var buffer = new Buffer(1024);
+            var sock = new DuktapeJS.Socket(1, 0);
+            var count = 0;
+            sock.connect("localhost", 1234);
+            console.log("buffer.length:", buffer.length);
+            setInterval(function () {
+                count++;
+                sock.send("test" + count);
+                var recv_size = sock.recv(buffer, 0, buffer.length);
+                if (recv_size > 0) {
+                    console.log("echo", buffer.toString("utf8", 0, recv_size));
+                }
+            }, 1000);
+        }
+        else {
+            console.error("no DuktapeJS.Socket", DuktapeJS.SocketType, DuktapeJS.SocketFamily);
+        }
     })();
     (function () {
         // console.log(UnityEngine.UI.Text)
