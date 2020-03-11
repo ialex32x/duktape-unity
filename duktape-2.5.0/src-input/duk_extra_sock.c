@@ -7,273 +7,466 @@
 #include <float.h>
 
 #ifdef DUK_F_WINDOWS
-
-// #ifndef WIN32_LEAN_AND_MEAN
-// #define WIN32_LEAN_AND_MEAN
-// #endif
-
-// #include <winsock2.h>
-// #include <ws2tcpip.h>
-// #include <windows.h>
-
+#define WIN32_LEAN_AND_MEAN
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <Windows.h>
+// https://docs.microsoft.com/en-us/windows/desktop/WinSock/windows-sockets-error-codes-2
 #else
-#   include <sys/time.h>
+#define INVALID_SOCKET  -1
 #endif
 
-/* min and max macros */
-#ifndef MIN
-#define MIN(x, y) ((x) < (y) ? x : y)
-#endif
-#ifndef MAX
-#define MAX(x, y) ((x) > (y) ? x : y)
-#endif
+#define DUK_SOCK_ERROR int
 
-// DUK_INTERNAL duk_bool_t duk_sock_open(duk_context *ctx) {
-//     // WSADATA wsaData;
-//     // WORD wVersionRequested = MAKEWORD(2, 0); 
-//     // int err = WSAStartup(wVersionRequested, &wsaData);
-//     // if (err != 0) {
-//     //     return 0;
-//     // }
-//     // if ((LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 0) &&
-//     //     (LOBYTE(wsaData.wVersion) != 1 || HIBYTE(wsaData.wVersion) != 1)) {
-//     //     WSACleanup();
-//     //     return 0; 
-//     // }
-//     return 1;
-// }
+enum duk_sock_state {
+	EDUK_SOCKSTATE_CREATED = 0,
+	EDUK_SOCKSTATE_CONNECTING = 1,
+	EDUK_SOCKSTATE_CONNECTED = 2,
+	EDUK_SOCKSTATE_CLOSED = 3,
+};
 
-DUK_INTERNAL double timeout_gettime(void) {
-#ifdef DUK_F_WINDOWS
-    FILETIME ft;
-    double t;
-    GetSystemTimeAsFileTime(&ft);
-    /* Windows file time (time since January 1, 1601 (UTC)) */
-    t  = ft.dwLowDateTime/1.0e7 + ft.dwHighDateTime*(4294967296.0/1.0e7);
-    /* convert to Unix Epoch time (time since January 1, 1970 (UTC)) */
-    return (t - 11644473600.0);
+enum duk_sock_error {
+	EDUK_SOCKERR_AGAIN = 0,
+	EDUK_SOCKERR_FAIL = -1,
+	EDUK_SOCKERR_CLOSED = -2,		// 已断开时 send/recv
+	EDUK_SOCKERR_DUPCONNECT = -3,	// 未断开时再次 connect
+	EDUK_SOCKERR_UNSUPPORTED = -4,
+	EDUK_SOCKERR_RESET = -5,
+	EDUK_SOCKERR_DNS = -6,
+};
+
+enum duk_sock_type {
+	EDUK_SOCKTYPE_TCP = 0,
+	EDUK_SOCKTYPE_UDP = 1,
+};
+
+enum duk_sock_family {
+	EDUK_SOCKFAMILY_IPV4 = 0,
+	EDUK_SOCKFAMILY_IPV6 = 1,
+};
+
+struct duk_sock_t {
+#if DUK_F_WINDOWS
+	SOCKET fd;
 #else
-    struct timeval v;
-    gettimeofday(&v, NULL);
-    /* Unix Epoch time (time since January 1, 1970 (UTC)) */
-    return v.tv_sec + v.tv_usec / 1.0e6;
+	int fd;
+#endif
+	enum duk_sock_state state;
+	enum duk_sock_type type;
+	enum duk_sock_family family;
+};
+
+// family: AF_INET, AF_INET6
+// type: SOCK_STREAM, SOCK_DGRAM
+// protocol: IPPROTO_TCP, IPPROTO_UDP
+struct duk_sock_t* _duk_sock_create(enum duk_sock_type type, enum duk_sock_family family) {
+	int sock_type, sock_proto;
+	int sock_af = family == EDUK_SOCKFAMILY_IPV4 ? AF_INET : AF_INET6;
+	if (type == EDUK_SOCKTYPE_TCP) {
+		sock_type = SOCK_STREAM;
+		sock_proto = IPPROTO_TCP;
+	}
+	else {
+		sock_type = SOCK_DGRAM;
+		sock_proto = IPPROTO_UDP;
+	}
+#if DUK_F_WINDOWS
+	SOCKET fd = socket(sock_af, sock_type, sock_proto);
+	if (fd == INVALID_SOCKET) {
+		return NULL;
+	}
+#else 
+	int fd = socket(af, type, protocol);
+	if (fd < 0) {
+		return NULL;
+	}
+#endif
+	struct duk_sock_t* sock = (struct duk_sock_t*)malloc(sizeof(struct duk_sock_t));
+	if (!sock) {
+		close(fd);
+		return NULL;
+	}
+	memset(sock, 0, sizeof(struct duk_sock_t));
+	sock->fd = fd;
+	sock->state = EDUK_SOCKSTATE_CREATED;
+	sock->type = type;
+	sock->family = family;
+	return sock;
+}
+
+void _duk_sock_setnonblocking(struct duk_sock_t* sock) {
+#if DUK_F_WINDOWS
+	u_long argp = 1;
+	ioctlsocket(sock->fd, FIONBIO, &argp);
+#else 
+	int flags = fcntl(sock->fd, F_GETFL, 0);
+	flags |= O_NONBLOCK;
+	fcntl(sock->fd, F_SETFL, flags);
 #endif
 }
 
-/*-------------------------------------------------------------------------*\
-* Determines how much time we have left for the next system call,
-* if the previous call was successful 
-* Input
-*   tm: timeout control structure
-* Returns
-*   the number of ms left or -1 if there is no time limit
-\*-------------------------------------------------------------------------*/
-DUK_INTERNAL double timeout_get(p_timeout tm) {
-    if (tm->block < 0.0 && tm->total < 0.0) {
-        return -1;
-    } else if (tm->block < 0.0) {
-        double t = tm->total - timeout_gettime() + tm->start;
-        return MAX(t, 0.0);
-    } else if (tm->total < 0.0) {
-        return tm->block;
-    } else {
-        double t = tm->total - timeout_gettime() + tm->start;
-        return MIN(tm->block, MAX(t, 0.0));
-    }
+void _duk_sock_close(struct duk_sock_t* sock) {
+	if (sock) {
+		if (sock->fd != INVALID_SOCKET) {
+			close(sock->fd);
+			sock->fd = INVALID_SOCKET;
+		}
+		sock->state = EDUK_SOCKSTATE_CLOSED;
+	}
 }
 
-/*-------------------------------------------------------------------------*\
-* Returns time since start of operation
-* Input
-*   tm: timeout control structure
-* Returns
-*   start field of structure
-\*-------------------------------------------------------------------------*/
-double timeout_getstart(p_timeout tm) {
-    return tm->start;
-}
-
-/*-------------------------------------------------------------------------*\
-* Determines how much time we have left for the next system call,
-* if the previous call was a failure
-* Input
-*   tm: timeout control structure
-* Returns
-*   the number of ms left or -1 if there is no time limit
-\*-------------------------------------------------------------------------*/
-double timeout_getretry(p_timeout tm) {
-    if (tm->block < 0.0 && tm->total < 0.0) {
-        return -1;
-    } else if (tm->block < 0.0) {
-        double t = tm->total - timeout_gettime() + tm->start;
-        return MAX(t, 0.0);
-    } else if (tm->total < 0.0) {
-        double t = tm->block - timeout_gettime() + tm->start;
-        return MAX(t, 0.0);
-    } else {
-        double t = tm->total - timeout_gettime() + tm->start;
-        return MIN(tm->block, MAX(t, 0.0));
-    }
-}
-
-/*-------------------------------------------------------------------------*\
-* Sets timeout values for IO operations
-* Lua Input: base, time [, mode]
-*   time: time out value in seconds
-*   mode: "b" for block timeout, "t" for total timeout. (default: b)
-\*-------------------------------------------------------------------------*/
-int timeout_meth_settimeout(duk_context *ctx, p_timeout tm) {
-    double t = duk_get_number_default(ctx, 0, -1);
-    const char *mode = duk_get_string_default(ctx, 1, "b");
-    switch (*mode) {
-        case 'b':
-            tm->block = t; 
-            break;
-        case 'r': case 't':
-            tm->total = t;
-            break;
-        default:
-        return duk_generic_error(ctx, "invalid timeout mode");
-    }
-    duk_push_number(ctx, 1);
-    return 1;
-}
-
-/*-------------------------------------------------------------------------*\
-* Marks the operation start time in structure 
-* Input
-*   tm: timeout control structure
-\*-------------------------------------------------------------------------*/
-p_timeout timeout_markstart(p_timeout tm) {
-    tm->start = timeout_gettime();
-    return tm;
-}
-
-DUK_LOCAL duk_ret_t duk_timeout_gettime(duk_context *ctx) {
-    duk_push_number(ctx, timeout_gettime());
-    return 1;
-}
-
-DUK_LOCAL duk_ret_t duk_timeout_sleep(duk_context *ctx) {
-    duk_double_t n = duk_require_number(ctx, 0);
-#ifdef DUK_F_WINDOWS
-    if (n < 0.0) n = 0.0;
-    if (n < DBL_MAX/1000.0) n *= 1000.0;
-    if (n > INT_MAX) n = INT_MAX;
-    Sleep((int)n);
+DUK_SOCK_ERROR _duk_sock_connect(struct duk_sock_t *sock, struct sockaddr *addr, int port) {
+	if (sock->state != EDUK_SOCKSTATE_CREATED && sock->state != EDUK_SOCKSTATE_CLOSED) {
+		return EDUK_SOCKERR_DUPCONNECT;
+	}
+	int res = -1;
+	switch (addr->sa_family) {
+	case AF_INET: {
+		struct sockaddr_in sa;
+		memcpy(&sa, addr, sizeof(struct sockaddr_in));
+		sa.sin_port = htons(port);
+		sock->state = EDUK_SOCKSTATE_CONNECTING;
+		res = connect(sock->fd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in));
+		break;
+	}
+	case AF_INET6: {
+		struct sockaddr_in6 sa;
+		memcpy(&sa, addr, sizeof(struct sockaddr_in6));
+		sa.sin6_port = htons(port);
+		res = connect(sock->fd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in6));
+		break;
+	}
+	default: return EDUK_SOCKERR_UNSUPPORTED;
+	}
+	if (res < 0) {
+#if DUK_F_WINDOWS
+		int err = WSAGetLastError();
+		if (err != WSAEWOULDBLOCK && err != WSAEINPROGRESS) {
+			_duk_sock_close(sock);
+			return EDUK_SOCKERR_FAIL;
+		}
 #else
-    struct timespec t, r;
-    if (n < 0.0) n = 0.0;
-    if (n > INT_MAX) n = INT_MAX;
-    t.tv_sec = (int) n;
-    n -= t.tv_sec;
-    t.tv_nsec = (int) (n * 1000000000);
-    if (t.tv_nsec >= 1000000000) t.tv_nsec = 999999999;
-    while (nanosleep(&t, &r) != 0) {
-        t.tv_sec = r.tv_sec;
-        t.tv_nsec = r.tv_nsec;
-    }
+		int err = errno;
+		while ((err = errno) == EINTR);
+		if (err != EINPROGRESS && err != EAGAIN) {
+			_duk_sock_close(sock);
+			return EDUK_SOCKERR_FAIL;
+		}
 #endif
-    return 0;
+		sock->state = EDUK_SOCKSTATE_CONNECTING;
+	}
+	else {
+		sock->state = EDUK_SOCKSTATE_CONNECTED;
+	}
+	return EDUK_SOCKERR_AGAIN;
 }
 
-// DUK_LOCAL void collect_fd(duk_context *ctx, int tab, int itab, 
-//         fd_set *set, t_socket *max_fd) {
-//     int i = 0, n = 0;
-//     /* nil is the same as an empty table */
-//     if (duk_is_null_or_undefined(ctx, tab)) return;
-//     /* otherwise we need it to be a table */
-//     if (!duk_is_array(ctx, tab)) {
-//         return duk_generic_error(ctx, "bad argument #%d", tab);
-//     }
-//     for ( ;; ) {
-//         t_socket fd;
-//         duk_get_prop_index(ctx, tab, i);
-//         if (duk_is_null_or_undefined(ctx, -1)) {
-//             duk_pop(ctx);
-//             break;
-//         }
-// //         /* getfd figures out if this is a socket */
-// //         fd = getfd(L);
-// //         if (fd != SOCKET_INVALID) {
-// //             /* make sure we don't overflow the fd_set */
-// // #ifdef _WIN32
-// //             if (n >= FD_SETSIZE) 
-// //                 luaL_argerror(L, tab, "too many sockets");
-// // #else
-// //             if (fd >= FD_SETSIZE) 
-// //                 luaL_argerror(L, tab, "descriptor too large for set size");
-// // #endif
-// //             FD_SET(fd, set);
-// //             n++;
-// //             /* keep track of the largest descriptor so far */
-// //             if (*max_fd == SOCKET_INVALID || *max_fd < fd) 
-// //                 *max_fd = fd;
-// //             /* make sure we can map back from descriptor to the object */
-// //             lua_pushnumber(L, (lua_Number) fd);
-// //             lua_pushvalue(L, -2);
-// //             lua_settable(L, itab);
-// //         }
-//         duk_pop(ctx);
-//         i = i + 1;
-//     }
-// }
+DUK_SOCK_ERROR _duk_sock_connect_host(struct duk_sock_t* sock, const char* host, int port) {
+	struct addrinfo hints;
+	struct addrinfo* resolved = NULL, * iter = NULL;
+	struct sockaddr* result = NULL;
+	memset(&hints, 0, sizeof(hints));
 
-// DUK_LOCAL duk_ret_t duk_sock_select(duk_context *ctx) {
-//     //TODO: TBD
-//     duk_idx_t rtab, wtab, itab, ret, ndirty;
-//     t_socket max_fd = SOCKET_INVALID;
-//     fd_set rset, wset;
-//     t_timeout tm;
-//     duk_double_t t = duk_get_number_default(ctx, 2, -1);
-//     FD_ZERO(&rset); FD_ZERO(&wset);
-//     duk_set_top(ctx, 3); // lua_settop(L, 3);
-//     duk_push_array(ctx); itab = duk_get_top(ctx) - 1;
-//     duk_push_array(ctx); rtab = duk_get_top(ctx) - 1;
-//     duk_push_array(ctx); wtab = duk_get_top(ctx) - 1;
-//     collect_fd(ctx, 0, itab, &rset, &max_fd);
-//     collect_fd(ctx, 1, itab, &wset, &max_fd);
-//     /*
-//     ndirty = check_dirty(L, 1, rtab, &rset);
-//     t = ndirty > 0? 0.0: t;
-//     timeout_init(&tm, t, -1);
-//     timeout_markstart(&tm);
-//     ret = socket_select(max_fd+1, &rset, &wset, NULL, &tm);
-//     if (ret > 0 || ndirty > 0) {
-//         return_fd(L, &rset, max_fd+1, itab, rtab, ndirty);
-//         return_fd(L, &wset, max_fd+1, itab, wtab, 0);
-//         make_assoc(L, rtab);
-//         make_assoc(L, wtab);
-//         return 2;
-//     } else if (ret == 0) {
-//         lua_pushstring(L, "timeout");
-//         return 3;
-//     } else {
-//         luaL_error(L, "select failed");
-//         return 3;
-//     }
-//     */
-//     return 0;
-// }
+	hints.ai_socktype = sock->type == EDUK_SOCKTYPE_TCP ? SOCK_STREAM : SOCK_DGRAM;
+	hints.ai_protocol = sock->type == EDUK_SOCKTYPE_TCP ? IPPROTO_TCP : IPPROTO_UDP;
+	hints.ai_family = sock->family == EDUK_SOCKFAMILY_IPV4 ? AF_INET : AF_INET6;
+	hints.ai_flags = 0;
+	int res = getaddrinfo(host, NULL, &hints, &resolved);
+	if (!res) {
+		for (iter = resolved; iter; iter = iter->ai_next) {
+			result = iter->ai_addr;
+			break;
+		}
+		if (result) {
+			int retval = _duk_sock_connect(sock, result, 1234);
+			freeaddrinfo(resolved);
+			return retval;
+		}
+	}
+	freeaddrinfo(resolved);
+	return EDUK_SOCKERR_DNS;
+}
 
-DUK_INTERNAL duk_bool_t duk_timeout_open(duk_context *ctx) {
+DUK_SOCK_ERROR _duk_sock_connecting(struct duk_sock_t* sock) {
+	FD_SET wset;
+	FD_ZERO(&wset);
+	FD_SET(sock->fd, &wset);
+	struct timeval tv;
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+	int res = select(sock->fd + 1, NULL, &wset, NULL, &tv);
+	if (res < 0) {
+		_duk_sock_close(sock);
+		return EDUK_SOCKERR_FAIL;
+	}
+	if (res == 0) {
+		// timeout
+		return EDUK_SOCKERR_AGAIN;
+	}
+	if (FD_ISSET(sock->fd, &wset)) {
+		int error = 0;
+		socklen_t len = sizeof(error);
+		if (getsockopt(sock->fd, SOL_SOCKET, SO_ERROR, &error, &len) < 0) {
+			_duk_sock_close(sock);
+			return EDUK_SOCKERR_FAIL;
+		}
+		if (error != 0) {
+			_duk_sock_close(sock);
+			return EDUK_SOCKERR_FAIL;
+		}
+		else {
+			sock->state = EDUK_SOCKSTATE_CONNECTED;
+		}
+	}
+	return EDUK_SOCKERR_AGAIN;
+}
+
+DUK_SOCK_ERROR _duk_sock_recv(struct duk_sock_t *sock, char *buf, int buf_size, int *recv_size) {
+	*recv_size = 0;
+	if (sock->state == EDUK_SOCKSTATE_CLOSED || sock->state == EDUK_SOCKSTATE_CREATED) {
+		return EDUK_SOCKERR_CLOSED;
+	}
+	if (sock->state == EDUK_SOCKSTATE_CONNECTING) {
+		return _duk_sock_connecting(sock);
+	}
+#if DUK_F_WINDOWS
+	int prev = 0;
+	for (;;) {
+		int res = recv(sock->fd, buf, buf_size, 0);
+		if (res > 0) {
+			*recv_size = res;
+			return EDUK_SOCKERR_AGAIN;
+		}
+		if (res < 0) {
+			int err = WSAGetLastError();
+			if (err != WSAEWOULDBLOCK) {
+				if (err != WSAECONNRESET || prev == WSAECONNRESET) {
+					_duk_sock_close(sock);
+					return EDUK_SOCKERR_FAIL;
+				}
+				prev = err;
+				continue;
+			}
+			return EDUK_SOCKERR_AGAIN;
+		}
+		_duk_sock_close(sock);
+		return EDUK_SOCKERR_RESET;
+	}
+#else
+	int res = recv(sock->fd, buf, buf_size, 0);
+	if (res > 0) {
+		*recv_size = res;
+		return EDUK_SOCKERR_AGAIN;
+	}
+	if (res < 0) {
+		int err = errno;
+		if (err != EAGAIN && err != EINTR && err != EWOULDBLOCK) {
+			_duk_sock_close(sock);
+			return EDUK_SOCKERR_RESET;
+		}
+		return EDUK_SOCKERR_AGAIN;
+	}
+	_duk_sock_close(sock);
+	return EDUK_SOCKERR_RESET;
+#endif
+}
+
+DUK_SOCK_ERROR _duk_sock_send(struct duk_sock_t *sock, const char *buf, int buf_size, int *sent_size) {
+	*sent_size = 0;
+	if (sock->state == EDUK_SOCKSTATE_CLOSED || sock->state == EDUK_SOCKSTATE_CREATED) {
+		return EDUK_SOCKERR_CLOSED;
+	}
+	if (sock->state == EDUK_SOCKSTATE_CONNECTING) {
+		return _duk_sock_connecting(sock);
+	}
+	int res = send(sock->fd, buf, buf_size, 0);
+	if (res >= 0) {
+		*sent_size = res;
+		return EDUK_SOCKERR_AGAIN;
+	}
+#if DUK_F_WINDOWS
+	int err = WSAGetLastError();
+	if (err != WSAEWOULDBLOCK) { //TODO: ! (errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)
+		_duk_sock_close(sock);
+		return EDUK_SOCKERR_RESET;
+	}
+	return EDUK_SOCKERR_AGAIN;
+#else
+	int err = errno;
+	if (err == EPIPE || (err != EPROTOTYPE && err != EINTR && err != EAGAIN)) {
+		_duk_sock_close(sock);
+		return EDUK_SOCKERR_RESET;
+	}
+	return EDUK_SOCKERR_AGAIN;
+#endif
+}
+
+duk_ret_t duk_sock_constructor(duk_context* ctx) {
+	duk_idx_t top = duk_get_top(ctx);
+	duk_int_t type = duk_require_int(ctx, 0);
+	duk_int_t family = duk_require_int(ctx, 1);
+
+	duk_push_this(ctx);
+	struct duk_sock_t *sock = _duk_sock_create(type, family);
+	duk_push_pointer(ctx, sock);
+	duk_put_prop_literal(ctx, -2, DUK_HIDDEN_SYMBOL("_sock"));
+	duk_pop(ctx); // pop this
+	return 0;
+}
+
+void duk_sock_finalizer(duk_context* ctx) {
+	duk_get_prop_literal(ctx, 0, DUK_HIDDEN_SYMBOL("_sock"));
+	struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
+	duk_pop(ctx); // pop sock
+	duk_del_prop_literal(ctx, 0, DUK_HIDDEN_SYMBOL("_sock"));
+	_duk_sock_close(sock);
+}
+
+duk_ret_t duk_sock_connect(duk_context* ctx) {
+	const char* host = duk_require_string(ctx, 0);
+	duk_int_t port = duk_require_int(ctx, 1);
+	duk_push_this(ctx);
+	duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_sock"));
+	struct duk_sock_t *sock = (struct duk_sock_t *)duk_to_pointer(ctx, -1);
+	duk_pop_2(ctx); // pop sock and this
+	if (!sock) {
+		return duk_generic_error(ctx, "invalid socket");
+	}
+	int ret = _duk_sock_connect_host(sock, host, port);
+	duk_push_int(ctx, ret);
+	return 0;
+}
+
+duk_ret_t duk_sock_close(duk_context* ctx) {
+	duk_push_this(ctx);
+	duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_sock"));
+	struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
+	duk_pop_2(ctx); // pop sock and this 
+	if (sock) {
+		duk_del_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_sock"));
+		_duk_sock_close(sock);
+	}
+	return 0;
+}
+
+duk_ret_t duk_sock_setnonblocking(duk_context* ctx) {
+	duk_push_this(ctx);
+	duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_sock"));
+	struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
+	duk_pop_2(ctx); // pop sock and this 
+	if (sock) {
+		_duk_sock_setnonblocking(sock);
+	}
+	return 0;
+}
+
+duk_ret_t duk_sock_send(duk_context* ctx) {
+	if (duk_is_string(ctx, 0)) {
+		duk_size_t length;
+		const char* buffer = duk_require_lstring(ctx, 0, &length);
+		if (length == 0) {
+			duk_push_int(ctx, 0);
+			return 1;
+		}
+		duk_push_this(ctx);
+		duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_sock"));
+		struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
+		duk_pop_2(ctx); // pop sock and this 
+		if (sock) {
+			int sent_size = 0;
+			int retval = _duk_sock_send(sock, buffer, length, &sent_size);
+			if (retval < 0) {
+				duk_push_int(ctx, retval);
+			}
+			else {
+				duk_push_int(ctx, sent_size);
+			}
+		}
+		else {
+			duk_push_int(ctx, -1);
+		}
+		return 1;
+	}
+	else {
+		duk_size_t size;
+		char* buffer = duk_require_buffer_data(ctx, 0, &size);
+		duk_int_t index = duk_require_int(ctx, 1);
+		duk_int_t length = duk_require_int(ctx, 2);
+		if (index + length > size) {
+			return duk_generic_error(ctx, "buffer overflow");
+		}
+		if (length == 0) {
+			duk_push_int(ctx, 0);
+			return 1;
+		}
+		duk_push_this(ctx);
+		duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_sock"));
+		struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
+		duk_pop_2(ctx); // pop sock and this 
+		if (sock) {
+			int sent_size = 0;
+			int retval = _duk_sock_send(sock, buffer + index, length, &sent_size);
+			if (retval < 0) {
+				duk_push_int(ctx, retval);
+			}
+			else {
+				duk_push_int(ctx, sent_size);
+			}
+		}
+		else {
+			duk_push_int(ctx, -1);
+		}
+		return 1;
+	}
+}
+
+duk_ret_t duk_sock_recv(duk_context* ctx) {
+	duk_size_t size;
+	char* buffer = duk_require_buffer_data(ctx, 0, &size);
+	duk_int_t index = duk_require_int(ctx, 1);
+	duk_int_t length = duk_require_int(ctx, 2);
+	if (index + length > size) {
+		return duk_generic_error(ctx, "buffer overflow");
+	}
+	duk_push_this(ctx);
+	duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_sock"));
+	struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
+	duk_pop_2(ctx); // pop sock and this 
+	if (sock) {
+		int recv_size = 0;
+		int retval = _duk_sock_recv(sock, buffer + index, length, &recv_size);
+		if (retval < 0) {
+			duk_push_int(ctx, retval);
+		}
+		else {
+			duk_push_int(ctx, recv_size);
+		}
+	}
+	else {
+		duk_push_int(ctx, -1);
+	}
+	return 1;
+}
+
+DUK_INTERNAL duk_bool_t duk_sock_open(duk_context *ctx) {
     duk_push_global_object(ctx);
     duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
 
-    duk_unity_add_member(ctx, "gettime", duk_timeout_gettime, -1);
-    duk_unity_add_member(ctx, "sleep", duk_timeout_sleep, -1);
+    {
+        duk_unity_begin_class(ctx, "Socket", DUK_UNITY_BUILTINS_SOCKET, duk_sock_constructor, duk_sock_finalizer);
+        duk_push_c_function(ctx, duk_sock_connect, 2);
+        duk_put_prop_literal(ctx, -2, "connect");
+        duk_push_c_function(ctx, duk_sock_close, 0);
+        duk_put_prop_literal(ctx, -2, "close");
+        duk_push_c_function(ctx, duk_sock_setnonblocking, 0);
+        duk_put_prop_literal(ctx, -2, "setnonblocking");
+        duk_push_c_function(ctx, duk_sock_send, DUK_VARARGS);
+        duk_put_prop_literal(ctx, -2, "send");
+        duk_push_c_function(ctx, duk_sock_recv, 3);
+        duk_put_prop_literal(ctx, -2, "recv");
+        duk_unity_end_class(ctx);
+    }
 
     duk_pop_2(ctx); // pop DuktapeJS and global    
     return 1;
 }
-
-// DUK_INTERNAL duk_bool_t duk_select_open(duk_context *ctx) {
-//     duk_push_global_object(ctx);
-//     duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
-
-//     duk_unity_add_const_int(ctx, -1, "_SETSIZE", FD_SETSIZE);
-//     duk_unity_add_member(ctx, "select", duk_sock_select, -1);
-
-//     duk_pop_2(ctx); // pop DuktapeJS and global    
-//     return 1;
-// }
