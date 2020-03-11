@@ -37,6 +37,17 @@ enum duk_sock_error {
 	EDUK_SOCKERR_DUPCONNECT = -3,	// 未断开时再次 connect
 	EDUK_SOCKERR_UNSUPPORTED = -4,
 	EDUK_SOCKERR_RESET = -5,
+	EDUK_SOCKERR_DNS = -6,
+};
+
+enum duk_sock_type {
+	EDUK_SOCKTYPE_TCP = 0,
+	EDUK_SOCKTYPE_UDP = 1,
+};
+
+enum duk_sock_family {
+	EDUK_SOCKFAMILY_IPV4 = 0,
+	EDUK_SOCKFAMILY_IPV6 = 1,
 };
 
 struct duk_sock_t {
@@ -137,6 +148,35 @@ DUK_SOCK_ERROR duk_sock_connect(struct duk_sock_t *sock, struct sockaddr *addr, 
 		printf("connected 1\n");
 	}
 	return EDUK_SOCKERR_AGAIN;
+}
+
+// family: AF_INET, AF_INET6
+// type: SOCK_STREAM, SOCK_DGRAM
+// protocol: IPPROTO_TCP, IPPROTO_UDP
+DUK_SOCK_ERROR duk_sock_connect_host(struct duk_sock_t* sock, const char* host, int port, enum duk_sock_type type, enum duk_sock_family family) {
+	struct addrinfo hints;
+	struct addrinfo* resolved = NULL, * iter = NULL;
+	struct sockaddr* result = NULL;
+	memset(&hints, 0, sizeof(hints));
+
+	hints.ai_socktype = type == EDUK_SOCKTYPE_TCP ? SOCK_STREAM : SOCK_DGRAM;
+	hints.ai_protocol = type == EDUK_SOCKTYPE_TCP ? IPPROTO_TCP : IPPROTO_UDP;
+	hints.ai_family = family == EDUK_SOCKFAMILY_IPV4 ? AF_INET : AF_INET6;
+	hints.ai_flags = 0;
+	int res = getaddrinfo(host, NULL, &hints, &resolved);
+	if (!res) {
+		for (iter = resolved; iter; iter = iter->ai_next) {
+			result = iter->ai_addr;
+			break;
+		}
+		if (result) {
+			int retval = duk_sock_connect(sock, result, 1234);
+			freeaddrinfo(resolved);
+			return retval;
+		}
+	}
+	freeaddrinfo(resolved);
+	return EDUK_SOCKERR_DNS;
 }
 
 DUK_SOCK_ERROR duk_sock_connecting(struct duk_sock_t* sock) {
@@ -285,55 +325,34 @@ void deinit() {
 
 void test_socket() {
 	init();
-	// AF_INET, AF_INET6
-	// SOCK_STREAM, SOCK_DGRAM
-	// IPPROTO_TCP, IPPROTO_UDP
+	// family: AF_INET, AF_INET6
+	// type: SOCK_STREAM, SOCK_DGRAM
+	// protocol: IPPROTO_TCP, IPPROTO_UDP
 	struct duk_sock_t *sock = duk_sock_create(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock) {
-		const char* host = "localhost";
-		struct addrinfo* resolved, * iter;
-		struct addrinfo hints;
-		struct sockaddr* result = NULL;
-		memset(&hints, 0, sizeof(hints));
-		hints.ai_socktype = SOCK_DGRAM;
-		hints.ai_family = AF_INET;
-		hints.ai_flags = 0;
-		int res = getaddrinfo(host, NULL, &hints, &resolved);
-		if (!res) {
-			for (iter = resolved; iter; iter = iter->ai_next) {
-				int family = iter->ai_family;
-				if (family == AF_INET || family == AF_INET6) {
-					result = iter->ai_addr;
+		int retval = duk_sock_connect_host(sock, "localhost", 1234, EDUK_SOCKTYPE_UDP, EDUK_SOCKFAMILY_IPV4);
+		if (retval >= 0) {
+			char send_buf[] = "echo test";
+			char recv_buf[1024];
+			int sent_size = 0;
+			int recv_size = 0;
+			do {
+				Sleep(1000);
+				retval = duk_sock_send(sock, send_buf, sizeof(send_buf), &sent_size);
+				if (retval < 0) {
 					break;
 				}
-			}
-			if (result) {
-				int retval = duk_sock_connect(sock, result, 1234);
-				if (retval >= 0) {
-					char send_buf[] = "echo test";
-					char recv_buf[1024];
-					int sent_size = 0;
-					int recv_size = 0;
-					do {
-						Sleep(1000);
-						retval = duk_sock_send(sock, send_buf, sizeof(send_buf), &sent_size);
-						if (retval < 0) {
-							break;
-						}
-						retval = duk_sock_recv(sock, recv_buf, sizeof(recv_buf), &recv_size);
-						if (retval < 0) {
-							break;
-						}
-						if (recv_size > 0) {
-							recv_buf[recv_size] = '\0';
-							printf("%s\n", recv_buf);
-						}
-					} while (retval >= 0);
-					duk_sock_close(sock);
-					printf("close\n");
+				retval = duk_sock_recv(sock, recv_buf, sizeof(recv_buf), &recv_size);
+				if (retval < 0) {
+					break;
 				}
-			}
-			freeaddrinfo(resolved);
+				if (recv_size > 0) {
+					recv_buf[recv_size] = '\0';
+					printf("%s\n", recv_buf);
+				}
+			} while (retval >= 0);
+			duk_sock_close(sock);
+			printf("close\n");
 		}
 	}
 	deinit();
