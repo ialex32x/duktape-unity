@@ -1,6 +1,6 @@
 //
 #include "duk_internal.h"
-// #include "ikcp.h"
+#include "ikcp.h"
 
 #ifdef DUK_F_WINDOWS
 #define DUK_SOCK_CLOSE(fd) closesocket((fd))
@@ -101,6 +101,11 @@ DUK_LOCAL DUK_INLINE struct duk_sock_t* _duk_sock_create(duk_context *ctx, enum 
 	sock->type = type;
 	sock->family = family;
 	return sock;
+}
+
+DUK_LOCAL DUK_INLINE void _duk_sock_destroy(duk_context *ctx, struct duk_sock_t *sock) {
+	_duk_sock_close(sock);
+    duk_free(ctx, sock);
 }
 
 DUK_LOCAL DUK_INLINE void _duk_sock_setnonblocking(struct duk_sock_t* sock) {
@@ -311,7 +316,6 @@ DUK_LOCAL DUK_INLINE DUK_SOCK_ERROR _duk_sock_send(struct duk_sock_t *sock, cons
 }
 
 DUK_LOCAL duk_ret_t duk_sock_constructor(duk_context* ctx) {
-	duk_idx_t top = duk_get_top(ctx);
 	duk_int_t type = duk_require_int(ctx, 0);
 	duk_int_t family = duk_require_int(ctx, 1);
 
@@ -328,8 +332,7 @@ DUK_LOCAL void duk_sock_finalizer(duk_context* ctx) {
 	struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
 	duk_pop(ctx); // pop sock
 	duk_del_prop_literal(ctx, 0, DUK_HIDDEN_SYMBOL("_sock"));
-	_duk_sock_close(sock);
-    duk_free(ctx, sock);
+	_duk_sock_destroy(ctx, sock);
 }
 
 DUK_LOCAL duk_ret_t duk_sock_connect(duk_context* ctx) {
@@ -458,11 +461,190 @@ DUK_LOCAL duk_ret_t duk_sock_recv(duk_context* ctx) {
 	return 1;
 }
 
+struct duk_kcp_t {
+	ikcpcb *kcp;
+	char *buffer;
+	int buffer_size;
+};
+
+DUK_LOCAL DUK_INLINE int _duk_kcp_output(const char *buf, int len, ikcpcb *kcp, void *user) {
+	struct duk_sock_t *sock = (struct duk_sock_t *)user;
+	if (sock) {
+		_duk_sock_send(sock, buf, 0, len);
+	}
+	return 0;
+}
+
+DUK_LOCAL DUK_INLINE struct duk_kcp_t *_duk_kcp_create(duk_context *ctx, duk_uint_t conv, enum duk_sock_family family, int buffer_size) {
+	struct duk_sock_t *sock = _duk_sock_create(ctx, EDUK_SOCKTYPE_UDP, family);
+	if (sock) {
+		char *buffer = (char *)duk_alloc(ctx, buffer_size);
+		if (buffer) {
+			struct duk_kcp_t *kcp = (struct duk_kcp_t *)duk_alloc(ctx, sizeof(struct duk_kcp_t *));
+			if (kcp) {
+				ikcpcb *_kcp = ikcp_create(conv, sock);
+				if (_kcp) {
+					kcp->kcp = _kcp;
+					kcp->buffer = buffer;
+					kcp->buffer_size = buffer_size;
+					_kcp->output = _duk_kcp_output;
+					return kcp;
+				} else {
+					duk_free(ctx, kcp);
+					_duk_sock_destroy(ctx, sock);
+					duk_free(ctx, buffer);
+				}
+			} else {
+				_duk_sock_destroy(ctx, sock);
+				duk_free(ctx, buffer);
+			}
+		} else {
+			_duk_sock_destroy(ctx, sock);
+		}
+	}
+	return NULL;
+}
+
+DUK_LOCAL DUK_INLINE void _duk_kcp_destroy(duk_context *ctx, struct duk_kcp_t *kcp) {
+	_duk_sock_destroy(ctx, (struct duk_sock_t *)(kcp->kcp->user));
+	ikcp_release(kcp->kcp);
+	duk_free(kcp->buffer);
+	duk_free(kcp);
+}
+
 DUK_LOCAL duk_ret_t duk_kcp_constructor(duk_context *ctx) {
+	duk_uint_t conv = duk_require_uint(ctx, 0);
+	duk_int_t family = duk_require_int(ctx, 1);
+	
+	duk_push_this(ctx);
+	struct duk_kcp_t *kcp = _duk_kcp_create(ctx, conv, family);
+	duk_push_pointer(ctx, kcp);
+	duk_put_prop_literal(ctx, -2, DUK_HIDDEN_SYMBOL("_kcp"));
+	duk_pop(ctx); // pop this
 	return 0;
 }
 
 DUK_LOCAL void duk_kcp_finalizer(duk_context* ctx) {
+	duk_get_prop_literal(ctx, 0, DUK_HIDDEN_SYMBOL("_kcp"));
+	struct duk_kcp_t *kcp = (struct duk_kcp_t *)duk_to_pointer(ctx, -1);
+	duk_pop(ctx); 
+	duk_del_prop_literal(ctx, 0, DUK_HIDDEN_SYMBOL("_kcp"));
+	_duk_kcp_destroy(ctx, kcp);
+}
+
+DUK_LOCAL duk_ret_t duk_kcp_wndsize(duk_context *ctx) {
+	duk_int_t sndwnd = duk_require_int(ctx, 0);
+	duk_int_t rcvwnd = duk_require_int(ctx, 1);
+
+	duk_push_this(ctx);
+	duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_kcp"));
+	struct duk_kcp_t *kcp = (struct duk_kcp_t *)duk_to_pointer(ctx, -1);
+	duk_pop_2(ctx); // pop kcp and this
+	if (!kcp) {
+		return duk_generic_error(ctx, "invalid kcp");
+	}
+	int retval = ikcp_wndsize(kcp->kcp, sndwnd, rcvwnd);
+	duk_push_int(ctx, retval);
+	return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_kcp_nodelay(duk_context *ctx) {
+	duk_int_t nodelay = duk_require_int(ctx, 0);
+	duk_int_t interval = duk_require_int(ctx, 1);
+	duk_int_t resend = duk_require_int(ctx, 2);
+	duk_int_t nc = duk_require_int(ctx, 3);
+
+	duk_push_this(ctx);
+	duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_kcp"));
+	struct duk_kcp_t *kcp = (struct duk_kcp_t *)duk_to_pointer(ctx, -1);
+	duk_pop_2(ctx); // pop kcp and this
+	if (!kcp) {
+		return duk_generic_error(ctx, "invalid kcp");
+	}
+	int retval = ikcp_nodelay(kcp->kcp, nodelay, interval, resend, nc);
+	duk_push_int(ctx, retval);
+	return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_kcp_update(duk_context *ctx) {
+	duk_uint_t current = duk_require_uint(ctx, 0);
+
+	duk_push_this(ctx);
+	duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_kcp"));
+	struct duk_kcp_t *kcp = (struct duk_kcp_t *)duk_to_pointer(ctx, -1);
+	duk_pop_2(ctx); // pop kcp and this
+	if (!kcp) {
+		return duk_generic_error(ctx, "invalid kcp");
+	}
+	ikcp_update(kcp->kcp, current);
+	return 0;
+}
+
+DUK_LOCAL duk_ret_t duk_kcp_send(duk_context *ctx) {
+	if (duk_is_string(ctx, 0)) {
+		duk_size_t length;
+		const char* buffer = duk_require_lstring(ctx, 0, &length);
+		if (buffer == NULL || length == 0) {
+			return 0;
+		}
+		duk_push_this(ctx);
+		duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_kcp"));
+		struct duk_kcp_t *kcp = (struct duk_kcp_t *)duk_to_pointer(ctx, -1);
+		duk_pop_2(ctx); // pop kcp and this
+		if (!kcp) {
+			return duk_generic_error(ctx, "invalid kcp");
+		}
+		ikcp_send(kcp->kcp, buffer, length);
+		return 0;
+	} else {
+		duk_size_t length;
+		char *buffer = duk_require_buffer_data(ctx, 0, &length);
+		if (buffer == NULL || length == 0) {
+			return 0;
+		}
+
+		duk_push_this(ctx);
+		duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_kcp"));
+		struct duk_kcp_t *kcp = (struct duk_kcp_t *)duk_to_pointer(ctx, -1);
+		duk_pop_2(ctx); // pop kcp and this
+		if (!kcp) {
+			return duk_generic_error(ctx, "invalid kcp");
+		}
+		ikcp_send(kcp->kcp, buffer, length);
+		return 0;
+	}
+}
+
+DUK_LOCAL duk_ret_t duk_kcp_recv(duk_context *ctx) {
+	duk_size_t size;
+	char *buffer = duk_require_buffer_data(ctx, 0, &size);
+	duk_int_t index = duk_require_int(ctx, 1);
+	duk_int_t length = duk_require_int(ctx, 2);
+	if (index + length > size) {
+		return duk_generic_error(ctx, "buffer overflow");
+	}
+
+	duk_push_this(ctx);
+	duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_kcp"));
+	struct duk_kcp_t *kcp = (struct duk_kcp_t *)duk_to_pointer(ctx, -1);
+	duk_pop_2(ctx); // pop kcp and this
+	if (!kcp) {
+		return duk_generic_error(ctx, "invalid kcp");
+	}
+	int recv_size = 0;
+	int retval = _duk_sock_recv((struct duk_sock_t *)(kcp->kcp->user), kcp->buffer, kcp->buffer_size, &recv_size);
+	if (retval <= 0) {
+		duk_push_int(ctx, retval);
+	} else {
+		ikcp_input(kcp->kcp, kcp->buffer, recv_size);
+		int kcp_ret = ikcp_recv(kcp, buffer + index, length);
+		if (kcp_ret > 0) {
+			duk_push_int(ctx, kcp_ret);
+		} else {
+			duk_push_int(ctx, 0);
+		}
+	}
+	return 0;
 }
 
 DUK_INTERNAL duk_bool_t duk_sock_open(duk_context *ctx) {
@@ -500,6 +682,18 @@ DUK_INTERNAL duk_bool_t duk_sock_open(duk_context *ctx) {
         duk_unity_end_class(ctx);
 
         duk_unity_begin_class(ctx, "Kcp", DUK_UNITY_BUILTINS_KCP, duk_kcp_constructor, duk_kcp_finalizer);
+		duk_push_c_function(ctx, duk_kcp_wndsize, 2);
+		duk_put_prop_literal(ctx, -2, "wndsize");
+		duk_push_c_function(ctx, duk_kcp_nodelay, 4);
+		duk_put_prop_literal(ctx, -2, "nodelay");
+		duk_push_c_function(ctx, duk_kcp_update, 1);
+		duk_put_prop_literal(ctx, -2, "update");
+		duk_push_c_function(ctx, duk_kcp_send, 2);
+		duk_put_prop_literal(ctx, -2, "send");
+		duk_push_c_function(ctx, duk_kcp_recv, 3);
+		duk_put_prop_literal(ctx, -2, "recv");
+		// property: rx_minrto
+		// property: fastresend
         duk_unity_end_class(ctx);
     }
 
