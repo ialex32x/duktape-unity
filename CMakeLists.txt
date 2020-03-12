@@ -28,6 +28,7 @@ set(LIBWEBSOCKETS_DIR ${TOP_DIR}/thirdparty/libwebsockets)
 set(LIBFIXMATH_DIR ${TOP_DIR}/thirdparty/libfixmath)
 set(MBEDTLS_DIR ${TOP_DIR}/thirdparty/mbedtls)
 set(ZLIB_DIR ${TOP_DIR}/thirdparty/zlib)
+set(KCP_DIR ${TOP_DIR}/thirdparty/kcp)
 
 include_directories(${LIBFIXMATH_DIR})
 aux_source_directory(${LIBFIXMATH_DIR} LIBFIXMATH_SRCS)
@@ -49,6 +50,9 @@ set(ZLIB_SRCS
     ${ZLIB_DIR}/uncompr.c
     ${ZLIB_DIR}/zutil.c
 )
+
+include_directories(${KCP_DIR})
+set(KCP_SRCS ${KCP_DIR}/ikcp.c)
 
 include_directories(${LIBWEBSOCKETS_DIR})
 include_directories(${LIBWEBSOCKETS_DIR}/win32helpers)
@@ -140,19 +144,19 @@ ENDIF ()
 
 if (APPLE) 
     if (IOS)
-        add_library(duktape STATIC ${DUKTAPE_SRCS} ${LIBFIXMATH_SRCS} ${MBEDTLS_SRCS} ${LIBWEBSOCKETS_SRCS} ${ZLIB_SRCS})
+        add_library(duktape STATIC ${DUKTAPE_SRCS} ${LIBFIXMATH_SRCS} ${MBEDTLS_SRCS} ${LIBWEBSOCKETS_SRCS} ${ZLIB_SRCS} ${KCP_SRCS})
         set(CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fembed-bitcode")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fembed-bitcode")
 		set_xcode_property (duktape IPHONEOS_DEPLOYMENT_TARGET "7.0" "all")
     else ()
-        add_library(duktape MODULE ${DUKTAPE_SRCS} ${LIBFIXMATH_SRCS} ${MBEDTLS_SRCS} ${LIBWEBSOCKETS_SRCS} ${ZLIB_SRCS})
+        add_library(duktape MODULE ${DUKTAPE_SRCS} ${LIBFIXMATH_SRCS} ${MBEDTLS_SRCS} ${LIBWEBSOCKETS_SRCS} ${ZLIB_SRCS} ${KCP_SRCS})
         set(CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD_64_BIT)")
         set_target_properties(duktape PROPERTIES MACOSX_BUNDLE TRUE)
         set_target_properties(duktape PROPERTIES BUNDLE TRUE)
     endif ()
 else ()
-    add_library(duktape SHARED ${DUKTAPE_SRCS} ${LIBFIXMATH_SRCS} ${MBEDTLS_SRCS} ${LIBWEBSOCKETS_SRCS} ${ZLIB_SRCS})
+    add_library(duktape SHARED ${DUKTAPE_SRCS} ${LIBFIXMATH_SRCS} ${MBEDTLS_SRCS} ${LIBWEBSOCKETS_SRCS} ${ZLIB_SRCS} ${KCP_SRCS})
 endif ()
 
 #target_link_libraries(duktape librws_static.lib)

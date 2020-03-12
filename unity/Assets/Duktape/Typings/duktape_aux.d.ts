@@ -206,14 +206,40 @@ declare namespace DuktapeJS {
         IPV6 = 1, 
     }
 
+    /**
+     * raw socket [experimental]
+     */
     class Socket {
-        constructor(type: SocketType, family: SocketFamily)
-        setnonblocking(): void
-        connect(host: string, port: number)
-        close(): void
-        send(text: string): number
-        send(buf: Buffer, index: number, size: number): number
-        recv(buf: Buffer, index: number, size: number): number
+        constructor(type: SocketType, family: SocketFamily);
+        setnonblocking(): void;
+        connect(host: string, port: number);
+        // connect_addr(addr: Buffer, len: number);
+        close(): void;
+        send(text: string): number;
+        send(buf: Buffer, index: number, size: number): number;
+        recv(buf: Buffer, index: number, size: number): number;
+    }
+
+    /**
+     * kcp [experimental]
+     */
+    class Kcp {
+        constructor(conv: number, family: SocketFamily, bufferSize: number);
+        connect(host: string, port: number);
+        // connect_addr(addr: Buffer, len: number);
+        wndsize(sndwnd: number, rcvwnd: number);
+        nodelay(nodelay: number, interval: number, resend: number, nc: number);
+        update(current: number);
+        /**
+         * 返回值 <0 时异常
+         */
+        send(text: string): number; 
+        /**
+         * 返回值 <0 时异常
+         */
+        send(buf: Buffer, size?: number): number;
+        recv(buf: Buffer, index: number, size: number): number;
+        close(): void;
     }
     
     /*
