@@ -327,12 +327,13 @@ DUK_LOCAL duk_ret_t duk_sock_constructor(duk_context* ctx) {
 	return 0;
 }
 
-DUK_LOCAL void duk_sock_finalizer(duk_context* ctx) {
+DUK_LOCAL duk_ret_t duk_sock_finalizer(duk_context* ctx) {
 	duk_get_prop_literal(ctx, 0, DUK_HIDDEN_SYMBOL("_sock"));
 	struct duk_sock_t* sock = (struct duk_sock_t*)duk_to_pointer(ctx, -1);
 	duk_pop(ctx); // pop sock
 	duk_del_prop_literal(ctx, 0, DUK_HIDDEN_SYMBOL("_sock"));
 	_duk_sock_destroy(ctx, sock);
+	return 0;
 }
 
 DUK_LOCAL duk_ret_t duk_sock_connect(duk_context* ctx) {
@@ -470,7 +471,8 @@ struct duk_kcp_t {
 DUK_LOCAL DUK_INLINE int _duk_kcp_output(const char *buf, int len, ikcpcb *kcp, void *user) {
 	struct duk_sock_t *sock = (struct duk_sock_t *)user;
 	if (sock) {
-		_duk_sock_send(sock, buf, 0, len);
+		int sent_size;
+		_duk_sock_send(sock, buf, len, &sent_size);
 	}
 	return 0;
 }
@@ -528,12 +530,13 @@ DUK_LOCAL duk_ret_t duk_kcp_constructor(duk_context *ctx) {
 	return 0;
 }
 
-DUK_LOCAL void duk_kcp_finalizer(duk_context* ctx) {
+DUK_LOCAL duk_ret_t duk_kcp_finalizer(duk_context* ctx) {
 	duk_get_prop_literal(ctx, 0, DUK_HIDDEN_SYMBOL("_kcp"));
 	struct duk_kcp_t *kcp = (struct duk_kcp_t *)duk_to_pointer(ctx, -1);
 	duk_pop(ctx); 
 	duk_del_prop_literal(ctx, 0, DUK_HIDDEN_SYMBOL("_kcp"));
 	_duk_kcp_destroy(ctx, kcp);
+	return 0;
 }
 
 DUK_LOCAL duk_ret_t duk_kcp_wndsize(duk_context *ctx) {

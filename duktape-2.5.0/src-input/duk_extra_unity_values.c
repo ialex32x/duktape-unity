@@ -1097,9 +1097,9 @@ DUK_LOCAL duk_ret_t duk_unity_Quaternion_Normalize(duk_context *ctx) {
 DUK_LOCAL duk_ret_t duk_unity_Quaternion_static_Euler(duk_context *ctx) {
     float eu[3];
     if (duk_is_number(ctx, 0)) {
-        eu[0] = duk_get_number(ctx, 0);
-        eu[1] = duk_get_number_default(ctx, 1, 0.0);
-        eu[2] = duk_get_number_default(ctx, 2, 0.0);
+        eu[0] = (float)duk_get_number(ctx, 0);
+        eu[1] = (float)duk_get_number_default(ctx, 1, 0.0);
+        eu[2] = (float)duk_get_number_default(ctx, 2, 0.0);
     } else {
         duk_unity_get3f(ctx, 0, &eu[0], &eu[1], &eu[2]);
     }
