@@ -103,6 +103,16 @@ DUK_LOCAL DUK_INLINE struct duk_sock_t* _duk_sock_create(duk_context *ctx, enum 
 	return sock;
 }
 
+DUK_LOCAL DUK_INLINE void _duk_sock_close(struct duk_sock_t* sock) {
+	if (sock) {
+		if (sock->fd != INVALID_SOCKET) {
+			DUK_SOCK_CLOSE(sock->fd);
+			sock->fd = INVALID_SOCKET;
+		}
+		sock->state = EDUK_SOCKSTATE_CLOSED;
+	}
+}
+
 DUK_LOCAL DUK_INLINE void _duk_sock_destroy(duk_context *ctx, struct duk_sock_t *sock) {
 	_duk_sock_close(sock);
     duk_free(ctx, sock);
@@ -117,16 +127,6 @@ DUK_LOCAL DUK_INLINE void _duk_sock_setnonblocking(struct duk_sock_t* sock) {
 	flags |= O_NONBLOCK;
 	fcntl(sock->fd, F_SETFL, flags);
 #endif
-}
-
-DUK_LOCAL DUK_INLINE void _duk_sock_close(struct duk_sock_t* sock) {
-	if (sock) {
-		if (sock->fd != INVALID_SOCKET) {
-			DUK_SOCK_CLOSE(sock->fd);
-			sock->fd = INVALID_SOCKET;
-		}
-		sock->state = EDUK_SOCKSTATE_CLOSED;
-	}
 }
 
 DUK_LOCAL DUK_INLINE DUK_SOCK_ERROR _duk_sock_connect(struct duk_sock_t *sock, struct sockaddr *addr, int port) {
@@ -508,16 +508,20 @@ DUK_LOCAL DUK_INLINE struct duk_kcp_t *_duk_kcp_create(duk_context *ctx, duk_uin
 DUK_LOCAL DUK_INLINE void _duk_kcp_destroy(duk_context *ctx, struct duk_kcp_t *kcp) {
 	_duk_sock_destroy(ctx, (struct duk_sock_t *)(kcp->kcp->user));
 	ikcp_release(kcp->kcp);
-	duk_free(kcp->buffer);
-	duk_free(kcp);
+	duk_free(ctx, kcp->buffer);
+	duk_free(ctx, kcp);
 }
 
 DUK_LOCAL duk_ret_t duk_kcp_constructor(duk_context *ctx) {
+	if (duk_get_top(ctx) < 3) {
+		return duk_generic_error(ctx, "error, need 3 args.");
+	}
 	duk_uint_t conv = duk_require_uint(ctx, 0);
 	duk_int_t family = duk_require_int(ctx, 1);
+	duk_uint_t buffer_size = duk_require_int(ctx, 2);
 	
 	duk_push_this(ctx);
-	struct duk_kcp_t *kcp = _duk_kcp_create(ctx, conv, family);
+	struct duk_kcp_t *kcp = _duk_kcp_create(ctx, conv, family, buffer_size);
 	duk_push_pointer(ctx, kcp);
 	duk_put_prop_literal(ctx, -2, DUK_HIDDEN_SYMBOL("_kcp"));
 	duk_pop(ctx); // pop this
@@ -637,7 +641,7 @@ DUK_LOCAL duk_ret_t duk_kcp_recv(duk_context *ctx) {
 		duk_push_int(ctx, retval);
 	} else {
 		ikcp_input(kcp->kcp, kcp->buffer, recv_size);
-		int kcp_ret = ikcp_recv(kcp, buffer + index, length);
+		int kcp_ret = ikcp_recv(kcp->kcp, buffer + index, length);
 		if (kcp_ret > 0) {
 			duk_push_int(ctx, kcp_ret);
 		} else {
