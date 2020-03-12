@@ -347,7 +347,7 @@ DUK_LOCAL duk_ret_t duk_sock_connect(duk_context* ctx) {
 	}
 	int ret = _duk_sock_connect_host(sock, host, port);
 	duk_push_int(ctx, ret);
-	return 0;
+	return 1;
 }
 
 DUK_LOCAL duk_ret_t duk_sock_close(duk_context* ctx) {
@@ -644,7 +644,22 @@ DUK_LOCAL duk_ret_t duk_kcp_recv(duk_context *ctx) {
 			duk_push_int(ctx, 0);
 		}
 	}
-	return 0;
+	return 1;
+}
+
+DUK_LOCAL duk_ret_t duk_kcp_connect(duk_context* ctx) {
+	const char* host = duk_require_string(ctx, 0);
+	duk_int_t port = duk_require_int(ctx, 1);
+	duk_push_this(ctx);
+	duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("_kcp"));
+	struct duk_kcp_t *kcp = (struct duk_kcp_t *)duk_to_pointer(ctx, -1);
+	duk_pop_2(ctx); // pop sock and this
+	if (!kcp) {
+		return duk_generic_error(ctx, "invalid kcp");
+	}
+	int ret = _duk_sock_connect_host((struct duk_sock_t *)(kcp->kcp->user), host, port);
+	duk_push_int(ctx, ret);
+	return 1;
 }
 
 DUK_INTERNAL duk_bool_t duk_sock_open(duk_context *ctx) {
@@ -682,6 +697,8 @@ DUK_INTERNAL duk_bool_t duk_sock_open(duk_context *ctx) {
         duk_unity_end_class(ctx);
 
         duk_unity_begin_class(ctx, "Kcp", DUK_UNITY_BUILTINS_KCP, duk_kcp_constructor, duk_kcp_finalizer);
+        duk_push_c_function(ctx, duk_kcp_connect, 2);
+        duk_put_prop_literal(ctx, -2, "connect");
 		duk_push_c_function(ctx, duk_kcp_wndsize, 2);
 		duk_put_prop_literal(ctx, -2, "wndsize");
 		duk_push_c_function(ctx, duk_kcp_nodelay, 4);
