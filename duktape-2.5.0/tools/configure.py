@@ -410,6 +410,8 @@ def main():
         'duk_api_time.c',
         'duk_api_debug.c',
         
+        # 'ikcp.c',
+        # 'ikcp.h',
         'duk_extra_module_node.c',
         'duk_extra_websocket.c',
         'duk_extra_unity.c',

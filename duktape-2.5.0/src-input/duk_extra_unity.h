@@ -17,12 +17,9 @@
     #define DUK_UNITY_BUILTINS_HANDLER 11
     #define DUK_UNITY_BUILTINS_EVENTDISPATCHER 12
     #define DUK_UNITY_BUILTINS_WEBSOCKET 13
-    #define DUK_UNITY_BUILTINS_TCPSERVER 14 // unimplemented
-    #define DUK_UNITY_BUILTINS_TCPCLIENT 15 // unimplemented
-    #define DUK_UNITY_BUILTINS_UDP 16 // unimplemented
-    #define DUK_UNITY_BUILTINS_KCP 17 // unimplemented
-    #define DUK_UNITY_BUILTINS_RNG 18
-    #define DUK_UNITY_BUILTINS_SOCKET 19
+    #define DUK_UNITY_BUILTINS_RNG 14
+    #define DUK_UNITY_BUILTINS_SOCKET 15
+    #define DUK_UNITY_BUILTINS_KCP 16 // unimplemented
 
 DUK_INTERNAL_DECL void duk_unity_valuetypes_open(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_events_open(duk_context *ctx);

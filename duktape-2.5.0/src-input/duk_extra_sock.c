@@ -1,5 +1,6 @@
 //
 #include "duk_internal.h"
+// #include "ikcp.h"
 
 #ifdef DUK_F_WINDOWS
 #define DUK_SOCK_CLOSE(fd) closesocket((fd))
@@ -457,28 +458,37 @@ DUK_LOCAL duk_ret_t duk_sock_recv(duk_context* ctx) {
 	return 1;
 }
 
+DUK_LOCAL duk_ret_t duk_kcp_constructor(duk_context *ctx) {
+	return 0;
+}
+
+DUK_LOCAL void duk_kcp_finalizer(duk_context* ctx) {
+}
+
 DUK_INTERNAL duk_bool_t duk_sock_open(duk_context *ctx) {
     duk_push_global_object(ctx);
     duk_unity_get_prop_object(ctx, -1, "DuktapeJS");
 
     {
         duk_push_object(ctx);
-        duk_push_int(ctx, 0);
+        duk_push_int(ctx, EDUK_SOCKTYPE_TCP);
         duk_put_prop_literal(ctx, -2, "TCP");
-        duk_push_int(ctx, 1);
+        duk_push_int(ctx, EDUK_SOCKTYPE_UDP);
         duk_put_prop_literal(ctx, -2, "UDP");
         duk_put_prop_literal(ctx, -2, "SocketType");
 
         duk_push_object(ctx);
-        duk_push_int(ctx, 0);
+        duk_push_int(ctx, EDUK_SOCKFAMILY_IPV4);
         duk_put_prop_literal(ctx, -2, "IPV4");
-        duk_push_int(ctx, 1);
+        duk_push_int(ctx, EDUK_SOCKFAMILY_IPV6);
         duk_put_prop_literal(ctx, -2, "IPV6");
         duk_put_prop_literal(ctx, -2, "SocketFamily");
 
         duk_unity_begin_class(ctx, "Socket", DUK_UNITY_BUILTINS_SOCKET, duk_sock_constructor, duk_sock_finalizer);
         duk_push_c_function(ctx, duk_sock_connect, 2);
         duk_put_prop_literal(ctx, -2, "connect");
+        // duk_push_c_function(ctx, duk_sock_connect_addr, 2);
+        // duk_put_prop_literal(ctx, -2, "connect_addr");
         duk_push_c_function(ctx, duk_sock_close, 0);
         duk_put_prop_literal(ctx, -2, "close");
         duk_push_c_function(ctx, duk_sock_setnonblocking, 0);
@@ -487,6 +497,9 @@ DUK_INTERNAL duk_bool_t duk_sock_open(duk_context *ctx) {
         duk_put_prop_literal(ctx, -2, "send");
         duk_push_c_function(ctx, duk_sock_recv, 3);
         duk_put_prop_literal(ctx, -2, "recv");
+        duk_unity_end_class(ctx);
+
+        duk_unity_begin_class(ctx, "Kcp", DUK_UNITY_BUILTINS_KCP, duk_kcp_constructor, duk_kcp_finalizer);
         duk_unity_end_class(ctx);
     }
 
