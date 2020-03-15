@@ -510,15 +510,17 @@ DUK_LOCAL DUK_INLINE struct duk_kcp_t *_duk_kcp_create(duk_context *ctx, duk_uin
 }
 
 DUK_LOCAL DUK_INLINE void _duk_kcp_destroy(duk_context *ctx, struct duk_kcp_t *kcp) {
-	if (kcp->kcp) {
-		_duk_sock_destroy(ctx, (struct duk_sock_t *)(kcp->sock));
-		kcp->kcp->user = NULL;
-		kcp->sock = NULL;
-		ikcp_release(kcp->kcp);
-		kcp->kcp = NULL;
+	if (kcp) {
+		if (kcp->kcp) {
+			_duk_sock_destroy(ctx, (struct duk_sock_t *)(kcp->sock));
+			kcp->kcp->user = NULL;
+			kcp->sock = NULL;
+			ikcp_release(kcp->kcp);
+			kcp->kcp = NULL;
+		}
+		duk_free(ctx, kcp->buffer);
+		duk_free(ctx, kcp);
 	}
-	duk_free(ctx, kcp->buffer);
-	duk_free(ctx, kcp);
 }
 
 DUK_LOCAL duk_ret_t duk_kcp_constructor(duk_context *ctx) {
@@ -745,7 +747,8 @@ DUK_INTERNAL duk_bool_t duk_sock_open(duk_context *ctx) {
         duk_unity_end_class(ctx);
     }
 
-    duk_pop_2(ctx); // pop DuktapeJS and global    
+    duk_pop_2(ctx); // pop DuktapeJS and global  
+
 #ifdef DUK_F_WINDOWS
     WSADATA wsaData;
 	WORD wVersionRequested = MAKEWORD(2, 2);

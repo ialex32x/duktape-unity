@@ -21,8 +21,8 @@ Typescript is a preferred choice, it provides type checks.
 * remote debugger (vscode)
 * promise (bluebird.js)
 * coroutine (duktape thread)
-* tcp (not implemented)
-* udp with kcp (not implemented)
+* socket (tcp/udp)
+* kcp (not implemented)
 
 You can use lots of pure js libraries in your project, such as protobufjs.
 ![protobufjs](res/test_protobufjs.png)

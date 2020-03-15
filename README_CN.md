@@ -21,8 +21,8 @@
 * 远程调试器支持 (vscode) 
 * 集成 promise (bluebird.js)
 * coroutine (duktape thread)
-* tcp (not implemented)
-* udp with kcp (not implemented)
+* socket (tcp/udp)
+* kcp (not implemented)
 
 您可以在项目中使用大部分纯js实现的的库, 比如 protobufjs.
 ![protobufjs](res/test_protobufjs.png)

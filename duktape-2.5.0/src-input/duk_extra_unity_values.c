@@ -12,6 +12,7 @@
 #define UNITY_RAD2DEG 57.29577951308232F
 #define UNITY_V2S_(x) #x
 #define UNITY_V2S(x) UNITY_V2S_(x)
+#define Quaternion_IsEqualUsingDot(x) ((double)(x) > 0.999998986721039)
 
 DUK_INTERNAL DUK_INLINE float float_clamped(float a, float b, float t) {
     float d = b - a;
@@ -136,6 +137,48 @@ DUK_INTERNAL DUK_INLINE void quaternion_mul_vec3(const float *lhs, const float *
 	res[0] = (1.0f - (yy + zz)) * rhs[0] + (xy - wz)          * rhs[1] + (xz + wy)          * rhs[2];
 	res[1] = (xy + wz)          * rhs[0] + (1.0f - (xx + zz)) * rhs[1] + (yz - wx)          * rhs[2];
 	res[2] = (xz - wy)          * rhs[0] + (yz + wx)          * rhs[1] + (1.0f - (xx + yy)) * rhs[2];
+}
+
+DUK_INTERNAL DUK_INLINE void quaternion_lerp(const float *q1, const float *q2, float t, float *tmp) {
+    float dot = q1[0] * q2[0] + q1[1] * q2[1] + q1[2] * q2[2] + q1[3] * q2[3];
+    if (dot < 0.0f) {
+        tmp[0] = q1[0] + t * (-q2[0] - q1[0]);
+		tmp[1] = q1[1] + t * (-q2[1] - q1[1]);
+        tmp[2] = q1[2] + t * (-q2[2] - q1[2]);
+		tmp[3] = q1[3] + t * (-q2[3] - q1[3]);
+    } else {
+        tmp[0] = q1[0] + t * (q2[0] - q1[0]);
+		tmp[1] = q1[1] + t * (q2[1] - q1[1]);
+        tmp[2] = q1[2] + t * (q2[2] - q1[2]);
+		tmp[3] = q1[3] + t * (q2[3] - q1[3]);
+    }
+    float m = 1.0f / quaternion_magnitude(tmp);
+    tmp[0] *= m;
+    tmp[1] *= m;
+    tmp[2] *= m;
+    tmp[3] *= m;
+}
+
+DUK_INTERNAL DUK_INLINE void quaternion_slerp(const float *q1, const float *q2, float t, float *tmp) {
+    float dot = q1[0] * q2[0] + q1[1] * q2[1] + q1[2] * q2[2] + q1[3] * q2[3];
+    if (dot < 0.0f) {
+        tmp[0] = -q2[0]; tmp[1] = -q2[1]; tmp[2] = -q2[2]; tmp[3] = -q2[3];
+        dot = -dot;
+    } else {
+        tmp[0] = q2[0]; tmp[1] = q2[1]; tmp[2] = q2[2]; tmp[3] = q2[3];
+    }
+    if (dot < 0.95f) {
+        float angle = acosf(dot);
+        float inv_angle = 1.0f / sinf(angle);
+        float t_angle = sinf(angle * t);
+        float rt_angle = sinf(angle * (1.0f - t));
+        tmp[0] = (q1[0] * rt_angle + tmp[0] * t_angle) * inv_angle;
+		tmp[1] = (q1[1] * rt_angle + tmp[1] * t_angle) * inv_angle;
+		tmp[2] = (q1[2] * rt_angle + tmp[2] * t_angle) * inv_angle;
+		tmp[3] = (q1[3] * rt_angle + tmp[3] * t_angle) * inv_angle;
+    } else {
+        quaternion_lerp(q1, tmp, t, tmp);
+    }
 }
 
 DUK_INTERNAL DUK_INLINE void color_push_new(duk_context *ctx, float r, float g, float b, float a) {
@@ -1092,6 +1135,20 @@ DUK_LOCAL duk_ret_t duk_unity_Quaternion_Normalize(duk_context *ctx) {
     return 0;
 }
 
+DUK_LOCAL duk_ret_t duk_unity_Quaternion_GetHashCode(duk_context *ctx) {
+    float x, y, z, w;
+    duk_push_this(ctx);
+    duk_unity_get4f(ctx, -1, &x, &y, &z, &w);
+    duk_pop(ctx);
+    int hx = (double) x == 0.0 ? 0 : *(int*) &x;
+    int hy = (double) y == 0.0 ? 0 : *(int*) &y;
+    int hz = (double) z == 0.0 ? 0 : *(int*) &z;
+    int hw = (double) w == 0.0 ? 0 : *(int*) &w;
+    int code = hx ^ hy << 2 ^ hz >> 2 ^ hw >> 1; 
+    duk_push_int(ctx, code);
+    return 1;
+}
+
 // static Euler(x: number, y: number, z: number): UnityEngine.Quaternion
 // static Euler(euler: UnityEngine.Vector3): UnityEngine.Quaternion
 DUK_LOCAL duk_ret_t duk_unity_Quaternion_static_Euler(duk_context *ctx) {
@@ -1113,14 +1170,85 @@ DUK_LOCAL duk_ret_t duk_unity_Quaternion_static_Euler(duk_context *ctx) {
     return 1;
 }
 
+// static Slerp(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion, t: number): UnityEngine.Quaternion
+DUK_LOCAL duk_ret_t duk_unity_Quaternion_static_Slerp(duk_context *ctx) {
+    float a[4];
+    float b[4];
+    float tmp[4];
+    duk_unity_get4f(ctx, 0, &a[0], &a[1], &a[2], &a[3]);
+    duk_unity_get4f(ctx, 1, &b[0], &b[1], &b[2], &b[3]);
+    float t = duk_get_number(ctx, 2);
+    if (t < 0.0f) t = 0.0f;
+    else if (t > 1.0f) t = 1.0f;
+    quaternion_slerp(a, b, t, tmp);
+    quaternion_push_new(ctx, tmp[0], tmp[1], tmp[2], tmp[3]);
+    return 1;
+}
+
+// static SlerpUnclamped(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion, t: number): UnityEngine.Quaternion
+DUK_LOCAL duk_ret_t duk_unity_Quaternion_static_SlerpUnclamped(duk_context *ctx) {
+    float a[4];
+    float b[4];
+    float tmp[4];
+    duk_unity_get4f(ctx, 0, &a[0], &a[1], &a[2], &a[3]);
+    duk_unity_get4f(ctx, 1, &b[0], &b[1], &b[2], &b[3]);
+    float t = duk_get_number(ctx, 2);
+    quaternion_slerp(a, b, t, tmp);
+    quaternion_push_new(ctx, tmp[0], tmp[1], tmp[2], tmp[3]);
+    return 1;
+}
+
+// static Lerp(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion, t: number): UnityEngine.Quaternion
+DUK_LOCAL duk_ret_t duk_unity_Quaternion_static_Lerp(duk_context *ctx) {
+    float a[4];
+    float b[4];
+    float tmp[4];
+    duk_unity_get4f(ctx, 0, &a[0], &a[1], &a[2], &a[3]);
+    duk_unity_get4f(ctx, 1, &b[0], &b[1], &b[2], &b[3]);
+    float t = duk_get_number(ctx, 2);
+    if (t < 0.0f) t = 0.0f;
+    else if (t > 1.0f) t = 1.0f;
+    quaternion_lerp(a, b, t, tmp);
+    quaternion_push_new(ctx, tmp[0], tmp[1], tmp[2], tmp[3]);
+    return 1;
+}
+
+// static LerpUnclamped(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion, t: number): UnityEngine.Quaternion
+DUK_LOCAL duk_ret_t duk_unity_Quaternion_static_LerpUnclamped(duk_context *ctx) {
+    float a[4];
+    float b[4];
+    float tmp[4];
+    duk_unity_get4f(ctx, 0, &a[0], &a[1], &a[2], &a[3]);
+    duk_unity_get4f(ctx, 1, &b[0], &b[1], &b[2], &b[3]);
+    float t = duk_get_number(ctx, 2);
+    quaternion_lerp(a, b, t, tmp);
+    quaternion_push_new(ctx, tmp[0], tmp[1], tmp[2], tmp[3]);
+    return 1;
+}
+
 // static Dot(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion): number
 DUK_LOCAL duk_ret_t duk_unity_Quaternion_static_Dot(duk_context *ctx) {
     float a[4];
     float b[4];
     duk_unity_get4f(ctx, 0, &a[0], &a[1], &a[2], &a[3]);
     duk_unity_get4f(ctx, 1, &b[0], &b[1], &b[2], &b[3]);
-    float r = (a[0] *  b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3]);
+    float r = (a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3]);
     duk_push_number(ctx, r);
+    return 1;
+}
+
+// static Angle(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion): number
+DUK_LOCAL duk_ret_t duk_unity_Quaternion_static_Angle(duk_context *ctx) {
+    float a[4];
+    float b[4];
+    duk_unity_get4f(ctx, 0, &a[0], &a[1], &a[2], &a[3]);
+    duk_unity_get4f(ctx, 1, &b[0], &b[1], &b[2], &b[3]);
+    float dot = (a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3]);
+    if (!Quaternion_IsEqualUsingDot(dot)) {
+        duk_push_number(ctx, (double)acosf(fminf(fabsf(dot), 1.0f)) * 2.0 * 57.2957801818848);
+    } else {
+        duk_push_number(ctx, 0.0);
+    }
     return 1;
 }
 
@@ -2564,22 +2692,22 @@ DUK_INTERNAL void duk_unity_valuetypes_open(duk_context *ctx) {
         // ToAngleAxis(angle: DuktapeJS.Out<number>, axis: DuktapeJS.Out<UnityEngine.Vector3>): void
         // SetFromToRotation(fromDirection: UnityEngine.Vector3, toDirection: UnityEngine.Vector3): void
         duk_unity_add_member(ctx, "Normalize", duk_unity_Quaternion_Normalize, -1);
-        // GetHashCode(): number
+        duk_unity_add_member(ctx, "GetHashCode", duk_unity_Quaternion_GetHashCode, -1); 
         // Equals(other: System.Object): boolean
         // Equals(other: UnityEngine.Quaternion): boolean
         // ToString(format: string): string
         // ToString(): string
         // static FromToRotation(fromDirection: UnityEngine.Vector3, toDirection: UnityEngine.Vector3): UnityEngine.Quaternion
         // static Inverse(rotation: UnityEngine.Quaternion): UnityEngine.Quaternion
-        // static Slerp(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion, t: number): UnityEngine.Quaternion
-        // static SlerpUnclamped(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion, t: number): UnityEngine.Quaternion
-        // static Lerp(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion, t: number): UnityEngine.Quaternion
-        // static LerpUnclamped(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion, t: number): UnityEngine.Quaternion
+        duk_unity_add_member(ctx, "Slerp", duk_unity_Quaternion_static_Slerp, -2); 
+        duk_unity_add_member(ctx, "SlerpUnclamped", duk_unity_Quaternion_static_SlerpUnclamped, -2); 
+        duk_unity_add_member(ctx, "Lerp", duk_unity_Quaternion_static_Lerp, -2); 
+        duk_unity_add_member(ctx, "LerpUnclamped", duk_unity_Quaternion_static_LerpUnclamped, -2); 
         // static AngleAxis(angle: number, axis: UnityEngine.Vector3): UnityEngine.Quaternion
         // static LookRotation(forward: UnityEngine.Vector3, upwards: UnityEngine.Vector3): UnityEngine.Quaternion
         // static LookRotation(forward: UnityEngine.Vector3): UnityEngine.Quaternion
         duk_unity_add_member(ctx, "Dot", duk_unity_Quaternion_static_Dot, -2); 
-        // static Angle(a: UnityEngine.Quaternion, b: UnityEngine.Quaternion): number
+        duk_unity_add_member(ctx, "Angle", duk_unity_Quaternion_static_Angle, -2);
         duk_unity_add_member(ctx, "Euler", duk_unity_Quaternion_static_Euler, -2);
         // static RotateTowards(from: UnityEngine.Quaternion, to: UnityEngine.Quaternion, maxDegreesDelta: number): UnityEngine.Quaternion
         duk_unity_add_member(ctx, "Normalize", duk_unity_Quaternion_static_Normalize, -2);

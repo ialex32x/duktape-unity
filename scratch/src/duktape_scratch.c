@@ -38,8 +38,8 @@ int main(int argc, char *argv[]) {
 	duk_put_global_string(ctx, "sleep");
 
 	// duk_example_attach_debugger(ctx);
-
-	FILE *fp = fopen("scripts/main.js", "r");
+	const char* filename = "../../../scratch/scripts/main.js";
+	FILE *fp = fopen(filename, "r");
 	if (fp) {
 		fseek(fp, 0, SEEK_END);
 		long length = ftell(fp);
@@ -52,9 +52,14 @@ int main(int argc, char *argv[]) {
 		duk_push_string(ctx, buf);
 
 #if defined(RUN_AS_MODULE)
-		duk_module_node_peval_main(ctx, "scripts/main.js");
+		if (duk_module_node_peval_main(ctx, filename) != 0) {
+			duk_get_prop_string(ctx, -1, "stack");
+			const char* err = duk_safe_to_string(ctx, -1);
+			printf("peval error: %s\n", err);
+			//printf("source: %s\n", buf);
+		}
 #else
-		duk_push_string(ctx, "scripts/main.js");
+		duk_push_string(ctx, filename);
 		duk_compile(ctx, 0);
 		if (duk_pcall(ctx, 0) != 0) {
 			duk_get_prop_string(ctx, -1, "stack");
