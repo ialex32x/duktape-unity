@@ -11,7 +11,7 @@ pushd x64
 REM cmake -G "Visual Studio 15 2017 Win64" ..\..\..\scratch
 cmake -G "Visual Studio 16 2019" -A x64 ..\..\..\scratch
 popd
-cmake --build x64 --config Release
+REM cmake --build x64 --config Release
 popd
 
 popd

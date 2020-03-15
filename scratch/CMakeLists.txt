@@ -19,6 +19,7 @@ set(LIBWEBSOCKETS_DIR ${TOP_DIR}/thirdparty/libwebsockets)
 set(LIBFIXMATH_DIR ${TOP_DIR}/thirdparty/libfixmath)
 set(MBEDTLS_DIR ${TOP_DIR}/thirdparty/mbedtls)
 set(ZLIB_DIR ${TOP_DIR}/thirdparty/zlib)
+set(KCP_DIR ${TOP_DIR}/thirdparty/kcp)
 
 include_directories(${LIBFIXMATH_DIR})
 aux_source_directory(${LIBFIXMATH_DIR} LIBFIXMATH_SRCS)
@@ -40,6 +41,9 @@ set(ZLIB_SRCS
     ${ZLIB_DIR}/uncompr.c
     ${ZLIB_DIR}/zutil.c
 )
+
+include_directories(${KCP_DIR})
+set(KCP_SRCS ${KCP_DIR}/ikcp.c)
 
 include_directories(${LIBWEBSOCKETS_DIR})
 include_directories(${LIBWEBSOCKETS_DIR}/win32helpers)
@@ -129,7 +133,7 @@ IF (ANDROID)
 ENDIF ()
 
 message("Source: ${DUKTAPE_SCRATCH_SRC_DIR}")
-add_executable(duktape_scratch ${DUKTAPE_SCRATCH_SRCS} ${DUKTAPE_SRCS} ${LIBFIXMATH_SRCS} ${MBEDTLS_SRCS} ${LIBWEBSOCKETS_SRCS} ${ZLIB_SRCS})
+add_executable(duktape_scratch ${DUKTAPE_SCRATCH_SRCS} ${DUKTAPE_SRCS} ${LIBFIXMATH_SRCS} ${MBEDTLS_SRCS} ${LIBWEBSOCKETS_SRCS} ${ZLIB_SRCS} ${KCP_SRCS})
 
 IF(CMAKE_CL_64)
     #link_directories(${TOP_DIR}/build/duktape/x64/Release)
