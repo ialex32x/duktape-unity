@@ -9,6 +9,7 @@ namespace Duktape
     {
         protected DuktapeContext _context;
         protected uint _refid;
+        protected IntPtr _refPtr;
 
         public bool isValid { get { return _refid > 0; } }
 
@@ -30,16 +31,11 @@ namespace Duktape
             }
         }
 
-        public DuktapeValue(DuktapeContext context, uint refid)
-        {
-            this._context = context;
-            this._refid = refid;
-        }
-
-        public DuktapeValue(IntPtr ctx, uint refid)
+        public DuktapeValue(IntPtr ctx, uint refid, IntPtr heapPtr)
         {
             this._context = DuktapeVM.GetContext(ctx);
             this._refid = refid;
+            this._refPtr = heapPtr;
         }
 
         ~DuktapeValue()
@@ -65,6 +61,7 @@ namespace Duktape
                 var vm = this._context.vm;
                 vm.GC(this._refid, null, duk_unity_unref);
                 this._refid = 0;
+                this._refPtr = IntPtr.Zero;
             }
         }
 
@@ -75,7 +72,14 @@ namespace Duktape
         {
             if (ctx != IntPtr.Zero)
             {
-                DuktapeDLL.duk_unity_getref(ctx, this._refid);
+                if (_refPtr != IntPtr.Zero)
+                {
+                    DuktapeDLL.duk_push_heapptr(ctx, _refPtr);
+                } 
+                else
+                {
+                    DuktapeDLL.duk_unity_getref(ctx, this._refid);
+                }
                 return true;
             }
             return false;
@@ -85,7 +89,14 @@ namespace Duktape
         {
             if (ctx != IntPtr.Zero)
             {
-                DuktapeDLL.duk_unity_getref(ctx, this._refid);
+                if (_refPtr != IntPtr.Zero)
+                {
+                    DuktapeDLL.duk_push_heapptr(ctx, _refPtr);
+                } 
+                else
+                {
+                    DuktapeDLL.duk_unity_getref(ctx, this._refid);
+                }
                 DuktapeBinding.duk_push_classvalue(ctx, value);
                 DuktapeDLL.duk_put_prop_string(ctx, -2, name);
                 DuktapeDLL.duk_pop(ctx);

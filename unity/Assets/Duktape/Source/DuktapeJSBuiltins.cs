@@ -106,11 +106,13 @@ namespace Duktape
                 for (var i = 2; i <= top_index; i++)
                 {
                     DuktapeDLL.duk_dup(ctx, i);
-                    argv[i - 2] = new DuktapeValue(ctx, DuktapeDLL.duk_unity_ref(ctx));
+                    var argPtr = DuktapeDLL.duk_get_heapptr(ctx, -1);
+                    argv[i - 2] = new DuktapeValue(ctx, DuktapeDLL.duk_unity_ref(ctx), argPtr);
                 }
             }
             DuktapeDLL.duk_dup(ctx, 0);
-            fn = new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx), argv);
+            var fnPtr = DuktapeDLL.duk_get_heapptr(ctx, -1);
+            fn = new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx), fnPtr, argv);
             return -1;
         }
 

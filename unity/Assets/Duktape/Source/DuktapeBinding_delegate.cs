@@ -55,7 +55,7 @@ namespace Duktape
                 }
                 // 默认赋值操作
                 DuktapeDLL.duk_dup(ctx, idx);
-                fn = new DuktapeDelegate(ctx, DuktapeDLL.duk_unity_ref(ctx));
+                fn = new DuktapeDelegate(ctx, DuktapeDLL.duk_unity_ref(ctx), heapptr);
                 var vm = DuktapeVM.GetVM(ctx);
                 o = vm.CreateDelegate(typeof(T), fn) as T;
 

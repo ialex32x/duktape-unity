@@ -6,13 +6,8 @@ namespace Duktape
 
     public class DuktapeArray : DuktapeValue
     {
-        public DuktapeArray(DuktapeContext context, uint refid)
-        : base(context, refid)
-        {
-        }
-
-        public DuktapeArray(IntPtr ctx, uint refid)
-        : base(ctx, refid)
+        public DuktapeArray(IntPtr ctx, uint refid, IntPtr heapPtr)
+        : base(ctx, refid, heapPtr)
         {
         }
 

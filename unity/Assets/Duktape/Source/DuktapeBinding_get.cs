@@ -569,8 +569,9 @@ namespace Duktape
             if (DuktapeDLL.duk_is_object(ctx, idx))
             {
                 DuktapeDLL.duk_dup(ctx, idx);
+                var ptr = DuktapeDLL.duk_get_heapptr(ctx, -1);
                 var refid = DuktapeDLL.duk_unity_ref(ctx);
-                o = new DuktapeObject(ctx, refid);
+                o = new DuktapeObject(ctx, refid, ptr);
                 return true;
             }
             o = null;
@@ -619,8 +620,9 @@ namespace Duktape
             if (DuktapeDLL.duk_is_array(ctx, idx))
             {
                 DuktapeDLL.duk_dup(ctx, idx);
+                var ptr = DuktapeDLL.duk_get_heapptr(ctx, -1);
                 var refid = DuktapeDLL.duk_unity_ref(ctx);
-                o = new DuktapeArray(ctx, refid);
+                o = new DuktapeArray(ctx, refid, ptr);
                 return true;
             }
             o = null;

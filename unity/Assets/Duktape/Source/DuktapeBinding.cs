@@ -151,7 +151,8 @@ namespace Duktape
             DuktapeDLL.duk_push_c_function(ctx, object_private_ctor, 0); // ctor
             DuktapeDLL.duk_dup(ctx, -1);
             DuktapeDLL.duk_dup(ctx, -1);
-            var typeValue = new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx)); // ctor, ctor
+            var ptr = DuktapeDLL.duk_get_heapptr(ctx, -1);
+            var typeValue = new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx), ptr); // ctor, ctor
             DuktapeVM.GetVM(ctx).AddSpecial(name, typeValue);
             DuktapeDLL.duk_put_prop_string(ctx, -3, name); // ctor
             DuktapeDLL.duk_push_object(ctx); // ctor, prototype
@@ -171,7 +172,8 @@ namespace Duktape
             DuktapeDLL.duk_dup(ctx, -1);
             // Debug.LogFormat("begin check {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_dup(ctx, -1);
-            var refid = DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx)));
+            var ptr = DuktapeDLL.duk_get_heapptr(ctx, -1);
+            var refid = DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx), ptr));
             // DuktapeDLL.duk_push_uint(ctx, refid);
             DuktapeDLL.duk_unity_set_type_refid(ctx, -2, refid); // DuktapeDLL.duk_put_prop_string(ctx, -3, DuktapeVM.OBJ_PROP_EXPORTED_REFID);
             // Debug.LogFormat("end check {0}", DuktapeDLL.duk_get_top(ctx));

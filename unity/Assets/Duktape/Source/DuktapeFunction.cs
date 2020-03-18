@@ -7,13 +7,13 @@ namespace Duktape
     {
         private DuktapeValue[] _argv;
 
-        public DuktapeFunction(IntPtr ctx, uint refid)
-        : base(ctx, refid)
+        public DuktapeFunction(IntPtr ctx, uint refid, IntPtr heapPtr)
+        : base(ctx, refid, heapPtr)
         {
         }
 
-        public DuktapeFunction(IntPtr ctx, uint refid, DuktapeValue[] argv)
-        : base(ctx, refid)
+        public DuktapeFunction(IntPtr ctx, uint refid, IntPtr heapPtr, DuktapeValue[] argv)
+        : base(ctx, refid, heapPtr)
         {
             _argv = argv;
         }

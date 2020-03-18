@@ -10,34 +10,41 @@ namespace Duktape
         // cache the delegate object
         public Delegate target;
         private int _savedState;
-        private IntPtr _jsObject;
 
         private DuktapeFunction _jsInvoker;
 
-        public DuktapeDelegate(IntPtr ctx, uint refid)
-        : base(ctx, refid)
+        public DuktapeDelegate(IntPtr ctx, uint refid, IntPtr heapPtr)
+        : base(ctx, refid, heapPtr)
         {
-            _jsObject = ctx;
+            // Debug.LogErrorFormat("create delegate ptr {0} {1}", heapPtr, refid);
+        }
+
+        private static void duk_unity_unref_delegate(IntPtr ctx, uint refid, object target)
+        {
+            var cache = DuktapeVM.GetObjectCache(ctx);
+            cache.RemoveJSValue(target);
         }
 
         private static void duk_unity_unref(IntPtr ctx, uint refid, object target)
         {
             var cache = DuktapeVM.GetObjectCache(ctx);
-            // cache.RemoveJSValue(target);
-            cache.RemoveDelegate((IntPtr)target);
+            var t = cache.RemoveDelegate((IntPtr)target);
+            // Debug.LogErrorFormat("release delegate ptr {0} {1}", target, t);
             DuktapeDLL.duk_unity_unref(ctx, refid);
         }
 
         protected override void Dispose(bool bManaged)
         {
             _jsInvoker = null;
+            // Debug.LogErrorFormat("Dispose delegate ptr {0} {1}", _refPtr, _refid);
             if (this._refid != 0 && this._context != null)
             {
                 var vm = this._context.vm;
-                vm.GC(this._refid, this._jsObject, duk_unity_unref);
+                vm.GC(0, this.target, duk_unity_unref_delegate);
+                vm.GC(this._refid, this._refPtr, duk_unity_unref);
                 this._refid = 0;
+                this._refPtr = IntPtr.Zero;
                 this.target = null;
-                this._jsObject = IntPtr.Zero;
             }
         }
 
@@ -54,7 +61,8 @@ namespace Duktape
                     DuktapeDLL.duk_get_prop_string(ctx, -1, "dispatch");
                     DuktapeDLL.duk_remove(ctx, -2); // remove this
                 }
-                _jsInvoker = new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx));
+                var ptr = DuktapeDLL.duk_get_heapptr(ctx, -1);
+                _jsInvoker = new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx), ptr);
             }
             _jsInvoker.Push(ctx); // push function
             this.Push(ctx); // push this
