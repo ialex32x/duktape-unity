@@ -11,14 +11,21 @@ namespace Duktape
         // 方法缓存, 首次访问时初始化
         private Dictionary<string, DuktapeFunction> _methodCache = new Dictionary<string, DuktapeFunction>();
 
-        public DuktapeObject(IntPtr ctx, uint refid)
-        : base(ctx, refid)
+        public DuktapeObject(IntPtr ctx, uint refid, IntPtr heapPtr)
+        : base(ctx, refid, heapPtr)
         {
         }
 
         public void PushPrototype(IntPtr ctx)
         {
-            DuktapeDLL.duk_unity_getref(ctx, this._refid);
+            if (_refPtr != IntPtr.Zero)
+            {
+                DuktapeDLL.duk_push_heapptr(ctx, _refPtr);
+            } 
+            else
+            {
+                DuktapeDLL.duk_unity_getref(ctx, this._refid);
+            }
             DuktapeDLL.duk_get_prototype(ctx, -1);
             DuktapeDLL.duk_remove(ctx, -2);
         }
@@ -34,8 +41,9 @@ namespace Duktape
                     this.PushProperty(ctx, name);
                     if (DuktapeDLL.duk_is_function(ctx, -1))
                     {
+                        var ptr = DuktapeDLL.duk_get_heapptr(ctx, -1);
                         var refid = DuktapeDLL.duk_unity_ref(ctx);
-                        method = new DuktapeFunction(ctx, refid);
+                        method = new DuktapeFunction(ctx, refid, ptr);
                     }
                     else
                     {

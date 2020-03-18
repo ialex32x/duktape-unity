@@ -73,7 +73,11 @@ namespace Duktape
         public void AddDelegate(IntPtr jso, DuktapeDelegate o)
         {
             _delegateMap[jso] = new WeakReference(o);
-            AddJSValue(o, jso);
+            // 不能直接保留 o -> jso 的映射 (会产生o的强引用)
+            // Delegate 对 DuktapeDelegate 存在强引用 (首参), DuktapeDelegat 对 jsobject 存在强引用
+            //TODO: 需要一个办法, 保留弱引用, 方便快速通过 object 反查到同一个 jsobject, 
+            //      否则会在每次通过 Delegate object push 时重新创建一个新的 DuktapeDelegate 映射
+            // AddJSValue(o.target, jso); 
         }
 
         public bool TryGetDelegate(IntPtr jso, out DuktapeDelegate o)

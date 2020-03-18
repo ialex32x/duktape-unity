@@ -84,6 +84,9 @@ namespace SampleNamespace
         public static void DispatchStaticTestEvent()
         {
             staticTestEvent?.Invoke();
+            staticTestEvent = null;
+            GC.Collect();
+            GC.Collect();
         }
 
         public void TestDelegate1()
