@@ -135,7 +135,7 @@ namespace Duktape
         public static int CreateList(IntPtr ctx)
         {
             Type type;
-            if (duk_get_classvalue(ctx, 1, out type))
+            if (duk_get_classvalue(ctx, 0, out type))
             {
                 var gtype = typeof(List<>).MakeGenericType(type);
                 var ctors = gtype.GetConstructors(BindingFlags.Public);
@@ -157,7 +157,7 @@ namespace Duktape
         public static int GetType(IntPtr ctx)
         {
             string name;
-            duk_get_primitive(ctx, 1, out name);
+            duk_get_primitive(ctx, 0, out name);
             //TODO: type 缓存
             //TODO: 从 jsobject hidden property 中读 refid
             var type = DuktapeAux.GetType(name);
@@ -169,9 +169,9 @@ namespace Duktape
         public static int IsNull(IntPtr ctx)
         {
             object o;
-            var res = DuktapeDLL.duk_is_null_or_undefined(ctx, 1);
+            var res = DuktapeDLL.duk_is_null_or_undefined(ctx, 0);
             if (!res
-            && duk_get_classvalue(ctx, 1, out o)
+            && duk_get_classvalue(ctx, 0, out o)
             && o != null
             && (!(o is UnityEngine.Object) || (o as UnityEngine.Object) != null))
             {
@@ -220,22 +220,26 @@ namespace Duktape
             duk_begin_namespace(ctx, "DuktapeJS");
             {
                 duk_begin_special(ctx, DuktapeVM.SPECIAL_ENUM);
-                duk_add_method(ctx, "GetName", Enum_GetName, -3);
-                duk_add_method(ctx, "Array", Array_Create, -3);
+                duk_add_method(ctx, "GetName", Enum_GetName, -2);
+                duk_end_special(ctx);
+            }
+            {
+                duk_begin_special(ctx, DuktapeVM.SPECIAL_ARRAY);
+                duk_add_method(ctx, "Create", Array_Create, -2);
                 duk_end_special(ctx);
             }
             {
                 duk_begin_special(ctx, DuktapeVM.SPECIAL_DELEGATE);
-                duk_add_method(ctx, "add", DelegateAdder, -3);
-                duk_add_method(ctx, "remove", DelegateRemover, -3);
+                duk_add_method(ctx, "Add", DelegateAdder, -2);
+                duk_add_method(ctx, "Remove", DelegateRemover, -2);
                 duk_end_special(ctx);
             }
             {
                 duk_begin_special(ctx, DuktapeVM.SPECIAL_CSHARP);
-                duk_add_method(ctx, "CreateList", CreateList, -3);
-                duk_add_method(ctx, "GetType", GetType, -3);
-                duk_add_method(ctx, "IsNull", IsNull, -3);
-                duk_add_method(ctx, "Bind", Bind, -3);
+                duk_add_method(ctx, "CreateList", CreateList, -2);
+                duk_add_method(ctx, "GetType", GetType, -2);
+                duk_add_method(ctx, "IsNull", IsNull, -2);
+                duk_add_method(ctx, "Bind", Bind, -2);
                 duk_end_special(ctx);
             }
             duk_end_namespace(ctx);

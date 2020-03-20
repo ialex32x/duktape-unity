@@ -72,7 +72,7 @@ namespace Duktape
         }
     }
 
-    //TODO: 指定函数不产生绑定代码 (直接传ctx)
+    // 指定函数不产生绑定代码 (直接传ctx)
     [AttributeUsage(AttributeTargets.Method,
                     AllowMultiple = false)]
     public class JSCFunctionAttribute : Attribute

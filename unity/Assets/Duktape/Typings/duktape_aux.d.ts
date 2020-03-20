@@ -180,11 +180,24 @@ declare namespace DuktapeJS {
         static GetName(type: any, val: number): string
     }
 
-    class Delegate {
-        static on<R>(caller: any, fn: () => R): Delegate
-        static on<R, T0>(caller: any, fn: (arg0: T0) => R): Delegate
-        static on<R, T0, T1>(caller: any, fn: (arg0: T0, arg1: T1) => R): Delegate
+    class Array {
+        static Create(type: any, size: number): any
     }
+
+    class CSharp {
+        /**
+         * [dangerous] List<T>
+         */
+        CreateList(type: any): any 
+        GetType(name: string): any
+        IsNull(v: any): boolean
+    }
+
+    // class Delegate {
+    //     static on<R>(caller: any, fn: () => R): Delegate
+    //     static on<R, T0>(caller: any, fn: (arg0: T0) => R): Delegate
+    //     static on<R, T0, T1>(caller: any, fn: (arg0: T0, arg1: T1) => R): Delegate
+    // }
 
     class WebSocket extends EventDispatcher {
         readonly connected: boolean
