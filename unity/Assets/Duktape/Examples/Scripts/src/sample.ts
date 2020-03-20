@@ -127,7 +127,15 @@ export function sampleTests() {
 
         sampleClass.delegateFoo4 = (a, b) => a + b;
         sampleClass.TestDelegate4();
-        console.log("trytrytrytry", sampleClass.delegateFoo4);
+        console.log("trytrytrytry111", sampleClass.delegateFoo4);
+
+        let d4 = new DuktapeJS.Delegate2<number, number, number>();
+        d4.on(sampleClass, function (a, b) {
+            return (a + b) * 3;
+        });
+        sampleClass.delegateFoo4 = d4;
+        sampleClass.TestDelegate4();
+        console.log("trytrytrytry222", sampleClass.delegateFoo4);
 
         var fn = function () {
             console.log(this, "TestDelegate")

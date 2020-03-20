@@ -19,11 +19,11 @@ namespace Duktape
             // Debug.LogErrorFormat("create delegate ptr {0} {1}", heapPtr, refid);
         }
 
-        private static void duk_unity_unref_delegate(IntPtr ctx, uint refid, object target)
-        {
-            var cache = DuktapeVM.GetObjectCache(ctx);
-            cache.RemoveJSValue(target);
-        }
+        // private static void duk_unity_unref_delegate(IntPtr ctx, uint refid, object target)
+        // {
+        //     var cache = DuktapeVM.GetObjectCache(ctx);
+        //     cache.RemoveJSValue(target);
+        // }
 
         private static void duk_unity_unref(IntPtr ctx, uint refid, object target)
         {
@@ -40,7 +40,7 @@ namespace Duktape
             if (this._refid != 0 && this._context != null)
             {
                 var vm = this._context.vm;
-                vm.GC(0, this.target, duk_unity_unref_delegate);
+                // vm.GC(0, this.target, duk_unity_unref_delegate);
                 vm.GC(this._refid, this._refPtr, duk_unity_unref);
                 this._refid = 0;
                 this._refPtr = IntPtr.Zero;
