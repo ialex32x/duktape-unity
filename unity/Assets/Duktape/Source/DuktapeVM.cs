@@ -35,6 +35,7 @@ namespace Duktape
 
         public const string SPECIAL_ENUM = "Enum";
         public const string SPECIAL_DELEGATE = "Delegate";
+        public const string SPECIAL_ARRAY = "Array";
         public const string SPECIAL_CSHARP = "CSharp";
 
         private static DuktapeVM _instance;

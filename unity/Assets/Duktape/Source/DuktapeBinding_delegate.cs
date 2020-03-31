@@ -9,10 +9,15 @@ namespace Duktape
     // 处理委托的绑定
     public partial class DuktapeBinding
     {
-        //TODO: 尝试还原 js function/dispatcher
+        // 尝试还原 js function/dispatcher
         public static void duk_push_delegate(IntPtr ctx, Delegate o)
         {
-            //TODO: delegate push
+            if (o.Target is DuktapeDelegate dDelegate)
+            {
+                dDelegate.Push(ctx);
+                return;
+            }
+            // fallback
             duk_push_object(ctx, (object)o);
         }
 
@@ -41,8 +46,9 @@ namespace Duktape
         public static bool duk_get_delegate<T>(IntPtr ctx, int idx, out T o)
         where T : class
         {
-            if (DuktapeDLL.duk_is_object(ctx, idx)/* && check if js delegate type (hidden property) */
-             || DuktapeDLL.duk_is_function(ctx, idx))
+            //TODO: 20200320 !!! 如果 o 不是 jsobject, 且是 Delegate 但不是 DuktapeDelegate, 则 ... 处理
+
+            if (DuktapeDLL.duk_is_object(ctx, idx) || DuktapeDLL.duk_is_function(ctx, idx))
             {
                 var heapptr = DuktapeDLL.duk_get_heapptr(ctx, idx);
                 var cache = DuktapeVM.GetObjectCache(ctx);
@@ -64,7 +70,11 @@ namespace Duktape
                 // Debug.LogWarningFormat("cache create : {0}", heapptr);
                 cache.AddDelegate(heapptr, fn);
                 return true;
-            }
+            } 
+            // else if (DuktapeDLL.duk_is_object(ctx, idx))
+            // {
+            //     return duk_get_classvalue<T>(ctx, idx, out o);
+            // }
             o = null;
             return false;
         }
