@@ -130,7 +130,7 @@ namespace Duktape
             return 0;
         }
 
-        //TODO: (ialex32x, 未完成) 传入 Type, 创建对应的 List<T>
+        // 传入 Type, 创建对应的 List<T>
         [MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
         public static int CreateList(IntPtr ctx)
         {
@@ -158,8 +158,7 @@ namespace Duktape
         {
             string name;
             duk_get_primitive(ctx, 0, out name);
-            //TODO: type 缓存
-            //TODO: 从 jsobject hidden property 中读 refid
+            //TODO: type 缓存; 从 jsobject hidden property 中读 refid
             var type = DuktapeAux.GetType(name);
             duk_push_classvalue(ctx, type);
             return 1;

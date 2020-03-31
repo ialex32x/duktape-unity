@@ -599,7 +599,7 @@ namespace Duktape
                     bindingManager.Info("skip blocked property: {0}", property.Name);
                     continue;
                 }
-                //TODO: 索引访问
+                //NOTE: 索引访问
                 if (property.Name == "Item")
                 {
                     if (property.CanRead && property.GetMethod != null)

@@ -58,7 +58,7 @@ namespace Duktape
                 snippet += ", ";
                 if (parameter.ParameterType.IsByRef)
                 {
-                    //TODO: 检查 ref/out 参数有效请 (null undefined 或者 符合 Ref/Out 约定)
+                    //TODO: 检查 ref/out 参数有效性 (null undefined 或者 符合 Ref/Out 约定)
                     snippet += "null";
                 }
                 else
@@ -185,7 +185,7 @@ namespace Duktape
         protected void WriteTSAllVariants(MethodBaseBindingInfo<T> bindingInfo)
         {
             var variants = bindingInfo.variants;
-            //TODO: 如果产生了无法在 typescript 中声明的方法, 则作标记, 并输出一条万能声明 
+            //NOTE: 如果产生了无法在 typescript 中声明的方法, 则作标记, 并输出一条万能声明 
             //      [key: string]: any
             foreach (var variantKV in variants)
             {

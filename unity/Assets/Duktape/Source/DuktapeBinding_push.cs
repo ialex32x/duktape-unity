@@ -250,13 +250,92 @@ namespace Duktape
                 return;
             }
             var type = o.GetType();
-            if (type.IsEnum)
+            
+            //NOTE: 1. push as simple types
+            if (type.IsValueType)
             {
-                duk_push_primitive(ctx, Convert.ToInt32(o));
-                return;
+                if (type.IsPrimitive)
+                {
+                    if (type == typeof(bool))
+                    {
+                        duk_push_primitive(ctx, (bool)o);
+                        return;
+                    }
+                    if (type == typeof(byte))
+                    {
+                        duk_push_primitive(ctx, (byte)o);
+                        return;
+                    }
+                    if (type == typeof(char))
+                    {
+                        duk_push_primitive(ctx, (char)o);
+                        return;
+                    }
+                    if (type == typeof(sbyte))
+                    {
+                        duk_push_primitive(ctx, (sbyte)o);
+                        return;
+                    }
+                    if (type == typeof(short))
+                    {
+                        duk_push_primitive(ctx, (short)o);
+                        return;
+                    }
+                    if (type == typeof(ushort))
+                    {
+                        duk_push_primitive(ctx, (ushort)o);
+                        return;
+                    }
+                    if (type == typeof(int))
+                    {
+                        duk_push_primitive(ctx, (int)o);
+                        return;
+                    }
+                    if (type == typeof(uint))
+                    {
+                        duk_push_primitive(ctx, (uint)o);
+                        return;
+                    }
+                    if (type == typeof(long))
+                    {
+                        duk_push_primitive(ctx, (long)o);
+                        return;
+                    }
+                    if (type == typeof(ulong))
+                    {
+                        duk_push_primitive(ctx, (ulong)o);
+                        return;
+                    }
+                    if (type == typeof(float))
+                    {
+                        duk_push_primitive(ctx, (float)o);
+                        return;
+                    }
+                    if (type == typeof(double))
+                    {
+                        duk_push_primitive(ctx, (double)o);
+                        return;
+                    }
+                }
+                else
+                {
+                    if (type.IsEnum)
+                    {
+                        duk_push_primitive(ctx, Convert.ToInt32(o));
+                        return;
+                    }
+                }
             }
-            //TODO: 1. push as simple types
-            //TODO: 2. fallthrough, push as object
+            else
+            {
+                if (type == typeof(string))
+                {
+                    duk_push_primitive(ctx, (string)o);
+                    return;
+                }
+            }
+
+            //NOTE: 2. fallthrough, push as object
             duk_push_classvalue(ctx, o);
         }
     }
