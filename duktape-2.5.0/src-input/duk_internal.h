@@ -75,6 +75,7 @@
 #include "duk_selftest.h"
 
 #include "duk_extra_unity.h"
+#include "duk_extra_timer.h"
 #include "duk_extra_sock.h"
 #include "duk_extra_websocket.h"
 

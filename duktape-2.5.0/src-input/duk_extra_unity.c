@@ -936,6 +936,7 @@ DUK_EXTERNAL duk_bool_t duk_unity_open(duk_context *ctx) {
     duk_sock_open(ctx);
     duk_websocket_open(ctx);
     duk_fmath_open(ctx);
+    duk_timer_open(ctx);
     return 1;
 }
 
