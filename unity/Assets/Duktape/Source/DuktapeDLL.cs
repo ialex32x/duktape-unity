@@ -1800,8 +1800,15 @@ namespace Duktape
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_unity_put_target_i(IntPtr ctx, duk_idx_t idx);
 
-        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern duk_bool_t duk_unity_get_refid(IntPtr ctx, duk_idx_t idx, out duk_int_t refid);
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "duk_unity_get_refid")]
+        public static extern duk_int_t _duk_unity_get_refid(IntPtr ctx, duk_idx_t idx);
+
+        public static duk_bool_t duk_unity_get_refid(IntPtr ctx, duk_idx_t idx, out duk_int_t refid)
+        {
+            refid = _duk_unity_get_refid(ctx, idx);
+            return refid >= 0;
+        }
+
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_unity_set_refid(IntPtr ctx, duk_idx_t idx, duk_int_t refid);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]

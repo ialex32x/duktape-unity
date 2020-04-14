@@ -5,7 +5,8 @@ var _Profiling = typeof UnityEngine != "undefined" && UnityEngine["Profiling"];
 var _CustomSampler = _Profiling && _Profiling["CustomSampler"];
 var _Create = _CustomSampler && _CustomSampler["Create"];
 var _samplers = {};
-var _enabled = !!_Create;
+// let _enabled = !!_Create;
+var _enabled = false;
 var Profiler = /** @class */ (function () {
     function Profiler() {
     }
@@ -29,16 +30,21 @@ function Profiling(target, name, descriptor) {
         if (!sampler_1) {
             sampler_1 = _samplers[sampleName] = _Create(sampleName);
         }
-        var origin_1 = descriptor.value;
-        descriptor.value = function () {
-            try {
-                sampler_1.Begin();
-                origin_1.apply(this, arguments);
-            }
-            finally {
-                sampler_1.End();
-            }
-        };
+        if (sampler_1) {
+            var origin_1 = descriptor.value;
+            descriptor.value = function () {
+                try {
+                    sampler_1.Begin();
+                    origin_1.apply(this, arguments);
+                }
+                finally {
+                    sampler_1.End();
+                }
+            };
+        }
+        else {
+            console.error("can not get sampler:", sampleName);
+        }
     }
 }
 exports.Profiling = Profiling;

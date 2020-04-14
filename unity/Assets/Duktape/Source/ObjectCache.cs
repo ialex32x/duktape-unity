@@ -126,7 +126,7 @@ namespace Duktape
                     return id;
                 }
             }
-            return 0;
+            return -1;
         }
 
         public bool TryGetObject(int id, out object o)

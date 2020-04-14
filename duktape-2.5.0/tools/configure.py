@@ -420,10 +420,12 @@ def main():
         'duk_extra_sock_socket.c',
         'duk_extra_sock_tcp.c',
         'duk_extra_fmath.c',
+        'duk_extra_timer.c',
         'duk_extra_websocket.h',
         'duk_extra_fmath.h',
         'duk_extra_unity.h',
         'duk_extra_sock.h',
+        'duk_extra_timer.h',
         
         'duk_bi_array.c',
         'duk_bi_boolean.c',

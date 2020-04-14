@@ -26,7 +26,10 @@ namespace Duktape
         {
             var cache = DuktapeVM.GetObjectCache(ctx);
             var id = cache.AddObject(o);
-            DuktapeDLL.duk_unity_set_refid(ctx, idx, id);
+            if (id >= 0) 
+            {
+                DuktapeDLL.duk_unity_set_refid(ctx, idx, id);
+            }
             if (DuktapeVM.GetVM(ctx).PushChainedPrototypeOf(ctx, o.GetType()))
             {
                 DuktapeDLL.duk_set_prototype(ctx, -2);
@@ -137,7 +140,7 @@ namespace Duktape
             {
                 if (DuktapeDLL.duk_unity_get_refid(ctx, idx, out id))
                 {
-                    id = DuktapeDLL.duk_get_int(ctx, -1);
+                    // id = DuktapeDLL.duk_get_int(ctx, -1);
                     return true;
                 }
             }

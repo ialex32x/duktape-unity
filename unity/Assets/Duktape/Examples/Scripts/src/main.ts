@@ -5,6 +5,15 @@ import { fmathTest } from "./fmath";
 import { ComponentSystem } from "./ut/component_system";
 import { promiseTest } from "./promise_test";
 
+setTimeout(() => {
+    try {
+        let i = UnityEngine.GameObject.Find("/Canvas/Button").GetComponent(UnityEngine.UI.Image);
+        i.sprite = null;
+    } catch (err) {
+        console.error(err);
+    }
+}, 100);
+
 if (!window["__reloading"]) {
     console.log("hello, javascript! (no stacktrace)", DuktapeJS.DUK_VERSION);
     // enable js stacktrace in print (= console.log)
