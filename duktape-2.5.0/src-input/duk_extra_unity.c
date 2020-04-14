@@ -876,10 +876,15 @@ DUK_EXTERNAL void duk_unity_destroy_heap(duk_hthread *thr) {
 
 DUK_EXTERNAL duk_bool_t duk_unity_get_refid(duk_context *ctx, duk_idx_t idx, duk_int_t *refid) {
     if (refid) {
+        if (!duk_is_valid_index(ctx, idx) || duk_is_null_or_undefined(ctx, idx)) {
+            return 0;
+        }
         if (duk_get_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("!ref"))) {
-            *refid = duk_get_int(ctx, -1);
-            duk_pop(ctx);
-            return 1;
+            if (duk_is_number(ctx, -1)) {
+                *refid = duk_get_int_default(ctx, -1, -1);
+                duk_pop(ctx);
+                return 1;
+            }
         }
         duk_pop(ctx);
     }
@@ -887,6 +892,9 @@ DUK_EXTERNAL duk_bool_t duk_unity_get_refid(duk_context *ctx, duk_idx_t idx, duk
 }
 
 DUK_EXTERNAL duk_bool_t duk_unity_set_refid(duk_context *ctx, duk_idx_t idx, duk_int_t refid) {
+    if (!duk_is_valid_index(ctx, idx) || duk_is_null_or_undefined(ctx, idx)) {
+        return 0;
+    }
     idx = duk_normalize_index(ctx, idx);
     duk_push_int(ctx, refid);
     return duk_put_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("!ref"));

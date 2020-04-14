@@ -5,6 +5,15 @@ var circle_1 = require("./circle");
 var fmath_1 = require("./fmath");
 var component_system_1 = require("./ut/component_system");
 var promise_test_1 = require("./promise_test");
+setTimeout(function () {
+    try {
+        var i = UnityEngine.GameObject.Find("/Canvas/Button").GetComponent(UnityEngine.UI.Image);
+        i.sprite = null;
+    }
+    catch (err) {
+        console.error(err);
+    }
+}, 100);
 if (!window["__reloading"]) {
     console.log("hello, javascript! (no stacktrace)", DuktapeJS.DUK_VERSION);
     // enable js stacktrace in print (= console.log)

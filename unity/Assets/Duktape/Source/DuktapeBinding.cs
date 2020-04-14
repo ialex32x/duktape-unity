@@ -217,11 +217,13 @@ namespace Duktape
         protected static void duk_add_event(IntPtr ctx, string name, DuktapeDLL.duk_c_function add_op, DuktapeDLL.duk_c_function remove_op, int idx)
         {
             idx = DuktapeDLL.duk_normalize_index(ctx, idx);
-            int refid;
-            DuktapeDLL.duk_unity_get_refid(ctx, idx, out refid); // 直接在 event object 上复制主对象的引用id
 
             DuktapeDLL.duk_push_object(ctx);
-            DuktapeDLL.duk_unity_set_refid(ctx, -1, refid);
+            int refid;
+            if (DuktapeDLL.duk_unity_get_refid(ctx, idx, out refid)) // 直接在 event object 上复制主对象的引用id
+            {
+                DuktapeDLL.duk_unity_set_refid(ctx, -1, refid);
+            }
             DuktapeDLL.duk_push_c_function(ctx, add_op, 1);
             DuktapeDLL.duk_put_prop_string(ctx, -2, "on");
             DuktapeDLL.duk_push_c_function(ctx, remove_op, 1);
@@ -233,11 +235,12 @@ namespace Duktape
         {
             idx = DuktapeDLL.duk_normalize_index(ctx, idx);
 
-            int refid;
-            DuktapeDLL.duk_unity_get_refid(ctx, idx, out refid); // 直接在 event object 上复制主对象的引用id
-
             DuktapeDLL.duk_push_object(ctx); // [evtobj]
-            DuktapeDLL.duk_unity_set_refid(ctx, -1, refid);
+            int refid;
+            if (DuktapeDLL.duk_unity_get_refid(ctx, idx, out refid)) // 直接在 event object 上复制主对象的引用id
+            {
+                DuktapeDLL.duk_unity_set_refid(ctx, -1, refid);
+            }
             DuktapeDLL.duk_push_string(ctx, name); // [evtobj, name]
             DuktapeDLL.duk_dup(ctx, -2); // [evtobj, name, evtobj]
             DuktapeDLL.duk_push_c_function(ctx, add_op, 1);

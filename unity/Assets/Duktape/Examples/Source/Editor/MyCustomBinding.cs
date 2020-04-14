@@ -32,6 +32,8 @@ namespace MyProject
             bindingManager.AddExportedType(typeof(UnityEngine.UI.Graphic))
                 .SetMemberBlocked("OnRebuildRequested");
             bindingManager.AddExportedType(typeof(UnityEngine.UI.Button), true);
+            bindingManager.AddExportedType(typeof(UnityEngine.UI.Image), true);
+            bindingManager.AddExportedType(typeof(UnityEngine.Sprite), true);
             bindingManager.AddExportedType(typeof(UnityEngine.UI.Button.ButtonClickedEvent), true);
             bindingManager.AddExportedType(typeof(UnityEngine.Random));
             bindingManager.AddExportedType(typeof(UnityEngine.Camera), true);
