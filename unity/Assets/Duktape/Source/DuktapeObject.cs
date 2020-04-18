@@ -55,6 +55,47 @@ namespace Duktape
             return method;
         }
 
+        public object GetProperty(string name)
+        {
+            var ctx = _context.rawValue;
+            if (ctx != IntPtr.Zero)
+            {
+                PushProperty(ctx, name);
+                object o;
+                DuktapeBinding.duk_get_var(ctx, -1, out o);
+                DuktapeDLL.duk_pop(ctx);
+                return o;
+            }
+
+            return null;
+        }
+
+        public bool InvokeMemberWithBooleanReturn(string name)
+        {
+            var member = GetMember(name);
+            if (member != null)
+            {
+                var ctx = member.context.rawValue;
+                if (ctx != IntPtr.Zero)
+                {
+                    member.Push(ctx);
+                    this.Push(ctx);
+                    var ret = DuktapeDLL.duk_pcall_method(ctx, 0);
+                    if (ret != DuktapeDLL.DUK_EXEC_SUCCESS)
+                    {
+                        DuktapeAux.PrintError(ctx, -1);
+                        // throw new Exception(err); 
+                    }
+
+                    var o = DuktapeDLL.duk_get_boolean_default(ctx, -1, false);
+                    DuktapeDLL.duk_pop(ctx);
+                    return o;
+                }
+            }
+
+            return false;
+        }
+
         public void InvokeMember(string name)
         {
             var member = GetMember(name);

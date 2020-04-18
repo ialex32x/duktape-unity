@@ -48,7 +48,10 @@ namespace Duktape
         {
             var snippet = "";
             var parameters = method.GetParameters();
-            for (int i = 0, length = parameters.Length; i < length; i++)
+            var isExtension = method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute));
+            var i = isExtension ? 1 : 0;
+            var length = parameters.Length;
+            for (; i < length; i++)
             {
                 var parameter = parameters[i];
                 if (parameter.IsDefined(typeof(ParamArrayAttribute), false))

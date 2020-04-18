@@ -197,6 +197,7 @@ namespace Duktape
             for (int i = startIndex; i < narg; i++)
             {
                 object o;
+                // 先尝试转为 C# 对象, 以调用其 ToString(), 不可用时再使用 js 字符串转换
                 if (DuktapeBinding.duk_get_object(ctx, i, out o))
                 {
                     str += (o == null ? "(null)" : o.ToString()) + " ";

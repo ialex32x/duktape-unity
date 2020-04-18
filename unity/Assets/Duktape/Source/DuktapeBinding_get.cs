@@ -641,6 +641,7 @@ namespace Duktape
             return false;
         }
 
+        // 只处理 JS_OBJECT
         public static bool duk_get_object(IntPtr ctx, int idx, out object o)
         {
             var jstype = DuktapeDLL.duk_get_type(ctx, idx);
@@ -655,6 +656,56 @@ namespace Duktape
             //     default: break;
             // }
             // 其他类型不存在对象映射
+            o = null;
+            return false;
+        }
+        
+        public static bool duk_get_var(IntPtr ctx, int idx, out object o)
+        {
+            var jstype = DuktapeDLL.duk_get_type(ctx, idx);
+
+            switch (jstype)
+            {
+                case duk_type_t.DUK_TYPE_BOOLEAN: /* ECMAScript boolean: 0 or 1 */
+                {
+                    o = DuktapeDLL.duk_get_boolean(ctx, idx);
+                    return true;
+                }
+                case duk_type_t.DUK_TYPE_NUMBER: /* ECMAScript number: double */
+                {
+                    o = DuktapeDLL.duk_get_number(ctx, idx);
+                    return true;
+                }
+                case duk_type_t.DUK_TYPE_STRING: /* ECMAScript string: CESU-8 / extended UTF-8 encoded */
+                {
+                    o = DuktapeDLL.duk_get_string(ctx, idx);
+                    return true;
+                }
+                case duk_type_t.DUK_TYPE_OBJECT: /* ECMAScript object: includes objects, arrays, functions, threads */
+                {
+                    return duk_get_cached_object(ctx, idx, out o);
+                }
+                case duk_type_t.DUK_TYPE_BUFFER: /* fixed or dynamic, garbage collected byte buffer */
+                {
+                    uint length;
+                    var pointer = DuktapeDLL.duk_unity_get_buffer_data(ctx, idx, out length);
+                    var buffer = new byte[length];
+                    o = buffer;
+                    Marshal.Copy(pointer, buffer, 0, (int) length);
+                    return true;
+                }
+                case duk_type_t.DUK_TYPE_POINTER:    /* raw void pointer */
+                case duk_type_t.DUK_TYPE_LIGHTFUNC:    /* lightweight function pointer */
+                    throw new NotImplementedException();
+                case duk_type_t.DUK_TYPE_NONE:    /* no value, e.g. invalid index */
+                    o = null;
+                    return false;
+                case duk_type_t.DUK_TYPE_UNDEFINED:    /* ECMAScript undefined */
+                case duk_type_t.DUK_TYPE_NULL:    /* ECMAScript null */
+                    o = null;
+                    return true;
+            }
+
             o = null;
             return false;
         }

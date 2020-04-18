@@ -69,7 +69,7 @@ namespace Duktape
                         var cache = DuktapeVM.GetObjectCache(ctx);
                         return cache.MatchObjectType(refid, type);
                     }
-                    return true;
+                    return type == typeof(object) || type.IsSubclassOf(typeof(DuktapeValue));
                 case duk_type_t.DUK_TYPE_NUMBER:
                     return type.IsPrimitive || type.IsEnum;
                 case duk_type_t.DUK_TYPE_STRING:
