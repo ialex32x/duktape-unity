@@ -968,6 +968,12 @@ namespace Duktape
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_idx_t duk_push_proxy(IntPtr ctx, duk_uint_t proxy_flags);
 
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_ret_t duk_unity_thread_resume(IntPtr ctx);
+        
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_int_t duk_unity_thread_state(IntPtr ctx);
+
         public static duk_idx_t duk_push_thread(IntPtr ctx)
         {
             return duk_push_thread_raw((ctx), 0 /*flags*/);

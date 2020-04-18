@@ -935,6 +935,14 @@ DUK_EXTERNAL duk_bool_t duk_unity_set_type_refid(duk_context *ctx, duk_idx_t idx
     return duk_put_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("!type"));
 }
 
+DUK_EXTERNAL duk_ret_t duk_unity_thread_resume(duk_context *ctx) {
+    return duk_bi_thread_resume(ctx);
+}
+
+DUK_EXTERNAL duk_int_t duk_unity_thread_state(duk_context *ctx) {
+    return (duk_int_t) (ctx->state);
+}
+
 DUK_EXTERNAL duk_bool_t duk_unity_open(duk_context *ctx) {
     duk_refsys_open(ctx);
     // duk_rws_open(ctx);
