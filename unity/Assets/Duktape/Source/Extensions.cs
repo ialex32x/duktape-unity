@@ -30,18 +30,18 @@ namespace Duktape
         //     return mb.StartCoroutine(DuktapeThreadRun(fn));
         // }
 
-        // private static IEnumerator DuktapeThreadRun(DuktapeFunction fn)
-        // {
-        //     var thread = new DuktapeThread(fn);
-        //     while (true)
-        //     {
-        //         object instruction;
-        //         if (thread.Resume(out instruction))
-        //         {
-        //             yield return instruction;
-        //         }
-        //         yield break;
-        //     }
-        // }
+        private static IEnumerator DuktapeThreadRun(DuktapeFunction fn)
+        {
+            var thread = new DuktapeThread(fn);
+            while (true)
+            {
+                object instruction;
+                if (thread.Resume(out instruction))
+                {
+                    yield return instruction;
+                }
+                yield break;
+            }
+        }
     }
 }
