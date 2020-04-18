@@ -156,7 +156,16 @@ export function sampleTests() {
     (function () {
         let go = UnityEngine.GameObject.CreatePrimitive(UnityEngine.PrimitiveType.Cube)
         go.name = "testing_cube"
-        let hello = go.AddComponent(SampleNamespace.Hello)
+        let hello = go.AddComponent(SampleNamespace.Hello);
+        // DONT DO THIS, IT IS NOT READY
+        // SCRATCH CODE
+        {
+            hello.StartCoroutine(new Coroutine(function () {
+                console.warn("js function in unity coroutine  11");
+                Coroutine.yield(new UnityEngine.WaitForSeconds(2.5));
+                console.warn("js function in unity coroutine  22");
+            }));
+        }
         console.log("hello.name = ", hello.gameObject.name)
         console.log("DuktapeJS.Bridge = ", DuktapeJS.Bridge)
         let bridge = go.AddComponent(DuktapeJS.Bridge)

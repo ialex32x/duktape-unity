@@ -106,9 +106,26 @@ namespace Duktape
         public static void addContext(DuktapeContext context)
         {
             var ctx = context.rawValue;
-            _contexts[ctx] = context;
-            _lastContext = context;
-            _lastContextPtr = ctx;
+            if (ctx != IntPtr.Zero)
+            {
+                _contexts[ctx] = context;
+                _lastContext = context;
+                _lastContextPtr = ctx;
+            }
+        }
+
+        public static void removeContext(DuktapeContext context)
+        {
+            var ctx = context.rawValue;
+            if (ctx != IntPtr.Zero)
+            {
+                _contexts.Remove(ctx);
+                if (_lastContext == context)
+                {
+                    _lastContext = null;
+                    _lastContextPtr = IntPtr.Zero;
+                }
+            }
         }
 
         public static DuktapeVM GetVM(IntPtr ctx)
@@ -612,7 +629,7 @@ namespace Duktape
             if (_ctx != null)
             {
                 var ctx = _ctx.rawValue;
-                _ctx.onDestroy();
+                _ctx.Destroy();
                 _ctx = null;
                 _lastContextPtr = IntPtr.Zero;
                 _lastContext = null;

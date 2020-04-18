@@ -8,6 +8,10 @@ export class Coroutine {
     private _done = false;
     private _value: any = null;
 
+    get thread() {
+        return this._thr;
+    }
+
     constructor(fn: Function) {
         this._thr = new Duktape.Thread(fn);
     }
