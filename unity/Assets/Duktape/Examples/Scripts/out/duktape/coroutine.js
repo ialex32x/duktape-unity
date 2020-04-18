@@ -10,6 +10,13 @@ var Coroutine = /** @class */ (function () {
         this._value = null;
         this._thr = new Duktape.Thread(fn);
     }
+    Object.defineProperty(Coroutine.prototype, "thread", {
+        get: function () {
+            return this._thr;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Coroutine.yield = function (v, f) {
         return Duktape.Thread.yield(v, f);
     };

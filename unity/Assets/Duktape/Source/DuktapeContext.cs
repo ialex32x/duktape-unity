@@ -26,8 +26,9 @@ namespace Duktape
         //     System.Text.Encoding.UTF8.GetBytes(v, 0, _tStringBuffer, 0);
         // }
 
-        public void onDestroy()
+        public void Destroy()
         {
+            DuktapeVM.removeContext(this);
             _ctx = IntPtr.Zero;
         }
 

@@ -146,11 +146,14 @@ function sampleTests() {
         go.name = "testing_cube";
         var hello = go.AddComponent(SampleNamespace.Hello);
         // DONT DO THIS, IT IS NOT READY
-        // hello.StartCoroutine(function () {
-        //     console.log("js function in unity coroutine  11");
-        //     Coroutine.yield(new UnityEngine.WaitForSeconds(2.5));
-        //     console.log("js function in unity coroutine  22");
-        // });
+        // SCRATCH CODE
+        {
+            hello.StartCoroutine(new coroutine_1.Coroutine(function () {
+                console.warn("js function in unity coroutine  11");
+                coroutine_1.Coroutine.yield(new UnityEngine.WaitForSeconds(2.5));
+                console.warn("js function in unity coroutine  22");
+            }));
+        }
         console.log("hello.name = ", hello.gameObject.name);
         console.log("DuktapeJS.Bridge = ", DuktapeJS.Bridge);
         var bridge = go.AddComponent(DuktapeJS.Bridge);
