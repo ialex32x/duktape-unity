@@ -136,24 +136,15 @@ namespace Duktape
 
         public static bool duk_get_native_refid(IntPtr ctx, int idx, out int id)
         {
-            if (!DuktapeDLL.duk_is_null_or_undefined(ctx, idx))
+            if (DuktapeDLL.duk_unity_get_refid(ctx, idx, out id))
             {
-                if (DuktapeDLL.duk_unity_get_refid(ctx, idx, out id))
-                {
-                    // id = DuktapeDLL.duk_get_int(ctx, -1);
-                    return true;
-                }
+                return true;
             }
-            id = 0;
             return false;
         }
 
         public static bool duk_rebind_native(IntPtr ctx, int idx, object o)
         {
-            if (DuktapeDLL.duk_is_null_or_undefined(ctx, idx)) // or check for object?
-            {
-                return true;
-            }
             int id;
             if (DuktapeDLL.duk_unity_get_refid(ctx, idx, out id))
             {

@@ -76,13 +76,17 @@ namespace Duktape
             return parameters.Length > 0 && parameters[parameters.Length - 1].IsDefined(typeof(ParamArrayAttribute), false);
         }
 
-        public void Add(T method)
+        public void Add(T method, bool isExtension)
         {
             var parameters = method.GetParameters();
             var nargs = parameters.Length;
             var isVararg = IsVarargMethod(parameters);
             MethodBaseVariant<T> variants;
             if (isVararg)
+            {
+                nargs--;
+            }
+            if (isExtension)
             {
                 nargs--;
             }
@@ -464,7 +468,8 @@ namespace Duktape
                     return;
                 }
             }
-            var isStatic = methodInfo.IsStatic && !methodInfo.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute));
+            var isExtension = methodInfo.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute));
+            var isStatic = methodInfo.IsStatic && !isExtension;
             var group = isStatic ? staticMethods : methods;
             MethodBindingInfo overrides;
             var methodName = TypeBindingInfo.GetNamingAttribute(methodInfo);
@@ -473,7 +478,7 @@ namespace Duktape
                 overrides = new MethodBindingInfo(isIndexer, isStatic, methodName, renameRegName ?? methodName);
                 group.Add(methodName, overrides);
             }
-            overrides.Add(methodInfo);
+            overrides.Add(methodInfo, isExtension);
             CollectDelegate(methodInfo);
             bindingManager.Info("[AddMethod] {0}.{1}", type, methodInfo);
         }
@@ -497,7 +502,7 @@ namespace Duktape
                     return;
                 }
             }
-            constructors.Add(constructorInfo);
+            constructors.Add(constructorInfo, false);
             CollectDelegate(constructorInfo);
             this.bindingManager.Info("[AddConstructor] {0}.{1}", type, constructorInfo);
         }

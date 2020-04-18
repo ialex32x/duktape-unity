@@ -5,36 +5,43 @@ namespace Duktape
 {
     using UnityEngine;
 
-    // [JSNaming("DuktapeJS.")]
-    // public class Break : YieldInstruction
-    // {
-    // }
+    [JSType]
+    [JSOmit]
+    public static class Extensions
+    {
+        // public static Coroutine StartCoroutine(this MonoBehaviour mb, DuktapeObject val)
+        // {
+        //     return mb.StartCoroutine(DuktapeCoroutineRun(val));
+        // }
+        //
+        // private static IEnumerator DuktapeCoroutineRun(DuktapeObject val)
+        // {
+        //     bool returnValue;
+        //     do
+        //     {
+        //         returnValue = val.InvokeMemberWithBooleanReturn("next");
+        //         var value = val.GetProperty("value");
+        //         yield return value;
+        //     } while (returnValue);
+        // }
+        
+        // public static Coroutine StartCoroutine(this MonoBehaviour mb, DuktapeFunction fn)
+        // {
+        //     return mb.StartCoroutine(DuktapeThreadRun(fn));
+        // }
 
-    // [JSType]
-    // [JSOmit]
-    // public static class Extensions
-    // {
-    //     public static Coroutine StartCoroutine(this MonoBehaviour mb, DuktapeFunction fn)
-    //     {
-    //         return mb.StartCoroutine(DuktapeThreadRun(fn));
-    //     }
-
-    //     private static IEnumerator DuktapeThreadRun(DuktapeFunction fn)
-    //     {
-    //         var ctx = fn.ctx;
-    //         var idx = DuktapeDLL.duk_push_thread(ctx);
-    //         var thread_ctx = DuktapeDLL.duk_get_context(ctx, idx);
-    //         var thread_refid = DuktapeDLL.duk_unity_ref(ctx);
-    //         var thread = new DuktapeThread(thread_ctx, thread_refid, fn);
-    //         while (true)
-    //         {
-    //             var instruction = thread.Resume();
-    //             if (instruction is Break)
-    //             {
-    //                 yield break;
-    //             }
-    //             yield return instruction;
-    //         }
-    //     }
-    // }
+        // private static IEnumerator DuktapeThreadRun(DuktapeFunction fn)
+        // {
+        //     var thread = new DuktapeThread(fn);
+        //     while (true)
+        //     {
+        //         object instruction;
+        //         if (thread.Resume(out instruction))
+        //         {
+        //             yield return instruction;
+        //         }
+        //         yield break;
+        //     }
+        // }
+    }
 }

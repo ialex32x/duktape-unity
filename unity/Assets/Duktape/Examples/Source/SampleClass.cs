@@ -371,4 +371,17 @@ public static class SampleStructExtensions
         }
         return sum;
     }
+
+    public static string Foo(this SampleStruct self, string a, string b, params string[] any)
+    {
+        var sum = a + b;
+        if (any != null)
+        {
+            for (var i = 0; i < any.Length; i++)
+            {
+                sum += any[i];
+            }
+        }
+        return sum;
+    }
 }

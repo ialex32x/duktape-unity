@@ -43,7 +43,10 @@ namespace MyProject
             bindingManager.AddExportedType(typeof(UnityEngine.Profiling.Profiler));
             bindingManager.AddExportedType(typeof(UnityEngine.Input))
                 .SetMemberBlocked("IsJoystickPreconfigured");
-            
+            bindingManager.AddExportedType(typeof(UnityEngine.WaitForSeconds));
+            bindingManager.AddExportedType(typeof(UnityEngine.WaitForFixedUpdate));
+            bindingManager.AddExportedType(typeof(UnityEngine.WaitForEndOfFrame));
+
             // bindingManager.AddExportedType(typeof(Dictionary<String, String>))
             //     .SetMethodBlocked("Remove", typeof(string), typeof(string));
             //     ...

@@ -127,6 +127,11 @@ namespace Duktape
             {
                 return _lastContext;
             }
+            return TryGetContext(ctx);
+        }
+
+        private static DuktapeContext TryGetContext(IntPtr ctx)
+        {
             DuktapeContext context;
             if (_contexts.TryGetValue(ctx, out context))
             {
@@ -135,6 +140,10 @@ namespace Duktape
                 return context;
             }
             // fixme 如果是 thread 则获取对应 main context
+            // DuktapeDLL.duk_push_current_thread(ctx);
+            // var parent = DuktapeDLL.duk_get_parent_context(ctx, -1);
+            // DuktapeDLL.duk_pop(ctx);
+            // return parent != ctx ? TryGetContext(parent) : null;
             return null;
         }
 
