@@ -25,10 +25,10 @@ namespace Duktape
         //     } while (returnValue);
         // }
         
-        // public static Coroutine StartCoroutine(this MonoBehaviour mb, DuktapeFunction fn)
-        // {
-        //     return mb.StartCoroutine(DuktapeThreadRun(fn));
-        // }
+        public static Coroutine StartCoroutine(this MonoBehaviour mb, DuktapeFunction fn)
+        {
+            return mb.StartCoroutine(DuktapeThreadRun(fn));
+        }
 
         private static IEnumerator DuktapeThreadRun(DuktapeFunction fn)
         {
