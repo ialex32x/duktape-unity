@@ -43,6 +43,12 @@ If you use typescript, install typescript at first
 npm install -g typescript
 ```
 
+# Clone
+```shell
+# --depth=1 is highly recommended
+git clone https://github.com/ialex32x/duktape-unity --depth=1
+```
+
 # Build
 ## prebuilt libraries already in /prebuilt/debug and /prebuilt/release directories.
 
