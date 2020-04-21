@@ -43,6 +43,12 @@
 npm install -g typescript
 ```
 
+# Clone 
+```shell
+# 建议附带参数 --depth=1
+git clone https://github.com/ialex32x/duktape-unity --depth=1
+```
+
 # 构建
 如果您需要从 duktape 源代码进行构建, 必须先安装 python/pip/pyyaml.
 ```shell
