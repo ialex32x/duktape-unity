@@ -899,6 +899,31 @@ DUK_EXTERNAL duk_bool_t duk_unity_set_refid(duk_context *ctx, duk_idx_t idx, duk
     return duk_put_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("!ref"));
 }
 
+DUK_EXTERNAL duk_int_t duk_unity_get_type_refid(duk_context *ctx, duk_idx_t idx) {
+    duk_int_t refid = -1;
+    if (!duk_is_valid_index(ctx, idx) || duk_is_null_or_undefined(ctx, idx)) {
+        return refid;
+    }
+    if (duk_get_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("!type"))) {
+        if (duk_is_number(ctx, -1)) {
+            refid = duk_get_int_default(ctx, -1, -1);
+            duk_pop(ctx);
+            return refid;
+        }
+    }
+    duk_pop(ctx);
+    return refid;
+}
+
+DUK_EXTERNAL duk_bool_t duk_unity_set_type_refid(duk_context *ctx, duk_idx_t idx, duk_int_t refid) {
+    if (!duk_is_valid_index(ctx, idx) || duk_is_null_or_undefined(ctx, idx)) {
+        return 0;
+    }
+    idx = duk_normalize_index(ctx, idx);
+    duk_push_int(ctx, refid);
+    return duk_put_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("!type"));
+}
+
 DUK_EXTERNAL duk_bool_t duk_unity_get_weak_refid(duk_context *ctx, duk_idx_t idx, duk_int_t *refid) {
     if (refid) {
         if (duk_get_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("!weak"))) {
@@ -915,24 +940,6 @@ DUK_EXTERNAL duk_bool_t duk_unity_set_weak_refid(duk_context *ctx, duk_idx_t idx
     idx = duk_normalize_index(ctx, idx);
     duk_push_int(ctx, refid);
     return duk_put_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("!weak"));
-}
-
-DUK_EXTERNAL duk_bool_t duk_unity_get_type_refid(duk_context *ctx, duk_idx_t idx, duk_uint_t *refid) {
-    if (refid) {
-        if (duk_get_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("!type"))) {
-            *refid = duk_get_uint(ctx, -1);
-            duk_pop(ctx);
-            return 1;
-        }
-        duk_pop(ctx);
-    }
-    return 0;
-}
-
-DUK_EXTERNAL duk_bool_t duk_unity_set_type_refid(duk_context *ctx, duk_idx_t idx, duk_uint_t refid) {
-    idx = duk_normalize_index(ctx, idx);
-    duk_push_uint(ctx, refid);
-    return duk_put_prop_literal(ctx, idx, DUK_HIDDEN_SYMBOL("!type"));
 }
 
 DUK_EXTERNAL duk_ret_t duk_unity_thread_resume(duk_context *ctx) {

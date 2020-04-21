@@ -35,6 +35,7 @@ namespace Duktape
 
         public void Add(T methodInfo, bool isVararg)
         {
+            //TODO: method 按照参数的具体程度排序以提高 match_type 的有效命中率
             if (isVararg)
             {
                 this.varargMethods.Add(methodInfo);

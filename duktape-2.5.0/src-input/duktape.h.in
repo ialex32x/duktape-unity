@@ -1312,11 +1312,11 @@ DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_unity_error_raw(duk_context *ctx, du
 DUK_EXTERNAL_DECL duk_int_t duk_unity_get_refid(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_refid(duk_context *ctx, duk_idx_t idx, duk_int_t refid);
 
+DUK_EXTERNAL_DECL duk_int_t duk_unity_get_type_refid(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_type_refid(duk_context *ctx, duk_idx_t idx, duk_int_t refid);
+
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_get_weak_refid(duk_context *ctx, duk_idx_t idx, duk_int_t *refid);
 DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_weak_refid(duk_context *ctx, duk_idx_t idx, duk_int_t refid);
-
-DUK_EXTERNAL_DECL duk_bool_t duk_unity_get_type_refid(duk_context *ctx, duk_idx_t idx, duk_uint_t *refid);
-DUK_EXTERNAL_DECL duk_bool_t duk_unity_set_type_refid(duk_context *ctx, duk_idx_t idx, duk_uint_t refid);
 
 DUK_EXTERNAL_DECL duk_ret_t duk_unity_thread_resume(duk_context *ctx);
 DUK_EXTERNAL_DECL duk_int_t duk_unity_thread_state(duk_context *ctx);
