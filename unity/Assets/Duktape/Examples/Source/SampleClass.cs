@@ -195,6 +195,11 @@ namespace SampleNamespace
 
         }
 
+        public void MethodOverride(Vector3 pos)
+        {
+            Debug.Log("invoke: void MethodOverride(Vector3 pos)");
+        }
+
         public void MethodOverride2(int x)
         {
 

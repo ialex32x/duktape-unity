@@ -48,7 +48,8 @@ namespace Duktape
 
         // 已经导出的本地类
         private Dictionary<Type, DuktapeFunction> _exported = new Dictionary<Type, DuktapeFunction>();
-        private Dictionary<uint, Type> _exportedTypes = new Dictionary<uint, Type>(); // 从 refid 反查 Type
+        private Dictionary<Type, int> _exportedTypeIndexer = new Dictionary<Type, int>();
+        private List<Type> _exportedTypes = new List<Type>(); // 可用 索引 反查 Type
 
         private Dictionary<string, DuktapeFunction> _specialTypes = new Dictionary<string, DuktapeFunction>(); // 从 refid 反查 Type
 
@@ -138,6 +139,11 @@ namespace Duktape
             return GetContext(ctx)?.vm?._objectCache;
         }
 
+        public ObjectCache GetObjectCache()
+        {
+            return _objectCache;
+        }
+
         public static DuktapeContext GetContext(IntPtr ctx)
         {
             if (_lastContextPtr == ctx)
@@ -205,19 +211,24 @@ namespace Duktape
             return null;
         }
 
-        public uint AddExported(Type type, DuktapeFunction fn)
+        public int AddExportedType(Type type, DuktapeFunction fn)
         {
-            var refid = fn.rawValue;
             _exported.Add(type, fn);
-            _exportedTypes[refid] = type;
+            var index = _exportedTypes.Count;
+            _exportedTypes.Add(type);
+            _exportedTypeIndexer[type] = index;
             // Debug.Log($"add export: {type}");
-            return refid;
+            return index;
         }
 
-        public Type GetExportedType(uint refid)
+        public Type GetExportedType(int index)
         {
-            Type type;
-            return _exportedTypes.TryGetValue(refid, out type) ? type : null;
+            return index >= 0 && index < _exportedTypes.Count ? _exportedTypes[index] : null;
+        }
+
+        public bool TryGetExportedType(Type type, out int index)
+        {
+            return _exportedTypeIndexer.TryGetValue(type, out index);
         }
 
         // 得到注册在js中的类型对应的构造函数

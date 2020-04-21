@@ -24,21 +24,25 @@ namespace Duktape
 
         public static void duk_bind_native(IntPtr ctx, int idx, object o)
         {
-            var cache = DuktapeVM.GetObjectCache(ctx);
+            var type = o.GetType();
+            var vm = DuktapeVM.GetVM(ctx);
+            var cache = vm.GetObjectCache();
             var id = cache.AddObject(o);
+
             if (id >= 0) 
             {
                 DuktapeDLL.duk_unity_set_refid(ctx, idx, id);
             }
-            if (DuktapeVM.GetVM(ctx).PushChainedPrototypeOf(ctx, o.GetType()))
+
+            if (DuktapeVM.GetVM(ctx).PushChainedPrototypeOf(ctx, type))
             {
                 DuktapeDLL.duk_set_prototype(ctx, -2);
             }
             else 
             {
-                Debug.LogWarning($"no prototype found for {o.GetType()}");
+                Debug.LogWarning($"no prototype found for {type}");
             }
-            if (!o.GetType().IsValueType)
+            if (!type.IsValueType)
             {
                 var heapptr = DuktapeDLL.duk_get_heapptr(ctx, idx);
                 cache.AddJSValue(o, heapptr);

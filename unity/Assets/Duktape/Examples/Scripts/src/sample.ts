@@ -52,6 +52,11 @@ export function sampleTests() {
     })();
 
     (function () {
+        let sample = new SampleNamespace.SampleClass("test match type");
+        sample.MethodOverride(new UnityEngine.Vector3(1, 2, 3));
+    })();
+
+    (function () {
         let Vector3 = UnityEngine.Vector3;
         let start: number;
         let DoNothing = SampleNamespace.SampleClass.DoNothing;

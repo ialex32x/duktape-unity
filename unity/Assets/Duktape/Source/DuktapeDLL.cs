@@ -1817,15 +1817,23 @@ namespace Duktape
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_unity_set_refid(IntPtr ctx, duk_idx_t idx, duk_int_t refid);
+
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "duk_unity_get_type_refid")]
+        public static extern duk_int_t _duk_unity_get_type_refid(IntPtr ctx, duk_idx_t idx);
+        
+        public static duk_bool_t duk_unity_get_type_refid(IntPtr ctx, duk_idx_t idx, out duk_int_t refid)
+        {
+            refid = _duk_unity_get_type_refid(ctx, idx);
+            return refid >= 0;
+        }
+
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern duk_bool_t duk_unity_set_type_refid(IntPtr ctx, duk_idx_t idx, duk_int_t refid);
+
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_unity_get_weak_refid(IntPtr ctx, duk_idx_t idx, out duk_int_t refid);
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_bool_t duk_unity_set_weak_refid(IntPtr ctx, duk_idx_t idx, duk_int_t refid);
-
-        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern duk_bool_t duk_unity_get_type_refid(IntPtr ctx, duk_idx_t idx, out duk_uint_t refid);
-        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern duk_bool_t duk_unity_set_type_refid(IntPtr ctx, duk_idx_t idx, duk_uint_t refid);
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_uint_t duk_unity_open(IntPtr ctx); // 初始化附加内容 (比如ref/unref的使用)

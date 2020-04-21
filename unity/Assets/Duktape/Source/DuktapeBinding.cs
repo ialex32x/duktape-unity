@@ -169,17 +169,17 @@ namespace Duktape
         {
             // Debug.LogFormat("begin class {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_push_c_function(ctx, ctor, DuktapeDLL.DUK_VARARGS); // [ctor]
-            DuktapeDLL.duk_dup(ctx, -1);
+            DuktapeDLL.duk_dup(ctx, -1); // [ctor ctor]
             // Debug.LogFormat("begin check {0}", DuktapeDLL.duk_get_top(ctx));
-            DuktapeDLL.duk_dup(ctx, -1);
-            var ptr = DuktapeDLL.duk_get_heapptr(ctx, -1);
-            var refid = DuktapeVM.GetVM(ctx).AddExported(type, new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx), ptr));
-            // DuktapeDLL.duk_push_uint(ctx, refid);
-            DuktapeDLL.duk_unity_set_type_refid(ctx, -2, refid); // DuktapeDLL.duk_put_prop_string(ctx, -3, DuktapeVM.OBJ_PROP_EXPORTED_REFID);
+            DuktapeDLL.duk_dup(ctx, -1); // [ctor ctor ctor]
+            var ptr = DuktapeDLL.duk_get_heapptr(ctx, -1); 
+            var typeid = DuktapeVM.GetVM(ctx).AddExportedType(type, new DuktapeFunction(ctx, DuktapeDLL.duk_unity_ref(ctx), ptr));
+            DuktapeDLL.duk_unity_set_type_refid(ctx, -1, typeid); // constructor_function.!type == typeid
             // Debug.LogFormat("end check {0}", DuktapeDLL.duk_get_top(ctx));
             DuktapeDLL.duk_put_prop_string(ctx, -3, typename);
             DuktapeDLL.duk_push_object(ctx); // [ctor, prototype]
             DuktapeDLL.duk_dup_top(ctx); // [ctor, prototype, prototype]
+            DuktapeDLL.duk_unity_set_type_refid(ctx, -1, typeid); // prototype.!type == typeid
             DuktapeDLL.duk_push_c_function(ctx, object_dtor, 1);
             DuktapeDLL.duk_set_finalizer(ctx, -3);  // set prototype finalizer
             DuktapeDLL.duk_put_prop_string(ctx, -3, "prototype"); // [ctor, prototype]

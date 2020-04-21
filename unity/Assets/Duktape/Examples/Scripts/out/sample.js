@@ -50,6 +50,10 @@ function sampleTests() {
         });
     })();
     (function () {
+        var sample = new SampleNamespace.SampleClass("test match type");
+        sample.MethodOverride(new UnityEngine.Vector3(1, 2, 3));
+    })();
+    (function () {
         var Vector3 = UnityEngine.Vector3;
         var start;
         var DoNothing = SampleNamespace.SampleClass.DoNothing;

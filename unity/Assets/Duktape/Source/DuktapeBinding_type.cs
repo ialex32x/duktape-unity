@@ -19,13 +19,13 @@ namespace Duktape
             }
             else
             {
-                uint refid_t;
+                int typeid;
                 //TODO: 增加一个隐藏属性记录jsobject对应类型 (constructor, object)
-                if (DuktapeDLL.duk_unity_get_type_refid(ctx, idx, out refid_t))
+                if (DuktapeDLL.duk_unity_get_type_refid(ctx, idx, out typeid))
                 {
                     var vm = DuktapeVM.GetVM(ctx);
-                    o = vm.GetExportedType(refid_t);
-                    // Debug.Log($"get type from exported registry {o}:{refid}");
+                    o = vm.GetExportedType(typeid);
+                    // Debug.Log($"get type from exported registry {o}:{typeid}");
                     return o != null;
                 }
                 else

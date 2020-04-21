@@ -62,14 +62,27 @@ namespace Duktape
                     {
                         return false;
                     }
+
                     int refid;
-                    //TODO: 根据记录在jsobject 上的 分类标记 做进一步分支 (类型, 实例, 或特定优化类型)
                     if (duk_get_native_refid(ctx, idx, out refid))
                     {
                         var cache = DuktapeVM.GetObjectCache(ctx);
                         return cache.MatchObjectType(refid, type);
                     }
-                    return type == typeof(object) || type.IsSubclassOf(typeof(DuktapeValue));
+
+                    int typeid;
+                    if (DuktapeDLL.duk_unity_get_type_refid(ctx, idx, out typeid))
+                    {
+                        var vm = DuktapeVM.GetVM(ctx);
+                        var eType = vm.GetExportedType(typeid);
+                        if (eType != null)
+                        {
+                            // Debug.LogFormat("match type? {0} {1} {2}", eType, type, typeid); 
+                            return eType == type;
+                        }
+                        // Debug.LogFormat("match type {0} with typeid {1}", type, typeid);
+                    }
+                    return type.IsSubclassOf(typeof(DuktapeValue));
                 case duk_type_t.DUK_TYPE_NUMBER:
                     return type.IsPrimitive || type.IsEnum;
                 case duk_type_t.DUK_TYPE_STRING:
