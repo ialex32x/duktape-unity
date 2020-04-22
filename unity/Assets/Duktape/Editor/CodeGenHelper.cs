@@ -238,7 +238,7 @@ namespace Duktape
             this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
             {
-                this.cg.cs.AppendLine("return DuktapeDLL.{0}(ctx, {1}.ToString());", handler, varName);
+                this.cg.cs.AppendLine("return DuktapeDLL.{0}(ctx, {1});", handler, varName);
             }
             this.cg.cs.DecTabLevel();
             this.cg.cs.AppendLine("}");
@@ -250,7 +250,7 @@ namespace Duktape
             this.cg.cs.AppendLine("}");
             // this.AddCatchClause(typeof(NullReferenceException), "duk_reference_error");
             // this.AddCatchClause(typeof(IndexOutOfRangeException), "duk_range_error");
-            this.AddCatchClause(typeof(Exception), "duk_generic_error");
+            this.AddCatchClause(typeof(Exception), "duk_exception");
         }
     }
 

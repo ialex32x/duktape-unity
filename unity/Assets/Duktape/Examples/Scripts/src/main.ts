@@ -6,12 +6,13 @@ import { ComponentSystem } from "./ut/component_system";
 import { promiseTest } from "./promise_test";
 
 setTimeout(() => {
-    try {
+    // try {
         let i = UnityEngine.GameObject.Find("/Canvas/Button").GetComponent(UnityEngine.UI.Image);
-        i.sprite = null;
-    } catch (err) {
-        console.error(err);
-    }
+        i.sprite = <any> {};
+    // } catch (err) {
+        // will crash here if you catch an js error and call csharp native methods
+        // console.error(err);
+    // }
 }, 100);
 
 if (!window["__reloading"]) {

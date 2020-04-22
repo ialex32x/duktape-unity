@@ -444,6 +444,12 @@ namespace Duktape
             return 0;
         }
 
+        public static duk_int_t duk_exception(IntPtr ctx, Exception exception)
+        {
+            duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format("{0}\n{1}", exception.Message, exception.StackTrace));
+            return 0;
+        }
+
         public static duk_int_t duk_generic_error(IntPtr ctx, string fmt) // fixme
         {
             var stackFrame = new System.Diagnostics.StackFrame(1, true);
