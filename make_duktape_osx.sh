@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+# -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.13
+
 rm -rf build/osx_debug
 mkdir -p build/osx_debug
 cd build/osx_debug
