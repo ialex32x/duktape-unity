@@ -446,8 +446,10 @@ namespace Duktape
 
         public static duk_int_t duk_exception(IntPtr ctx, Exception exception)
         {
-            duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format("{0}\n{1}", exception.Message, exception.StackTrace));
-            return 0;
+            //TODO: DUK_FILE_MACRO, DUK_LINE_MACRO: 暂时用于占位, 改为更有意义的值
+            duk_unity_push_error_object_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format("{0}\n{1}", exception.Message, exception.StackTrace));
+            // duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format("{0}\n{1}", exception.Message, exception.StackTrace));
+            return -1;
         }
 
         public static duk_int_t duk_generic_error(IntPtr ctx, string fmt) // fixme
@@ -951,13 +953,16 @@ namespace Duktape
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_idx_t duk_push_array(IntPtr ctx);
 
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "duk_push_c_function")]
+        public static extern duk_idx_t __duk_push_c_function(IntPtr ctx, IntPtr func, duk_idx_t nargs);
+
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern duk_idx_t duk_push_c_function(IntPtr ctx, IntPtr func, duk_idx_t nargs);
+        public static extern duk_idx_t duk_unity_push_safe_function(IntPtr ctx, IntPtr func, duk_idx_t nargs);
 
         public static duk_idx_t duk_push_c_function(IntPtr ctx, duk_c_function func, duk_idx_t nargs)
         {
             var fn = Marshal.GetFunctionPointerForDelegate(func);
-            return duk_push_c_function(ctx, fn, nargs);
+            return duk_unity_push_safe_function(ctx, fn, nargs);
         }
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]

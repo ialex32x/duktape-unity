@@ -32,7 +32,8 @@ int main(int argc, char *argv[]) {
 
 	duk_unity_open(ctx);
 
-	duk_push_c_function(ctx, native_print, DUK_VARARGS);
+	// duk_push_c_function(ctx, native_print, DUK_VARARGS);
+	duk_unity_push_safe_function(ctx, native_print, DUK_VARARGS);
 	duk_put_global_string(ctx, "print");
 	duk_push_c_function(ctx, native_sleep, 1);
 	duk_put_global_string(ctx, "sleep");

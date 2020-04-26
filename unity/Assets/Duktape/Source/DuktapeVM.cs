@@ -84,9 +84,9 @@ namespace Duktape
             var ctx = DuktapeDLL.duk_create_heap_default();
 
             _ctx = new DuktapeContext(this, ctx);
+            DuktapeDLL.duk_unity_open(ctx);
             DuktapeAux.duk_open(ctx);
             DuktapeVM.duk_open_module(ctx);
-            DuktapeDLL.duk_unity_open(ctx);
         }
 
         public IO.ByteBufferAllocator GetByteBufferAllocator()

@@ -6,13 +6,14 @@ var fmath_1 = require("./fmath");
 var component_system_1 = require("./ut/component_system");
 var promise_test_1 = require("./promise_test");
 setTimeout(function () {
-    // try {
-    var i = UnityEngine.GameObject.Find("/Canvas/Button").GetComponent(UnityEngine.UI.Image);
-    i.sprite = {};
-    // } catch (err) {
-    // will crash here if you catch an js error and call csharp native methods
-    // console.error(err);
-    // }
+    try {
+        var i = UnityEngine.GameObject.Find("/Canvas/Button").GetComponent(UnityEngine.UI.Image);
+        i.sprite = {};
+    }
+    catch (err) {
+        // will crash here if you catch an js error and call csharp native methods
+        console.error(err);
+    }
 }, 100);
 if (!window["__reloading"]) {
     console.log("hello, javascript! (no stacktrace)", DuktapeJS.DUK_VERSION);
