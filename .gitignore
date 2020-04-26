@@ -2,6 +2,7 @@
 *.pyc
 
 **/.vscode/ipch
+**/.idea
 
 /duktape-2.4.0/src-custom
 /duktape-2.4.0/src-debug
