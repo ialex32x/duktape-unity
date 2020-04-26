@@ -100,7 +100,7 @@ DUK_INTERNAL void duk_unity_add_const_int(duk_context *ctx, duk_idx_t idx, const
  */
 
 DUK_EXTERNAL void duk_unity_error_raw(duk_hthread *thr, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt) {
-    duk_error_raw(thr, err_code, filename, line, "%s", fmt); // no plain error call ...
+    duk_error_raw(thr, err_code, filename, line, "%s", fmt); // 避免 fmt 包含 %
 }
 
 DUK_EXTERNAL const char *duk_unity_get_lstring(duk_context *ctx, duk_idx_t idx, duk_uint_t *out_len) {
@@ -697,7 +697,7 @@ DUK_EXTERNAL void duk_unity_push_buffer_object(duk_context *ctx, duk_idx_t idx_b
 }
 
 DUK_EXTERNAL duk_idx_t duk_unity_push_error_object_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt) {
-    return duk_push_error_object_raw(ctx, err_code, filename, line, fmt);
+    return duk_push_error_object_raw(ctx, err_code, filename, line, "%s", fmt); // 避免 fmt 包含 %
 }
 
 DUK_EXTERNAL duk_bool_t duk_unity_put_target_i(duk_context *ctx, duk_idx_t idx) {
