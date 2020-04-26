@@ -667,8 +667,8 @@ DUK_EXTERNAL void duk_unity_getref(duk_context *ctx, duk_uint_t refid) {
     duk_push_heap_stash(ctx); // stash
     duk_get_prop_index(ctx, -1, DUK_UNITY_STASH_REGISTRY); //duk_get_prop_string(ctx, -1, "c_registry"); // stash, array
     duk_get_prop_index(ctx, -1, refid); // stash, array, array[refid]
-    duk_remove(ctx, -2);
-    duk_remove(ctx, -2);
+    duk_replace(ctx, -3);
+    duk_pop(ctx);
 }
 
 /// Releases reference refid
