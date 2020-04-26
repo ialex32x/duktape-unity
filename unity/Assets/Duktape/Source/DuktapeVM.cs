@@ -309,8 +309,7 @@ namespace Duktape
                 catch
                 {
                     // 不能提升到源代码目录外面
-                    DuktapeDLL.duk_type_error(ctx, "invalid module path (out of sourceRoot): %s", module_id);
-                    return 1;
+                    return DuktapeDLL.duk_type_error(ctx, string.Format("invalid module path (out of sourceRoot): {0}", module_id));
                 }
             }
             // Debug.LogFormat("resolve_cb(1): id:{0}', parent-id:'{1}', resolve-to:'{2}'", module_id, parent_id, resolve_to);
@@ -323,12 +322,9 @@ namespace Duktape
             if (resolve_to != null)
             {
                 DuktapeDLL.duk_push_string(ctx, resolve_to);
+                return 1;
             }
-            else
-            {
-                DuktapeDLL.duk_type_error(ctx, "cannot find module: %s", module_id);
-            }
-            return 1;
+            return DuktapeDLL.duk_type_error(ctx, string.Format("cannot find module: {0}", module_id));
         }
 
         [AOT.MonoPInvokeCallback(typeof(DuktapeDLL.duk_c_function))]
@@ -339,23 +335,16 @@ namespace Duktape
             var filename = DuktapeAux.duk_require_string(ctx, -1);
             var source = GetVM(ctx)._fileResolver.ReadAllBytes(filename);
             // Debug.LogFormat("cb_load_module module_id:'{0}', filename:'{1}', resolved:'{2}'\n", module_id, filename, resolvedPath);
-            do
+            if (source != null && source.Length > 0) // bytecode is unsupported
             {
-                if (source != null && source.Length > 0) // bytecode is unsupported
+                if (source[0] != 0xbf)
                 {
-                    if (source[0] != 0xbf)
-                    {
-                        DuktapeDLL.duk_unity_push_lstring(ctx, source, (uint)source.Length);
-                    }
-                    else
-                    {
-                        DuktapeDLL.duk_type_error(ctx, "cannot load module (bytecode): %s", module_id);
-                    }
-                    break;
+                    DuktapeDLL.duk_unity_push_lstring(ctx, source, (uint)source.Length);
+                    return 1;
                 }
-                DuktapeDLL.duk_type_error(ctx, "cannot load module: %s", module_id);
-            } while (false);
-            return 1;
+                return DuktapeDLL.duk_type_error(ctx, string.Format("cannot load module (bytecode): {0}", module_id));
+            }
+            return DuktapeDLL.duk_type_error(ctx, string.Format("cannot load module: {0}", module_id));
         }
 
         private IEnumerator _InitializeStep(IDuktapeListener listener, int step)
