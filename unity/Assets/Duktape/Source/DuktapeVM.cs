@@ -538,35 +538,36 @@ namespace Duktape
             {
                 filename = "eval";
             }
+            
             var ctx = _ctx.rawValue;
-            do
+            if (source[0] == 0xbf)
             {
-                if (source[0] == 0xbf)
-                {
-                    // load bytecode...
-                    var buffer_ptr = DuktapeDLL.duk_push_fixed_buffer(ctx, (uint)source.Length);
-                    Marshal.Copy(source, 0, buffer_ptr, source.Length);
-                    DuktapeDLL.duk_load_function(ctx);
-                }
-                else
-                {
-                    DuktapeDLL.duk_unity_push_lstring(ctx, source, (uint)source.Length);
-                    DuktapeDLL.duk_push_string(ctx, filename);
-                    if (DuktapeDLL.duk_pcompile(ctx, 0) != 0)
-                    {
-                        DuktapeAux.PrintError(ctx, -1, filename);
-                        DuktapeDLL.duk_pop(ctx);
-                        break;
-                    }
-                }
-                // Debug.LogFormat("check top {0}", DuktapeDLL.duk_get_top(ctx));
-                if (DuktapeDLL.duk_pcall(ctx, 0) != DuktapeDLL.DUK_EXEC_SUCCESS)
+                // load bytecode...
+                var buffer_ptr = DuktapeDLL.duk_push_fixed_buffer(ctx, (uint)source.Length);
+                Marshal.Copy(source, 0, buffer_ptr, source.Length);
+                DuktapeDLL.duk_load_function(ctx);
+            }
+            else
+            {
+                DuktapeDLL.duk_unity_push_lstring(ctx, source, (uint)source.Length);
+                DuktapeDLL.duk_push_string(ctx, filename);
+                if (DuktapeDLL.duk_pcompile(ctx, 0) != 0)
                 {
                     DuktapeAux.PrintError(ctx, -1, filename);
+                    DuktapeDLL.duk_pop(ctx);
+                    throw new Exception("[duktape] source compile failed");
                 }
+            }
+
+            // Debug.LogFormat("check top {0}", DuktapeDLL.duk_get_top(ctx));
+            if (DuktapeDLL.duk_pcall(ctx, 0) != DuktapeDLL.DUK_EXEC_SUCCESS)
+            {
+                DuktapeAux.PrintError(ctx, -1, filename);
                 DuktapeDLL.duk_pop(ctx);
-                // Debug.LogFormat("check top {0}", DuktapeDLL.duk_get_top(ctx));
-            } while (false);
+                throw new Exception("[duktape] source eval failed");
+            }
+            DuktapeDLL.duk_pop(ctx);
+            // Debug.LogFormat("check top {0}", DuktapeDLL.duk_get_top(ctx));
         }
 
         public void EvalFile(string filename)

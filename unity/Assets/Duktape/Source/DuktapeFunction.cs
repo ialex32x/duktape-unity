@@ -43,8 +43,10 @@ namespace Duktape
             if (ret != DuktapeDLL.DUK_EXEC_SUCCESS)
             {
                 DuktapeAux.PrintError(ctx, -1);
-                // throw new Exception(err); 
+                DuktapeDLL.duk_pop(ctx);
+                throw new Exception("DuktapeFunction error catch and rethrow"); 
             }
+            DuktapeDLL.duk_pop(ctx);
         }
 
         public void Invoke()
@@ -52,7 +54,6 @@ namespace Duktape
             var ctx = _context.rawValue;
             this.Push(ctx);
             _InternalPCall(ctx, 0);
-            DuktapeDLL.duk_pop(ctx);
         }
 
         // 传参调用, 如果此函数已携带js参数, js参数排在invoke参数后
@@ -62,7 +63,6 @@ namespace Duktape
             this.Push(ctx);
             DuktapeBinding.duk_push_var(ctx, arg0);
             _InternalPCall(ctx, 1);
-            DuktapeDLL.duk_pop(ctx);
         }
 
         public void Invoke(object arg0, object arg1)
@@ -72,7 +72,6 @@ namespace Duktape
             DuktapeBinding.duk_push_var(ctx, arg0);
             DuktapeBinding.duk_push_var(ctx, arg1);
             _InternalPCall(ctx, 2);
-            DuktapeDLL.duk_pop(ctx);
         }
 
         public void Invoke(object arg0, object arg1, object arg2)
@@ -83,7 +82,6 @@ namespace Duktape
             DuktapeBinding.duk_push_var(ctx, arg1);
             DuktapeBinding.duk_push_var(ctx, arg2);
             _InternalPCall(ctx, 3);
-            DuktapeDLL.duk_pop(ctx);
         }
 
         public void Invoke(object arg0, object arg1, object arg2, params object[] args)
@@ -99,7 +97,6 @@ namespace Duktape
                 DuktapeBinding.duk_push_var(ctx, args[i]);
             }
             _InternalPCall(ctx, size + 3);
-            DuktapeDLL.duk_pop(ctx);
         }
     }
 }

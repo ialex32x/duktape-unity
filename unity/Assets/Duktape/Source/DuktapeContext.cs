@@ -42,6 +42,8 @@ namespace Duktape
                 if (DuktapeDLL.duk_pcall(_ctx, 0) != DuktapeDLL.DUK_EXEC_SUCCESS)
                 {
                     DuktapeAux.PrintError(_ctx, -1);
+                    DuktapeDLL.duk_pop_2(_ctx);
+                    throw new Exception("Invoke error catch and rethrow");
                 }
             }
             DuktapeDLL.duk_pop_2(_ctx);

@@ -68,6 +68,7 @@ namespace Duktape
             PrintError(ctx, idx, null);
         }
 
+        //NOTE: 危险, 仍然可能间接调用 duk_throw. 需改进.
         public static void PrintError(IntPtr ctx, int idx, string filename)
         {
             string err;
