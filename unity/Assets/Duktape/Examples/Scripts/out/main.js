@@ -8,9 +8,10 @@ var promise_test_1 = require("./promise_test");
 setTimeout(function () {
     try {
         var i = UnityEngine.GameObject.Find("/Canvas/Button").GetComponent(UnityEngine.UI.Image);
-        i.sprite = null;
+        i.sprite = {};
     }
     catch (err) {
+        // will crash here if you catch an js error and call csharp native methods
         console.error(err);
     }
 }, 100);

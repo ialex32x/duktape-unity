@@ -413,6 +413,7 @@ def main():
         'duk_extra_module_node.c',
         'duk_extra_websocket.c',
         'duk_extra_unity.c',
+        'duk_extra_safecall.c',
         'duk_extra_unity_values.c',
         'duk_extra_unity_debugger.c',
         'duk_extra_unity_dispatcher.c',

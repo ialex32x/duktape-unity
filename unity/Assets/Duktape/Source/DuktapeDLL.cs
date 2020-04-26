@@ -406,14 +406,14 @@ namespace Duktape
         *  Error handling
         */
 
-        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_throw_raw(IntPtr ctx);
+        // [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        // public static extern void duk_throw_raw(IntPtr ctx);
 
-        public static duk_ret_t duk_throw(IntPtr ctx)
-        {
-            duk_throw_raw(ctx);
-            return 0;
-        }
+        // public static duk_ret_t duk_throw(IntPtr ctx)
+        // {
+        //     duk_throw_raw(ctx);
+        //     return 0;
+        // }
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void duk_fatal_raw(IntPtr ctx, string err_msg);
@@ -423,116 +423,140 @@ namespace Duktape
             duk_fatal_raw(ctx, err_msg);
         }
 
-        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void duk_unity_error_raw(IntPtr ctx, duk_errcode_t err_code, string filename, duk_int_t line, string fmt); // no return 
-
-        public static duk_int_t duk_error(IntPtr ctx, duk_errcode_t err_code, string fmt) // fixme
+        public static duk_int_t duk_generic_error(IntPtr ctx, string error)
         {
-            var stackFrame = new System.Diagnostics.StackFrame(1, true);
-            var DUK_FILE_MACRO = stackFrame.GetFileName();
-            var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
-            duk_unity_error_raw(ctx, err_code, DUK_FILE_MACRO, DUK_LINE_MACRO, fmt);
-            return 0;
+            //TODO: DUK_FILE_MACRO, DUK_LINE_MACRO: 暂时用于占位, 改为更有意义的值
+            duk_unity_push_error_object_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, error);
+            // duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, error);
+            return -1;
         }
 
-        public static duk_int_t duk_error(IntPtr ctx, duk_errcode_t err_code, string fmt, params object[] args) // fixme
+        public static duk_int_t duk_type_error(IntPtr ctx, string error)
         {
-            var stackFrame = new System.Diagnostics.StackFrame(1, true);
-            var DUK_FILE_MACRO = stackFrame.GetFileName();
-            var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
-            duk_unity_error_raw(ctx, err_code, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
-            return 0;
+            //TODO: DUK_FILE_MACRO, DUK_LINE_MACRO: 暂时用于占位, 改为更有意义的值
+            duk_unity_push_error_object_raw(ctx, duk_errcode_t.DUK_ERR_TYPE_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, error);
+            // duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_TYPE_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, error);
+            return -1;
         }
 
-        public static duk_int_t duk_generic_error(IntPtr ctx, string fmt) // fixme
+        public static duk_int_t duk_exception(IntPtr ctx, Exception exception)
         {
-            var stackFrame = new System.Diagnostics.StackFrame(1, true);
-            var DUK_FILE_MACRO = stackFrame.GetFileName();
-            var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
-            duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, fmt);
-            return 0;
+            //TODO: DUK_FILE_MACRO, DUK_LINE_MACRO: 暂时用于占位, 改为更有意义的值
+            duk_unity_push_error_object_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format("{0}\n{1}", exception.Message, exception.StackTrace));
+            // duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format("{0}\n{1}", exception.Message, exception.StackTrace));
+            return -1;
         }
 
-        public static duk_int_t duk_generic_error(IntPtr ctx, string fmt, object arg0) // fixme
-        {
-            var stackFrame = new System.Diagnostics.StackFrame(1, true);
-            var DUK_FILE_MACRO = stackFrame.GetFileName();
-            var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
-            duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, arg0));
-            return 0;
-        }
+        // [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
+        // public static extern void duk_unity_error_raw(IntPtr ctx, duk_errcode_t err_code, string filename, duk_int_t line, string fmt); // no return 
 
-        public static duk_int_t duk_generic_error(IntPtr ctx, string fmt, object arg0, object arg1) // fixme
-        {
-            var stackFrame = new System.Diagnostics.StackFrame(1, true);
-            var DUK_FILE_MACRO = stackFrame.GetFileName();
-            var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
-            duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, arg0, arg1));
-            return 0;
-        }
+        // public static duk_int_t duk_error(IntPtr ctx, duk_errcode_t err_code, string fmt) // fixme
+        // {
+        //     var stackFrame = new System.Diagnostics.StackFrame(1, true);
+        //     var DUK_FILE_MACRO = stackFrame.GetFileName();
+        //     var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
+        //     duk_unity_error_raw(ctx, err_code, DUK_FILE_MACRO, DUK_LINE_MACRO, fmt);
+        //     return 0;
+        // }
 
-        public static duk_int_t duk_generic_error(IntPtr ctx, string fmt, params object[] args) // fixme
-        {
-            var stackFrame = new System.Diagnostics.StackFrame(1, true);
-            var DUK_FILE_MACRO = stackFrame.GetFileName();
-            var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
-            duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
-            return 0;
-        }
+        // public static duk_int_t duk_error(IntPtr ctx, duk_errcode_t err_code, string fmt, params object[] args) // fixme
+        // {
+        //     var stackFrame = new System.Diagnostics.StackFrame(1, true);
+        //     var DUK_FILE_MACRO = stackFrame.GetFileName();
+        //     var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
+        //     duk_unity_error_raw(ctx, err_code, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
+        //     return 0;
+        // }
 
-        public static duk_int_t duk_eval_error(IntPtr ctx, string fmt, params object[] args) // fixme
-        {
-            var stackFrame = new System.Diagnostics.StackFrame(1, true);
-            var DUK_FILE_MACRO = stackFrame.GetFileName();
-            var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
-            duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_EVAL_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
-            return 0;
-        }
+        // public static duk_int_t duk_generic_error(IntPtr ctx, string fmt) // fixme
+        // {
+        //     var stackFrame = new System.Diagnostics.StackFrame(1, true);
+        //     var DUK_FILE_MACRO = stackFrame.GetFileName();
+        //     var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
+        //     duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, fmt);
+        //     return 0;
+        // }
 
-        public static duk_int_t duk_range_error(IntPtr ctx, string fmt, params object[] args) // fixme
-        {
-            var stackFrame = new System.Diagnostics.StackFrame(1, true);
-            var DUK_FILE_MACRO = stackFrame.GetFileName();
-            var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
-            duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_RANGE_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
-            return 0;
-        }
+        // public static duk_int_t duk_generic_error(IntPtr ctx, string fmt, object arg0) // fixme
+        // {
+        //     var stackFrame = new System.Diagnostics.StackFrame(1, true);
+        //     var DUK_FILE_MACRO = stackFrame.GetFileName();
+        //     var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
+        //     duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, arg0));
+        //     return 0;
+        // }
 
-        public static duk_int_t duk_reference_error(IntPtr ctx, string fmt, params object[] args) // fixme
-        {
-            var stackFrame = new System.Diagnostics.StackFrame(1, true);
-            var DUK_FILE_MACRO = stackFrame.GetFileName();
-            var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
-            duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_REFERENCE_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
-            return 0;
-        }
+        // public static duk_int_t duk_generic_error(IntPtr ctx, string fmt, object arg0, object arg1) // fixme
+        // {
+        //     var stackFrame = new System.Diagnostics.StackFrame(1, true);
+        //     var DUK_FILE_MACRO = stackFrame.GetFileName();
+        //     var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
+        //     duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, arg0, arg1));
+        //     return 0;
+        // }
 
-        public static duk_int_t duk_syntax_error(IntPtr ctx, string fmt, params object[] args) // fixme
-        {
-            var stackFrame = new System.Diagnostics.StackFrame(1, true);
-            var DUK_FILE_MACRO = stackFrame.GetFileName();
-            var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
-            duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_SYNTAX_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
-            return 0;
-        }
+        // public static duk_int_t duk_generic_error(IntPtr ctx, string fmt, params object[] args) // fixme
+        // {
+        //     var stackFrame = new System.Diagnostics.StackFrame(1, true);
+        //     var DUK_FILE_MACRO = stackFrame.GetFileName();
+        //     var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
+        //     duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
+        //     return 0;
+        // }
 
-        public static duk_int_t duk_type_error(IntPtr ctx, string fmt, params object[] args) // fixme
-        {
-            var stackFrame = new System.Diagnostics.StackFrame(1, true);
-            var DUK_FILE_MACRO = stackFrame.GetFileName();
-            var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
-            duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_TYPE_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
-            return 0;
-        }
+        // public static duk_int_t duk_eval_error(IntPtr ctx, string fmt, params object[] args) // fixme
+        // {
+        //     var stackFrame = new System.Diagnostics.StackFrame(1, true);
+        //     var DUK_FILE_MACRO = stackFrame.GetFileName();
+        //     var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
+        //     duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_EVAL_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
+        //     return 0;
+        // }
 
-        public static duk_int_t duk_uri_error(IntPtr ctx, string fmt, params object[] args) // fixme
-        {
-            var stackFrame = new System.Diagnostics.StackFrame(1, true);
-            var DUK_FILE_MACRO = stackFrame.GetFileName();
-            var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
-            duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_URI_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
-            return 0;
-        }
+        // public static duk_int_t duk_range_error(IntPtr ctx, string fmt, params object[] args) // fixme
+        // {
+        //     var stackFrame = new System.Diagnostics.StackFrame(1, true);
+        //     var DUK_FILE_MACRO = stackFrame.GetFileName();
+        //     var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
+        //     duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_RANGE_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
+        //     return 0;
+        // }
+
+        // public static duk_int_t duk_reference_error(IntPtr ctx, string fmt, params object[] args) // fixme
+        // {
+        //     var stackFrame = new System.Diagnostics.StackFrame(1, true);
+        //     var DUK_FILE_MACRO = stackFrame.GetFileName();
+        //     var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
+        //     duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_REFERENCE_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
+        //     return 0;
+        // }
+
+        // public static duk_int_t duk_syntax_error(IntPtr ctx, string fmt, params object[] args) // fixme
+        // {
+        //     var stackFrame = new System.Diagnostics.StackFrame(1, true);
+        //     var DUK_FILE_MACRO = stackFrame.GetFileName();
+        //     var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
+        //     duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_SYNTAX_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
+        //     return 0;
+        // }
+
+        // public static duk_int_t duk_type_error(IntPtr ctx, string fmt, params object[] args) // fixme
+        // {
+        //     var stackFrame = new System.Diagnostics.StackFrame(1, true);
+        //     var DUK_FILE_MACRO = stackFrame.GetFileName();
+        //     var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
+        //     duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_TYPE_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
+        //     return 0;
+        // }
+
+        // public static duk_int_t duk_uri_error(IntPtr ctx, string fmt, params object[] args) // fixme
+        // {
+        //     var stackFrame = new System.Diagnostics.StackFrame(1, true);
+        //     var DUK_FILE_MACRO = stackFrame.GetFileName();
+        //     var DUK_LINE_MACRO = stackFrame.GetFileLineNumber();
+        //     duk_unity_error_raw(ctx, duk_errcode_t.DUK_ERR_URI_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, string.Format(fmt, args));
+        //     return 0;
+        // }
 
 
         /*
@@ -945,13 +969,16 @@ namespace Duktape
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern duk_idx_t duk_push_array(IntPtr ctx);
 
+        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "duk_push_c_function")]
+        public static extern duk_idx_t __duk_push_c_function(IntPtr ctx, IntPtr func, duk_idx_t nargs);
+
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern duk_idx_t duk_push_c_function(IntPtr ctx, IntPtr func, duk_idx_t nargs);
+        public static extern duk_idx_t duk_unity_push_safe_function(IntPtr ctx, IntPtr func, duk_idx_t nargs);
 
         public static duk_idx_t duk_push_c_function(IntPtr ctx, duk_c_function func, duk_idx_t nargs)
         {
             var fn = Marshal.GetFunctionPointerForDelegate(func);
-            return duk_push_c_function(ctx, fn, nargs);
+            return duk_unity_push_safe_function(ctx, fn, nargs);
         }
 
         [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]

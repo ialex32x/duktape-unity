@@ -71,7 +71,7 @@ namespace Duktape
 
         // 根据当前栈参数数量调用函数
         // 调用失败时抛异常， 成功时栈上保留返回值
-        public void EndInvoke(IntPtr ctx)
+        public void EndInvokeWithReturnValue(IntPtr ctx)
         {
             var nargs = DuktapeDLL.duk_get_top(ctx) - _savedState;
             var ret = DuktapeDLL.duk_pcall_method(ctx, nargs);
@@ -79,7 +79,7 @@ namespace Duktape
             {
                 DuktapeAux.PrintError(ctx, -1);
                 DuktapeDLL.duk_pop(ctx);
-                throw new Exception("duktape delegate exception"); 
+                throw new Exception("DuktapeDelegate error catch and rethrow"); 
             }
         }
     }

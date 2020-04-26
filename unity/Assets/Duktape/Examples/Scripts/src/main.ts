@@ -8,8 +8,9 @@ import { promiseTest } from "./promise_test";
 setTimeout(() => {
     try {
         let i = UnityEngine.GameObject.Find("/Canvas/Button").GetComponent(UnityEngine.UI.Image);
-        i.sprite = null;
+        i.sprite = <any> {};
     } catch (err) {
+        // will crash here if you catch an js error and call csharp native methods
         console.error(err);
     }
 }, 100);

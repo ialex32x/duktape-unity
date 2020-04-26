@@ -84,7 +84,8 @@ namespace Duktape
                     if (ret != DuktapeDLL.DUK_EXEC_SUCCESS)
                     {
                         DuktapeAux.PrintError(ctx, -1);
-                        // throw new Exception(err); 
+                        DuktapeDLL.duk_pop(ctx);
+                        throw new Exception("InvokeMemberWithBooleanReturn failed"); 
                     }
 
                     var o = DuktapeDLL.duk_get_boolean_default(ctx, -1, false);
@@ -110,7 +111,8 @@ namespace Duktape
                     if (ret != DuktapeDLL.DUK_EXEC_SUCCESS)
                     {
                         DuktapeAux.PrintError(ctx, -1);
-                        // throw new Exception(err); 
+                        DuktapeDLL.duk_pop(ctx);
+                        throw new Exception("InvokeMember failed"); 
                     }
                     DuktapeDLL.duk_pop(ctx);
                 }
@@ -132,7 +134,8 @@ namespace Duktape
                     if (ret != DuktapeDLL.DUK_EXEC_SUCCESS)
                     {
                         DuktapeAux.PrintError(ctx, -1);
-                        // throw new Exception(err); 
+                        DuktapeDLL.duk_pop(ctx);
+                        throw new Exception("InvokeMember failed"); 
                     }
                     DuktapeDLL.duk_pop(ctx);
                 }
