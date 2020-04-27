@@ -129,12 +129,12 @@ namespace Duktape
                     var parameter = delegateBindingInfo.parameters[i];
                     this.cg.AppendPushValue(parameter.ParameterType, parameter.Name);
                 }
-                this.cg.cs.AppendLine("fn.EndInvoke(ctx);");
+                this.cg.cs.AppendLine("fn.EndInvokeWithReturnValue(ctx);");
             }
             else
             {
                 this.cg.cs.AppendLine("fn.BeginInvoke(ctx);");
-                this.cg.cs.AppendLine("fn.EndInvoke(ctx);");
+                this.cg.cs.AppendLine("fn.EndInvokeWithReturnValue(ctx);");
             }
 
             if (delegateBindingInfo.returnType != typeof(void))
