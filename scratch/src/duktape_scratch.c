@@ -29,8 +29,12 @@ static duk_ret_t native_print(duk_context* ctx) {
 }
 
 int main(int argc, char *argv[]) {
+	#define MEMORY_SIZE 4 * 1024 * 1024
 	// duk_context *ctx = duk_create_heap_default();
-	duk_context* ctx = duk_unity_create_heap();
+	static char memoryBase[MEMORY_SIZE];
+	duk_uint_t malloc_size;
+	duk_uint_t malloc_count;
+	duk_context* ctx = duk_unity_create_heap(memoryBase, MEMORY_SIZE);
 
 	(void) argc; (void) argv;  /* suppress warning */
 
@@ -79,7 +83,9 @@ int main(int argc, char *argv[]) {
 		printf("can not read file\n");
 	}
 
-	duk_destroy_heap(ctx);
+	duk_unity_get_memory_state(ctx, &malloc_count, &malloc_size);
+	printf("malloc count %d size %d\n", malloc_count, malloc_size);
+	duk_unity_destroy_heap(ctx);
 	fflush(stdout);
 	system("pause");
 	WSACleanup();
