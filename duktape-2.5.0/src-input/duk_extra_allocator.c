@@ -105,10 +105,13 @@ DUK_INTERNAL void *duk_unity_default_alloc_function(void *udata, duk_size_t size
 	struct duk_unity_memory_state *state = (struct duk_unity_memory_state *)udata;
     if (state->tlsf && size != 0 && size < state->large_size) {
         hdr = (alloc_hdr *)tlsf_malloc(state->tlsf, real_size);
-    }
-    if (hdr == NULL) {
+        if (hdr == NULL) {
+            hdr = (alloc_hdr *)malloc(real_size);
+        }
+    } else {
         hdr = (alloc_hdr *)malloc(real_size);
     }
+    
     if (!hdr) {
         return NULL;
     }
@@ -179,11 +182,11 @@ DUK_INTERNAL void *duk_unity_default_realloc_function(void *udata, void *ptr, du
 }
 
 DUK_INTERNAL void duk_unity_default_free_function(void *udata, void *ptr) {
-    alloc_hdr *hdr;
-	struct duk_unity_memory_state *state = (struct duk_unity_memory_state *)udata;
 	if (!ptr) {
 		return;
 	}
+    alloc_hdr *hdr;
+	struct duk_unity_memory_state *state = (struct duk_unity_memory_state *)udata;
 	hdr = (alloc_hdr *) (void *) ((unsigned char *) ptr - sizeof(alloc_hdr));
     state->malloc_count--;
     state->malloc_size -= hdr->u.sz;
@@ -209,12 +212,10 @@ DUK_EXTERNAL duk_hthread *duk_unity_create_heap(void *pool_memory, duk_uint_t po
 }
 
 DUK_EXTERNAL void duk_unity_destroy_heap(duk_hthread *thr) {
-    duk_heap *heap;
     if (!thr) {
         return;
     }
-    heap = thr->heap;
-    duk_unity_memory_state_destroy((struct duk_unity_memory_state *)heap->heap_udata);
-    heap->heap_udata = NULL;
+    struct duk_unity_memory_state *state = (struct duk_unity_memory_state *)thr->heap->heap_udata;
     duk_destroy_heap(thr);
+    duk_unity_memory_state_destroy(state);
 }
