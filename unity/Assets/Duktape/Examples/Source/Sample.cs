@@ -152,7 +152,8 @@ public class Sample : MonoBehaviour, IDuktapeListener
 
     void Awake()
     {
-        vm = new DuktapeVM();
+        vm = new DuktapeVM(null, 1024 * 1024 * 4);
+        // vm = new DuktapeVM();
         // vm.Initialize(new RFileSystem(), this);
         vm.Initialize(this);
     }
