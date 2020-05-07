@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
 #define RUN_AS_MODULE
 #define duk_memcmp memcmp
 #define duk_memcpy memcpy
@@ -26,7 +29,8 @@ static duk_ret_t native_print(duk_context* ctx) {
 }
 
 int main(int argc, char *argv[]) {
-	duk_context *ctx = duk_create_heap_default();
+	// duk_context *ctx = duk_create_heap_default();
+	duk_context* ctx = duk_unity_create_heap();
 
 	(void) argc; (void) argv;  /* suppress warning */
 
