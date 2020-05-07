@@ -46,7 +46,7 @@ DUK_LOCAL DUK_INLINE duk_bool_t duk_unity_mempool_contains(struct duk_unity_memo
     return ptr >= state->pool_ptr && ptr < state->pool_ptr + state->pool_size;
 }
 
-DUK_INTERNAL struct duk_unity_memory_state *duk_unity_memory_state_create() {
+DUK_INTERNAL struct duk_unity_memory_state *duk_unity_memory_state_create(void *pool_memory, duk_uint_t pool_size) {
     struct duk_unity_memory_state *state = (struct duk_unity_memory_state *) malloc(sizeof(struct duk_unity_memory_state));
     if (state) {
         // memset(state, 0, sizeof(struct duk_unity_memory_state));
@@ -55,13 +55,11 @@ DUK_INTERNAL struct duk_unity_memory_state *duk_unity_memory_state_create() {
         state->malloc_fail = 0;
         state->large_alloc = 0;
 
-        duk_size_t pool_size = 4 * 1024 * 1024;
-        void *pool_ptr = malloc(pool_size);
-        if (pool_ptr) {
-            state->pool_ptr = (char *) pool_ptr;
+        if (pool_memory && pool_size != 0) {
+            state->pool_ptr = (char *) pool_memory;
             state->pool_size = pool_size;
             state->large_size = pool_size / 8;
-            state->tlsf = tlsf_create_with_pool(pool_ptr, pool_size);
+            state->tlsf = tlsf_create_with_pool(pool_memory, pool_size);
         } else {
             state->pool_ptr = NULL;
             state->pool_size = 0;
@@ -76,8 +74,8 @@ DUK_INTERNAL void duk_unity_memory_state_destroy(struct duk_unity_memory_state *
     if (state) {
         if (state->pool_ptr) {
             tlsf_destroy(state->tlsf);
-            free(state->pool_ptr);
             state->pool_ptr = NULL;
+            state->pool_size = 0;
         }
         free(state);
     }
@@ -197,8 +195,8 @@ DUK_INTERNAL void duk_unity_default_free_function(void *udata, void *ptr) {
 
 }
 
-DUK_EXTERNAL duk_hthread *duk_unity_create_heap() {
-    struct duk_unity_memory_state *state = duk_unity_memory_state_create();
+DUK_EXTERNAL duk_hthread *duk_unity_create_heap(void *pool_memory, duk_uint_t pool_size) {
+    struct duk_unity_memory_state *state = duk_unity_memory_state_create(pool_memory, pool_size);
     if (state) {
         return duk_create_heap(
             duk_unity_default_alloc_function, 
