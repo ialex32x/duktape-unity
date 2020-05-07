@@ -13,8 +13,8 @@ REM x64 -------------
     pushd x64_debug
     cmake -DDUKTAPE_SRC_CAT=debug -G "Visual Studio 16 2019" -A x64 ..\..\..
     popd
-    cmake --build x64_debug --config Release
-    xcopy /Y .\x64_debug\Release\duktape.dll ..\..\prebuilt\debug\Plugins\x64\
+    cmake --build x64_debug --config Debug
+    xcopy /Y .\x64_debug\Debug\duktape.dll ..\..\prebuilt\debug\Plugins\x64\
 
     rd /s /q x64_release
     mkdir x64_release
@@ -31,8 +31,8 @@ REM x86 -------------
     pushd x86_debug
     cmake -DDUKTAPE_SRC_CAT=debug -G "Visual Studio 16 2019" -A Win32 ..\..\..
     popd
-    cmake --build x86_debug --config Release
-    xcopy /Y .\x86_debug\Release\duktape.dll ..\..\prebuilt\debug\Plugins\x86\
+    cmake --build x86_debug --config Debug
+    xcopy /Y .\x86_debug\Debug\duktape.dll ..\..\prebuilt\debug\Plugins\x86\
 
     rd /s /q x86_release
     mkdir x86_release

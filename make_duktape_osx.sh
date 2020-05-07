@@ -7,10 +7,10 @@ mkdir -p build/osx_debug
 cd build/osx_debug
 cmake -DDUKTAPE_SRC_CAT=debug -GXcode ../..
 cd ..
-cmake --build osx_debug --config Release
+cmake --build osx_debug --config Debug
 cd ..
 mkdir -p ./prebuilt/debug/Plugins/duktape.bundle/Contents/MacOS/
-cp ./build/osx_debug/Release/duktape.bundle/Contents/MacOS/duktape ./prebuilt/debug/Plugins/duktape.bundle/Contents/MacOS/
+cp ./build/osx_debug/Debug/duktape.bundle/Contents/MacOS/duktape ./prebuilt/debug/Plugins/duktape.bundle/Contents/MacOS/
 
 rm -rf build/osx_release
 mkdir -p build/osx_release
