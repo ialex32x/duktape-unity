@@ -43,6 +43,7 @@ namespace Duktape
         private DuktapeContext _ctx;
         private IFileResolver _fileResolver;
         private IO.ByteBufferAllocator _byteBufferAllocator;
+        private uint _memAllocPoolSize;
         private IntPtr _memAllocPool; // 底层预分配内存
         private ObjectCache _objectCache = new ObjectCache();
         private Queue<UnrefAction> _unrefActions = new Queue<UnrefAction>();
@@ -82,9 +83,9 @@ namespace Duktape
         {
             _instance = this;
             _byteBufferAllocator = allocator;
-
-            _memAllocPool = poolSize > 0 ? Marshal.AllocHGlobal(poolSize) : IntPtr.Zero;
-            var ctx = DuktapeDLL.duk_unity_create_heap(_memAllocPool, (uint)poolSize);
+            _memAllocPoolSize = poolSize >= 0 ? (uint) poolSize : 0;
+            _memAllocPool = _memAllocPoolSize != 0 ? Marshal.AllocHGlobal(poolSize) : IntPtr.Zero;
+            var ctx = DuktapeDLL.duk_unity_create_heap(_memAllocPool, _memAllocPoolSize);
 
             _ctx = new DuktapeContext(this, ctx);
             DuktapeDLL.duk_unity_open(ctx);
@@ -97,8 +98,9 @@ namespace Duktape
             return _byteBufferAllocator;
         }
 
-        public void GetMemoryState(out uint count, out uint size)
+        public void GetMemoryState(out uint count, out uint size, out uint poolSize)
         {
+            poolSize = _memAllocPoolSize;
             DuktapeDLL.duk_unity_get_memory_state(ctx, out count, out size);
         }
 
