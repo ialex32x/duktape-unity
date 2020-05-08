@@ -51,6 +51,7 @@ namespace Duktape
 
             if (poolBytes != 0)
             {
+                EditorGUILayout.IntField("Pool Size", (int) poolBytes);
                 EditorGUILayout.FloatField("Used (%)", (float)allocBytes * 100f / poolBytes);
             }
         }
