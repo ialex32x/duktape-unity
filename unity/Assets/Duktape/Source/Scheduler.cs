@@ -227,6 +227,11 @@ namespace Duktape
             get { return _elapsed; }
         }
 
+        public int GetActiveTimeHandleCount()
+        {
+            return _timeHandles.Count;
+        }
+
         public ulong Add(int delay, bool once, TimeHandleCallback fn)
         {
             var id = ++_idgen;

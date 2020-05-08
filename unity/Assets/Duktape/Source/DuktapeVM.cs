@@ -226,6 +226,11 @@ namespace Duktape
             return index;
         }
 
+        public int GetExportedTypeCount()
+        {
+            return _exportedTypes.Count;
+        }
+
         public Type GetExportedType(int index)
         {
             return index >= 0 && index < _exportedTypes.Count ? _exportedTypes[index] : null;
