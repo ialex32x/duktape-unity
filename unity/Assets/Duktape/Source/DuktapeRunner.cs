@@ -64,6 +64,12 @@ namespace Duktape
             return 0;
         }
 
+        public static Scheduler GetScheduler()
+        {
+            var runner = GetRunner();
+            return runner != null ? runner._scheduler : null;
+        }
+
         private static uint CreateTimer(DuktapeFunction fn, int ms, bool once)
         {
             var runner = GetRunner();

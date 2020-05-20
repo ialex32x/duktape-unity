@@ -43,6 +43,8 @@ namespace Duktape
         private DuktapeContext _ctx;
         private IFileResolver _fileResolver;
         private IO.ByteBufferAllocator _byteBufferAllocator;
+        private uint _memAllocPoolSize;
+        private IntPtr _memAllocPool; // 底层预分配内存
         private ObjectCache _objectCache = new ObjectCache();
         private Queue<UnrefAction> _unrefActions = new Queue<UnrefAction>();
 
@@ -76,12 +78,14 @@ namespace Duktape
             get { return _fileResolver; }
         }
 
-        public DuktapeVM(IO.ByteBufferAllocator allocator = null)
+        // poolSize: 预分配内存
+        public DuktapeVM(IO.ByteBufferAllocator allocator = null, int poolSize = 0)
         {
             _instance = this;
             _byteBufferAllocator = allocator;
-
-            var ctx = DuktapeDLL.duk_create_heap_default();
+            _memAllocPoolSize = poolSize >= 0 ? (uint) poolSize : 0;
+            _memAllocPool = _memAllocPoolSize != 0 ? Marshal.AllocHGlobal(poolSize) : IntPtr.Zero;
+            var ctx = DuktapeDLL.duk_unity_create_heap(_memAllocPool, _memAllocPoolSize);
 
             _ctx = new DuktapeContext(this, ctx);
             DuktapeDLL.duk_unity_open(ctx);
@@ -94,8 +98,9 @@ namespace Duktape
             return _byteBufferAllocator;
         }
 
-        public void GetMemoryState(out uint count, out uint size)
+        public void GetMemoryState(out uint count, out uint size, out uint poolSize)
         {
+            poolSize = _memAllocPoolSize;
             DuktapeDLL.duk_unity_get_memory_state(ctx, out count, out size);
         }
 
@@ -219,6 +224,11 @@ namespace Duktape
             _exportedTypeIndexer[type] = index;
             // Debug.Log($"add export: {type}");
             return index;
+        }
+
+        public int GetExportedTypeCount()
+        {
+            return _exportedTypes.Count;
         }
 
         public Type GetExportedType(int index)
@@ -538,7 +548,7 @@ namespace Duktape
             {
                 filename = "eval";
             }
-            
+
             var ctx = _ctx.rawValue;
             if (source[0] == 0xbf)
             {
@@ -626,24 +636,35 @@ namespace Duktape
 
         public void Destroy()
         {
-            _instance = null;
-            if (_ctx != null)
+            try
             {
-                var ctx = _ctx.rawValue;
-                _ctx.Destroy();
-                _ctx = null;
-                _lastContextPtr = IntPtr.Zero;
-                _lastContext = null;
-                _contexts.Clear();
-                _objectCache.Clear();
-                DuktapeDLL.duk_destroy_heap_default(ctx);
-                // Debug.LogWarning("duk_destroy_heap");
-            }
+                _instance = null;
+                if (_ctx != null)
+                {
+                    var ctx = _ctx.rawValue;
+                    _ctx.Destroy();
+                    _ctx = null;
+                    _lastContextPtr = IntPtr.Zero;
+                    _lastContext = null;
+                    _contexts.Clear();
+                    _objectCache.Clear();
+                    DuktapeDLL.duk_unity_destroy_heap(ctx);
+                    // Debug.LogWarning("duk_destroy_heap");
+                }
 
-            if (_updateTimer != 0)
+                if (_updateTimer != 0)
+                {
+                    DuktapeRunner.Clear(_updateTimer);
+                    _updateTimer = 0;
+                }
+            }
+            finally
             {
-                DuktapeRunner.Clear(_updateTimer);
-                _updateTimer = 0;
+                if (_memAllocPool != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(_memAllocPool);
+                    _memAllocPool = IntPtr.Zero;
+                }
             }
         }
     }

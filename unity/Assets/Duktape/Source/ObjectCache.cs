@@ -36,7 +36,20 @@ namespace Duktape
         // weak reference table for delegates
         private Dictionary<IntPtr, WeakReference> _delegateMap = new Dictionary<IntPtr, WeakReference>();
 
-        // private Dictionary<IntPtr, 
+        public int GetManagedObjectCount()
+        {
+            return _map.Count;
+        }
+
+        public int GetJSObjectCount()
+        {
+            return _rmap.Count;
+        }
+
+        public int GetDelegateCount()
+        {
+            return _delegateMap.Count;
+        }
 
         public void Clear()
         {

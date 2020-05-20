@@ -1419,7 +1419,7 @@ DUK_EXTERNAL_DECL duk_idx_t duk_unity_push_safe_function(duk_context *ctx, duk_c
  * extra: memory allocation state
  */
 DUK_EXTERNAL_DECL void duk_unity_get_memory_state(duk_context *thr, duk_uint_t *malloc_count, duk_uint_t *malloc_size);
-DUK_EXTERNAL_DECL duk_context *duk_unity_create_heap();
+DUK_EXTERNAL_DECL duk_context *duk_unity_create_heap(void *pool_memory, duk_uint_t pool_size);
 DUK_EXTERNAL_DECL void duk_unity_destroy_heap(duk_context *thr);
 
 /*
