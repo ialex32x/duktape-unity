@@ -2,6 +2,8 @@
 
 [中文说明](README_CN.md)
 
+[![Build Status](https://travis-ci.org/ialex32x/duktape-unity.svg?branch=master)](https://travis-ci.org/ialex32x/duktape-unity)
+
 # Brief
 Integerate duktape (an embedded javascript engine) into unity, you can load and run javascript at runtime. <br/>
 Typescript is a preferred choice, it provides type checks.

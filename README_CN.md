@@ -1,5 +1,7 @@
 ![logo](res/logo.png "duktape-unity")
 
+[![Build Status](https://travis-ci.org/ialex32x/duktape-unity.svg?branch=master)](https://travis-ci.org/ialex32x/duktape-unity)
+
 # 简介
 将[duktape](https://github.com/svaarala/duktape)集成到Unity中, 使您可以在运行时动态加载执行javascript脚本. <br/>
 另外也提供了对typescript的集成支持, 建议使用typescript进行脚本编写.
