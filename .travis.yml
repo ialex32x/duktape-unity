@@ -1,0 +1,16 @@
+dist: trusty
+language: c
+
+addons:
+  apt:
+    packages:
+      - cmake
+
+before_install:
+  - pip install pyyaml
+script:
+  - chmod +x ./configure_duktape.sh
+  - ./configure_duktape.sh
+  - ./make_duktape_linux.sh
+  
+
