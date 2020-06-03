@@ -17,6 +17,15 @@ namespace Duktape
         public bool deleted;
         public bool once;
         public WheelSlot slot;
+
+        public void Cleanup()
+        {
+            if (action != null)
+            {
+                action.Dispose();
+                action = null;
+            }
+        }
     }
 
     internal class WheelSlot
@@ -251,6 +260,7 @@ namespace Duktape
                 {
                     _timeHandles.Remove(id);
                     timer.deleted = true;
+                    timer.Cleanup();
                     if (timer.slot != null)
                     {
                         timer.slot.Remove(timer);
@@ -333,6 +343,7 @@ namespace Duktape
                         if (timer.once)
                         {
                             timer.deleted = true;
+                            timer.Cleanup();
                             _timeHandles.Remove(timer.id);
                             _recycle.Add(timer);
                         }

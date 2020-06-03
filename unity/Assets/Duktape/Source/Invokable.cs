@@ -2,7 +2,7 @@ using System;
 
 namespace Duktape
 {
-    public interface Invokable
+    public interface Invokable : IDisposable
     {
         void Invoke();
     }
@@ -26,6 +26,11 @@ namespace Duktape
             {
                 UnityEngine.Debug.LogError(exception);
             }
+        }
+
+        public void Dispose()
+        {
+            _fn = null;
         }
     }
 }
