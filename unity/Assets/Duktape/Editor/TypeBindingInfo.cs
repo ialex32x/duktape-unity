@@ -371,11 +371,13 @@ namespace Duktape
             {
                 if (type.DeclaringType != null)
                 {
-                    this.jsNamespace = $"{type.Namespace}.{type.DeclaringType.Name}";
+                    this.jsNamespace = string.IsNullOrEmpty(type.Namespace)
+                        ? type.DeclaringType.Name 
+                        : string.Format("{0}.{1}", type.Namespace, type.DeclaringType.Name);
                 }
                 else
                 {
-                    this.jsNamespace = type.Namespace;
+                    this.jsNamespace = type.Namespace ?? "";
                 }
 
                 if (type.IsGenericType)
