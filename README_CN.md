@@ -1,5 +1,7 @@
 ![logo](res/logo.png "duktape-unity")
 
+> quickjs 绑定的版本正在开发中, 并支持更多现代 javascript 特性. [unity-jsb](https://github.com/ialex32x/unity-jsb)
+
 [![Build Status](https://travis-ci.org/ialex32x/duktape-unity.svg?branch=master)](https://travis-ci.org/ialex32x/duktape-unity)
 
 # 简介
