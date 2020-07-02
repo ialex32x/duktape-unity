@@ -13,10 +13,10 @@ namespace Duktape
     {
         private bool _requesting;
         private UnityWebRequest _req;
+        private Dictionary<string, string> headers = new Dictionary<string, string>();
 
         public HttpRequest()
         {
-            _req = new UnityWebRequest();
         }
 
         private IEnumerator Run(Action<bool, string> oncomplete)
@@ -51,6 +51,7 @@ namespace Duktape
 
         public void SendGetRequest(string url, Action<bool, string> oncomplete)
         {
+            _req = new UnityWebRequest();
             if (!_requesting)
             {
                 var runner = DuktapeRunner.GetRunner();
@@ -59,6 +60,7 @@ namespace Duktape
                     _req.method = "GET";
                     _req.url = url;
                     _requesting = true;
+                    this.ApplyHeaders();
                     runner.StartCoroutine(Run(oncomplete));
                 }
             }
@@ -70,14 +72,21 @@ namespace Duktape
 
         public void SendPostRequest(string url, string body, Action<bool, string> oncomplete)
         {
+            var form = new WWWForm();
+            var ps = body.Split('&');
+            foreach (var p in ps)
+            {
+                var pp = p.Split('=');
+                form.AddField(pp[0], pp[1] != null ? pp[1] : "");
+            }
+            _req = UnityWebRequest.Post(url, form);
             if (!_requesting)
             {
                 var runner = DuktapeRunner.GetRunner();
                 if (runner != null)
                 {
-                    _req.method = "GET";
-                    _req.url = url;
                     _requesting = true;
+                    this.ApplyHeaders();
                     runner.StartCoroutine(Run(oncomplete));
                 }
             }
@@ -87,11 +96,19 @@ namespace Duktape
             }
         }
 
+        protected void ApplyHeaders()
+        {
+            foreach (var p in this.headers)
+            {
+                _req.SetRequestHeader(p.Key, p.Value);
+            }
+        }
+
         public void SetRequestHeader(string key, string value)
         {
             if (!_requesting)
             {
-                _req.SetRequestHeader(key, value);
+                this.headers[key] = value;
             }
             else
             {
