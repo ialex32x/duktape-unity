@@ -1,6 +1,6 @@
 ![logo](res/logo.png "duktape-unity")
 
-> a quickjs binding version is under development, it supports more modern javascript features. [unity-jsb](https://github.com/ialex32x/unity-jsb)
+> this duktape binding project will be discontinued. a quickjs binding version is under development, it supports more modern javascript features. [unity-jsb](https://github.com/ialex32x/unity-jsb)
 
 [中文说明](README_CN.md)
 
