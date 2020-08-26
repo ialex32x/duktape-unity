@@ -711,7 +711,24 @@ namespace Duktape
                     }
                 case duk_type_t.DUK_TYPE_OBJECT: /* ECMAScript object: includes objects, arrays, functions, threads */
                     {
-                        return duk_get_cached_object(ctx, idx, out o);
+                        if (DuktapeDLL.duk_is_function(ctx, idx))
+                        {
+                            DuktapeFunction func;
+                            var r = duk_get_classvalue(ctx, idx, out func);
+                            o = func;
+                            return r;
+                        }
+                        if (duk_get_cached_object(ctx, idx, out o))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            DuktapeObject val;
+                            var r = duk_get_classvalue(ctx, idx, out val);
+                            o = val;
+                            return r;
+                        }
                     }
                 case duk_type_t.DUK_TYPE_BUFFER: /* fixed or dynamic, garbage collected byte buffer */
                     {

@@ -86,6 +86,11 @@ public class Sample : MonoBehaviour, IDuktapeListener
         }
         else
         {
+            var f = vm.EvalSource("eval", System.Text.Encoding.UTF8.GetBytes("function x() { console.log('hello, eval.'); };x"));
+            if (f is DuktapeFunction)
+            {
+                (f as DuktapeFunction).Invoke();
+            }
             vm.EvalMain(launchScript);
         }
     }
