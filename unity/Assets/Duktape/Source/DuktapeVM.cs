@@ -538,11 +538,12 @@ namespace Duktape
             return PushChainedPrototypeOf(ctx, baseType.BaseType);
         }
 
-        public void EvalSource(string filename, byte[] source)
+        public object EvalSource(string filename, byte[] source)
         {
+            object retValue = null;
             if (source == null || source.Length == 0)
             {
-                return;
+                return retValue;
             }
             if (filename == null)
             {
@@ -576,35 +577,37 @@ namespace Duktape
                 DuktapeDLL.duk_pop(ctx);
                 throw new Exception("[duktape] source eval failed");
             }
+            DuktapeBinding.duk_get_var(ctx, -1, out retValue);
             DuktapeDLL.duk_pop(ctx);
+            return retValue;
             // Debug.LogFormat("check top {0}", DuktapeDLL.duk_get_top(ctx));
         }
 
-        public void EvalFile(string filename)
+        public object EvalFile(string filename)
         {
             filename = EnsureExtension(filename);
             var ctx = _ctx.rawValue;
             var source = _fileResolver.ReadAllBytes(filename);
-            EvalSource(filename, source);
+            return EvalSource(filename, source);
         }
 
-        public void EvalMain(string filename)
+        public object EvalMain(string filename)
         {
             filename = EnsureExtension(filename);
             var source = _fileResolver.ReadAllBytes(filename);
-            EvalMain(filename, source);
+            return EvalMain(filename, source);
         }
 
-        public void EvalMain(string filename, byte[] source)
+        public object EvalMain(string filename, byte[] source)
         {
             if (source == null || source.Length == 0)
             {
-                return;
+                return null;
             }
             if (source[0] == 0xbf)
             {
                 //NOTE: module is not supported in bytecode mode
-                EvalSource(filename, source);
+                return EvalSource(filename, source);
             }
             else
             {
@@ -625,7 +628,10 @@ namespace Duktape
                     DuktapeAux.PrintError(ctx, -1, filename);
                     // Debug.LogErrorFormat("eval main error: {0}\n{1}", DuktapeDLL.duk_safe_to_string(ctx, -1), filename);
                 }
+                object retValue = null;
+                DuktapeBinding.duk_get_var(ctx, -1, out retValue);
                 DuktapeDLL.duk_set_top(ctx, top);
+                return retValue;
             }
         }
 
