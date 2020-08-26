@@ -18,6 +18,17 @@ namespace Duktape
             _argv = argv;
         }
 
+        public T ToDelegate<T>()
+        where T : class
+        {
+            T o;
+            var ctx = _context.rawValue;
+            this.Push(ctx);
+            DuktapeBinding.duk_get_delegate<T>(_context.rawValue, -1, out o);
+            DuktapeDLL.duk_pop(ctx);
+            return o;
+        }
+
         // push 当前函数的 prototype 
         public void PushPrototype(IntPtr ctx)
         {
