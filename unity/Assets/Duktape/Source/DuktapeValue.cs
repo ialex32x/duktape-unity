@@ -62,6 +62,7 @@ namespace Duktape
                 vm.GC(this._refid, null, duk_unity_unref);
                 this._refid = 0;
                 this._refPtr = IntPtr.Zero;
+                this._context = null;
             }
         }
 

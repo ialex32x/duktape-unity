@@ -40,7 +40,7 @@ public class Sample : MonoBehaviour, IDuktapeListener
 
     public void OnLoaded(DuktapeVM vm)
     {
-        tests();
+        // tests();
         vm.AddSearchPath("Assets/Duktape/Examples/Scripts/out");
         do
         {
